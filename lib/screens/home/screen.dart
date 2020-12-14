@@ -1,10 +1,13 @@
+import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postEditor.dart';
+import 'package:minestrix/screens/chatVue.dart';
 import 'package:minestrix/screens/home/feed/widget.dart';
 import 'package:minestrix/global/matrix.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -25,21 +28,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<HomeScreen> {
-  int _counter = 0;
-
-  MatrixClient cl = new MatrixClient();
-
   void _incrementCounter() async {
-    await cl.connect();
-
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatVue(),
+        ));
   }
 
   @override
@@ -75,17 +69,19 @@ class _MyHomePageState extends State<HomeScreen> {
                 ),
                 Expanded(
                   flex: 7,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: Text("Feed",
-                            style: TextStyle(
-                                fontSize: 50, fontWeight: FontWeight.w600)),
-                      ),
-                      FeedView(),
-                    ],
+                  child: Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: Text("Feed",
+                              style: TextStyle(
+                                  fontSize: 50, fontWeight: FontWeight.w600)),
+                        ),
+                        FeedView(),
+                      ],
+                    ),
                   ),
                 ),
                 Expanded(

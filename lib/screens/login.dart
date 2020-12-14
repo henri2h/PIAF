@@ -1,5 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/global/matrix.dart';
 import 'package:minestrix/screens/home/screen.dart';
 import 'package:provider/provider.dart';
 
@@ -77,7 +78,7 @@ class LoginCardState extends State<LoginCard> {
 
   @override
   Widget build(BuildContext context) {
-    final client = Provider.of<Client>(context);
+    final client = Matrix.of(context).client;
     return SizedBox(
         child: Container(
             child: Padding(

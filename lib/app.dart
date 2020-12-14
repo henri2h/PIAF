@@ -4,23 +4,31 @@ import 'package:flutter/widgets.dart';
 import 'package:minestrix/screens/home/screen.dart';
 import 'package:minestrix/screens/login.dart';
 import 'package:provider/provider.dart';
+import 'package:minestrix/global/matrix.dart';
 
 class Minetrix extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Provider<Client>(
-      create: (_) => Client('MinesTrix'),
+    return Matrix(
       child: Builder(
         builder: (context) => MaterialApp(
           title: 'MinesTrix client',
           debugShowCheckedModeBanner: false,
           home: StreamBuilder<LoginState>(
-            stream: Provider.of<Client>(context).onLoginStateChanged.stream,
-            builder:
-                (BuildContext context, AsyncSnapshot<LoginState> snapshot) {
+            stream: Matrix.of(context).client.onLoginStateChanged.stream,
+            builder: (BuildContext context, snapshot) {
+              print("hasData : " + snapshot.hasData.toString());
+              print(context);
               if (snapshot.hasError) {
                 return Center(child: Text(snapshot.error.toString()));
               }
+              /*if (!snapshot.hasData) {
+                return Scaffold(
+                  body: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }*/
               if (snapshot.data == LoginState.logged) {
                 return HomeScreen();
               }
