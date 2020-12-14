@@ -1,7 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postEditor.dart';
-import 'package:minestrix/screens/chatVue.dart';
+import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/home/feed/widget.dart';
 import 'package:minestrix/global/matrix.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
@@ -29,10 +29,10 @@ class HomeScreen extends StatefulWidget {
 
 class _MyHomePageState extends State<HomeScreen> {
   void _incrementCounter() async {
-    Navigator.pushReplacement(
+    Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ChatVue(),
+          builder: (context) => ChatsVue(),
         ));
   }
 
@@ -69,19 +69,17 @@ class _MyHomePageState extends State<HomeScreen> {
                 ),
                 Expanded(
                   flex: 7,
-                  child: Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: Text("Feed",
-                              style: TextStyle(
-                                  fontSize: 50, fontWeight: FontWeight.w600)),
-                        ),
-                        FeedView(),
-                      ],
-                    ),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: Text("Feed",
+                            style: TextStyle(
+                                fontSize: 50, fontWeight: FontWeight.w600)),
+                      ),
+                      FeedView(),
+                    ],
                   ),
                 ),
                 Expanded(
