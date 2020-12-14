@@ -22,13 +22,13 @@ class Minetrix extends StatelessWidget {
               if (snapshot.hasError) {
                 return Center(child: Text(snapshot.error.toString()));
               }
-              /*if (!snapshot.hasData) {
+              if (!snapshot.hasData) {
                 return Scaffold(
                   body: Center(
                     child: CircularProgressIndicator(),
                   ),
                 );
-              }*/
+              }
               if (snapshot.data == LoginState.logged) {
                 return HomeScreen();
               }

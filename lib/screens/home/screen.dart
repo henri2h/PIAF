@@ -1,6 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postEditor.dart';
+import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/home/feed/widget.dart';
 import 'package:minestrix/global/matrix.dart';
@@ -38,6 +39,9 @@ class _MyHomePageState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
+    final sclient = Matrix.of(context).sclient;
+
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -69,17 +73,12 @@ class _MyHomePageState extends State<HomeScreen> {
                 ),
                 Expanded(
                   flex: 7,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: Text("Feed",
-                            style: TextStyle(
-                                fontSize: 50, fontWeight: FontWeight.w600)),
-                      ),
-                      FeedView(),
-                    ],
+                  child: StreamBuilder(
+                    stream: client.onSync.stream,
+                    builder: (context, _) => ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: sclient.stimeline.length,
+                        itemBuilder: (BuildContext context, int i) => Post(event: sclient.stimeline[i])),
                   ),
                 ),
                 Expanded(
