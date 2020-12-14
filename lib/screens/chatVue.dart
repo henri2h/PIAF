@@ -1,62 +1,88 @@
+
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:minestrix/global/matrix.dart';
-import 'package:provider/provider.dart';
 
-class ChatVue extends StatefulWidget {
-  @override
-  _ChatVueState createState() => _ChatVueState();
-}
+class ChatView extends StatelessWidget {
+  final String roomId;
 
-class _ChatVueState extends State<ChatVue> with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
+  const ChatView({Key key, @required this.roomId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
-    return Material(
-      
-      child: Scaffold(
-        appBar: AppBar(title:Text("Hello")),
-              body: Container(
-                child: Expanded(
-          flex: 2,
-          child: StreamBuilder(
-            stream: client.onSync.stream,
-            builder: (context, _) => ListView.builder(
-                itemCount: client.rooms.length,
-                itemBuilder: (BuildContext context, int i) => ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: client.rooms[i].avatar == null
-                        ? null
-                        : NetworkImage(
-                            client.rooms[i].avatar.getThumbnail(
-                              client,
-                              width: 64,
-                              height: 64,
-                            ),
-                          ),
-                  ),
-                  title: Text(client.rooms[i].displayname),
-                  subtitle: Text(client.rooms[i].lastMessage),
-                ),
+    final TextEditingController _sendController = TextEditingController();
+    return StreamBuilder<Object>(
+        stream: client.onSync.stream,
+        builder: (context, _) {
+          final room = client.getRoomById(roomId);
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(room.displayname),
             ),
-          ),
-        ),
+            body: SafeArea(
+              child: FutureBuilder<Timeline>(
+                future: room.getTimeline(),
+                builder:
+                    (BuildContext context, AsyncSnapshot<Timeline> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  final timeline = snapshot.data;
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          reverse: true,
+                          itemCount: timeline.events.length,
+                          itemBuilder: (BuildContext context, int i) {
+                            final event = timeline.events[i];
+                            final sender = event.sender;
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: sender.avatarUrl == null
+                                    ? null
+                                    : NetworkImage(
+                                        sender.avatarUrl.getThumbnail(
+                                          client,
+                                          width: 64,
+                                          height: 64,
+                                        ),
+                                      ),
+                              ),
+                              title: Text(sender.calcDisplayname()),
+                              subtitle: Text(event.body),
+                            );
+                          },
+                        ),
+                      ),
+                      Divider(height: 1),
+                      Container(
+                        height: 56,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _sendController,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.send),
+                              onPressed: () {
+                                room.sendTextEvent(_sendController.text);
+                                _sendController.clear();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
-      ),
-    );
+            ),
+          );
+        });
   }
 }
