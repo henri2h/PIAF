@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/widgets.dart';
+import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';
 
 class Matrix extends StatefulWidget {
@@ -23,6 +24,7 @@ class Matrix extends StatefulWidget {
 
 class MatrixState extends State<Matrix> {
   Client client;
+  SMatrix sclient;
   @override
   BuildContext context;
 
@@ -56,8 +58,7 @@ class MatrixState extends State<Matrix> {
 
   void initMatrix() {
     String clientName = "minestrix";
-    client = Client(clientName,
-    databaseBuilder: getDatabase);
+    client = Client(clientName, databaseBuilder: getDatabase);
     print("Matrix state initialisated");
     _initWithStore();
   }
@@ -70,6 +71,8 @@ class MatrixState extends State<Matrix> {
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.logged) {
         print("Logged in");
+
+        sclient = SMatrix(client);
       } else {
         print("Not logged in");
 
