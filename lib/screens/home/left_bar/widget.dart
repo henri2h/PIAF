@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/smatrixRoomsVue.dart';
 
 class LeftBar extends StatelessWidget {
@@ -13,7 +14,31 @@ class LeftBar extends StatelessWidget {
           LeftBarButton(name: "Friends", icon: Icons.people),
           LeftBarButton(name: "Settings", icon: Icons.settings),
           LeftBarButton(name: "Debug", icon: Icons.bug_report),
-          LeftBarButton(name: "Logout", icon: Icons.logout),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: RaisedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => SMatrixRoomsVue(),
+                    ),
+                  );
+                  print("push");
+                },
+                child: LeftBarButton(name: "Smatrix rooms", icon: Icons.lock)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: RaisedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ChatsVue(),
+                    ),
+                  );
+                },
+                child: LeftBarButton(name: "Chat", icon: Icons.message)),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: RaisedButton(
@@ -22,16 +47,6 @@ class LeftBar extends StatelessWidget {
                 },
                 child: LeftBarButton(name: "Logout", icon: Icons.logout)),
           ),
-          RaisedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SMatrixRoomsVue(),
-                  ),
-                );
-                print("push");
-              },
-              child: LeftBarButton(name: "Smatrix rooms", icon: Icons.lock))
         ]);
   }
 }

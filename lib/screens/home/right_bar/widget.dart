@@ -1,4 +1,7 @@
+import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrix.dart';
 
 class RightBar extends StatefulWidget {
   @override
@@ -7,33 +10,31 @@ class RightBar extends StatefulWidget {
 
 class _RightBarState extends State<RightBar>
     with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ListView(children: [ContactView(), ContactView()]);
+    final client = Matrix.of(context).client;
+    final sclient = Matrix.of(context).sclient;
+    return StreamBuilder(
+        stream: client.onSync.stream,
+        builder: (context, _) => ListView.builder(
+            itemCount: sclient.srooms.length,
+            itemBuilder: (BuildContext context, int i) =>
+                ContactView(sroom: sclient.srooms[i])));
   }
 }
 
 class ContactView extends StatelessWidget {
   const ContactView({
     Key key,
+    @required this.sroom,
   }) : super(key: key);
-
+  final Room sroom;
   @override
   Widget build(BuildContext context) {
+    final Client client = Matrix.of(context).client;
+
+    final User user = sroom.getParticipants().firstWhere(
+        (User user) => SMatrix.getUserIdFromRoomName(sroom.name) == user.id);
     return SizedBox(
         child: Card(
             child: Padding(
@@ -44,32 +45,32 @@ class ContactView extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Icon(Icons.account_box),
+                          CircleAvatar(
+                            backgroundImage: user.avatarUrl == null
+                                ? null
+                                : NetworkImage(
+                                    user.avatarUrl.getThumbnail(
+                                      client,
+                                      width: 64,
+                                      height: 64,
+                                    ),
+                                  ),
+                          ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text("name",
+                                  Text(user.displayName,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold)),
-                                  Text("matrixid")
+                                  Text(user.id)
                                 ]),
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text("name",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              Text("matrixid")
-                            ]),
-                      ),
-                      Icon(Icons.verified_user),
+                      if (sroom.encrypted) Icon(Icons.verified_user),
+                      if (!sroom.encrypted) Icon(Icons.no_encryption)
                     ]))));
   }
 }

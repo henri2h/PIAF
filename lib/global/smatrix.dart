@@ -53,18 +53,22 @@ class SMatrix {
   void dispose() {
     onRoomUpdate?.cancel();
   }
-}
 
-bool isValidSRoom(Room room) {
-  if (room.name.startsWith(SMatrix.SMatrixRoomPrefix)) {
-    // check if is a use room, in which case, it's user must be admin
-    if (room.name.startsWith(SMatrix.SMatrixUserRoomPrefix)) {
-      String userid = room.name.replaceFirst(SMatrix.SMatrixRoomPrefix, "");
-      print(userid);
+  static String getUserIdFromRoomName(String name) {
+    return name.replaceFirst(SMatrixRoomPrefix, "");
+  }
+
+  static bool isValidSRoom(Room room) {
+    if (room.name.startsWith(SMatrix.SMatrixRoomPrefix)) {
+      // check if is a use room, in which case, it's user must be admin
+      if (room.name.startsWith(SMatrixUserRoomPrefix)) {
+        String userid = getUserIdFromRoomName(room.name);
+        print(userid);
+        return true;
+      }
+
       return true;
     }
-
-    return true;
+    return false;
   }
-  return false;
 }
