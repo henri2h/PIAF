@@ -1,24 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix/screens/smatrixRoomsVue.dart';
 
 class LeftBar extends StatelessWidget {
   const LeftBar({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-      LeftBarButton(name: "Feed", icon:Icons.home),
-      LeftBarButton(name: "My account", icon:Icons.person),
-      LeftBarButton(name: "Friends", icon:Icons.people),
-      LeftBarButton(name: "Settings", icon:Icons.settings),
-      LeftBarButton(name: "Debug", icon:Icons.bug_report),
-      LeftBarButton(name: "Logout", icon:Icons.logout),
-      ]
-    );
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          LeftBarButton(name: "Feed", icon: Icons.home),
+          LeftBarButton(name: "My account", icon: Icons.person),
+          LeftBarButton(name: "Friends", icon: Icons.people),
+          LeftBarButton(name: "Settings", icon: Icons.settings),
+          LeftBarButton(name: "Debug", icon: Icons.bug_report),
+          LeftBarButton(name: "Logout", icon: Icons.logout),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: RaisedButton(
+                onPressed: () {
+                  print("push");
+                },
+                child: LeftBarButton(name: "Logout", icon: Icons.logout)),
+          ),
+          RaisedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => SMatrixRoomsVue(),
+                  ),
+                );
+                print("push");
+              },
+              child: LeftBarButton(name: "Smatrix rooms", icon: Icons.lock))
+        ]);
   }
 }
-
-
 
 class LeftBarButton extends StatelessWidget {
   const LeftBarButton({Key key, this.name, this.icon}) : super(key: key);
