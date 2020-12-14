@@ -103,8 +103,8 @@ class _MyHomePageState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        tooltip: 'Write post',
+        child: Icon(Icons.edit)
       ),
     );
   }
