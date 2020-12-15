@@ -11,13 +11,28 @@ class FriendsVue extends StatelessWidget {
     final SMatrix sclient = Matrix.of(context).sclient;
     return Scaffold(
       appBar: AppBar(title: Text("Friends")),
-      body: StreamBuilder(
-        stream: client.onSync.stream,
-        builder: (context, _) => ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: sclient.srooms.length,
-          itemBuilder: (BuildContext context, int i) => AccountCard(sroom: sclient.srooms[i]),
-        ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            
+            child: StreamBuilder(
+                stream: client.onSync.stream,
+                builder: (context, _) => ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: sclient.srooms.length,
+                  itemBuilder: (BuildContext context, int i) =>
+                      AccountCard(sroom: sclient.srooms[i]),
+                ),
+              ),
+          ),
+          Text("Friends: ", style: TextStyle(fontSize: 20)),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text("Friends: ", style: TextStyle(fontSize: 20)),
+          )
+        ],
       ),
     );
   }
