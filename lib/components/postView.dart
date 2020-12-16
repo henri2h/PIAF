@@ -1,6 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/matrix.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class Post extends StatefulWidget {
   Post({Key key, @required this.event}) : super(key: key);
@@ -84,7 +85,7 @@ class PostHeader extends StatelessWidget {
         ),
         Row(
           children: [
-            Text(event.originServerTs.toString(),
+            Text(timeago.format(event.originServerTs),
                 style: TextStyle(fontWeight: FontWeight.bold)),
             Padding(
               padding: const EdgeInsets.all(8.0),

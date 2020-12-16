@@ -30,6 +30,9 @@ dependencies:
   flutter_redux: 0.7.0
   provider: ^4.3.2+3
 
+  # time formating
+  timeago: ^2.0.29
+
   # storage
   moor: 3.4.0
   sqlite3_flutter_libs: ^0.3.0
