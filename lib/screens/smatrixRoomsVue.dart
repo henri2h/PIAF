@@ -26,21 +26,21 @@ class _SMatrixRoomsVueState extends State<SMatrixRoomsVue>
             itemCount: sclient.srooms.length,
             itemBuilder: (BuildContext context, int i) => ListTile(
               leading: CircleAvatar(
-                backgroundImage: sclient.srooms[i].avatar == null
+                backgroundImage: sclient.srooms[i].room.avatar == null
                     ? null
                     : NetworkImage(
-                        sclient.srooms[i].avatar.getThumbnail(
+                        sclient.srooms[i].room.avatar.getThumbnail(
                           client,
                           width: 64,
                           height: 64,
                         ),
                       ),
               ),
-              title: Text(sclient.srooms[i].displayname),
-              subtitle: Text(sclient.srooms[i].lastMessage),
+              title: Text(sclient.srooms[i].room.displayname),
+              subtitle: Text(sclient.srooms[i].room.lastMessage),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => ChatView(roomId: sclient.srooms[i].id),
+                  builder: (_) => ChatView(roomId: sclient.srooms[i].room.id),
                 ),
               ),
             ),

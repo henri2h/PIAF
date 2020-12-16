@@ -14,7 +14,6 @@ class Matrix extends StatefulWidget {
 
   /// Returns the (nearest) Client instance of your application.
   static MatrixState of(BuildContext context) {
-    print("State : ");
     var newState =
         (context.dependOnInheritedWidgetOfExactType<_InheritedMatrix>()).data;
     newState.context = context;
@@ -28,25 +27,11 @@ class MatrixState extends State<Matrix> {
   @override
   BuildContext context;
 
+  @deprecated
   Future<void> connect() async {
     client.onLoginStateChanged.stream.listen((LoginState loginState) {
       print("LoginState: ${loginState.toString()}");
     });
-
-    client.onEvent.stream.listen((EventUpdate eventUpdate) {
-      print("New event update!");
-    });
-
-    client.onRoomUpdate.stream.listen((RoomUpdate eventUpdate) {
-      print("New room update!");
-    });
-
-    try {
-      await client.checkHomeserver("");
-      await client.login(user: "", password: "");
-    } catch (e) {
-      print('No luck...');
-    }
   }
 
   @override
@@ -73,6 +58,7 @@ class MatrixState extends State<Matrix> {
         print("Logged in");
 
         sclient = SMatrix(client);
+        await sclient.init();
       } else {
         print("Not logged in");
 
@@ -88,8 +74,8 @@ class MatrixState extends State<Matrix> {
         });*/
       }
     } catch (e) {
-      print("error");
       print(e);
+      print("error");
     }
   }
 

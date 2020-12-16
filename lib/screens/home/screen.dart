@@ -1,14 +1,10 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/screens/chatsVue.dart';
-import 'package:minestrix/screens/home/feed/widget.dart';
 import 'package:minestrix/global/matrix.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
-import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -74,7 +70,7 @@ class _MyHomePageState extends State<HomeScreen> {
                 Expanded(
                   flex: 7,
                   child: StreamBuilder(
-                    stream: client.onSync.stream,
+                    stream: sclient.onTimelineUpdate.stream,
                     builder: (context, _) => ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: sclient.stimeline.length,
