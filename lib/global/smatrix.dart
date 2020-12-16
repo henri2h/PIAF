@@ -22,14 +22,13 @@ class SMatrix {
     client = cl;
     print("SMATRIX initialisation");
   }
+
   void init() async {
     // initialisation
     await loadSRooms();
+    await loadNewTimeline();
 
-    await loadSTimeline();
-    sortTimeline();
-
-    onEventUpdate ??= client.onEvent.stream.listen((EventUpdate eUp) {
+    onEventUpdate ??= client.onEvent.stream.listen((EventUpdate eUp) async {
       print("Event update");
       print(eUp.eventType);
       print(eUp.roomID);
@@ -37,14 +36,18 @@ class SMatrix {
       print(" ");
 
       if (eUp.eventType == "m.room.message") {
-        loadSTimeline();
-        sortTimeline();
-        onTimelineUpdate.add("Update");
+        await loadNewTimeline();
       }
     });
   }
 
-  void loadSRooms() async {
+  Future<void> loadNewTimeline() async {
+    await loadSTimeline();
+    sortTimeline();
+    onTimelineUpdate.add("Update");
+  }
+
+  Future<void> loadSRooms() async {
     srooms.clear(); // clear rooms
     for (var i = 0; i < client.rooms.length; i++) {
       SMatrixRoom rs = SMatrixRoom();
@@ -54,7 +57,7 @@ class SMatrix {
     }
   }
 
-  void loadSTimeline() async {
+  Future<void> loadSTimeline() async {
     stimeline.clear();
     for (SMatrixRoom sroom in srooms) {
       Timeline t = await sroom.room.getTimeline();
@@ -68,15 +71,12 @@ class SMatrix {
         }
       }
     }
-
-    onTimelineUpdate.add("Update");
   }
 
   void sortTimeline() {
     stimeline.sort((a, b) {
-      return a.originServerTs.compareTo(b.originServerTs);
+      return b.originServerTs.compareTo(a.originServerTs);
     });
-    onTimelineUpdate.add("Update");
   }
 
   void dispose() {
@@ -115,7 +115,7 @@ class SMatrixRoom {
         }
 
         if (user != null) {
-         /* if (room.powerLevels != null)
+          /* if (room.powerLevels != null)
             print(room.powerLevels[user.id]); // throw an error....
           else
             print("error reading power levels");
