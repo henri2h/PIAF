@@ -24,9 +24,9 @@ class SMatrix {
   }
   void init() async {
     // initialisation
-    loadSRooms();
+    await loadSRooms();
 
-    loadSTimeline();
+    await loadSTimeline();
     sortTimeline();
 
     onEventUpdate ??= client.onEvent.stream.listen((EventUpdate eUp) {
@@ -115,8 +115,11 @@ class SMatrixRoom {
         }
 
         if (user != null) {
-          print(room.powerLevels[user.id]);
-          print(room.ownPowerLevel);
+         /* if (room.powerLevels != null)
+            print(room.powerLevels[user.id]); // throw an error....
+          else
+            print("error reading power levels");
+          print(room.ownPowerLevel);*/
           _validSRoom = true;
           return true;
         }
@@ -126,9 +129,10 @@ class SMatrixRoom {
   }
 
   static User findUser(List<User> users, String userId) {
-    try {} catch (_) {
-      return users
-          .firstWhere((User u) => userId == u.id); // return null if no element
+    try {
+      return users.firstWhere((User u) => userId == u.id);
+    } catch (_) {
+      // return null if no element
 
     }
     return null;
