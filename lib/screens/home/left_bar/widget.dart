@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/screens/chatsVue.dart';
+import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/smatrixRoomsVue.dart';
 
@@ -25,7 +26,7 @@ class LeftBar extends StatelessWidget {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => SMatrixRoomsVue(),
+              builder: (_) => DebugView(),
             ),
           );
         },
