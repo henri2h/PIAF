@@ -41,9 +41,47 @@ add_executable(${BINARY_NAME}
   "my_application.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
+
+#set(CMAKE_VERBOSE_MAKEFILE on)
+
+
+## add Olm
+## set the output destination
+## create a custom target called build_scintilla that is part of ALL
+## and will run each time you type make 
+#add_custom_target(build_scintilla ALL 
+#                   COMMAND ${CMAKE_MAKE_PROGRAM}
+#                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/olm
+#                   COMMENT "Original scintilla makefile target")
+
+
+#set(OLM_DIR "${CMAKE_CURRENT_SOURCE_DIR}/olm")
+#add_subdirectory(${OLM_DIR})
+
+
+#
+## now create an imported static target
+#add_library(scintilla STATIC IMPORTED)
+
+#set(SCINTILLA_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/olm/build/libolm.so.1)
+
+## Import target "scintilla" for configuration ""
+#set_property(TARGET scintilla APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)
+
+#set_target_properties(scintilla PROPERTIES IMPORTED_LOCATION_NOCONFIG "${SCINTILLA_LIBRARY}")
+
+#
+## now you can use scintilla as if it were a regular cmake built target in your project
+#add_dependencies(scintilla build_scintilla)
+#
+#
+#find_package(Olm::Olm REQUIRED)
+
+
 apply_standard_settings(${BINARY_NAME})
-target_link_libraries(${BINARY_NAME} PRIVATE flutter)
-target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
+target_link_libraries(${BINARY_NAME}  flutter)
+target_link_libraries(${BINARY_NAME} PkgConfig::GTK)
+#target_link_libraries(${BINARY_NAME} SCINTILLA_LIBRARY)
 add_dependencies(${BINARY_NAME} flutter_assemble)
 # Only the install-generated bundle's copy of the executable will launch
 # correctly, since the resources must in the right relative locations. To avoid

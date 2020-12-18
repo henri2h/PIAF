@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:developer' as developer;
+import 'package:famedlysdk/encryption/utils/key_verification.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/widgets.dart';
+import 'package:minestrix/components/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';
+import 'package:minestrix/utils/platforms_info.dart';
 
 class Matrix extends StatefulWidget {
   final Widget child;
@@ -27,6 +31,8 @@ class MatrixState extends State<Matrix> {
   @override
   BuildContext context;
 
+  StreamSubscription<KeyVerification> onKeyVerificationRequestSub;
+
   @deprecated
   Future<void> connect() async {
     client.onLoginStateChanged.stream.listen((LoginState loginState) {
@@ -42,8 +48,53 @@ class MatrixState extends State<Matrix> {
   }
 
   void initMatrix() {
+    final Set verificationMethods = <KeyVerificationMethod>{
+      KeyVerificationMethod.numbers
+    };
+
+    if (PlatformInfos.isMobile) {
+      // emojis don't show in web somehow
+      verificationMethods.add(KeyVerificationMethod.emoji);
+    }
+    
     String clientName = "minestrix";
-    client = Client(clientName, databaseBuilder: getDatabase);
+    client = Client(clientName,
+    enableE2eeRecovery: true,
+        verificationMethods: verificationMethods, databaseBuilder: getDatabase);
+
+    onKeyVerificationRequestSub ??= client.onKeyVerificationRequest.stream
+        .listen((KeyVerification request) async {
+      print("KeyVerification");
+      print(request.deviceId);
+      print(request.isDone);
+
+       var hidPopup = false;
+      request.onUpdate = () {
+        if (!hidPopup &&
+            {KeyVerificationState.done, KeyVerificationState.error}
+                .contains(request.state)) {
+          Navigator.of(context, rootNavigator: true).pop('dialog');
+        }
+        hidPopup = true;
+      };
+
+
+      /*if (await showOkCancelAlertDialog(
+            context: context,
+            title: L10n.of(context).newVerificationRequest,
+            message: L10n.of(context).askVerificationRequest(request.userId),
+          ) ==
+          OkCancelResult.ok) {*/
+        request.onUpdate = null;
+        hidPopup = true;
+        await request.acceptVerification();
+        await KeyVerificationDialog(request: request).show(context);
+     /* } else {
+        request.onUpdate = null;
+        hidPopup = true;
+        await request.rejectVerification();
+      }*/
+    });
     print("Matrix state initialisated");
     _initWithStore();
   }
@@ -56,6 +107,9 @@ class MatrixState extends State<Matrix> {
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.logged) {
         print("Logged in");
+
+        print(client.deviceID);
+        print(client.deviceName);
 
         sclient = SMatrix(client);
         await sclient.init();
@@ -77,6 +131,12 @@ class MatrixState extends State<Matrix> {
       print(e);
       print("error");
     }
+  }
+
+  @override
+  void dispose() {
+    onKeyVerificationRequestSub?.cancel();
+    super.dispose();
   }
 
   @override

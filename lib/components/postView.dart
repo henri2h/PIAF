@@ -110,8 +110,35 @@ class PostContent extends StatelessWidget {
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(event.body),
+            PostDecoder(event: event),
           ]),
     );
+  }
+}
+
+class PostDecoder extends StatelessWidget {
+  const PostDecoder({
+    Key key,
+    @required this.event,
+  }) : super(key: key);
+
+  final Event event;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (event.type) {
+      case EventTypes.Message:
+      case EventTypes.Encrypted:
+        switch (event.messageType) {
+          case MessageTypes.Text:
+            return Text(event.body);
+          
+          default:
+            return Text("other message type");
+        }
+        break;
+      default:
+        return Text("Unknown event type");
+    }
   }
 }

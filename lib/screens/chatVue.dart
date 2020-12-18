@@ -1,4 +1,3 @@
-
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -17,6 +16,12 @@ class ChatView extends StatelessWidget {
         stream: client.onSync.stream,
         builder: (context, _) {
           final room = client.getRoomById(roomId);
+
+          print("Encryption :");
+          print(room.encrypted);
+          print(client.encryptionEnabled);
+          print(client.encryption.crossSigning.enabled);
+
           return Scaffold(
             appBar: AppBar(
               title: Text(room.displayname),

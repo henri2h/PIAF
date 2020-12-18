@@ -16,6 +16,13 @@ For help getting started with Flutter, view our
 samples, guidance on mobile development, and a full API reference.
 
 
+## Building
+
+### Installing OLM
+
+https://gitlab.com/famedly/libraries/dart-olm
+
+Warning : while https://gitlab.com/famedly/famedlysdk/-/issues/134 will not have been merged, we need the 1.2.0 version
 
 ## For linux platforms
 
