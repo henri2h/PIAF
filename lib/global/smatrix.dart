@@ -23,17 +23,17 @@ class SMatrix {
     print("SMATRIX initialisation");
   }
 
-  void init() async {
+  Future<void> init() async {
     // initialisation
     await loadSRooms();
     await loadNewTimeline();
 
     onEventUpdate ??= client.onEvent.stream.listen((EventUpdate eUp) async {
-      print("Event update");
+   /*   print("Event update");
       print(eUp.eventType);
       print(eUp.roomID);
       print(eUp.content);
-      print(" ");
+      print(" ");*/
 
       if (eUp.eventType == "m.room.message") {
         await loadNewTimeline();
@@ -64,10 +64,10 @@ class SMatrix {
 
       for (Event e in t.events) {
         // we take only room messages
-        if (e.type == "m.room.message") {
+        if (e.type == EventTypes.Message || e.type == EventTypes.Encrypted) {
           stimeline.add(e);
         } else {
-          print(e.type);
+         // print(e.type);
         }
       }
     }
