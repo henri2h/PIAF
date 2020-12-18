@@ -69,7 +69,7 @@ class LoginCardState extends State<LoginCard> {
     try {
       await client.checkHomeserver(_domainController.text);
       await client.login(
-          user: _usernameController.text, password: _passwordController.text);
+          user: _usernameController.text, password: _passwordController.text, initialDeviceDisplayName: client.clientName);
     } catch (error) {
       setState(() => _errorText = error.toString());
     }
