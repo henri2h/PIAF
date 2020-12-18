@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/friendsVue.dart';
+import 'package:minestrix/screens/settings.dart';
 import 'package:minestrix/screens/smatrixRoomsVue.dart';
 
 class LeftBar extends StatelessWidget {
@@ -19,7 +20,11 @@ class LeftBar extends StatelessWidget {
             ),
           );
       }),
-      LeftBarButton(name: "Settings", icon: Icons.settings, onPressed: () {}),
+      LeftBarButton(name: "Settings", icon: Icons.settings, onPressed: () { Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => SettingsView(),
+            ),
+          );}),
       LeftBarButton(
         name: "Debug",
         icon: Icons.bug_report,
