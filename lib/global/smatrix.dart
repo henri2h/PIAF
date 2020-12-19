@@ -6,11 +6,9 @@ import 'dart:async';
 
 import 'package:famedlysdk/famedlysdk.dart';
 
-class SMatrix {
+class SClient extends Client {
   static String SMatrixRoomPrefix = "smatrix_";
   static String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
-  Client client;
-  StreamSubscription onRoomUpdate;
   StreamSubscription onSyncUpdate;
   StreamSubscription onEventUpdate;
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
@@ -18,18 +16,21 @@ class SMatrix {
   List<SMatrixRoom> srooms = [];
   List<Event> stimeline = [];
 
-  SMatrix(Client cl) {
-    client = cl;
-    print("SMATRIX initialisation");
-  }
+  SClient(String clientName,
+      {bool enableE2eeRecovery,
+      Set verificationMethods,
+      Future<Database> Function(Client client) databaseBuilder})
+      : super(clientName,
+            verificationMethods: verificationMethods,
+            databaseBuilder: databaseBuilder);
 
-  Future<void> init() async {
+  Future<void> initSMatrix() async {
     // initialisation
     await loadSRooms();
     await loadNewTimeline();
 
-    onEventUpdate ??= client.onEvent.stream.listen((EventUpdate eUp) async {
-   /*   print("Event update");
+    onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
+      /*   print("Event update");
       print(eUp.eventType);
       print(eUp.roomID);
       print(eUp.content);
@@ -49,10 +50,10 @@ class SMatrix {
 
   Future<void> loadSRooms() async {
     srooms.clear(); // clear rooms
-    for (var i = 0; i < client.rooms.length; i++) {
+    for (var i = 0; i < rooms.length; i++) {
       SMatrixRoom rs = SMatrixRoom();
-      if (await rs.init(client
-          .rooms[i])) // if class is correctly initialisated, we can add it
+      if (await rs
+          .init(rooms[i])) // if class is correctly initialisated, we can add it
         srooms.add(rs);
     }
   }
@@ -61,15 +62,17 @@ class SMatrix {
     stimeline.clear();
     for (SMatrixRoom sroom in srooms) {
       Timeline t = await sroom.room.getTimeline();
+      final filteredEvents = t.events
+          .where((e) =>
+              !{RelationshipTypes.Edit, RelationshipTypes.Reaction}
+                  .contains(e.relationshipType) &&
+              {EventTypes.Message, EventTypes.Encrypted}.contains(e.type))
+          .toList();
 
-      for (Event e in t.events) {
-        // we take only room messages
-        if (e.type == EventTypes.Message || e.type == EventTypes.Encrypted) {
-          stimeline.add(e);
-        } else {
-         // print(e.type);
-        }
+      for (var i = 0; i < filteredEvents.length; i++) {
+        filteredEvents[i] = filteredEvents[i].getDisplayEvent(t);
       }
+      stimeline.addAll(filteredEvents);
     }
   }
 
@@ -79,15 +82,22 @@ class SMatrix {
     });
   }
 
-  void dispose() {
-    onRoomUpdate?.cancel();
+  @override
+  Future<void> dispose({bool closeDatabase = true}) async {
     onSyncUpdate?.cancel();
     onEventUpdate?.cancel();
     onTimelineUpdate?.close();
+    await super.dispose(closeDatabase: closeDatabase);
   }
 
   static String getUserIdFromRoomName(String name) {
     return name.replaceFirst(SMatrixRoomPrefix, "");
+  }
+
+  Future<Profile> getUserFromRoom(Room room) async {
+    String userId = getUserIdFromRoomName(room.name);
+    print(userId);
+    return getProfileFromUserId(userId);
   }
 }
 
@@ -102,7 +112,7 @@ class SMatrixRoom {
     try {
       if (isValidSRoom(r)) {
         room = r;
-        String userId = SMatrix.getUserIdFromRoomName(room.name);
+        String userId = SClient.getUserIdFromRoomName(room.name);
 
         // find local on local users
         List<User> users = room.getParticipants();
@@ -138,22 +148,11 @@ class SMatrixRoom {
     return null;
   }
 
-  static SMatrixRoom tryCast(dynamic x, {SMatrixRoom fallback}) {
-    try {
-      print("start");
-      return (x as SMatrixRoom);
-    } on TypeError catch (e) {
-      print('CastError when trying to cast $x to $SMatrixRoom!');
-      print(e);
-      return null;
-    }
-  }
-
   static bool isValidSRoom(Room room) {
-    if (room.name.startsWith(SMatrix.SMatrixRoomPrefix)) {
+    if (room.name.startsWith(SClient.SMatrixRoomPrefix)) {
       // check if is a use room, in which case, it's user must be admin
-      if (room.name.startsWith(SMatrix.SMatrixUserRoomPrefix)) {
-        String userid = SMatrix.getUserIdFromRoomName(room.name);
+      if (room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
+        String userid = SClient.getUserIdFromRoomName(room.name);
         print(userid);
         return true;
       }

@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 import 'package:famedlysdk/encryption/utils/key_verification.dart';
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -26,16 +26,16 @@ class Matrix extends StatefulWidget {
 }
 
 class MatrixState extends State<Matrix> {
-  Client client;
-  SMatrix sclient;
+  SClient sclient;
   @override
   BuildContext context;
 
   StreamSubscription<KeyVerification> onKeyVerificationRequestSub;
+  StreamSubscription<EventUpdate> onEvent;
 
   @deprecated
   Future<void> connect() async {
-    client.onLoginStateChanged.stream.listen((LoginState loginState) {
+    sclient.onLoginStateChanged.stream.listen((LoginState loginState) {
       print("LoginState: ${loginState.toString()}");
     });
   }
@@ -56,19 +56,20 @@ class MatrixState extends State<Matrix> {
       // emojis don't show in web somehow
       verificationMethods.add(KeyVerificationMethod.emoji);
     }
-    
-    String clientName = "minestrix";
-    client = Client(clientName,
-    enableE2eeRecovery: true,
-        verificationMethods: verificationMethods, databaseBuilder: getDatabase);
 
-    onKeyVerificationRequestSub ??= client.onKeyVerificationRequest.stream
+    String clientName = "minestrix";
+    sclient = SClient(clientName,
+        enableE2eeRecovery: true,
+        verificationMethods: verificationMethods,
+        databaseBuilder: getDatabase);
+
+    onKeyVerificationRequestSub ??= sclient.onKeyVerificationRequest.stream
         .listen((KeyVerification request) async {
       print("KeyVerification");
       print(request.deviceId);
       print(request.isDone);
 
-       var hidPopup = false;
+      var hidPopup = false;
       request.onUpdate = () {
         if (!hidPopup &&
             {KeyVerificationState.done, KeyVerificationState.error}
@@ -78,41 +79,68 @@ class MatrixState extends State<Matrix> {
         hidPopup = true;
       };
 
-
       /*if (await showOkCancelAlertDialog(
             context: context,
             title: L10n.of(context).newVerificationRequest,
             message: L10n.of(context).askVerificationRequest(request.userId),
           ) ==
           OkCancelResult.ok) {*/
-        request.onUpdate = null;
-        hidPopup = true;
-        await request.acceptVerification();
-        await KeyVerificationDialog(request: request).show(context);
-     /* } else {
+      request.onUpdate = null;
+      hidPopup = true;
+      await request.acceptVerification();
+      await KeyVerificationDialog(request: request).show(context);
+      /* } else {
         request.onUpdate = null;
         hidPopup = true;
         await request.rejectVerification();
       }*/
     });
+    onEvent ??= sclient.onEvent.stream
+        .where((event) =>
+            [EventTypes.Message, EventTypes.Encrypted]
+                .contains(event.eventType) &&
+            event.content['sender'] != sclient.userID)
+        .listen((EventUpdate eventUpdate) async {
+      // we should react differently depending on wether the event is a smatrix one or not...
+      Room room = sclient.getRoomById(eventUpdate.roomID);
+      Event event = Event.fromJson(eventUpdate.content, room);
+
+      // check if it is a message
+      if (SMatrixRoom.isValidSRoom(room)) {
+         Profile profile = await sclient.getUserFromRoom(room);
+        Flushbar(
+          title: "New post from " + profile.displayname,
+          message: event.body,
+          duration: Duration(seconds: 3),
+        )..show(context);
+       
+      } else {
+         Flushbar(
+          title: room.name,
+          message: event.body,
+          duration: Duration(seconds: 3),
+        )..show(context);
+       
+      }
+    });
+
     print("Matrix state initialisated");
     _initWithStore();
   }
 
   void _initWithStore() async {
-    var initLoginState = client.onLoginStateChanged.stream.first;
+    var initLoginState = sclient.onLoginStateChanged.stream.first;
     try {
-      client.init();
+      sclient.init();
 
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.logged) {
         print("Logged in");
 
-        print(client.deviceID);
-        print(client.deviceName);
+        print(sclient.deviceID);
+        print(sclient.deviceName);
 
-        sclient = SMatrix(client);
-        await sclient.init();
+        await sclient.initSMatrix();
       } else {
         print("Not logged in");
 
@@ -136,6 +164,7 @@ class MatrixState extends State<Matrix> {
   @override
   void dispose() {
     onKeyVerificationRequestSub?.cancel();
+    onEvent?.cancel();
     super.dispose();
   }
 
@@ -154,11 +183,11 @@ class _InheritedMatrix extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_InheritedMatrix old) {
-    var update = old.data.client.accessToken != data.client.accessToken ||
-        old.data.client.userID != data.client.userID ||
-        old.data.client.deviceID != data.client.deviceID ||
-        old.data.client.deviceName != data.client.deviceName ||
-        old.data.client.homeserver != data.client.homeserver;
+    var update = old.data.sclient.accessToken != data.sclient.accessToken ||
+        old.data.sclient.userID != data.sclient.userID ||
+        old.data.sclient.deviceID != data.sclient.deviceID ||
+        old.data.sclient.deviceName != data.sclient.deviceName ||
+        old.data.sclient.homeserver != data.sclient.homeserver;
     return update;
   }
 }
