@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/screens/chatsVue.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
@@ -35,7 +35,6 @@ class _MyHomePageState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).client;
     final sclient = Matrix.of(context).sclient;
 
     // This method is rerun every time setState is called, for instance as done

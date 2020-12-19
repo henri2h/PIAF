@@ -1,6 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class RightBar extends StatefulWidget {
@@ -12,10 +12,9 @@ class _RightBarState extends State<RightBar>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).client;
     final sclient = Matrix.of(context).sclient;
     return StreamBuilder(
-        stream: client.onSync.stream,
+        stream: sclient.onSync.stream,
         builder: (context, _) => ListView.builder(
             itemCount: sclient.srooms.length,
             itemBuilder: (BuildContext context, int i) =>
@@ -31,7 +30,7 @@ class ContactView extends StatelessWidget {
   final SMatrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    final Client client = Matrix.of(context).client;
+    final SClient client = Matrix.of(context).sclient;
 
       return SizedBox(
           child: Card(

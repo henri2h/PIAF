@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/screens/home/screen.dart';
 import 'package:minestrix/screens/login.dart';
-import 'package:provider/provider.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 
 class Minetrix extends StatelessWidget {
   @override
@@ -15,7 +14,7 @@ class Minetrix extends StatelessWidget {
           title: 'MinesTrix client',
           debugShowCheckedModeBanner: false,
           home: StreamBuilder<LoginState>(
-            stream: Matrix.of(context).client.onLoginStateChanged.stream,
+            stream: Matrix.of(context).sclient.onLoginStateChanged.stream,
             builder: (BuildContext context, snapshot) {
               print("hasData : " + snapshot.hasData.toString());
               print(context);

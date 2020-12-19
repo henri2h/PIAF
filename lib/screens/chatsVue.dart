@@ -1,8 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatVue.dart';
-import 'package:provider/provider.dart';
 
 class ChatsVue extends StatefulWidget {
   @override
@@ -13,7 +12,7 @@ class _ChatsVueState extends State<ChatsVue>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).client;
+    final client = Matrix.of(context).sclient;
     return Scaffold(
       appBar: AppBar(
           title: Text("Hello"),

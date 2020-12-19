@@ -1,7 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 
 class ChatView extends StatelessWidget {
   final String roomId;
@@ -10,7 +10,7 @@ class ChatView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).client;
+    final client = Matrix.of(context).sclient;
     final TextEditingController _sendController = TextEditingController();
     return StreamBuilder<Object>(
         stream: client.onSync.stream,

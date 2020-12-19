@@ -1,8 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatVue.dart';
-import 'package:provider/provider.dart';
 
 class SMatrixRoomsVue extends StatefulWidget {
   @override
@@ -14,14 +13,13 @@ class _SMatrixRoomsVueState extends State<SMatrixRoomsVue>
   @override
   Widget build(BuildContext context) {
     final sclient = Matrix.of(context).sclient;
-    final client = Matrix.of(context).client;
     return Scaffold(
       appBar: AppBar(
           title: Text("Hello"),
           actions: [IconButton(icon: Icon(Icons.add), onPressed: () {})]),
       body: Container(
         child: StreamBuilder(
-          stream: client.onSync.stream,
+          stream: sclient.onSync.stream,
           builder: (context, _) => ListView.builder(
             itemCount: sclient.srooms.length,
             itemBuilder: (BuildContext context, int i) => ListTile(
@@ -30,7 +28,7 @@ class _SMatrixRoomsVueState extends State<SMatrixRoomsVue>
                     ? null
                     : NetworkImage(
                         sclient.srooms[i].room.avatar.getThumbnail(
-                          client,
+                          sclient,
                           width: 64,
                           height: 64,
                         ),

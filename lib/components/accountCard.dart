@@ -1,7 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
-import 'package:famedlysdk/src/room.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class AccountCard extends StatelessWidget {
@@ -9,7 +8,7 @@ class AccountCard extends StatelessWidget {
   final SMatrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    final Client client = Matrix.of(context).client;
+    final SClient sclient = Matrix.of(context).sclient;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -25,7 +24,7 @@ class AccountCard extends StatelessWidget {
                   ? null
                   : NetworkImage(
                       sroom.user.avatarUrl.getThumbnail(
-                        client,
+                        sclient,
                         width: 64,
                         height: 64,
                       ),

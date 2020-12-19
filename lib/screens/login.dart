@@ -1,8 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/screen.dart';
-import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({Key key, this.title}) : super(key: key);
@@ -78,7 +77,7 @@ class LoginCardState extends State<LoginCard> {
 
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).client;
+    final client = Matrix.of(context).sclient;
     return SizedBox(
         child: Container(
             child: Padding(
