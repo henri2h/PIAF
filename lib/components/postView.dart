@@ -1,10 +1,12 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/matrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/global/smatrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class Post extends StatefulWidget {
-  Post({Key key, @required this.event}) : super(key: key);
+  Post({Key key, @required this.event})
+      : super(key: key);
   final Event event;
 
   @override
@@ -14,6 +16,7 @@ class Post extends StatefulWidget {
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
+    Event e = widget.event;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Material(
@@ -27,12 +30,13 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                PostHeader(event: widget.event),
+                PostHeader(event: e),
+
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: PostContent(widget.event),
+                  child: PostContent(e),
                 ),
-                PostFooter(event: widget.event),
+                PostFooter(event: e),
               ],
             )),
       ),
@@ -46,7 +50,10 @@ class PostFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-        children: <Widget>[FlatButton(child: Text("react"), onPressed: () {})]);
+        children: <Widget>[FlatButton(child: Text("react"), onPressed: () {}),
+        if(event.canRedact)FlatButton(child: Text("edit"), onPressed: () {})
+        
+        ]);
   }
 }
 
@@ -55,7 +62,7 @@ class PostHeader extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
-    final Client client = Matrix.of(context).client;
+    final SClient client = Matrix.of(context).sclient;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -132,7 +139,7 @@ class PostDecoder extends StatelessWidget {
         switch (event.messageType) {
           case MessageTypes.Text:
             return Text(event.body);
-          
+
           default:
             return Text("other message type");
         }
