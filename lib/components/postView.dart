@@ -1,12 +1,12 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/matrix/mImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class Post extends StatefulWidget {
-  Post({Key key, @required this.event})
-      : super(key: key);
+  Post({Key key, @required this.event}) : super(key: key);
   final Event event;
 
   @override
@@ -31,7 +31,6 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 PostHeader(event: e),
-
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: PostContent(e),
@@ -49,11 +48,10 @@ class PostFooter extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
-    return Row(
-        children: <Widget>[FlatButton(child: Text("react"), onPressed: () {}),
-        if(event.canRedact)FlatButton(child: Text("edit"), onPressed: () {})
-        
-        ]);
+    return Row(children: <Widget>[
+      FlatButton(child: Text("react"), onPressed: () {}),
+      if (event.canRedact) FlatButton(child: Text("edit"), onPressed: () {})
+    ]);
   }
 }
 
@@ -139,6 +137,8 @@ class PostDecoder extends StatelessWidget {
         switch (event.messageType) {
           case MessageTypes.Text:
             return Text(event.body);
+          case MessageTypes.Image:
+            return MImage(event: event);
 
           default:
             return Text("other message type");
