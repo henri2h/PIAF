@@ -92,10 +92,11 @@ class PostHeader extends StatelessWidget {
           children: [
             Text(timeago.format(event.originServerTs),
                 style: TextStyle(fontWeight: FontWeight.bold)),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(Icons.enhanced_encryption),
-            ),
+            if (event.type == EventTypes.Encrypted)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(Icons.enhanced_encryption),
+              ),
           ],
         )
       ],
