@@ -29,6 +29,8 @@ dependencies:
   redux: ^4.0.0
   flutter_redux: 0.7.0
   provider: ^4.3.2+3
+  
+  flutter_typeahead: ^1.9.1
 
   # time formating
   timeago: ^2.0.29

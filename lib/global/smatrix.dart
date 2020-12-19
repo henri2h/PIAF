@@ -24,6 +24,20 @@ class SClient extends Client {
             verificationMethods: verificationMethods,
             databaseBuilder: databaseBuilder);
 
+  Future<List<User>> getSfriends() async {
+    if (userRoom != null && userRoom.room != null) {
+      if (userRoom.room.participantListComplete) {
+        return userRoom.room.getParticipants();
+      } else {
+        return await userRoom.room.requestParticipants();
+      }
+    }
+    return [];
+  }
+
+  SMatrixRoom userRoom;
+  bool get userRoomCreated => userRoom != null;
+
   Future<void> initSMatrix() async {
     // initialisation
     await loadSRooms();
@@ -50,11 +64,19 @@ class SClient extends Client {
 
   Future<void> loadSRooms() async {
     srooms.clear(); // clear rooms
+
     for (var i = 0; i < rooms.length; i++) {
       SMatrixRoom rs = SMatrixRoom();
-      if (await rs
-          .init(rooms[i])) // if class is correctly initialisated, we can add it
+      if (await rs.init(rooms[i])) {
+        // if class is correctly initialisated, we can add it
+        // if we are here, it means that we have a valid smatrix room
         srooms.add(rs);
+        if (userID == rs.user.id) {
+          userRoom = rs; // we have found our user smatrix room
+          // this means that the client has been initialisated
+          // we can load the friendsVue
+        }
+      }
     }
   }
 
@@ -98,6 +120,14 @@ class SClient extends Client {
     String userId = getUserIdFromRoomName(room.name);
     print(userId);
     return getProfileFromUserId(userId);
+  }
+
+  Future<bool> addFriend(String userId) async {
+    if (userRoom != null && userRoom.room != null) {
+      await userRoom.room.invite(userId);
+      return true;
+    }
+    return false; // we haven't been able to add this user to our friend list
   }
 }
 
