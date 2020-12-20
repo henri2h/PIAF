@@ -56,10 +56,17 @@ class SClient extends Client {
     });
   }
 
+  bool timelineLock = false;
   Future<void> loadNewTimeline() async {
-    await loadSTimeline();
-    sortTimeline();
-    onTimelineUpdate.add("Update");
+    if (timelineLock != true) {
+      timelineLock = false;
+      await loadSTimeline();
+      sortTimeline();
+      onTimelineUpdate.add("Update");
+      timelineLock = false;
+    } else {
+      print("Locked...");
+    }
   }
 
   Future<void> loadSRooms() async {
