@@ -9,16 +9,60 @@ class FriendsVue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
+    List<User> users = sclient.userRoom.room.getParticipants();
+    List<User> friendRequest =
+        users.where((User u) => u.membership == Membership.invite).toList();
+      
     return Scaffold(
       appBar: AppBar(title: Text("Friends")),
       body: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text("Users",
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
           ),
+          for (User u in users.where((User u) => u.membership == Membership.join))
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(u.displayName),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(u.id),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(u.membership.toString()),
+                ),
+              ],
+            ),
+
+            if(friendRequest.isNotEmpty) Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Friend requests", style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600)),
+            ),
+             for (User u in friendRequest)
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(u.displayName),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(u.id),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(u.membership.toString()),
+                ),
+              ],
+            ),
           TypeAheadField(
             hideOnEmpty: true,
             textFieldConfiguration: TextFieldConfiguration(
