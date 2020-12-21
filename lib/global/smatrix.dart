@@ -15,6 +15,7 @@ class SClient extends Client {
 
   List<SMatrixRoom> srooms = [];
   List<Event> stimeline = [];
+  Map<String, Set<Event>> sreactions = Map<String, Set<Event>>();
 
   SClient(String clientName,
       {bool enableE2eeRecovery,
@@ -69,6 +70,7 @@ class SClient extends Client {
     }
   }
 
+  // load rooms
   Future<void> loadSRooms() async {
     srooms.clear(); // clear rooms
 
@@ -88,7 +90,10 @@ class SClient extends Client {
   }
 
   Future<void> loadSTimeline() async {
+    // init
     stimeline.clear();
+    sreactions.clear();
+
     for (SMatrixRoom sroom in srooms) {
       Timeline t = await sroom.room.getTimeline();
       final filteredEvents = t.events
@@ -100,6 +105,11 @@ class SClient extends Client {
 
       for (var i = 0; i < filteredEvents.length; i++) {
         filteredEvents[i] = filteredEvents[i].getDisplayEvent(t);
+        // get reactions
+        Set<Event> reactions =
+            filteredEvents[i].aggregatedEvents(t, "m.annotation");
+        if (reactions.isNotEmpty)
+          sreactions[filteredEvents[i].eventId] = reactions;
       }
       stimeline.addAll(filteredEvents);
     }

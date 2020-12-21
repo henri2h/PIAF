@@ -17,6 +17,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Event e = widget.event;
+    SClient sclient = Matrix.of(context).sclient;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Material(
@@ -35,10 +36,37 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                   padding: const EdgeInsets.all(8.0),
                   child: PostContent(e),
                 ),
+                if (sclient.sreactions.containsKey(e.eventId))
+                  PostReactions(event: e),
                 PostFooter(event: e),
               ],
             )),
       ),
+    );
+  }
+}
+
+class PostReactions extends StatelessWidget {
+  const PostReactions({
+    Key key,@required this.event
+  }) : super(key: key);
+  final Event event;
+  @override
+  Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
+    Set<Event> sr = sclient.sreactions[event.eventId];
+    if (sclient.sreactions == null) {
+      return Text("error..");
+    }
+
+    return Row(
+      children: [
+        for(Event revent in sr) Row(
+          children: [
+            Text(revent.content['m.relates_to']['key'])
+          ],
+        ),
+      ],
     );
   }
 }
