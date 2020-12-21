@@ -1,7 +1,7 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/screen.dart';
+import 'package:minestrix/global/smatrix.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({Key key, this.title}) : super(key: key);
@@ -60,7 +60,8 @@ class LoginCardState extends State<LoginCard> {
   String _errorText;
   bool _isLoading = false;
 
-  void _loginAction(Client client) async {
+  void _loginAction(SClient client) async {
+    if(mounted)
     setState(() {
       _isLoading = true;
       _errorText = null;
@@ -68,16 +69,20 @@ class LoginCardState extends State<LoginCard> {
     try {
       await client.checkHomeserver(_domainController.text);
       await client.login(
-          user: _usernameController.text, password: _passwordController.text, initialDeviceDisplayName: client.clientName);
+          user: _usernameController.text,
+          password: _passwordController.text,
+          initialDeviceDisplayName: client.clientName);
     } catch (error) {
+      if(mounted)
       setState(() => _errorText = error.toString());
     }
+    if(mounted)
     setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).sclient;
+    SClient client = Matrix.of(context).sclient;
     return SizedBox(
         child: Container(
             child: Padding(
@@ -91,29 +96,22 @@ class LoginCardState extends State<LoginCard> {
                       name: "password",
                       icon: Icons.lock_outline,
                       tController: _passwordController,
-                      obscureText:true),
+                      obscureText: true),
                   LoginInput(
                       name: "server url",
                       icon: Icons.language,
                       tController: _domainController,
                       errorText: _errorText),
-                  RaisedButton(
-                      child: _isLoading
-                          ? LinearProgressIndicator()
-                          : Text('Login'),
+                  if (_isLoading) Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: LinearProgressIndicator(),
+                  ),
+                  FloatingActionButton.extended(
+                      icon: const Icon(Icons.login),
+                      label: Text('Login'),
                       onPressed:
                           _isLoading ? null : () => _loginAction(client)),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: FloatingActionButton.extended(
-                      label: Text("Login"),
-                      onPressed: () {
-                        changePage(context);
-                      },
-                      icon: const Icon(Icons.login),
-                    ),
-                  ),
-                ]))));
+                 ]))));
   }
 
   void changePage(BuildContext context) {
@@ -131,7 +129,12 @@ class LoginCardState extends State<LoginCard> {
 
 class LoginInput extends StatelessWidget {
   const LoginInput(
-      {Key key, this.name, this.icon, this.tController, this.errorText, this.obscureText = false})
+      {Key key,
+      this.name,
+      this.icon,
+      this.tController,
+      this.errorText,
+      this.obscureText = false})
       : super(key: key);
   final String name;
   final IconData icon;
