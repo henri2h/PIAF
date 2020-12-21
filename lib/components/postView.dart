@@ -47,9 +47,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
 }
 
 class PostReactions extends StatelessWidget {
-  const PostReactions({
-    Key key,@required this.event
-  }) : super(key: key);
+  const PostReactions({Key key, @required this.event}) : super(key: key);
   final Event event;
   @override
   Widget build(BuildContext context) {
@@ -61,11 +59,10 @@ class PostReactions extends StatelessWidget {
 
     return Row(
       children: [
-        for(Event revent in sr) Row(
-          children: [
-            Text(revent.content['m.relates_to']['key'])
-          ],
-        ),
+        for (Event revent in sr)
+          Row(
+            children: [Text(revent.content['m.relates_to']['key'])],
+          ),
       ],
     );
   }
@@ -168,9 +165,11 @@ class PostDecoder extends StatelessWidget {
             return Text(event.body);
           case MessageTypes.Image:
             return MImage(event: event);
+          case MessageTypes.Video:
+            return Text(event.body);
 
           default:
-            return Text("other message type");
+            return Text("other message type : " + event.messageType);
         }
         break;
       default:
