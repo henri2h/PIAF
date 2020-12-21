@@ -9,61 +9,66 @@ class LeftBar extends StatelessWidget {
   const LeftBar({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-        Widget>[
-      LeftBarButton(name: "Feed", icon: Icons.home, onPressed: () {}),
-      LeftBarButton(name: "My account", icon: Icons.person, onPressed: () {}),
-      LeftBarButton(name: "Friends", icon: Icons.people, onPressed: () {
-        Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => FriendsVue(),
-            ),
-          );
-      }),
-      LeftBarButton(name: "Settings", icon: Icons.settings, onPressed: () { Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => SettingsView(),
-            ),
-          );}),
-      LeftBarButton(
-        name: "Debug",
-        icon: Icons.bug_report,
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => DebugView(),
-            ),
-          );
-        },
-      ),
-      LeftBarButton(
-        name: "SMatrix rooms",
-        icon: Icons.lock,
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => SMatrixRoomsVue(),
-            ),
-          );
-        },
-      ),
-      LeftBarButton(
-        name: "Chat",
-        icon: Icons.message,
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => ChatsVue(),
-            ),
-          );
-        },
-      ),
-      LeftBarButton(
-        name: "Logout",
-        icon: Icons.logout,
-        onPressed: () {},
-      ),
-    ]);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          LeftBarButton(name: "Feed", icon: Icons.home, onPressed: () {}),
+          LeftBarButton(
+              name: "My account", icon: Icons.person, onPressed: () {}),
+          LeftBarButton(
+              name: "Friends",
+              icon: Icons.people,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => FriendsVue(),
+                  ),
+                );
+              }),
+          LeftBarButton(
+              name: "Settings",
+              icon: Icons.settings,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => SettingsView(),
+                  ),
+                );
+              }),
+          LeftBarButton(
+            name: "Debug",
+            icon: Icons.bug_report,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DebugView(),
+                ),
+              );
+            },
+          ),
+          LeftBarButton(
+            name: "SMatrix rooms",
+            icon: Icons.lock,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => SMatrixRoomsVue(),
+                ),
+              );
+            },
+          ),
+          LeftBarButton(
+            name: "Chat",
+            icon: Icons.message,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ChatsVue(),
+                ),
+              );
+            },
+          ),
+        ]);
   }
 }
 
