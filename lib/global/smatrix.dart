@@ -87,6 +87,18 @@ class SClient extends Client {
         }
       }
     }
+
+    // check if user room has been created
+    if (userRoom == null) {
+      String roomID = await createRoom(
+          name: SMatrixRoomPrefix + userID,
+          topic: "Mines'Trix room name",
+          visibility: Visibility.private);
+      SMatrixRoom sroom = SMatrixRoom();
+
+      sroom.init(getRoomById(roomID));
+      userRoom = sroom;
+    }
   }
 
   Future<void> loadSTimeline() async {
