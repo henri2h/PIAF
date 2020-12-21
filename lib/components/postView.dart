@@ -1,5 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:minestrix/components/matrix/mImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -162,7 +163,7 @@ class PostDecoder extends StatelessWidget {
       case EventTypes.Encrypted:
         switch (event.messageType) {
           case MessageTypes.Text:
-            return Text(event.body);
+            return MarkdownBody(data: event.body); // markdown support
           case MessageTypes.Image:
             return MImage(event: event);
           case MessageTypes.Video:
