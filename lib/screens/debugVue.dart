@@ -10,10 +10,17 @@ class DebugView extends StatefulWidget {
 
 class _DebugViewState extends State<DebugView> {
   Future<void> loadElements(BuildContext context, SMatrixRoom sroom) async {
+    setState(() {
+      progressing = true;
+    });
     Timeline t = await sroom.room.getTimeline();
     await t.requestHistory();
     await sclient.loadNewTimeline();
     await getTimelineLength();
+
+    setState(() {
+      progressing = false;
+    });
   }
 
   Future<void> getTimelineLength() async {
@@ -34,6 +41,7 @@ class _DebugViewState extends State<DebugView> {
   SClient sclient;
   bool init = false;
 
+  bool progressing = false;
   @override
   Widget build(BuildContext context) {
     sclient = Matrix.of(context).sclient;
@@ -79,6 +87,14 @@ class _DebugViewState extends State<DebugView> {
                           })
                     ],
                   ),
+              if (progressing) CircularProgressIndicator(),
+              RaisedButton(
+                  child: Text("Load all more"),
+                  onPressed: () async {
+                    for (SMatrixRoom room in srooms) {
+                      await loadElements(context, room);
+                    }
+                  })
             ],
           ),
         ));
