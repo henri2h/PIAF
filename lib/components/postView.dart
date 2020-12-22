@@ -136,26 +136,30 @@ class PostFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-      FlatButton(child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        
-        children: [
-          Icon(Icons.insert_emoticon, size:15),
-          SizedBox(width:2),
-          Text("React"),
-        ],
-      ), onPressed: () {}),
-      if (event.canRedact) FlatButton(child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(Icons.edit, size:15),
-          SizedBox(width:2),
-          Text("edit"),
-        ],
-      ), onPressed: () {})
-    ]);
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          FlatButton(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(Icons.insert_emoticon, size: 15),
+                  SizedBox(width: 2),
+                  Text("React"),
+                ],
+              ),
+              onPressed: () {}),
+          if (event.canRedact)
+            FlatButton(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.edit, size: 15),
+                    SizedBox(width: 2),
+                    Text("edit"),
+                  ],
+                ),
+                onPressed: () {})
+        ]);
   }
 }
 
@@ -168,25 +172,35 @@ class PostHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(children: <Widget>[
-          CircleAvatar(
-            backgroundImage: event.sender.avatarUrl == null
-                ? null
-                : NetworkImage(
-                    event.sender.avatarUrl.getThumbnail(
-                      client,
-                      width: 64,
-                      height: 64,
-                    ),
-                  ),
+        Flexible(
+                  child: Row(
+            children: [
+              CircleAvatar(
+                backgroundImage: event.sender.avatarUrl == null
+                    ? null
+                    : NetworkImage(
+                        event.sender.avatarUrl.getThumbnail(
+                          client,
+                          width: 64,
+                          height: 64,
+                        ),
+                      ),
+              ),
+              SizedBox(width:10),
+              Flexible(
+                child: Wrap(children: <Widget>[
+                  Text(event.sender.displayName,
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(" to ", style: TextStyle(fontSize: 20)),
+                  Text(event.room.name,
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                ]),
+              ),
+            ],
           ),
-          SizedBox(width: 10),
-          Text(event.sender.displayName,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          Text(" to ", style: TextStyle(fontSize: 20)),
-          Text(event.room.name,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        ]),
+        ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(

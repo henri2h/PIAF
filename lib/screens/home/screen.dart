@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postView.dart';
+import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
@@ -25,14 +26,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<HomeScreen> {
-  void _incrementCounter() async {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChatsVue(),
-        ));
-  }
-
   @override
   Widget build(BuildContext context) {
     final sclient = Matrix.of(context).sclient;
@@ -43,12 +36,36 @@ class _MyHomePageState extends State<HomeScreen> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      /*appBar: AppBar(
+    return
+        /*appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text("Mines'Trix"),
       ),*/
+        LayoutBuilder(builder: (context, constraints) {
+      if (constraints.maxWidth > 1200)
+        return WideContainer(sclient: sclient);
+      else if (constraints.maxWidth > 900)
+        return TabletContainer(sclient: sclient);
+      else
+        return MobileContainer(sclient: sclient);
+    });
+  }
+}
+
+class WideContainer extends StatelessWidget {
+  const WideContainer({
+    Key key,
+    @required this.sclient,
+  }) : super(key: key);
+
+  final SClient sclient;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {}, tooltip: 'Write post', child: Icon(Icons.edit)),
       body: Container(
         child: Column(
           children: [
@@ -73,7 +90,8 @@ class _MyHomePageState extends State<HomeScreen> {
                     builder: (context, _) => ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: sclient.stimeline.length,
-                        itemBuilder: (BuildContext context, int i) => Post(event: sclient.stimeline[i])),
+                        itemBuilder: (BuildContext context, int i) =>
+                            Post(event: sclient.stimeline[i])),
                   ),
                 ),
                 Expanded(
@@ -96,10 +114,145 @@ class _MyHomePageState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class TabletContainer extends StatelessWidget {
+  const TabletContainer({
+    Key key,
+    @required this.sclient,
+  }) : super(key: key);
+
+  final SClient sclient;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Write post',
-        child: Icon(Icons.edit)
+          onPressed: () {}, tooltip: 'Write post', child: Icon(Icons.edit)),
+      body: Container(
+        child: Column(
+          children: [
+            NavBar(),
+            //PostEditor(),
+            Expanded(
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(
+                  flex: 9,
+                  child: StreamBuilder(
+                    stream: sclient.onTimelineUpdate.stream,
+                    builder: (context, _) => ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: sclient.stimeline.length,
+                        itemBuilder: (BuildContext context, int i) =>
+                            Post(event: sclient.stimeline[i])),
+                  ),
+                ),
+                Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Text("Contacts",
+                                style: TextStyle(fontSize: 30)),
+                          ),
+                          Expanded(child: RightBar()),
+                        ],
+                      ),
+                    )),
+              ]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MobileContainer extends StatelessWidget {
+  const MobileContainer({
+    Key key,
+    @required this.sclient,
+  }) : super(key: key);
+
+  final SClient sclient;
+  final int selectedIndex = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        child: Column(
+          children: [
+            //PostEditor(),
+            Expanded(
+              child: StreamBuilder(
+                stream: sclient.onTimelineUpdate.stream,
+                builder: (context, _) => ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: sclient.stimeline.length,
+                    itemBuilder: (BuildContext context, int i) =>
+                        Post(event: sclient.stimeline[i])),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        tooltip: "New post",
+        child: Container(
+          margin: EdgeInsets.all(15.0),
+          child: Icon(Icons.add),
+        ),
+        elevation: 4.0,
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Container(
+          margin: EdgeInsets.only(left: 12.0, right: 12.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                //update the bottom app bar view each time an item is clicked
+                onPressed: () {},
+                icon: Icon(
+                  Icons.home,
+                ),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.person,
+                ),
+              ),
+              SizedBox(
+                width: 50.0,
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.people,
+                ),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.settings,
+                ),
+              ),
+            ],
+          ),
+        ),
+        //to add a space between the FAB and BottomAppBar
+        shape: CircularNotchedRectangle(),
       ),
     );
   }
