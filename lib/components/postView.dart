@@ -135,9 +135,26 @@ class PostFooter extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
-    return Row(children: <Widget>[
-      FlatButton(child: Text("react"), onPressed: () {}),
-      if (event.canRedact) FlatButton(child: Text("edit"), onPressed: () {})
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+      FlatButton(child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        
+        children: [
+          Icon(Icons.insert_emoticon, size:15),
+          SizedBox(width:2),
+          Text("React"),
+        ],
+      ), onPressed: () {}),
+      if (event.canRedact) FlatButton(child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(Icons.edit, size:15),
+          SizedBox(width:2),
+          Text("edit"),
+        ],
+      ), onPressed: () {})
     ]);
   }
 }
