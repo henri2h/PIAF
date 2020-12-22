@@ -15,7 +15,10 @@ class SClient extends Client {
 
   List<SMatrixRoom> srooms = [];
   List<Event> stimeline = [];
+
+  // create a container for aggregated events (could not access Timeline in postView.dart)
   Map<String, Set<Event>> sreactions = Map<String, Set<Event>>();
+  Map<String, Set<Event>> sreplies = Map<String, Set<Event>>();
 
   SClient(String clientName,
       {bool enableE2eeRecovery,
@@ -110,8 +113,11 @@ class SClient extends Client {
       Timeline t = await sroom.room.getTimeline();
       final filteredEvents = t.events
           .where((e) =>
-              !{RelationshipTypes.Edit, RelationshipTypes.Reaction}
-                  .contains(e.relationshipType) &&
+              !{
+                RelationshipTypes.Edit,
+                RelationshipTypes.Reaction,
+                RelationshipTypes.Reply
+              }.contains(e.relationshipType) &&
               {EventTypes.Message, EventTypes.Encrypted}.contains(e.type))
           .toList();
 
@@ -119,10 +125,19 @@ class SClient extends Client {
         filteredEvents[i] = filteredEvents[i].getDisplayEvent(t);
         // get reactions
         Set<Event> reactions =
-            filteredEvents[i].aggregatedEvents(t, "m.annotation");
+            filteredEvents[i].aggregatedEvents(t, RelationshipTypes.Reaction);
+
+        // get reactions
         if (reactions.isNotEmpty)
           sreactions[filteredEvents[i].eventId] = reactions;
+
+        // get replies
+        Set<Event> replies =
+            filteredEvents[i].aggregatedEvents(t, RelationshipTypes.Reply);
+        if (replies.isNotEmpty) sreplies[filteredEvents[i].eventId] = replies;
       }
+
+      
       stimeline.addAll(filteredEvents);
     }
   }

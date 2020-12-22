@@ -40,8 +40,56 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                 if (sclient.sreactions.containsKey(e.eventId))
                   PostReactions(event: e),
                 PostFooter(event: e),
+                if (sclient.sreplies.containsKey(e.eventId))
+                  RepliesVue(event: e),
               ],
             )),
+      ),
+    );
+  }
+}
+
+class RepliesVue extends StatelessWidget {
+  const RepliesVue({Key key, @required this.event}) : super(key: key);
+  final Event event;
+  final String regex = "<mx-reply>(.*)<\/mx-reply>";
+  @override
+  Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
+    Set<Event> sr = sclient.sreplies[event.eventId];
+    if (sclient.sreplies == null) {
+      return Text("error..");
+    }
+
+    return Container(
+      decoration: BoxDecoration(color: Colors.lightBlueAccent),
+      child: Column(
+      
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (Event revent in sr)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius:10,
+                backgroundImage: event.sender.avatarUrl == null
+                    ? null
+                    : NetworkImage(
+                        revent.sender.avatarUrl.getThumbnail(
+                          sclient,
+                          width: 16,
+                          height: 16,
+                        ),
+                      ),
+              ),
+              SizedBox(width:10),
+                  Text(revent.formattedText.replaceFirst(new RegExp(regex), "")),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
