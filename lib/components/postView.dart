@@ -6,6 +6,8 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'dart:math' as math;
+
 class Post extends StatefulWidget {
   Post({Key key, @required this.event}) : super(key: key);
   final Event event;
@@ -28,18 +30,27 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
             ),
-            padding: const EdgeInsets.all(10),
+            //padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                PostHeader(event: e),
+                // post content
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: PostContent(e),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PostHeader(event: e),
+                      Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: PostContent(e),
+                      ),
+                      if (sclient.sreactions.containsKey(e.eventId))
+                        PostReactions(event: e),
+                      PostFooter(event: e),
+                    ],
+                  ),
                 ),
-                if (sclient.sreactions.containsKey(e.eventId))
-                  PostReactions(event: e),
-                PostFooter(event: e),
                 if (sclient.sreplies.containsKey(e.eventId))
                   RepliesVue(event: e),
               ],
@@ -62,9 +73,8 @@ class RepliesVue extends StatelessWidget {
     }
 
     return Container(
-      decoration: BoxDecoration(color: Colors.lightBlueAccent),
+//      decoration: BoxDecoration(color: Colors.grey),
       child: Column(
-      
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (Event revent in sr)
@@ -72,20 +82,23 @@ class RepliesVue extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
+                  Transform.rotate(angle: math.pi, child: Icon(Icons.reply)),
+                  SizedBox(width: 10),
                   CircleAvatar(
-                    radius:10,
-                backgroundImage: event.sender.avatarUrl == null
-                    ? null
-                    : NetworkImage(
-                        revent.sender.avatarUrl.getThumbnail(
-                          sclient,
-                          width: 16,
-                          height: 16,
-                        ),
-                      ),
-              ),
-              SizedBox(width:10),
-                  Text(revent.formattedText.replaceFirst(new RegExp(regex), "")),
+                    radius: 10,
+                    backgroundImage: event.sender.avatarUrl == null
+                        ? null
+                        : NetworkImage(
+                            revent.sender.avatarUrl.getThumbnail(
+                              sclient,
+                              width: 16,
+                              height: 16,
+                            ),
+                          ),
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                      revent.formattedText.replaceFirst(new RegExp(regex), "")),
                 ],
               ),
             ),
@@ -138,40 +151,38 @@ class PostHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Row(children: <Widget>[
+          CircleAvatar(
+            backgroundImage: event.sender.avatarUrl == null
+                ? null
+                : NetworkImage(
+                    event.sender.avatarUrl.getThumbnail(
+                      client,
+                      width: 64,
+                      height: 64,
+                    ),
+                  ),
+          ),
+          SizedBox(width: 10),
+          Text(event.sender.displayName,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(" to ", style: TextStyle(fontSize: 20)),
+          Text(event.room.name,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ]),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Row(children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CircleAvatar(
-                backgroundImage: event.sender.avatarUrl == null
-                    ? null
-                    : NetworkImage(
-                        event.sender.avatarUrl.getThumbnail(
-                          client,
-                          width: 64,
-                          height: 64,
-                        ),
-                      ),
-              ),
-            ),
-            Text(event.sender.displayName,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text(" to ", style: TextStyle(fontSize: 20)),
-            Text(event.room.name,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          ]),
-        ),
-        Row(
-          children: [
-            Text(timeago.format(event.originServerTs),
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            if (event.type == EventTypes.Encrypted)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Icon(Icons.enhanced_encryption),
-              ),
-          ],
+          child: Row(
+            children: [
+              Text(timeago.format(event.originServerTs),
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              if (event.type == EventTypes.Encrypted)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(Icons.enhanced_encryption),
+                ),
+            ],
+          ),
         )
       ],
     );
