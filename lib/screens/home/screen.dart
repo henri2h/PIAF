@@ -3,9 +3,12 @@ import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/debugVue.dart';
+import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
+import 'package:minestrix/screens/settings.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -48,7 +51,7 @@ class _MyHomePageState extends State<HomeScreen> {
       else if (constraints.maxWidth > 900)
         return TabletContainer(sclient: sclient);
       else
-        return MobileContainer(sclient: sclient);
+        return MobileContainer();
     });
   }
 }
@@ -174,33 +177,33 @@ class TabletContainer extends StatelessWidget {
   }
 }
 
-class MobileContainer extends StatelessWidget {
-  const MobileContainer({
-    Key key,
-    @required this.sclient,
-  }) : super(key: key);
+class MobileContainer extends StatefulWidget {
+  @override
+  _MobileContainerState createState() => _MobileContainerState();
+}
 
-  final SClient sclient;
+class _MobileContainerState extends State<MobileContainer> {
   final int selectedIndex = 1;
+  Widget widgetView;
+  bool changing = false;
+  void changePage(Widget widgetIn) {
+    if (mounted && changing == false) {
+      changing = true;
+      setState(() {
+        widgetView = widgetIn;
+        changing = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
+    if (widgetView == null) widgetView = FeedView(sclient: sclient);
     return Scaffold(
       body: Container(
         child: Column(
-          children: [
-            //PostEditor(),
-            Expanded(
-              child: StreamBuilder(
-                stream: sclient.onTimelineUpdate.stream,
-                builder: (context, _) => ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: sclient.stimeline.length,
-                    itemBuilder: (BuildContext context, int i) =>
-                        Post(event: sclient.stimeline[i])),
-              ),
-            ),
-          ],
+          children: [widgetView],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -222,7 +225,9 @@ class MobileContainer extends StatelessWidget {
             children: <Widget>[
               IconButton(
                 //update the bottom app bar view each time an item is clicked
-                onPressed: () {},
+                onPressed: () {
+                  changePage(FeedView(sclient: sclient));
+                },
                 icon: Icon(
                   Icons.home,
                 ),
@@ -237,13 +242,25 @@ class MobileContainer extends StatelessWidget {
                 width: 50.0,
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  changePage(FriendsVue());
+                },
                 icon: Icon(
                   Icons.people,
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                 changePage(DebugView());
+                },
+                icon: Icon(
+                  Icons.bug_report,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  changePage(SettingsView());
+                },
                 icon: Icon(
                   Icons.settings,
                 ),
@@ -253,6 +270,29 @@ class MobileContainer extends StatelessWidget {
         ),
         //to add a space between the FAB and BottomAppBar
         shape: CircularNotchedRectangle(),
+      ),
+    );
+  }
+}
+
+class FeedView extends StatelessWidget {
+  const FeedView({
+    Key key,
+    @required this.sclient,
+  }) : super(key: key);
+
+  final SClient sclient;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: StreamBuilder(
+        stream: sclient.onTimelineUpdate.stream,
+        builder: (context, _) => ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: sclient.stimeline.length,
+            itemBuilder: (BuildContext context, int i) =>
+                Post(event: sclient.stimeline[i])),
       ),
     );
   }
