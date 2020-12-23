@@ -11,7 +11,7 @@ class LeftBar extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
           builder: (_) => new Scaffold(
-              appBar: AppBar(title: Text(pageTitle)), body: FriendsVue())),
+              appBar: AppBar(title: Text(pageTitle)), body: widgetIn)),
     );
   }
 
@@ -33,43 +33,27 @@ class LeftBar extends StatelessWidget {
               name: "Settings",
               icon: Icons.settings,
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SettingsView(),
-                  ),
-                );
+                changePage(context, SettingsView(), "Settings");
               }),
           LeftBarButton(
             name: "Debug",
             icon: Icons.bug_report,
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => DebugView(),
-                ),
-              );
+              changePage(context, DebugView(), "Well... Debug time !!");
             },
           ),
           LeftBarButton(
             name: "SMatrix rooms",
             icon: Icons.lock,
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => SMatrixRoomsVue(),
-                ),
-              );
+              changePage(context, SMatrixRoomsVue(), "SMatrix rooms view");
             },
           ),
           LeftBarButton(
             name: "Chat",
             icon: Icons.message,
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ChatsVue(),
-                ),
-              );
+              changePage(context, ChatsVue(), "Chats view");
             },
           ),
         ]);
