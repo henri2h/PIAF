@@ -52,51 +52,49 @@ class _DebugViewState extends State<DebugView> {
       getTimelineLength();
     }
 
-    return Scaffold(
-        appBar: AppBar(title: Text("Well... Debug time !!")),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Text("Debug",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-              if (sclient != null && sclient.rooms != null)
-                Text("srooms length : " + sclient.srooms.length.toString()),
-              if (srooms.length != 0)
-                for (var i = 0; i < srooms.length; i++)
-                  Row(
-                    children: [
-                      Text(i.toString()),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(srooms[i].room.name),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(srooms[i].room.id),
-                      ),
-                      if (timelineLength.length > i)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(timelineLength[i].toString()),
-                        ),
-                      RaisedButton(
-                          child: Text("Load"),
-                          onPressed: () async {
-                            await loadElements(context, sclient.srooms[i]);
-                          })
-                    ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Text("Debug",
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+          if (sclient != null && sclient.rooms != null)
+            Text("srooms length : " + sclient.srooms.length.toString()),
+          if (srooms.length != 0)
+            for (var i = 0; i < srooms.length; i++)
+              Row(
+                children: [
+                  Text(i.toString()),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(srooms[i].room.name),
                   ),
-              if (progressing) CircularProgressIndicator(),
-              RaisedButton(
-                  child: Text("Load all more"),
-                  onPressed: () async {
-                    for (SMatrixRoom room in srooms) {
-                      await loadElements(context, room);
-                    }
-                  })
-            ],
-          ),
-        ));
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(srooms[i].room.id),
+                  ),
+                  if (timelineLength.length > i)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(timelineLength[i].toString()),
+                    ),
+                  RaisedButton(
+                      child: Text("Load"),
+                      onPressed: () async {
+                        await loadElements(context, sclient.srooms[i]);
+                      })
+                ],
+              ),
+          if (progressing) CircularProgressIndicator(),
+          RaisedButton(
+              child: Text("Load all more"),
+              onPressed: () async {
+                for (SMatrixRoom room in srooms) {
+                  await loadElements(context, room);
+                }
+              })
+        ],
+      ),
+    );
   }
 }
