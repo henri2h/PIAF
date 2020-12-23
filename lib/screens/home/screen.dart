@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/friendsVue.dart';

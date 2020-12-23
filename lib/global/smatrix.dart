@@ -182,6 +182,7 @@ class SMatrixRoom {
   User user;
   Room room;
   bool _validSRoom = false;
+  bool get validSRoom => _validSRoom;
   Future<bool> init(Room r) async {
     try {
       if (isValidSRoom(r)) {
