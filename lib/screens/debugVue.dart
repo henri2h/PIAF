@@ -55,44 +55,53 @@ class _DebugViewState extends State<DebugView> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Debug",
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text("Debug",
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+          ),
           if (sclient != null && sclient.rooms != null)
             Text("srooms length : " + sclient.srooms.length.toString()),
           if (srooms.length != 0)
             for (var i = 0; i < srooms.length; i++)
-              Row(
-                children: [
-                  Text(i.toString()),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(srooms[i].room.name),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(srooms[i].room.id),
-                  ),
-                  if (timelineLength.length > i)
+              Wrap(
+                  children: [
+                    Text(i.toString()),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(timelineLength[i].toString()),
+                      child: Text(srooms[i].room.name),
                     ),
-                  RaisedButton(
-                      child: Text("Load"),
-                      onPressed: () async {
-                        await loadElements(context, sclient.srooms[i]);
-                      })
-                ],
-              ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(srooms[i].room.id),
+                    ),
+                    if (timelineLength.length > i)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(timelineLength[i].toString()),
+                      ),
+                    RaisedButton(
+                        child: Text("Load"),
+                        onPressed: () async {
+                          await loadElements(context, sclient.srooms[i]);
+                        })
+                  ],
+                ),
           if (progressing) CircularProgressIndicator(),
-          RaisedButton(
-              child: Text("Load all more"),
-              onPressed: () async {
-                for (SMatrixRoom room in srooms) {
-                  await loadElements(context, room);
-                }
-              })
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: RaisedButton(
+                  child: Text("Load all more"),
+                  onPressed: () async {
+                    for (SMatrixRoom room in srooms) {
+                      await loadElements(context, room);
+                    }
+                  }),
+            ),
+          )
         ],
       ),
     );

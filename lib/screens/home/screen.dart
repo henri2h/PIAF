@@ -192,7 +192,7 @@ class _MobileContainerState extends State<MobileContainer> {
     if (mounted && changing == false) {
       changing = true;
       setState(() {
-        widgetView = widgetIn;
+        widgetView = Flexible(child: widgetIn);
         changing = false;
       });
     }

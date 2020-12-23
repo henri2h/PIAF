@@ -7,6 +7,14 @@ import 'package:minestrix/screens/smatrixRoomsVue.dart';
 
 class LeftBar extends StatelessWidget {
   const LeftBar({Key key}) : super(key: key);
+  void changePage(context, Widget widgetIn, String pageTitle) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (_) => new Scaffold(
+              appBar: AppBar(title: Text(pageTitle)), body: FriendsVue())),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -19,11 +27,7 @@ class LeftBar extends StatelessWidget {
               name: "Friends",
               icon: Icons.people,
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => FriendsVue(),
-                  ),
-                );
+                changePage(context, FriendsVue(), "Friends vue");
               }),
           LeftBarButton(
               name: "Settings",
