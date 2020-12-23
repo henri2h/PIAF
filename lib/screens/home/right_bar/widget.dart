@@ -55,17 +55,17 @@ class ContactView extends StatelessWidget {
                                       ),
                                     ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Flexible(
-                                                              child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(sroom.user.displayName,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      Text(sroom.user.id, overflow: TextOverflow.ellipsis,)
-                                    ]),
+                            Flexible(
+                                                          child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(sroom.user.displayName,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                        Text(sroom.user.id, overflow: TextOverflow.ellipsis,)
+                                      ]),
                               ),
                             ),
                           ],

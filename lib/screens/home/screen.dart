@@ -88,7 +88,7 @@ class WideContainer extends StatelessWidget {
                     ],
                   ),
                 ),
-                Expanded(
+                Flexible(
                   flex: 7,
                   child: StreamBuilder(
                     stream: sclient.onTimelineUpdate.stream,
@@ -99,7 +99,7 @@ class WideContainer extends StatelessWidget {
                             Post(event: sclient.stimeline[i])),
                   ),
                 ),
-                Expanded(
+                Flexible(
                     flex: 3,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -110,7 +110,7 @@ class WideContainer extends StatelessWidget {
                             child: Text("Contacts",
                                 style: TextStyle(fontSize: 30)),
                           ),
-                          Expanded(child: RightBar()),
+                          Flexible(child: RightBar()),
                         ],
                       ),
                     )),
