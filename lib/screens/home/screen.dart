@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/chatVue.dart';
+import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
@@ -207,11 +210,13 @@ class _MobileContainerState extends State<MobileContainer> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          changePage(PostEditor());
+        },
         tooltip: "New post",
         child: Container(
           margin: EdgeInsets.all(15.0),
-          child: Icon(Icons.add),
+          child: Icon(Icons.edit),
         ),
         elevation: 4.0,
       ),
@@ -237,9 +242,6 @@ class _MobileContainerState extends State<MobileContainer> {
                   Icons.person,
                 ),
               ),
-              SizedBox(
-                width: 50.0,
-              ),
               IconButton(
                 onPressed: () {
                   changePage(FriendsVue());
@@ -248,9 +250,20 @@ class _MobileContainerState extends State<MobileContainer> {
                   Icons.people,
                 ),
               ),
+              SizedBox(
+                width: 50.0,
+              ),
               IconButton(
                 onPressed: () {
-                 changePage(DebugView());
+                  changePage(ChatsVue());
+                },
+                icon: Icon(
+                  Icons.message,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  changePage(DebugView());
                 },
                 icon: Icon(
                   Icons.bug_report,
