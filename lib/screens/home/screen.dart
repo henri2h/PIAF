@@ -192,7 +192,7 @@ class _MobileContainerState extends State<MobileContainer> {
     if (mounted && changing == false) {
       changing = true;
       setState(() {
-        widgetView = Flexible(child: widgetIn);
+        widgetView = widgetIn;
         changing = false;
       });
     }
@@ -201,13 +201,10 @@ class _MobileContainerState extends State<MobileContainer> {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    if (widgetView == null) widgetView = FeedView(sclient: sclient);
+    Widget widgetFeedView = FeedView(sclient: sclient);
+    if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
-      body: Container(
-        child: Column(
-          children: [widgetView],
-        ),
-      ),
+      body: widgetView ?? Text("hello"),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -230,7 +227,7 @@ class _MobileContainerState extends State<MobileContainer> {
               IconButton(
                 //update the bottom app bar view each time an item is clicked
                 onPressed: () {
-                  changePage(FeedView(sclient: sclient));
+                  changePage(widgetFeedView);
                 },
                 icon: Icon(
                   Icons.home,
@@ -297,15 +294,13 @@ class FeedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: StreamBuilder(
-        stream: sclient.onTimelineUpdate.stream,
-        builder: (context, _) => ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: sclient.stimeline.length,
-            itemBuilder: (BuildContext context, int i) =>
-                Post(event: sclient.stimeline[i])),
-      ),
+    return StreamBuilder(
+      stream: sclient.onTimelineUpdate.stream,
+      builder: (context, _) => ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: sclient.stimeline.length,
+          itemBuilder: (BuildContext context, int i) =>
+              Post(event: sclient.stimeline[i])),
     );
   }
 }
