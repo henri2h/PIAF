@@ -12,6 +12,7 @@ class _PostEditorState extends State<PostEditor>
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.all(8.0),
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -22,7 +23,14 @@ class _PostEditorState extends State<PostEditor>
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
+          child: Text("Post on your wall"),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
           child: TextField(
+            minLines: 3,
+            decoration: InputDecoration(
+                border: OutlineInputBorder(), labelText: "Post content"),
             keyboardType: TextInputType.multiline,
             maxLines: null,
             onChanged: (String text) {
@@ -32,9 +40,20 @@ class _PostEditorState extends State<PostEditor>
             },
           ),
         ),
+         Padding(
+           padding: const EdgeInsets.all(8.0),
+           child: FloatingActionButton.extended(
+                        icon: const Icon(Icons.send),
+                        label: Text('Send post'),
+                        onPressed: () {}),
+         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: MarkdownBody(data:postContent),
+          child: Text("Post preview", style: TextStyle(fontSize: 20)),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: MarkdownBody(data: postContent),
         )
       ],
     ));
