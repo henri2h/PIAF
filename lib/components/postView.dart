@@ -157,17 +157,12 @@ class PostFooter extends StatelessWidget {
                     context: context,
                     builder: (context) => Column(children: [
                           EmojiPicker(
-                            rows: 3,
-                            columns: 7,
-                            recommendKeywords: ["racing", "horse"],
-                            numRecommended: 10,
                             onEmojiSelected: (emoji, category) {
                               print(emoji);
                               Navigator.of(context).pop<Emoji>(emoji);
                             },
                           ),
                         ]));
-                print(emoji.emoji);
                 await event.room.sendReaction(event.eventId, emoji.emoji);
               }),
           if (event.canRedact)
@@ -223,7 +218,7 @@ class PostHeader extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold));
                         }
-                        return Text("Loading...")
+                        return Text("Loading...");
                       })
                 ]),
               ),
