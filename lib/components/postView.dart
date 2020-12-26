@@ -118,11 +118,8 @@ class RepliesVue extends StatelessWidget {
 }
 
 class PostReactions extends StatelessWidget {
-  const PostReactions({
-    Key key,
-    @required this.event,
-    @required this.reactions
-  }) : super(key: key);
+  const PostReactions({Key key, @required this.event, @required this.reactions})
+      : super(key: key);
   final Event event;
   final Set<Event> reactions;
   @override
@@ -193,7 +190,7 @@ class PostHeader extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
-    final SClient client = Matrix.of(context).sclient;
+    final SClient sclient = Matrix.of(context).sclient;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -205,7 +202,7 @@ class PostHeader extends StatelessWidget {
                     ? null
                     : NetworkImage(
                         event.sender.avatarUrl.getThumbnail(
-                          client,
+                          sclient,
                           width: 64,
                           height: 64,
                         ),
@@ -218,9 +215,16 @@ class PostHeader extends StatelessWidget {
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   Text(" to ", style: TextStyle(fontSize: 20)),
-                  Text(event.room.name,
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  FutureBuilder<String>(
+                      future: sclient.getRoomDisplayName(event.room),
+                      builder: (context, AsyncSnapshot<String> name) {
+                        if (name.hasData) {
+                          return Text(name.data,
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold));
+                        }
+                        return Text("Loading...");""
+                      })
                 ]),
               ),
             ],

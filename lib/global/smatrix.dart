@@ -148,7 +148,7 @@ class SClient extends Client {
   Future<Profile> getUserFromRoom(Room room) async {
     String userId = getUserIdFromRoomName(room.name);
     print(userId);
-    return getProfileFromUserId(userId);
+    return await getProfileFromUserId(userId);
   }
 
   Future<bool> addFriend(String userId) async {
@@ -157,6 +157,14 @@ class SClient extends Client {
       return true;
     }
     return false; // we haven't been able to add this user to our friend list
+  }
+
+  Future<String> getRoomDisplayName(Room room) async {
+    if (room.name.startsWith(SMatrixUserRoomPrefix)) {
+      Profile p = await getUserFromRoom(room);
+      return p.displayname;
+    }
+    return "ERROR !";
   }
 }
 
