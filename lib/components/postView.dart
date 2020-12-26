@@ -115,7 +115,7 @@ class ReplyBox extends StatelessWidget {
           SizedBox(width: 10),
           IconButton(
               icon: Icon(Icons.send),
-              onPressed: () async{
+              onPressed: () async {
                 print(tc.text);
                 await event.room.sendTextEvent(tc.text, inReplyTo: event);
                 tc.clear();
@@ -131,12 +131,12 @@ class RepliesVue extends StatelessWidget {
       : super(key: key);
   final Event event;
   final Set<Event> replies;
-  final String regex = "<mx-reply>(.*)<\/mx-reply>";
+  final String regex = "<mx-reply>((.|\n)*)<\/mx-reply>";
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
     // get replies
-
+    
     return Container(
 //      decoration: BoxDecoration(color: Colors.grey),
       child: Column(
