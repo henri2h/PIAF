@@ -33,7 +33,9 @@ dependencies:
   flutter_typeahead: ^1.9.1
   cached_network_image: ^2.4.1
   
+  # Post formating
   flutter_markdown:
+  emoji_picker:
 
   # time formating
   timeago: ^2.0.29

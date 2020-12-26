@@ -1,3 +1,4 @@
+import 'package:emoji_picker/emoji_picker.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -135,6 +136,7 @@ class PostFooter extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
     return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
@@ -147,7 +149,24 @@ class PostFooter extends StatelessWidget {
                   Text("React"),
                 ],
               ),
-              onPressed: () {}),
+              onPressed: () async {
+                Emoji emoji = await showModalBottomSheet(
+                    context: context,
+                    builder: (context) => Column(children: [
+                          EmojiPicker(
+                            rows: 3,
+                            columns: 7,
+                            recommendKeywords: ["racing", "horse"],
+                            numRecommended: 10,
+                            onEmojiSelected: (emoji, category) {
+                              print(emoji);
+                              Navigator.of(context).pop<Emoji>(emoji);
+                            },
+                          ),
+                        ]));
+                print(emoji.emoji);
+                await event.room.sendReaction(event.eventId, emoji.emoji);
+              }),
           if (event.canRedact)
             FlatButton(
                 child: Row(
@@ -173,7 +192,7 @@ class PostHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
-                  child: Row(
+          child: Row(
             children: [
               CircleAvatar(
                 backgroundImage: event.sender.avatarUrl == null
@@ -186,7 +205,7 @@ class PostHeader extends StatelessWidget {
                         ),
                       ),
               ),
-              SizedBox(width:10),
+              SizedBox(width: 10),
               Flexible(
                 child: Wrap(children: <Widget>[
                   Text(event.sender.displayName,
