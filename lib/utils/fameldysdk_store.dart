@@ -17,7 +17,7 @@ Future<Database> getDatabase(Client client) async {
   try {
     if (_db != null) return _db;
     final store = Store();
-    var password = ""; //await store.getItem(SettingKeys.databasePassword);
+    var password = await store.getItem("dbpass");
     var newPassword = false;
     if (password == null || password.isEmpty) {
       newPassword = true;
@@ -29,8 +29,8 @@ Future<Database> getDatabase(Client client) async {
       filename: 'moor.sqlite',
       password: password,
     );
-    if (newPassword) {//SettingKeys.databasePassword
-      await store.setItem("", password);
+    if (newPassword) {
+      await store.setItem("dbpass", password);
     }
     return _db;
   } finally {
