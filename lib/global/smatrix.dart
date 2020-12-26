@@ -17,8 +17,7 @@ class SClient extends Client {
   List<Event> stimeline = [];
 
   // create a container for aggregated events (could not access Timeline in postView.dart)
-  Map<String, Set<Event>> sreactions = Map<String, Set<Event>>();
-  Map<String, Set<Event>> sreplies = Map<String, Set<Event>>();
+  Map<String, Timeline> timelines = Map<String, Timeline>();
 
   SClient(String clientName,
       {bool enableE2eeRecovery,
@@ -76,7 +75,6 @@ class SClient extends Client {
   // load rooms
   Future<void> loadSRooms() async {
     srooms.clear(); // clear rooms
-
     for (var i = 0; i < rooms.length; i++) {
       SMatrixRoom rs = SMatrixRoom();
       if (await rs.init(rooms[i])) {
@@ -106,11 +104,11 @@ class SClient extends Client {
 
   Future<void> loadSTimeline() async {
     // init
-    stimeline.clear();
-    sreactions.clear();
+    timelines.clear();
 
     for (SMatrixRoom sroom in srooms) {
       Timeline t = await sroom.room.getTimeline();
+      timelines[sroom.room.id] = t;
       final filteredEvents = t.events
           .where((e) =>
               !{
@@ -123,21 +121,8 @@ class SClient extends Client {
 
       for (var i = 0; i < filteredEvents.length; i++) {
         filteredEvents[i] = filteredEvents[i].getDisplayEvent(t);
-        // get reactions
-        Set<Event> reactions =
-            filteredEvents[i].aggregatedEvents(t, RelationshipTypes.Reaction);
-
-        // get reactions
-        if (reactions.isNotEmpty)
-          sreactions[filteredEvents[i].eventId] = reactions;
-
-        // get replies
-        Set<Event> replies =
-            filteredEvents[i].aggregatedEvents(t, RelationshipTypes.Reply);
-        if (replies.isNotEmpty) sreplies[filteredEvents[i].eventId] = replies;
       }
 
-      
       stimeline.addAll(filteredEvents);
     }
   }

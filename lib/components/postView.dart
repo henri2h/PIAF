@@ -22,6 +22,12 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     Event e = widget.event;
     SClient sclient = Matrix.of(context).sclient;
+
+    Timeline t = sclient.timelines[e.roomId];
+
+    Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.Reply);
+    Set<Event> reactions = e.aggregatedEvents(t, RelationshipTypes.Reaction);
+
     return StreamBuilder<Object>(
       stream: e.room.onUpdate.stream,
       builder: (context, snapshot) => Padding(
@@ -45,17 +51,17 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                       children: [
                         PostHeader(event: e),
                         Padding(
-                          padding: const EdgeInsets.all(15),
+                          padding: const EdgeInsets.all(10),
                           child: PostContent(e),
                         ),
-                        if (sclient.sreactions.containsKey(e.eventId))
-                          PostReactions(event: e),
+                        if (reactions.isNotEmpty)
+                          PostReactions(event: e, reactions: reactions),
                         PostFooter(event: e),
                       ],
                     ),
                   ),
-                  if (sclient.sreplies.containsKey(e.eventId))
-                    RepliesVue(event: e),
+                  if (replies.isNotEmpty)
+                    RepliesVue(event: e, replies: replies),
                 ],
               )),
         ),
@@ -65,23 +71,22 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
 }
 
 class RepliesVue extends StatelessWidget {
-  const RepliesVue({Key key, @required this.event}) : super(key: key);
+  const RepliesVue({Key key, @required this.event, @required this.replies})
+      : super(key: key);
   final Event event;
+  final Set<Event> replies;
   final String regex = "<mx-reply>(.*)<\/mx-reply>";
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    Set<Event> sr = sclient.sreplies[event.eventId];
-    if (sclient.sreplies == null) {
-      return Text("error..");
-    }
+    // get replies
 
     return Container(
 //      decoration: BoxDecoration(color: Colors.grey),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (Event revent in sr)
+          for (Event revent in replies)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -113,20 +118,15 @@ class RepliesVue extends StatelessWidget {
 }
 
 class PostReactions extends StatelessWidget {
-  const PostReactions({Key key, @required this.event}) : super(key: key);
+  const PostReactions({
+    Key key,
+    @required this.event,
+    @required this.reactions
+  }) : super(key: key);
   final Event event;
+  final Set<Event> reactions;
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
-
-    Timeline t = sclient.timelines[event.roomId];
-    if (t == null) {
-      return Text("error..");
-    }
-
-    Set<Event> reactions =
-        event.aggregatedEvents(t, RelationshipTypes.Reaction);
-
     return Row(
       children: [
         for (Event revent in reactions)
