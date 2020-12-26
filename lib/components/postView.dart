@@ -18,6 +18,13 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
+  void replyButtonClick() {
+    setState(() {
+      showReplyBox = !showReplyBox;
+    });
+  }
+
+  bool showReplyBox = false;
   @override
   Widget build(BuildContext context) {
     Event e = widget.event;
@@ -56,15 +63,64 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                         ),
                         if (reactions.isNotEmpty)
                           PostReactions(event: e, reactions: reactions),
-                        PostFooter(event: e),
+                        PostFooter(
+                            event: e, replyButtonClick: replyButtonClick),
                       ],
                     ),
                   ),
+                  if (showReplyBox) ReplyBox(event: e),
                   if (replies.isNotEmpty)
                     RepliesVue(event: e, replies: replies),
                 ],
               )),
         ),
+      ),
+    );
+  }
+}
+
+class ReplyBox extends StatelessWidget {
+  const ReplyBox({Key key, @required this.event}) : super(key: key);
+  final Event event;
+
+  @override
+  Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
+    TextEditingController tc = TextEditingController();
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 10,
+            backgroundImage: event.sender.avatarUrl == null
+                ? null
+                : NetworkImage(
+                    event.sender.avatarUrl.getThumbnail(
+                      sclient,
+                      width: 16,
+                      height: 16,
+                    ),
+                  ),
+          ),
+          SizedBox(width: 10),
+          Expanded(
+              child: TextField(
+            controller: tc,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Reply',
+            ),
+          )),
+          SizedBox(width: 10),
+          IconButton(
+              icon: Icon(Icons.send),
+              onPressed: () async{
+                print(tc.text);
+                await event.room.sendTextEvent(tc.text, inReplyTo: event);
+                tc.clear();
+              })
+        ],
       ),
     );
   }
@@ -136,8 +192,13 @@ class PostReactions extends StatelessWidget {
 }
 
 class PostFooter extends StatelessWidget {
-  const PostFooter({Key key, this.event}) : super(key: key);
+  const PostFooter(
+      {Key key, @required this.event, @required this.replyButtonClick})
+      : super(key: key);
+
   final Event event;
+  final Function replyButtonClick;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -165,6 +226,16 @@ class PostFooter extends StatelessWidget {
                         ]));
                 await event.room.sendReaction(event.eventId, emoji.emoji);
               }),
+          FlatButton(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(Icons.reply, size: 15),
+                  SizedBox(width: 2),
+                  Text("reply"),
+                ],
+              ),
+              onPressed: replyButtonClick),
           if (event.canRedact)
             FlatButton(
                 child: Row(
