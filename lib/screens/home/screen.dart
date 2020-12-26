@@ -6,6 +6,7 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatVue.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
+import 'package:minestrix/screens/feedView.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
@@ -280,27 +281,6 @@ class _MobileContainerState extends State<MobileContainer> {
         //to add a space between the FAB and BottomAppBar
         shape: CircularNotchedRectangle(),
       ),
-    );
-  }
-}
-
-class FeedView extends StatelessWidget {
-  const FeedView({
-    Key key,
-    @required this.sclient,
-  }) : super(key: key);
-
-  final SClient sclient;
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: sclient.onTimelineUpdate.stream,
-      builder: (context, _) => ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: sclient.stimeline.length,
-          itemBuilder: (BuildContext context, int i) =>
-              Post(event: sclient.stimeline[i])),
     );
   }
 }
