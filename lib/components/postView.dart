@@ -117,16 +117,19 @@ class PostReactions extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
-    print("update");
     SClient sclient = Matrix.of(context).sclient;
-    Set<Event> sr = sclient.sreactions[event.eventId];
-    if (sclient.sreactions == null) {
+
+    Timeline t = sclient.timelines[event.roomId];
+    if (t == null) {
       return Text("error..");
     }
 
+    Set<Event> reactions =
+        event.aggregatedEvents(t, RelationshipTypes.Reaction);
+
     return Row(
       children: [
-        for (Event revent in sr)
+        for (Event revent in reactions)
           Row(
             children: [Text(revent.content['m.relates_to']['key'])],
           ),
