@@ -13,6 +13,7 @@ class UserFeedView extends StatelessWidget {
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageTitle("User feed"),
         UserInfo(),

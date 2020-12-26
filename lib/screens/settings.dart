@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
@@ -10,14 +11,14 @@ class SettingsView extends StatelessWidget {
     return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Hello you"),
-            Text("hello"),
+            PageTitle("Settings"),
             TextField(
-                decoration: InputDecoration(labelText: "Password"),
+                decoration: InputDecoration(labelText: "Key Password"),
                 controller: _passphraseController),
             MaterialButton(
-                child: Text("cross sign"),
+                child: Text("Get keys"),
                 onPressed: () async {
                   await client.encryption.crossSigning
                       .selfSign(passphrase: _passphraseController.text);

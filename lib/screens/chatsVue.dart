@@ -1,5 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatVue.dart';
 
@@ -16,11 +17,7 @@ class _ChatsVueState extends State<ChatsVue>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text("MATRIX Chats",
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-        ),
+        PageTitle("MATRIX Chats"),
         Flexible(
           child: StreamBuilder(
             stream: client.onSync.stream,
