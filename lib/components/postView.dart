@@ -223,7 +223,7 @@ class PostHeader extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold));
                         }
-                        return Text("Loading...");""
+                        return Text("Loading...")
                       })
                 ]),
               ),
