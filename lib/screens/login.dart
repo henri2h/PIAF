@@ -1,3 +1,4 @@
+import 'package:famedlysdk/matrix_api/model/well_known_informations.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/screen.dart';
@@ -52,30 +53,29 @@ class LoginCard extends StatefulWidget {
 
 class LoginCardState extends State<LoginCard> {
   final TextEditingController _usernameController = TextEditingController(),
-      _passwordController = TextEditingController(),
-      _domainController = TextEditingController();
+      _passwordController = TextEditingController();
 
   String _errorText;
   bool _isLoading = false;
+  String password = "";
+  String domain = "";
 
   void _loginAction(SClient client) async {
-    if(mounted)
-    setState(() {
-      _isLoading = true;
-      _errorText = null;
-    });
+    if (mounted)
+      setState(() {
+        _isLoading = true;
+        _errorText = null;
+      });
     try {
-      await client.checkHomeserver(_domainController.text);
+      await client.checkHomeserver(domain);
       await client.login(
           user: _usernameController.text,
           password: _passwordController.text,
           initialDeviceDisplayName: client.clientName);
     } catch (error) {
-      if(mounted)
-      setState(() => _errorText = error.toString());
+      if (mounted) setState(() => _errorText = error.toString());
     }
-    if(mounted)
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
@@ -89,33 +89,39 @@ class LoginCardState extends State<LoginCard> {
                   LoginInput(
                       name: "userid",
                       icon: Icons.account_circle,
+                      onChanged: (String userid) async {
+                        WellKnownInformations infos = await client
+                            .getWellKnownInformationsByUserId(userid);
+                        if (infos?.mHomeserver?.baseUrl != null) {
+                          setState(() {
+                            domain = infos.mHomeserver.baseUrl;
+                          });
+                        }
+                      },
                       tController: _usernameController),
                   LoginInput(
                       name: "password",
                       icon: Icons.lock_outline,
                       tController: _passwordController,
                       obscureText: true),
-                  LoginInput(
-                      name: "server url",
-                      icon: Icons.language,
-                      tController: _domainController,
-                      errorText: _errorText),
-                  if (_isLoading) Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: LinearProgressIndicator(),
-                  ),
+                  Text("Domain : "),
+                  Text(domain),
+                  if (_isLoading)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: LinearProgressIndicator(),
+                    ),
                   FloatingActionButton.extended(
                       icon: const Icon(Icons.login),
                       label: Text('Login'),
                       onPressed:
                           _isLoading ? null : () => _loginAction(client)),
-                 ]))));
+                ]))));
   }
 
   void changePage(BuildContext context) {
     print(_usernameController.text);
     print(_passwordController.text);
-    print(_domainController.text);
     if (2 == 3)
       Navigator.pushReplacement(
           context,
@@ -132,13 +138,15 @@ class LoginInput extends StatelessWidget {
       this.icon,
       this.tController,
       this.errorText,
-      this.obscureText = false})
+      this.obscureText = false,
+      this.onChanged})
       : super(key: key);
   final String name;
   final IconData icon;
   final TextEditingController tController;
   final String errorText;
   final bool obscureText;
+  final Function onChanged;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -146,6 +154,7 @@ class LoginInput extends StatelessWidget {
       child: TextField(
         controller: tController,
         obscureText: obscureText,
+        onChanged: onChanged,
         decoration: InputDecoration(
           errorText: errorText,
           border: OutlineInputBorder(
