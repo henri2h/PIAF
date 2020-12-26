@@ -3,7 +3,6 @@ import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chatVue.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/feedView.dart';
@@ -12,6 +11,7 @@ import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
 import 'package:minestrix/screens/settings.dart';
+import 'package:minestrix/screens/userFeedView.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -235,7 +235,9 @@ class _MobileContainerState extends State<MobileContainer> {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  changePage(UserFeedView());
+                },
                 icon: Icon(
                   Icons.person,
                 ),
