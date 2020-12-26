@@ -136,7 +136,6 @@ class PostFooter extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
     return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
