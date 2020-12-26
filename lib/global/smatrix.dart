@@ -45,7 +45,6 @@ class SClient extends Client {
     // initialisation
     await loadSRooms();
     await loadNewTimeline();
-
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
       /*   print("Event update");
       print(eUp.eventType);
@@ -59,21 +58,30 @@ class SClient extends Client {
     });
   }
 
-  bool timelineLock = false;
+  bool ntimelineLock = false;
   Future<void> loadNewTimeline() async {
-    if (timelineLock != true) {
-      timelineLock = false;
+    if (ntimelineLock != true) {
+      ntimelineLock = false;
+
       await loadSTimeline();
       sortTimeline();
-      onTimelineUpdate.add("Update");
-      timelineLock = false;
+
+      onTimelineUpdate.add("up");
+      //await onTimelineUpdate.done;
+      ntimelineLock = false;
     } else {
       print("Locked...");
     }
   }
 
   // load rooms
+  bool sRoomLock = false;
   Future<void> loadSRooms() async {
+    if (sRoomLock) {
+      print("sroom lock...");
+      return;
+    }
+    sRoomLock = true;
     srooms.clear(); // clear rooms
     for (var i = 0; i < rooms.length; i++) {
       SMatrixRoom rs = SMatrixRoom();
@@ -87,6 +95,7 @@ class SClient extends Client {
           // we can load the friendsVue
         }
       }
+      sRoomLock = false;
     }
 
     // check if user room has been created
@@ -102,9 +111,16 @@ class SClient extends Client {
     }
   }
 
+  bool sTimelineLock = false;
   Future<void> loadSTimeline() async {
+    if (sTimelineLock) {
+      print("stimelinelock ...");
+      return;
+    }
+    sTimelineLock = true;
     // init
     timelines.clear();
+    stimeline.clear();
 
     for (SMatrixRoom sroom in srooms) {
       Timeline t = await sroom.room.getTimeline();
@@ -125,6 +141,7 @@ class SClient extends Client {
 
       stimeline.addAll(filteredEvents);
     }
+    sTimelineLock = false;
   }
 
   void sortTimeline() {
@@ -147,7 +164,6 @@ class SClient extends Client {
 
   Future<Profile> getUserFromRoom(Room room) async {
     String userId = getUserIdFromRoomName(room.name);
-    print(userId);
     return await getProfileFromUserId(userId);
   }
 

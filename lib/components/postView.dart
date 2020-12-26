@@ -116,7 +116,6 @@ class ReplyBox extends StatelessWidget {
           IconButton(
               icon: Icon(Icons.send),
               onPressed: () async {
-                print(tc.text);
                 await event.room.sendTextEvent(tc.text, inReplyTo: event);
                 tc.clear();
               })
@@ -136,7 +135,7 @@ class RepliesVue extends StatelessWidget {
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
     // get replies
-    
+
     return Container(
 //      decoration: BoxDecoration(color: Colors.grey),
       child: Column(
@@ -219,7 +218,6 @@ class PostFooter extends StatelessWidget {
                     builder: (context) => Column(children: [
                           EmojiPicker(
                             onEmojiSelected: (emoji, category) {
-                              print(emoji);
                               Navigator.of(context).pop<Emoji>(emoji);
                             },
                           ),
