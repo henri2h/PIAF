@@ -22,40 +22,43 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     Event e = widget.event;
     SClient sclient = Matrix.of(context).sclient;
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Material(
-        elevation: 10,
-        borderRadius: BorderRadius.circular(5),
-        child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-            ),
-            //padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                // post content
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PostHeader(event: e),
-                      Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: PostContent(e),
-                      ),
-                      if (sclient.sreactions.containsKey(e.eventId))
-                        PostReactions(event: e),
-                      PostFooter(event: e),
-                    ],
+    return StreamBuilder<Object>(
+      stream: e.room.onUpdate.stream,
+      builder: (context, snapshot) => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Material(
+          elevation: 10,
+          borderRadius: BorderRadius.circular(5),
+          child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+              ),
+              //padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // post content
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PostHeader(event: e),
+                        Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: PostContent(e),
+                        ),
+                        if (sclient.sreactions.containsKey(e.eventId))
+                          PostReactions(event: e),
+                        PostFooter(event: e),
+                      ],
+                    ),
                   ),
-                ),
-                if (sclient.sreplies.containsKey(e.eventId))
-                  RepliesVue(event: e),
-              ],
-            )),
+                  if (sclient.sreplies.containsKey(e.eventId))
+                    RepliesVue(event: e),
+                ],
+              )),
+        ),
       ),
     );
   }
@@ -114,6 +117,7 @@ class PostReactions extends StatelessWidget {
   final Event event;
   @override
   Widget build(BuildContext context) {
+    print("update");
     SClient sclient = Matrix.of(context).sclient;
     Set<Event> sr = sclient.sreactions[event.eventId];
     if (sclient.sreactions == null) {
