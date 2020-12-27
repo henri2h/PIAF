@@ -30,7 +30,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     Event e = widget.event;
     SClient sclient = Matrix.of(context).sclient;
 
-    Timeline t = sclient.timelines[e.roomId];
+    Timeline t = sclient.srooms[e.roomId].timeline;
 
     Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.Reply);
     Set<Event> reactions = e.aggregatedEvents(t, RelationshipTypes.Reaction);

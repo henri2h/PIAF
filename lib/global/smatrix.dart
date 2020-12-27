@@ -13,11 +13,9 @@ class SClient extends Client {
   StreamSubscription onEventUpdate;
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
-  List<SMatrixRoom> srooms = [];
+  Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>();
+  Map<String, String> userIdToRoomId = Map<String, String>();
   List<Event> stimeline = [];
-
-  // create a container for aggregated events (could not access Timeline in postView.dart)
-  Map<String, Timeline> timelines = Map<String, Timeline>();
 
   SClient(String clientName,
       {bool enableE2eeRecovery,
@@ -83,12 +81,19 @@ class SClient extends Client {
     }
     sRoomLock = true;
     srooms.clear(); // clear rooms
+    userIdToRoomId.clear();
+
     for (var i = 0; i < rooms.length; i++) {
       SMatrixRoom rs = SMatrixRoom();
       if (await rs.init(rooms[i])) {
         // if class is correctly initialisated, we can add it
         // if we are here, it means that we have a valid smatrix room
-        srooms.add(rs);
+
+        rs.timeline = await rs.room.getTimeline();
+
+        srooms[rs.room.id] = rs;
+        userIdToRoomId[rs.user.id] = rs.room.id;
+
         if (userID == rs.user.id) {
           userRoom = rs; // we have found our user smatrix room
           // this means that the client has been initialisated
@@ -119,12 +124,10 @@ class SClient extends Client {
     }
     sTimelineLock = true;
     // init
-    timelines.clear();
     stimeline.clear();
 
-    for (SMatrixRoom sroom in srooms) {
-      Timeline t = await sroom.room.getTimeline();
-      timelines[sroom.room.id] = t;
+    for (SMatrixRoom sroom in srooms.values) {
+      Timeline t = sroom.timeline;
       final filteredEvents = t.events
           .where((e) =>
               !{
@@ -190,6 +193,7 @@ class SMatrixRoom {
   // i.e, it is not a valid class
   User user;
   Room room;
+  Timeline timeline;
   bool _validSRoom = false;
   bool get validSRoom => _validSRoom;
   Future<bool> init(Room r) async {

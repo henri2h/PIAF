@@ -14,20 +14,20 @@ class _DebugViewState extends State<DebugView> {
     setState(() {
       progressing = true;
     });
-    Timeline t = await sroom.room.getTimeline();
+    Timeline t = sroom.timeline;
     await t.requestHistory();
     await sclient.loadNewTimeline();
-    await getTimelineLength();
+    getTimelineLength();
 
     setState(() {
       progressing = false;
     });
   }
 
-  Future<void> getTimelineLength() async {
+  void getTimelineLength()  {
     timelineLength.clear();
     for (var i = 0; i < srooms.length; i++) {
-      Timeline t = await srooms[i].room.getTimeline();
+      Timeline t = srooms[i].timeline;;
       timelineLength.add(t.events.length);
     }
 
@@ -47,7 +47,7 @@ class _DebugViewState extends State<DebugView> {
   Widget build(BuildContext context) {
     sclient = Matrix.of(context).sclient;
 
-    srooms = sclient.srooms;
+    srooms = sclient.srooms.values.toList();
     if (init == false) {
       init = true;
       getTimelineLength();

@@ -236,7 +236,7 @@ class _MobileContainerState extends State<MobileContainer> {
               ),
               IconButton(
                 onPressed: () {
-                  changePage(UserFeedView());
+                  changePage(UserFeedView(userId: sclient.userID));
                 },
                 icon: Icon(
                   Icons.person,

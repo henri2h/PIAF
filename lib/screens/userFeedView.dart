@@ -7,7 +7,9 @@ import 'package:minestrix/global/smatrixWidget.dart';
 class UserFeedView extends StatelessWidget {
   const UserFeedView({
     Key key,
+    @required this.userId
   }) : super(key: key);
+  final String userId;
 
   @override
   Widget build(BuildContext context) {
