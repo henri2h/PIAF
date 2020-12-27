@@ -116,6 +116,22 @@ class SClient extends Client {
     }
   }
 
+  Iterable<Event> getSRoomFilteredEvents(Timeline t) {
+    List<Event> filteredEvents = t.events
+        .where((e) =>
+            !{
+              RelationshipTypes.Edit,
+              RelationshipTypes.Reaction,
+              RelationshipTypes.Reply
+            }.contains(e.relationshipType) &&
+            {EventTypes.Message, EventTypes.Encrypted}.contains(e.type))
+        .toList();
+    for (var i = 0; i < filteredEvents.length; i++) {
+      filteredEvents[i] = filteredEvents[i].getDisplayEvent(t);
+    }
+    return filteredEvents;
+  }
+
   bool sTimelineLock = false;
   Future<void> loadSTimeline() async {
     if (sTimelineLock) {
@@ -128,20 +144,7 @@ class SClient extends Client {
 
     for (SMatrixRoom sroom in srooms.values) {
       Timeline t = sroom.timeline;
-      final filteredEvents = t.events
-          .where((e) =>
-              !{
-                RelationshipTypes.Edit,
-                RelationshipTypes.Reaction,
-                RelationshipTypes.Reply
-              }.contains(e.relationshipType) &&
-              {EventTypes.Message, EventTypes.Encrypted}.contains(e.type))
-          .toList();
-
-      for (var i = 0; i < filteredEvents.length; i++) {
-        filteredEvents[i] = filteredEvents[i].getDisplayEvent(t);
-      }
-
+      final filteredEvents = getSRoomFilteredEvents(t);
       stimeline.addAll(filteredEvents);
     }
     sTimelineLock = false;

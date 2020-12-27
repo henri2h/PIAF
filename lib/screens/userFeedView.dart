@@ -14,6 +14,8 @@ class UserFeedView extends StatelessWidget {
     SClient sclient = Matrix.of(context).sclient;
     String roomId = sclient.userIdToRoomId[userId];
     SMatrixRoom sroom = sclient.srooms[roomId];
+
+    List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
     if (sroom != null) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,12 +27,12 @@ class UserFeedView extends StatelessWidget {
           ),
           Flexible(
             child: StreamBuilder(
-              stream: sclient.onTimelineUpdate.stream,
+              stream: sroom.room.onUpdate.stream,
               builder: (context, _) => ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: sclient.stimeline.length,
+                  itemCount: sevents.length,
                   itemBuilder: (BuildContext context, int i) =>
-                      Post(event: sclient.stimeline[i])),
+                      Post(event: sevents[i])),
             ),
           ),
         ],
