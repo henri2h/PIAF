@@ -96,7 +96,7 @@ class ReplyBox extends StatelessWidget {
             backgroundImage: event.sender.avatarUrl == null
                 ? null
                 : NetworkImage(
-                  sclient.userRoom.user.avatarUrl.getThumbnail(
+                    sclient.userRoom.user.avatarUrl.getThumbnail(
                       sclient,
                       width: 16,
                       height: 16,
@@ -108,7 +108,7 @@ class ReplyBox extends StatelessWidget {
               child: TextField(
             controller: tc,
             minLines: 2,
-            maxLines:5,
+            maxLines: 5,
             decoration: InputDecoration(
               border: OutlineInputBorder(),
               labelText: 'Reply',
@@ -147,27 +147,38 @@ class RepliesVue extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Transform.rotate(angle: math.pi, child: Icon(Icons.reply)),
-                  SizedBox(width: 10),
-                  CircleAvatar(
-                    radius: 10,
-                    backgroundImage: event.sender.avatarUrl == null
-                        ? null
-                        : NetworkImage(
-                            revent.sender.avatarUrl.getThumbnail(
-                              sclient,
-                              width: 16,
-                              height: 16,
-                            ),
-                          ),
-                  ),
-                  SizedBox(width: 10),
                   Flexible(
-                    child: Text(
-                      revent.body.replaceFirst(new RegExp(regex), "")
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Transform.rotate(
+                            angle: math.pi, child: Icon(Icons.reply)),
+                        SizedBox(width: 10),
+                        CircleAvatar(
+                          radius: 10,
+                          backgroundImage: revent.sender.avatarUrl == null
+                              ? null
+                              : NetworkImage(
+                                  revent.sender.avatarUrl.getThumbnail(
+                                    sclient,
+                                    width: 16,
+                                    height: 16,
+                                  ),
+                                ),
                         ),
+                        SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                              revent.body.replaceFirst(new RegExp(regex), "")),
+                        ),
+                      ],
+                    ),
                   ),
+                  SizedBox(width: 20),
+                  Text(timeago.format(revent.originServerTs),
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -351,6 +362,7 @@ class PostDecoder extends StatelessWidget {
       case EventTypes.Encrypted:
         switch (event.messageType) {
           case MessageTypes.Text:
+          case MessageTypes.Emote:
             return MarkdownBody(data: event.body); // markdown support
           case MessageTypes.Image:
             return MImage(event: event);
