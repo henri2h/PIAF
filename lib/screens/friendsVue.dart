@@ -112,7 +112,7 @@ class FriendsVue extends StatelessWidget {
               //scrollDirection: Axis.horizontal,
               itemCount: sclient.srooms.length,
               itemBuilder: (BuildContext context, int i) =>
-                  AccountCard(sroom: sclient.srooms[i]),
+                  AccountCard(user: sclient.srooms[i].user),
             ),
           ),
         ),

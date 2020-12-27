@@ -1,5 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -26,6 +27,9 @@ class UserFeedView extends StatelessWidget {
                     padding: const EdgeInsets.all(15),
                     child: UserInfo(user: sroom.user),
                   ),
+                  Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: FriendsView(sroom: sroom)),
                   for (Event e in sevents) Post(event: e),
                 ],
               ));
@@ -34,6 +38,32 @@ class UserFeedView extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Text("ERROR !",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+class FriendsView extends StatelessWidget {
+  const FriendsView({
+    Key key,
+    @required this.sroom,
+  }) : super(key: key);
+
+  final SMatrixRoom sroom;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text("Friends", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        ),
+        Wrap(children: [
+          for (User user in sroom.room.getParticipants().where((User u) => u.membership == Membership.join))
+            AccountCard(user: user),
+        ]),
+      ],
     );
   }
 }
