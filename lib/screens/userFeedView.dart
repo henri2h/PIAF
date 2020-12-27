@@ -1,3 +1,4 @@
+import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/components/postView.dart';
@@ -5,46 +6,72 @@ import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
 class UserFeedView extends StatelessWidget {
-  const UserFeedView({
-    Key key,
-    @required this.userId
-  }) : super(key: key);
+  const UserFeedView({Key key, @required this.userId}) : super(key: key);
   final String userId;
 
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PageTitle("User feed"),
-        UserInfo(),
-        Flexible(
-          child: StreamBuilder(
-            stream: sclient.onTimelineUpdate.stream,
-            builder: (context, _) => ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: sclient.stimeline.length,
-                itemBuilder: (BuildContext context, int i) =>
-                    Post(event: sclient.stimeline[i])),
+    String roomId = sclient.userIdToRoomId[userId];
+    SMatrixRoom sroom = sclient.srooms[roomId];
+    if (sroom != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          PageTitle("User feed"),
+          Padding(
+            padding: const EdgeInsets.all(15),
+            child: UserInfo(user: sroom.user),
           ),
-        ),
-      ],
+          Flexible(
+            child: StreamBuilder(
+              stream: sclient.onTimelineUpdate.stream,
+              builder: (context, _) => ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: sclient.stimeline.length,
+                  itemBuilder: (BuildContext context, int i) =>
+                      Post(event: sclient.stimeline[i])),
+            ),
+          ),
+        ],
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text("ERROR !",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
     );
   }
 }
 
 class UserInfo extends StatelessWidget {
-  const UserInfo({
-    Key key,
-  }) : super(key: key);
-
+  const UserInfo({Key key, @required this.user}) : super(key: key);
+  final User user;
   @override
   Widget build(BuildContext context) {
-    return Column(
+    SClient sclient = Matrix.of(context).sclient;
+    return Row(
       children: [
-        Text("User name"),
-        Text("user id"),
+        CircleAvatar(
+          backgroundImage: user.avatarUrl == null
+              ? null
+              : NetworkImage(
+                  user.avatarUrl.getThumbnail(
+                    sclient,
+                    width: 64,
+                    height: 64,
+                  ),
+                ),
+        ),
+        SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(user.displayName,
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            Text(user.id, style: TextStyle(fontSize: 20)),
+          ],
+        ),
       ],
     );
   }
