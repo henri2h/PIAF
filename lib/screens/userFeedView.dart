@@ -17,26 +17,18 @@ class UserFeedView extends StatelessWidget {
 
     List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
     if (sroom != null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PageTitle("User feed"),
-          Padding(
-            padding: const EdgeInsets.all(15),
-            child: UserInfo(user: sroom.user),
-          ),
-          Flexible(
-            child: StreamBuilder(
-              stream: sroom.room.onUpdate.stream,
-              builder: (context, _) => ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: sevents.length,
-                  itemBuilder: (BuildContext context, int i) =>
-                      Post(event: sevents[i])),
-            ),
-          ),
-        ],
-      );
+      return StreamBuilder(
+          stream: sroom.room.onUpdate.stream,
+          builder: (context, _) => ListView(
+                children: [
+                  PageTitle("User feed"),
+                  Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: UserInfo(user: sroom.user),
+                  ),
+                  for (Event e in sevents) Post(event: e),
+                ],
+              ));
     }
     return Padding(
       padding: const EdgeInsets.all(8.0),
