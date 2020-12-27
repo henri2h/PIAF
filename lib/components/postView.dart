@@ -96,7 +96,7 @@ class ReplyBox extends StatelessWidget {
             backgroundImage: event.sender.avatarUrl == null
                 ? null
                 : NetworkImage(
-                    event.sender.avatarUrl.getThumbnail(
+                  sclient.userRoom.user.avatarUrl.getThumbnail(
                       sclient,
                       width: 16,
                       height: 16,
