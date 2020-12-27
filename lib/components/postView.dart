@@ -107,6 +107,8 @@ class ReplyBox extends StatelessWidget {
           Expanded(
               child: TextField(
             controller: tc,
+            minLines: 2,
+            maxLines:5,
             decoration: InputDecoration(
               border: OutlineInputBorder(),
               labelText: 'Reply',
@@ -130,7 +132,7 @@ class RepliesVue extends StatelessWidget {
       : super(key: key);
   final Event event;
   final Set<Event> replies;
-  final String regex = "<mx-reply>((.|\n)*)<\/mx-reply>";
+  final String regex = "(.*)\n(.*)\n";
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
@@ -161,8 +163,11 @@ class RepliesVue extends StatelessWidget {
                           ),
                   ),
                   SizedBox(width: 10),
-                  Text(
-                      revent.formattedText.replaceFirst(new RegExp(regex), "")),
+                  Flexible(
+                    child: Text(
+                      revent.body.replaceFirst(new RegExp(regex), "")
+                        ),
+                  ),
                 ],
               ),
             ),
