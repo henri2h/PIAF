@@ -132,7 +132,7 @@ class RepliesVue extends StatelessWidget {
       : super(key: key);
   final Event event;
   final Set<Event> replies;
-  final String regex = "(.*)\n(.*)\n";
+  final String regex = "(>(.*)\n)*\n";
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
