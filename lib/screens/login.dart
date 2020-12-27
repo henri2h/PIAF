@@ -59,6 +59,7 @@ class LoginCardState extends State<LoginCard> {
   bool _isLoading = false;
   String password = "";
   String domain = "";
+  bool canTryLogIn = false;
 
   void _loginAction(SClient client) async {
     if (mounted)
@@ -78,6 +79,9 @@ class LoginCardState extends State<LoginCard> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+// according to the matrix specification https://matrix.org/docs/spec/appendices#id9
+  RegExp userRegex = RegExp(
+      r"@((([a-z]|\.|_|-|=|\/|[0-9])+):(((.+)\.(.+))|\[((([0-9]|[a-f]|[A-F])+):){2,7}:?([0-9]|[a-f]|[A-F])+\]))(:([0-9]+))?");
   @override
   Widget build(BuildContext context) {
     SClient client = Matrix.of(context).sclient;
@@ -90,12 +94,24 @@ class LoginCardState extends State<LoginCard> {
                       name: "userid",
                       icon: Icons.account_circle,
                       onChanged: (String userid) async {
-                        WellKnownInformations infos = await client
-                            .getWellKnownInformationsByUserId(userid);
-                        if (infos?.mHomeserver?.baseUrl != null) {
-                          setState(() {
-                            domain = infos.mHomeserver.baseUrl;
-                          });
+                        RegExpMatch reguserIdMatched =
+                            userRegex.firstMatch(userid);
+
+                        if (reguserIdMatched != null) {
+                          String userIdMatched = reguserIdMatched.group(0);
+                          WellKnownInformations infos = await client
+                              .getWellKnownInformationsByUserId(userIdMatched);
+                          if (infos?.mHomeserver?.baseUrl != null) {
+                            setState(() {
+                              domain = infos.mHomeserver.baseUrl;
+                              canTryLogIn = true;
+                            });
+                          } else {
+                            setState(() {
+                              domain = "";
+                              canTryLogIn = false;
+                            });
+                          }
                         }
                       },
                       tController: _usernameController),
@@ -112,10 +128,11 @@ class LoginCardState extends State<LoginCard> {
                       child: LinearProgressIndicator(),
                     ),
                   FloatingActionButton.extended(
+                    
                       icon: const Icon(Icons.login),
                       label: Text('Login'),
                       onPressed:
-                          _isLoading ? null : () => _loginAction(client)),
+                          _isLoading || !canTryLogIn ? null : () => _loginAction(client)),
                 ]))));
   }
 
