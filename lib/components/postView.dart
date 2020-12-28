@@ -7,8 +7,6 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'dart:math' as math;
-
 class Post extends StatefulWidget {
   Post({Key key, @required this.event}) : super(key: key);
   final Event event;
@@ -38,43 +36,85 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     return StreamBuilder<Object>(
       stream: e.room.onUpdate.stream,
       builder: (context, snapshot) => Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Material(
-          elevation: 10,
-          borderRadius: BorderRadius.circular(5),
-          child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-              ),
-              //padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  // post content
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PostHeader(event: e),
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: PostContent(e),
-                        ),
-                        if (reactions.isNotEmpty)
-                          PostReactions(event: e, reactions: reactions),
-                        PostFooter(
-                            event: e, replyButtonClick: replyButtonClick),
-                      ],
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            // post content
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                PostHeader(event: e),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                  child: PostContent(e),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    FlatButton(
+                      onPressed: () async {
+                        Emoji emoji = await showModalBottomSheet(
+                            context: context,
+                            builder: (context) => Column(children: [
+                                  EmojiPicker(
+                                    onEmojiSelected: (emoji, category) {
+                                      Navigator.of(context).pop<Emoji>(emoji);
+                                    },
+                                  ),
+                                ]));
+                        await e.room.sendReaction(e.eventId, emoji.emoji);
+                      },
+                      child: reactions.isNotEmpty
+                          ? PostReactions(event: e, reactions: reactions)
+                          : ReactionItemWidget(
+                              Row(children: [
+                                Icon(Icons.emoji_emotions, size: 16),
+                                SizedBox(width: 10),
+                                Text("0")
+                              ]),
+                            ),
                     ),
-                  ),
-                  if (showReplyBox) ReplyBox(event: e),
-                  if (replies.isNotEmpty)
-                    RepliesVue(event: e, replies: replies),
-                ],
-              )),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: FlatButton(
+                        onPressed: replyButtonClick,
+                        child: ReactionItemWidget(
+                          Row(children: [
+                            Icon(Icons.reply, size: 16),
+                            SizedBox(width: 10),
+                            Text("+10")
+                          ]),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            if (showReplyBox) ReplyBox(event: e),
+            if (replies.isNotEmpty) RepliesVue(event: e, replies: replies),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class ReactionItemWidget extends StatelessWidget {
+  const ReactionItemWidget(
+    this.child, {
+    Key key,
+  }) : super(key: key);
+  final Widget child;
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      borderRadius: BorderRadius.circular(5),
+      color: Colors.white,
+      elevation: 2,
+      child: Padding(padding: const EdgeInsets.all(6), child: child),
     );
   }
 }
@@ -107,10 +147,13 @@ class ReplyBox extends StatelessWidget {
           Expanded(
               child: TextField(
             controller: tc,
-            minLines: 2,
-            maxLines: 5,
+            keyboardType: TextInputType.multiline,
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.lightBlue[50],
+              contentPadding: EdgeInsets.all(15),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
               labelText: 'Reply',
             ),
           )),
@@ -145,17 +188,14 @@ class RepliesVue extends StatelessWidget {
         children: [
           for (Event revent in replies)
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(vertical: 6.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Flexible(
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Transform.rotate(
-                            angle: math.pi, child: Icon(Icons.reply)),
-                        SizedBox(width: 10),
                         CircleAvatar(
                           radius: 10,
                           backgroundImage: revent.sender.avatarUrl == null
@@ -169,16 +209,43 @@ class RepliesVue extends StatelessWidget {
                                 ),
                         ),
                         SizedBox(width: 10),
-                        Flexible(
-                          child: Text(
-                              revent.body.replaceFirst(new RegExp(regex), "")),
+                        Expanded(
+                          child: Material(
+                            elevation: 0,
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.lightBlue[50],
+                            //color:Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(revent.sender.asUser.displayName,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w700)),
+                                      Text(
+                                          " - " +
+                                              timeago.format(
+                                                  revent.originServerTs),
+                                          style: TextStyle(
+                                              color: Colors.black54,
+                                              fontWeight: FontWeight.w400)),
+                                    ],
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(revent.body
+                                      .replaceFirst(new RegExp(regex), "")),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(width: 20),
-                  Text(timeago.format(revent.originServerTs),
-                      style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -195,73 +262,32 @@ class PostReactions extends StatelessWidget {
   final Set<Event> reactions;
   @override
   Widget build(BuildContext context) {
+    Map<String, int> keys = new Map<String, int>();
+    for (Event revent in reactions) {
+      String key = revent.content['m.relates_to']['key'];
+      keys.update(key, (value) => value + 1, ifAbsent: () => 1);
+    }
     return Row(
       children: [
-        for (Event revent in reactions)
-          Row(
-            children: [Text(revent.content['m.relates_to']['key'])],
+        for (MapEntry<String, int> key in keys.entries)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Row(children: [
+                  Text(key.key),
+                  SizedBox(width: 10),
+                  Text(key.value.toString())
+                ]),
+              ),
+            ),
           ),
       ],
     );
-  }
-}
-
-class PostFooter extends StatelessWidget {
-  const PostFooter(
-      {Key key, @required this.event, @required this.replyButtonClick})
-      : super(key: key);
-
-  final Event event;
-  final Function replyButtonClick;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          FlatButton(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.insert_emoticon, size: 15),
-                  SizedBox(width: 2),
-                  Text("React"),
-                ],
-              ),
-              onPressed: () async {
-                Emoji emoji = await showModalBottomSheet(
-                    context: context,
-                    builder: (context) => Column(children: [
-                          EmojiPicker(
-                            onEmojiSelected: (emoji, category) {
-                              Navigator.of(context).pop<Emoji>(emoji);
-                            },
-                          ),
-                        ]));
-                await event.room.sendReaction(event.eventId, emoji.emoji);
-              }),
-          FlatButton(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.reply, size: 15),
-                  SizedBox(width: 2),
-                  Text("reply"),
-                ],
-              ),
-              onPressed: replyButtonClick),
-          if (event.canRedact)
-            FlatButton(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.edit, size: 15),
-                    SizedBox(width: 2),
-                    Text("edit"),
-                  ],
-                ),
-                onPressed: () {})
-        ]);
   }
 }
 

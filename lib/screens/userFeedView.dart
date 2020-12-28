@@ -30,7 +30,17 @@ class UserFeedView extends StatelessWidget {
                   Padding(
                       padding: const EdgeInsets.all(15),
                       child: FriendsView(sroom: sroom)),
-                  for (Event e in sevents) Post(event: e),
+                  for (Event e in sevents)
+                    Column(
+                      children: [
+                        Post(event: e),
+                        Divider(
+                          indent: 25,
+                          endIndent: 25,
+                          thickness: 0.5,
+                        ),
+                      ],
+                    ),
                 ],
               ));
     }
@@ -57,10 +67,13 @@ class FriendsView extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text("Friends", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          child: Text("Friends",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ),
         Wrap(children: [
-          for (User user in sroom.room.getParticipants().where((User u) => u.membership == Membership.join))
+          for (User user in sroom.room
+              .getParticipants()
+              .where((User u) => u.membership == Membership.join))
             AccountCard(user: user),
         ]),
       ],

@@ -21,10 +21,21 @@ class FeedView extends StatelessWidget {
           child: StreamBuilder(
             stream: sclient.onTimelineUpdate.stream,
             builder: (context, _) => ListView.builder(
-                padding: const EdgeInsets.all(16),
                 itemCount: sclient.stimeline.length,
-                itemBuilder: (BuildContext context, int i) =>
-                    Post(event: sclient.stimeline[i])),
+                itemBuilder: (BuildContext context, int i) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Material(
+                          color: Colors.white,
+                          elevation: 3,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: Post(event: sclient.stimeline[i]),
+                          )),
+                    )),
           ),
         ),
       ],
