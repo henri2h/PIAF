@@ -290,22 +290,33 @@ class PostHeader extends StatelessWidget {
               ),
               SizedBox(width: 10),
               Flexible(
-                child: Wrap(children: <Widget>[
-                  Text(event.sender.displayName,
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text(" to ", style: TextStyle(fontSize: 20)),
-                  FutureBuilder<String>(
-                      future: sclient.getRoomDisplayName(event.room),
-                      builder: (context, AsyncSnapshot<String> name) {
-                        if (name.hasData) {
-                          return Text(name.data,
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold));
-                        }
-                        return Text("Loading...");
-                      })
-                ]),
+                child: FutureBuilder<String>(
+                    future: sclient.getRoomDisplayName(event.room),
+                    builder: (context, AsyncSnapshot<String> name) {
+                      if (name.hasData) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(event.sender.displayName,
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold)),
+                            Row(
+                              children: [
+                                Text("to"),
+                                SizedBox(width: 10),
+                                Text(name.data,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400)),
+                              ],
+                            ),
+                          ],
+                        );
+                      }
+                      return Text(event.sender.displayName,
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold));
+                    }),
               ),
             ],
           ),
@@ -315,7 +326,7 @@ class PostHeader extends StatelessWidget {
           child: Row(
             children: [
               Text(timeago.format(event.originServerTs),
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: TextStyle(fontWeight: FontWeight.normal)),
               if (event.type == EventTypes.Encrypted)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
