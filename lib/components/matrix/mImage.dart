@@ -9,12 +9,15 @@ class MImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String url = event.getAttachmentUrl();
-    return Column(
-      children: [
-        CachedNetworkImage(
+    return Material(
+      elevation: 5,
+      borderRadius: BorderRadius.all(Radius.circular(5)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: CachedNetworkImage(
           imageUrl: url,
         ),
-      ],
+      ),
     );
   }
 }
