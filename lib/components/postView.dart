@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
@@ -180,13 +182,14 @@ class RepliesVue extends StatelessWidget {
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
     // get replies
+    int max = min(replies.length, 2);
 
     return Container(
 //      decoration: BoxDecoration(color: Colors.grey),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (Event revent in replies)
+          for (Event revent in replies.toList().sublist(0, max))
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6.0),
               child: Row(
@@ -249,6 +252,8 @@ class RepliesVue extends StatelessWidget {
                 ],
               ),
             ),
+          if (replies.length > max)
+            Center(child: MaterialButton(child: Text("load more"), onPressed: () {}))
         ],
       ),
     );
