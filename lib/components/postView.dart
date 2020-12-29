@@ -84,7 +84,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                           Row(children: [
                             Icon(Icons.reply, size: 16),
                             SizedBox(width: 10),
-                            Text("+10")
+                            Text("")
                           ]),
                         ),
                       ),

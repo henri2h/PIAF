@@ -205,7 +205,9 @@ class _MobileContainerState extends State<MobileContainer> {
     Widget widgetFeedView = FeedView(sclient: sclient);
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
-      body: widgetView ?? Text("hello"),
+      body: Container(
+        color:Colors.white,
+        child: widgetView ?? Text("hello")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {

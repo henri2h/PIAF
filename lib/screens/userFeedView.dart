@@ -33,7 +33,10 @@ class UserFeedView extends StatelessWidget {
                   for (Event e in sevents)
                     Column(
                       children: [
-                        Post(event: e),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal:12),
+                          child: Post(event: e),
+                        ),
                         Divider(
                           indent: 25,
                           endIndent: 25,
