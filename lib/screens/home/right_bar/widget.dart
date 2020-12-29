@@ -16,9 +16,9 @@ class _RightBarState extends State<RightBar>
     return StreamBuilder(
         stream: sclient.onSync.stream,
         builder: (context, _) => ListView.builder(
-            itemCount: sclient.srooms.length,
+            itemCount: sclient.srooms.values.length,
             itemBuilder: (BuildContext context, int i) =>
-                ContactView(sroom: sclient.srooms[i])));
+                ContactView(sroom: sclient.srooms.values.toList()[i])));
   }
 }
 
@@ -31,48 +31,53 @@ class ContactView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient client = Matrix.of(context).sclient;
-
-    return SizedBox(
-        child: Card(
-            child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Flexible(
-                                              child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            CircleAvatar(
-                              backgroundImage: sroom.user == null ||
-                                      sroom.user.avatarUrl == null
-                                  ? null
-                                  : NetworkImage(
-                                      sroom.user.avatarUrl.getThumbnail(
-                                        client,
-                                        width: 64,
-                                        height: 64,
+    if (sroom != null)
+      return SizedBox(
+          child: Card(
+              child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Flexible(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                backgroundImage: sroom.user == null ||
+                                        sroom.user.avatarUrl == null
+                                    ? null
+                                    : NetworkImage(
+                                        sroom.user.avatarUrl.getThumbnail(
+                                          client,
+                                          width: 64,
+                                          height: 64,
+                                        ),
                                       ),
-                                    ),
-                            ),
-                            Flexible(
-                                                          child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                              ),
+                              Flexible(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(sroom.user.displayName,
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold)),
-                                        Text(sroom.user.id, overflow: TextOverflow.ellipsis,)
+                                        Text(
+                                          sroom.user.id,
+                                          overflow: TextOverflow.ellipsis,
+                                        )
                                       ]),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      if (sroom.room.encrypted) Icon(Icons.verified_user),
-                      if (!sroom.room.encrypted) Icon(Icons.no_encryption)
-                    ]))));
+                        if (sroom.room.encrypted) Icon(Icons.verified_user),
+                        if (!sroom.room.encrypted) Icon(Icons.no_encryption)
+                      ]))));
+    return Text("ERROR !");
   }
 }
