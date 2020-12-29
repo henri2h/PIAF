@@ -94,24 +94,33 @@ class LoginCardState extends State<LoginCard> {
                       name: "userid",
                       icon: Icons.account_circle,
                       onChanged: (String userid) async {
-                        RegExpMatch reguserIdMatched =
-                            userRegex.firstMatch(userid);
+                        try {
+                          RegExpMatch reguserIdMatched =
+                              userRegex.firstMatch(userid);
 
-                        if (reguserIdMatched != null) {
-                          String userIdMatched = reguserIdMatched.group(0);
-                          WellKnownInformations infos = await client
-                              .getWellKnownInformationsByUserId(userIdMatched);
-                          if (infos?.mHomeserver?.baseUrl != null) {
-                            setState(() {
-                              domain = infos.mHomeserver.baseUrl;
-                              canTryLogIn = true;
-                            });
-                          } else {
-                            setState(() {
-                              domain = "";
-                              canTryLogIn = false;
-                            });
+                          if (reguserIdMatched != null) {
+                            String userIdMatched = reguserIdMatched.group(0);
+                            WellKnownInformations infos =
+                                await client.getWellKnownInformationsByUserId(
+                                    userIdMatched);
+                            if (infos?.mHomeserver?.baseUrl != null) {
+                              setState(() {
+                                domain = infos.mHomeserver.baseUrl;
+                                canTryLogIn = true;
+                              });
+                            } else {
+                              setState(() {
+                                domain = "";
+                                canTryLogIn = false;
+                              });
+                            }
                           }
+                        } catch (_) {
+                           setState(() {
+                                domain = "";
+                                canTryLogIn = false;
+                              });
+                          print("error");
                         }
                       },
                       tController: _usernameController),
@@ -128,11 +137,11 @@ class LoginCardState extends State<LoginCard> {
                       child: LinearProgressIndicator(),
                     ),
                   FloatingActionButton.extended(
-                    
                       icon: const Icon(Icons.login),
                       label: Text('Login'),
-                      onPressed:
-                          _isLoading || !canTryLogIn ? null : () => _loginAction(client)),
+                      onPressed: _isLoading || !canTryLogIn
+                          ? null
+                          : () => _loginAction(client)),
                 ]))));
   }
 
