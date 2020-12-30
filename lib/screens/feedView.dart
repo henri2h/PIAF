@@ -13,32 +13,35 @@ class FeedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PageTitle("Feed"),
-        Flexible(
-          child: StreamBuilder(
-            stream: sclient.onTimelineUpdate.stream,
-            builder: (context, _) => ListView.builder(
-                itemCount: sclient.stimeline.length,
-                itemBuilder: (BuildContext context, int i) => Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Material(
-                          color: Colors.white,
-                          elevation: 3,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            padding: const EdgeInsets.all(10),
-                            child: Post(event: sclient.stimeline[i]),
-                          )),
-                    )),
+    return Container(
+      color: Color(0xfff4f3f4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          PageTitle("Feed"),
+          Flexible(
+            child: StreamBuilder(
+              stream: sclient.onTimelineUpdate.stream,
+              builder: (context, _) => ListView.builder(
+                  itemCount: sclient.stimeline.length,
+                  itemBuilder: (BuildContext context, int i) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Material(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.all(0),
+                              child: Post(event: sclient.stimeline[i]),
+                            )),
+                      )),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
