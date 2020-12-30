@@ -95,9 +95,16 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                 ),
               ],
             ),
-            Divider(),
-            if (showReplyBox) ReplyBox(event: e),
-            if (replies.isNotEmpty) RepliesVue(event: e, replies: replies),
+            Container(
+              //color: Color(0xfff6f6f6),
+              child: Column(
+                children: [
+                  if (showReplyBox) ReplyBox(event: e),
+                  if (replies.isNotEmpty)
+                    RepliesVue(event: e, replies: replies),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -192,7 +199,7 @@ class RepliesVue extends StatelessWidget {
         children: [
           for (Event revent in replies.toList().sublist(0, max))
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -217,14 +224,15 @@ class RepliesVue extends StatelessWidget {
                         ),
                         SizedBox(width: 10),
                         Expanded(
-                          child: Material(
-                            elevation: 0,
-                            borderRadius: BorderRadius.circular(20),
-                            color: Color(0xf5f8fcff),
-                            //color:Colors.white,
+                          child: Card(
+                            elevation:0.3,
+                            color: Color(0xfff6f6f6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 12),
+                                  vertical: 10, horizontal: 12),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -339,8 +347,9 @@ class PostHeader extends StatelessWidget {
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                             Row(
                               children: [
-                                Text("to"),
-                                SizedBox(width: 10),
+                                Text("to",
+                                    style: TextStyle(color: Colors.grey[600])),
+                                SizedBox(width: 2),
                                 Text(name.data,
                                     style: TextStyle(
                                         fontSize: 16,
@@ -348,8 +357,9 @@ class PostHeader extends StatelessWidget {
                               ],
                             ),
                             Text(timeago.format(event.originServerTs),
-                                style:
-                                    TextStyle(fontWeight: FontWeight.normal, color:Colors.grey[600])),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.grey[600])),
                           ],
                         );
                       }
