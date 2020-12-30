@@ -10,7 +10,7 @@ class MImage extends StatelessWidget {
   Widget build(BuildContext context) {
     String url = event.getAttachmentUrl();
     return Material(
-      elevation: 5,
+      elevation: 3,
       borderRadius: BorderRadius.all(Radius.circular(5)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(5),
