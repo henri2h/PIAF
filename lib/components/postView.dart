@@ -95,6 +95,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                 ),
               ],
             ),
+            Divider(),
             if (showReplyBox) ReplyBox(event: e),
             if (replies.isNotEmpty) RepliesVue(event: e, replies: replies),
           ],
@@ -152,7 +153,7 @@ class ReplyBox extends StatelessWidget {
             keyboardType: TextInputType.multiline,
             decoration: InputDecoration(
               filled: true,
-              fillColor: Colors.lightBlue[50],
+              fillColor: Color(0xf5f8fc),
               contentPadding: EdgeInsets.all(15),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(20))),
@@ -197,26 +198,29 @@ class RepliesVue extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 10,
-                          backgroundImage: revent.sender.avatarUrl == null
-                              ? null
-                              : NetworkImage(
-                                  revent.sender.avatarUrl.getThumbnail(
-                                    sclient,
-                                    width: 16,
-                                    height: 16,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: CircleAvatar(
+                            radius: 10,
+                            backgroundImage: revent.sender.avatarUrl == null
+                                ? null
+                                : NetworkImage(
+                                    revent.sender.avatarUrl.getThumbnail(
+                                      sclient,
+                                      width: 16,
+                                      height: 16,
+                                    ),
                                   ),
-                                ),
+                          ),
                         ),
                         SizedBox(width: 10),
                         Expanded(
                           child: Material(
                             elevation: 0,
                             borderRadius: BorderRadius.circular(20),
-                            color: Colors.lightBlue[50],
+                            color: Color(0xf5f8fcff),
                             //color:Colors.white,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -253,7 +257,9 @@ class RepliesVue extends StatelessWidget {
               ),
             ),
           if (replies.length > max)
-            Center(child: MaterialButton(child: Text("load more"), onPressed: () {}))
+            Center(
+                child:
+                    MaterialButton(child: Text("load more"), onPressed: () {}))
         ],
       ),
     );
@@ -341,6 +347,9 @@ class PostHeader extends StatelessWidget {
                                         fontWeight: FontWeight.w400)),
                               ],
                             ),
+                            Text(timeago.format(event.originServerTs),
+                                style:
+                                    TextStyle(fontWeight: FontWeight.normal, color:Colors.grey[600])),
                           ],
                         );
                       }
@@ -356,13 +365,12 @@ class PostHeader extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              Text(timeago.format(event.originServerTs),
-                  style: TextStyle(fontWeight: FontWeight.normal)),
               if (event.type == EventTypes.Encrypted)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.enhanced_encryption),
                 ),
+              IconButton(icon: Icon(Icons.more_horiz), onPressed: () {})
             ],
           ),
         )
