@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postView.dart';
@@ -210,9 +211,10 @@ class _MobileContainerState extends State<MobileContainer> {
       body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () async{
-          await showDialog(context: context, builder: (_) => Dialog(child: PostEditor()));
-         /* NavigatorState nav = Navigator.of(context);
+        onPressed: () async {
+          await showDialog(
+              context: context, builder: (_) => Dialog(child: PostEditor()));
+          /* NavigatorState nav = Navigator.of(context);
           if (nav.canPop()) {
             nav.pop<PostEditor>();
             
@@ -266,21 +268,29 @@ class _MobileContainerState extends State<MobileContainer> {
                 ),
               ),
               IconButton(
-                onPressed: () {
-                  changePage(UserFeedView(userId: sclient.userID));
-                },
-                icon: CircleAvatar(
-                    radius: 12,
-                    backgroundImage: sclient.userRoom?.user?.avatarUrl == null
-                        ? null
-                        : NetworkImage(
-                            sclient.userRoom.user.avatarUrl.getThumbnail(
-                              sclient,
-                              width: 32,
-                              height: 32,
-                            ),
-                          )),
-              ),
+                  onPressed: () {
+                    changePage(UserFeedView(userId: sclient.userID));
+                  },
+                  icon: FutureBuilder(
+                      future: sclient.getProfileFromUserId(sclient.userID),
+                      builder:
+                          (BuildContext context, AsyncSnapshot<Profile> p) {
+                        if (p.data?.avatarUrl == null)
+                          return Icon(Icons.person);
+                        return CachedNetworkImage(
+                          imageUrl: p.data.avatarUrl.getThumbnail(
+                            sclient,
+                            width: 32,
+                            height: 32,
+                          ),
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                        );
+                      })),
             ],
           ),
         ),
