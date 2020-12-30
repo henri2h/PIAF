@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -10,29 +11,27 @@ class AccountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
 
-    return Card(
-        child: Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            backgroundImage: user.avatarUrl == null
-                ? null
-                : NetworkImage(
-                    user.avatarUrl.getThumbnail(
-                      sclient,
-                      width: 64,
-                      height: 64,
-                    ),
-                  ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (user.avatarUrl == null)
+          Text(user.displayName[0])
+        else
+          CachedNetworkImage(
+            imageUrl: user.avatarUrl.getThumbnail(
+              sclient,
+              width: 300,
+              height: 300,
+            ),
+            progressIndicatorBuilder: (context, url, downloadProgress) =>
+                CircularProgressIndicator(value: downloadProgress.progress),
+            errorWidget: (context, url, error) => Icon(Icons.error),
           ),
-          Text(user.displayName,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          Text("Hello"),
-        ],
-      ),
-    ));
+        Text(user.displayName,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text("Hello"),
+      ],
+    );
   }
 }
