@@ -16,6 +16,9 @@ class MImage extends StatelessWidget {
         borderRadius: BorderRadius.circular(5),
         child: CachedNetworkImage(
           imageUrl: url,
+          progressIndicatorBuilder: (context, url, downloadProgress) =>
+              CircularProgressIndicator(value: downloadProgress.progress),
+          errorWidget: (context, url, error) => Icon(Icons.error),
         ),
       ),
     );
