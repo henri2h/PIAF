@@ -25,6 +25,7 @@ class _PostEditorState extends State<PostEditor>
     return Container(
         padding: const EdgeInsets.all(8.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min, // to make the dialog compact 
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -58,6 +59,7 @@ class _PostEditorState extends State<PostEditor>
                   label: Text('Send post'),
                   onPressed: () {
                     sendPost(sclient, postContent);
+                    Navigator.of(context).pop();
                   }),
             ),
             Padding(

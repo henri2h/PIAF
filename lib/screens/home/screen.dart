@@ -12,6 +12,7 @@ import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
 import 'package:minestrix/screens/settings.dart';
 import 'package:minestrix/screens/userFeedView.dart';
+import 'package:famedlysdk/famedlysdk.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -189,6 +190,7 @@ class _MobileContainerState extends State<MobileContainer> {
   final int selectedIndex = 1;
   Widget widgetView;
   bool changing = false;
+
   void changePage(Widget widgetIn) {
     if (mounted && changing == false) {
       changing = true;
@@ -205,13 +207,21 @@ class _MobileContainerState extends State<MobileContainer> {
     Widget widgetFeedView = FeedView(sclient: sclient);
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
-      body: Container(
-        color:Colors.white,
-        child: widgetView ?? Text("hello")),
+      body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          changePage(PostEditor());
+        onPressed: () async{
+          await showDialog(context: context, builder: (_) => Dialog(child: PostEditor()));
+         /* NavigatorState nav = Navigator.of(context);
+          if (nav.canPop()) {
+            nav.pop<PostEditor>();
+            
+          } else
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => Scaffold(body: PostEditor()),
+              ),
+            );*/
         },
         tooltip: "New post",
         child: Container(
@@ -238,14 +248,6 @@ class _MobileContainerState extends State<MobileContainer> {
               ),
               IconButton(
                 onPressed: () {
-                  changePage(UserFeedView(userId: sclient.userID));
-                },
-                icon: Icon(
-                  Icons.person,
-                ),
-              ),
-              IconButton(
-                onPressed: () {
                   changePage(FriendsVue());
                 },
                 icon: Icon(
@@ -265,19 +267,19 @@ class _MobileContainerState extends State<MobileContainer> {
               ),
               IconButton(
                 onPressed: () {
-                  changePage(DebugView());
+                  changePage(UserFeedView(userId: sclient.userID));
                 },
-                icon: Icon(
-                  Icons.bug_report,
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  changePage(SettingsView());
-                },
-                icon: Icon(
-                  Icons.settings,
-                ),
+                icon: CircleAvatar(
+                    radius: 12,
+                    backgroundImage: sclient.userRoom?.user?.avatarUrl == null
+                        ? null
+                        : NetworkImage(
+                            sclient.userRoom.user.avatarUrl.getThumbnail(
+                              sclient,
+                              width: 32,
+                              height: 32,
+                            ),
+                          )),
               ),
             ],
           ),
