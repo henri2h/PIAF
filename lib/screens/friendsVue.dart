@@ -101,25 +101,12 @@ class FriendsVue extends StatelessWidget {
         ),
         Text("Can write on feed : "),
         Flexible(
-          
           child: StreamBuilder(
-            stream: sclient.onSync.stream,
-            builder: (context, _) => GridView.builder(
-                gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 5,
-    ),
-              shrinkWrap: true,
-              //scrollDirection: Axis.horizontal,
-              itemCount: sclient.srooms.length,
-              itemBuilder: (BuildContext context, int i) =>
-                  AccountCard(user: sclient.srooms[i].user),
-            ),
-          ),
-        ),
-        Text("Friends: ", style: TextStyle(fontSize: 20)),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text("Friends: ", style: TextStyle(fontSize: 20)),
+              stream: sclient.onSync.stream,
+              builder: (context, _) => Wrap(children: [
+                    for (int i = 0; i < sclient.srooms.length; i++)
+                      AccountCard(user: sclient.srooms.values.toList()[i].user),
+                  ])),
         ),
       ],
     );
