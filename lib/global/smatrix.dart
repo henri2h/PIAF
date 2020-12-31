@@ -134,7 +134,7 @@ class SClient extends Client {
 
     SMatrixRoom sroom = SMatrixRoom();
     Room r = getRoomById(roomID);
-    sroom.init(r, this);
+    bool result = await sroom.init(r, this);
 
     /*
     Map<String, dynamic> content = Map<String, dynamic>();
@@ -143,7 +143,10 @@ class SClient extends Client {
         type: "org.matrix.msc1840"); // define room type, MSC 1840
     print(res); 
     // save user room*/ // NOT working...
-    userRoom = sroom;
+    if (result)
+      userRoom = sroom;
+    else
+      print("could not creat room ....");
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t) {

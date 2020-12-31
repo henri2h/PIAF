@@ -37,6 +37,6 @@ class MinesTrixButton extends StatelessWidget {
             ),
           ),
         ),
-        onPressed: () {});
+        onPressed: onPressed);
   }
 }
