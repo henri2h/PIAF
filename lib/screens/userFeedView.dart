@@ -1,6 +1,8 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/Theme.dart';
 import 'package:minestrix/components/accountCard.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -59,34 +61,9 @@ class UserFeedView extends StatelessWidget {
                       padding: const EdgeInsets.all(15),
                       child: FriendsView(sroom: sroom)),
                   Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: RaisedButton(
-                      onPressed: () {},
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(80.0)),
-                      padding: const EdgeInsets.all(0.0),
-                      child: Ink(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: <Color>[
-                              Color(0xFFd24800),
-                              Color(0xFF0000a4),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.all(Radius.circular(80.0)),
-                        ),
-                        child: Container(
-                          constraints: const BoxConstraints(
-                              minWidth: 88.0,
-                              minHeight:
-                                  36.0), // min sizes for Material buttons
-                          alignment: Alignment.center,
-                          child: const Text('OK',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.white)),
-                        ),
-                      ),
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 80),
+                    child: MinesTrixButton(
+                        onPressed: () {}, label: "ok", icon: Icons.data_usage),
                   ),
                   for (Event e in sevents)
                     Column(
