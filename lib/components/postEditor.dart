@@ -1,6 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
@@ -25,7 +26,7 @@ class _PostEditorState extends State<PostEditor>
     return Container(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // to make the dialog compact 
+          mainAxisSize: MainAxisSize.min, // to make the dialog compact
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -54,9 +55,9 @@ class _PostEditorState extends State<PostEditor>
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: FloatingActionButton.extended(
-                  icon: const Icon(Icons.send),
-                  label: Text('Send post'),
+              child: MinesTrixButton(
+                  icon: Icons.edit,
+                  label: "Send post",
                   onPressed: () {
                     sendPost(sclient, postContent);
                     Navigator.of(context).pop();
