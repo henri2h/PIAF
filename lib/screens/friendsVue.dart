@@ -22,7 +22,8 @@ class FriendsVue extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitle("Users"),
-          for (User u in users.where((User u) => u.membership == Membership.join))
+          for (User u
+              in users.where((User u) => u.membership == Membership.join))
             Row(
               children: [
                 Padding(
@@ -63,8 +64,8 @@ class FriendsVue extends StatelessWidget {
                 ),
               ],
             ),
-
-            Text("Friend requests", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+          Text("Friend requests",
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
           for (SMatrixRoom sm in sclient.sInvites.values)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,10 +81,14 @@ class FriendsVue extends StatelessWidget {
                   children: [
                     IconButton(
                         icon: Icon(Icons.check, color: Colors.green),
-                        onPressed: () {}),
+                        onPressed: () async {
+                          await sm.room.join();
+                        }),
                     IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {}),
+                        onPressed: () async {
+                          await sm.room.leave();
+                        }),
                   ],
                 ),
               ],
@@ -99,7 +104,8 @@ class FriendsVue extends StatelessWidget {
 
               return ur.results
                   .where((element) =>
-                      sFriends.firstWhere((friend) => friend.id == element.userId,
+                      sFriends.firstWhere(
+                          (friend) => friend.id == element.userId,
                           orElse: () => null) ==
                       null)
                   .toList(); // exclude current friends
@@ -134,7 +140,8 @@ class FriendsVue extends StatelessWidget {
                 stream: sclient.onSync.stream,
                 builder: (context, _) => Wrap(children: [
                       for (int i = 0; i < sclient.srooms.length; i++)
-                        AccountCard(user: sclient.srooms.values.toList()[i].user),
+                        AccountCard(
+                            user: sclient.srooms.values.toList()[i].user),
                     ])),
           ),
         ],

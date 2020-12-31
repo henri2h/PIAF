@@ -83,6 +83,7 @@ class SClient extends Client {
       print("sroom lock...");
       return;
     }
+    userRoom = null;
     sRoomLock = true;
     srooms.clear(); // clear rooms
     sInvites.clear(); // clear invites
