@@ -225,7 +225,7 @@ class RepliesVue extends StatelessWidget {
                         SizedBox(width: 10),
                         Expanded(
                           child: Card(
-                            elevation:0.3,
+                            elevation: 0.3,
                             color: Color(0xfff6f6f6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -380,7 +380,39 @@ class PostHeader extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.enhanced_encryption),
                 ),
-              IconButton(icon: Icon(Icons.more_horiz), onPressed: () {})
+              PopupMenuButton<String>(
+                  itemBuilder: (_) => [
+                        if (event.canRedact)
+                          PopupMenuItem(
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit),
+                                  SizedBox(width: 10),
+                                  Text("Edit post"),
+                                ],
+                              ),
+                              value: "edit"),
+                        if (event.canRedact)
+                          PopupMenuItem(
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete, color: Colors.red),
+                                  SizedBox(width: 10),
+                                  Text("Delete post",
+                                      style: TextStyle(color: Colors.red)),
+                                ],
+                              ),
+                              value: "delete")
+                      ],
+                  child: Icon(Icons.more_horiz),
+                  onSelected: (String action) async {
+                    switch (action) {
+                      case "delete":
+                        await event.redact();
+                        break;
+                      default:
+                    }
+                  })
             ],
           ),
         )
