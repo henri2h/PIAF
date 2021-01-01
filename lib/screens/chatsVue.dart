@@ -15,29 +15,26 @@ class _ChatsVueState extends State<ChatsVue>
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).sclient;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PageTitle("MATRIX Chats"),
-        Flexible(
-          child: StreamBuilder(
-            stream: client.onSync.stream,
-            builder: (context, _) => ListView.builder(
-              itemCount: client.rooms.length,
-              itemBuilder: (BuildContext context, int i) => ListTile(
-                leading: MatrixUserImage(url: client.rooms[i].avatar),
-                title: Text(client.rooms[i].displayname),
-                subtitle: Text(client.rooms[i].lastMessage),
+    return Flexible(
+      child: StreamBuilder(
+        stream: client.onSync.stream,
+        builder: (context, _) => ListView.builder(
+            itemCount: client.rooms.length + 1,
+            itemBuilder: (BuildContext context, int i) {
+              if (i == 0) return PageTitle("MATRIX Chats");
+              int pos = i - 1;
+              return ListTile(
+                leading: MatrixUserImage(url: client.rooms[pos].avatar),
+                title: Text(client.rooms[pos].displayname),
+                subtitle: Text(client.rooms[pos].lastMessage),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => ChatView(roomId: client.rooms[i].id),
+                    builder: (_) => ChatView(roomId: client.rooms[pos].id),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ),
-      ],
+              );
+            }),
+      ),
     );
   }
 }

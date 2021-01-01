@@ -75,7 +75,7 @@ class FriendsVue extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  MatrixUserImage(user: sm.user),
+                                  MatrixUserImage(url: sm.user.avatarUrl),
                                   SizedBox(width: 10),
                                   Text(sm.user.displayName),
                                 ],
