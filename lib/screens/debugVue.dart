@@ -14,20 +14,25 @@ class _DebugViewState extends State<DebugView> {
     setState(() {
       progressing = true;
     });
-    Timeline t = sroom.timeline;
-    await t.requestHistory();
-    await sclient.loadNewTimeline();
-    getTimelineLength();
 
+    Timeline t = sroom?.timeline;
+    if (t != null) {
+      await t.requestHistory();
+      await sclient.loadNewTimeline();
+      getTimelineLength();
+    } else {
+      print("error");
+    }
     setState(() {
       progressing = false;
     });
   }
 
-  void getTimelineLength()  {
+  void getTimelineLength() {
     timelineLength.clear();
     for (var i = 0; i < srooms.length; i++) {
-      Timeline t = srooms[i].timeline;;
+      Timeline t = srooms[i].timeline;
+      
       timelineLength.add(t.events.length);
     }
 
@@ -64,28 +69,28 @@ class _DebugViewState extends State<DebugView> {
           if (srooms.length != 0)
             for (var i = 0; i < srooms.length; i++)
               Wrap(
-                  children: [
-                    Text(i.toString()),
+                children: [
+                  Text(i.toString()),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(srooms[i].room.name),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(srooms[i].room.id),
+                  ),
+                  if (timelineLength.length > i)
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(srooms[i].room.name),
+                      child: Text(timelineLength[i].toString()),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(srooms[i].room.id),
-                    ),
-                    if (timelineLength.length > i)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(timelineLength[i].toString()),
-                      ),
-                    RaisedButton(
-                        child: Text("Load"),
-                        onPressed: () async {
-                          await loadElements(context, sclient.srooms[i]);
-                        })
-                  ],
-                ),
+                  RaisedButton(
+                      child: Text("Load"),
+                      onPressed: () async {
+                        await loadElements(context, srooms[i]);
+                      })
+                ],
+              ),
           if (progressing) CircularProgressIndicator(),
           Center(
             child: Padding(
