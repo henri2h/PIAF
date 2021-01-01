@@ -22,48 +22,6 @@ class FriendsVue extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitle("Users"),
-          for (User u
-              in users.where((User u) => u.membership == Membership.join))
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(u.displayName),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(u.id),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(u.membership.toString()),
-                ),
-              ],
-            ),
-          if (friendRequest.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Friend requests",
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600)),
-            ),
-          for (User u in friendRequest)
-            Row(
-              children: [
-                Text("Sent friend requests"),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(u.displayName),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(u.id),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(u.membership.toString()),
-                ),
-              ],
-            ),
           TypeAheadField(
             hideOnEmpty: true,
             textFieldConfiguration: TextFieldConfiguration(
@@ -110,7 +68,7 @@ class FriendsVue extends StatelessWidget {
             child: StreamBuilder(
                 stream: sclient.onEvent.stream,
                 builder: (context, _) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -149,7 +107,7 @@ class FriendsVue extends StatelessWidget {
                           ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text("Friend",
+                          child: Text("Friends",
                               style: TextStyle(
                                   fontSize: 25, fontWeight: FontWeight.bold)),
                         ),
