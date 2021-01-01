@@ -1,8 +1,8 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:minestrix/components/MatrixUserImage.dart';
 import 'package:minestrix/components/accountCard.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -45,7 +45,7 @@ class FriendsVue extends StatelessWidget {
               return ListTile(
                 leading: profile.avatarUrl == null
                     ? Icon(Icons.person)
-                    : MatrixUserImage(profile: profile),
+                    : MatrixUserImage(url: profile.avatarUrl),
                 title: Text(profile.displayname),
                 subtitle: Text(profile.userId),
               );

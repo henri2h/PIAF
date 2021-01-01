@@ -1,5 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatVue.dart';
@@ -24,17 +25,7 @@ class _ChatsVueState extends State<ChatsVue>
             builder: (context, _) => ListView.builder(
               itemCount: client.rooms.length,
               itemBuilder: (BuildContext context, int i) => ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: client.rooms[i].avatar == null
-                      ? null
-                      : NetworkImage(
-                          client.rooms[i].avatar.getThumbnail(
-                            client,
-                            width: 64,
-                            height: 64,
-                          ),
-                        ),
-                ),
+                leading: MatrixUserImage(url: client.rooms[i].avatar),
                 title: Text(client.rooms[i].displayname),
                 subtitle: Text(client.rooms[i].lastMessage),
                 onTap: () => Navigator.of(context).push(

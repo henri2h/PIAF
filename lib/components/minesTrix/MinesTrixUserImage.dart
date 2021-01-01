@@ -5,18 +5,15 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class MatrixUserImage extends StatelessWidget {
-  MatrixUserImage({Key key, this.user, this.profile}) : super(key: key);
-  final Profile profile;
-  final User user;
+  MatrixUserImage({Key key, @required this.url})
+      : super(key: key);
+  final Uri url;
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    Profile p = profile;
-    if (profile == null) {
-      p = new Profile(user.displayName, user.avatarUrl);
-    }
+    if (url == null) return Icon(Icons.image);
     return CachedNetworkImage(
-      imageUrl: p.avatarUrl.getThumbnail(
+      imageUrl: url.getThumbnail(
         sclient,
         width: 30,
         height: 30,

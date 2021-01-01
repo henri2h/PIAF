@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/MatrixUserImage.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -278,7 +278,7 @@ class _MobileContainerState extends State<MobileContainer> {
                           (BuildContext context, AsyncSnapshot<Profile> p) {
                         if (p.data?.avatarUrl == null)
                           return Icon(Icons.person);
-                        return MatrixUserImage(profile: p.data);
+                        return MatrixUserImage(url: p.data.avatarUrl);
                       })),
             ],
           ),
