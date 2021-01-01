@@ -31,6 +31,12 @@ class SClient extends Client {
             databaseBuilder: databaseBuilder);
 
   Future<List<User>> getSfriends() async {
+    return (await getSUsers())
+        .where((User u) => u.membership == Membership.join)
+        .toList();
+  }
+
+  Future<List<User>> getSUsers() async {
     if (userRoom != null && userRoom.room != null) {
       if (userRoom.room.participantListComplete) {
         return userRoom.room.getParticipants();
@@ -47,6 +53,7 @@ class SClient extends Client {
   Future<void> initSMatrix() async {
     // initialisation
     await loadSRooms();
+    await sendInvitesToFriends();
     await loadNewTimeline();
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
       /*   print("Event update");
@@ -56,7 +63,7 @@ class SClient extends Client {
       print(" ");*/
       print("event");
       print(eUp.type);
-      if (eUp.eventType == "m.room.message") {
+      if (eUp.eventType ==  "m.room.message") {
         await loadNewTimeline();
         print("New timeline");
       }
@@ -197,6 +204,35 @@ class SClient extends Client {
     stimeline.sort((a, b) {
       return b.originServerTs.compareTo(a.originServerTs);
     });
+  }
+
+  /* this function iterate over all accepted friends invitations and ensure that they are in the user room
+  then it accepts all friends invitations from members of the user room
+    */
+  Future<void> sendInvitesToFriends() async {
+    List<User> friends = await getSfriends();
+    List<SMatrixRoom> sr = sInvites.values.toList();
+    for (SMatrixRoom r in sr) {
+      // check if the user is already in the list and accept invitation
+      bool exists = (friends.firstWhere((element) => r.user.id == element.id,
+              orElse: () => null) !=
+          null);
+      if (exists) {
+        await r.room.join();
+        sInvites.remove(r.room.id);
+      }
+    }
+
+    List<User> users = await getSUsers();
+    // iterate through rooms and add every user from thoose rooms not in our friend list
+    for (SMatrixRoom r in srooms.values) {
+      bool exists = (users.firstWhere((User u) => r.user.id == u.id,
+              orElse: () => null) !=
+          null);
+      if (!exists) {
+        await userRoom.room.invite(r.user.id);
+      }
+    }
   }
 
   @override
