@@ -64,35 +64,6 @@ class FriendsVue extends StatelessWidget {
                 ),
               ],
             ),
-          Text("Friend requests",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-          for (SMatrixRoom sm in sclient.sInvites.values)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    MatrixUserImage(user: sm.user),
-                    SizedBox(width: 10),
-                    Text(sm.user.displayName),
-                  ],
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                        icon: Icon(Icons.check, color: Colors.green),
-                        onPressed: () async {
-                          await sm.room.join();
-                        }),
-                    IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          await sm.room.leave();
-                        }),
-                  ],
-                ),
-              ],
-            ),
           TypeAheadField(
             hideOnEmpty: true,
             textFieldConfiguration: TextFieldConfiguration(
@@ -137,12 +108,58 @@ class FriendsVue extends StatelessWidget {
           Text("Can write on feed : "),
           Flexible(
             child: StreamBuilder(
-                stream: sclient.onSync.stream,
-                builder: (context, _) => Wrap(children: [
-                      for (int i = 0; i < sclient.srooms.length; i++)
-                        AccountCard(
-                            user: sclient.srooms.values.toList()[i].user),
-                    ])),
+                stream: sclient.onEvent.stream,
+                builder: (context, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("Friend requests",
+                              style: TextStyle(
+                                  fontSize: 25, fontWeight: FontWeight.bold)),
+                        ),
+                        for (SMatrixRoom sm in sclient.sInvites.values)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  MatrixUserImage(user: sm.user),
+                                  SizedBox(width: 10),
+                                  Text(sm.user.displayName),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                      icon: Icon(Icons.check,
+                                          color: Colors.green),
+                                      onPressed: () async {
+                                        await sm.room.join();
+                                      }),
+                                  IconButton(
+                                      icon:
+                                          Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () async {
+                                        await sm.room.leave();
+                                      }),
+                                ],
+                              ),
+                            ],
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("Friend",
+                              style: TextStyle(
+                                  fontSize: 25, fontWeight: FontWeight.bold)),
+                        ),
+                        Wrap(children: [
+                          for (int i = 0; i < sclient.srooms.length; i++)
+                            AccountCard(
+                                user: sclient.srooms.values.toList()[i].user),
+                        ]),
+                      ],
+                    )),
           ),
         ],
       ),

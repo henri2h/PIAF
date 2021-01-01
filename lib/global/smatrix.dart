@@ -12,6 +12,7 @@ class SClient extends Client {
   static String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
   StreamSubscription onSyncUpdate;
   StreamSubscription onEventUpdate;
+  StreamSubscription onRoomUpdateSub;
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
   Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>(); // friends
@@ -53,10 +54,17 @@ class SClient extends Client {
       print(eUp.roomID);
       print(eUp.content);
       print(" ");*/
-
+      print("event");
+      print(eUp.type);
       if (eUp.eventType == "m.room.message") {
         await loadNewTimeline();
+        print("New timeline");
       }
+    });
+    onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
+      await loadSRooms();
+      await loadSTimeline();
+      print("room update");
     });
   }
 
