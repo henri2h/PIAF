@@ -11,15 +11,16 @@ class FriendsVue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
-    List<User> users = sclient.userRoom.room.getParticipants().where((User u) => u.membership == Membership.join).toList();
+    List<User> users = sclient.userRoom.room
+        .getParticipants()
+        .where((User u) => u.membership == Membership.join)
+        .toList();
     /*List<User> friendRequest =
         users.where((User u) => u.membership == Membership.invite).toList();*/
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
           PageTitle("Users"),
           TypeAheadField(
@@ -42,17 +43,9 @@ class FriendsVue extends StatelessWidget {
             itemBuilder: (context, suggestion) {
               Profile profile = suggestion;
               return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: profile.avatarUrl == null
-                      ? null
-                      : NetworkImage(
-                          profile.avatarUrl.getThumbnail(
-                            sclient,
-                            width: 64,
-                            height: 64,
-                          ),
-                        ),
-                ),
+                leading: profile.avatarUrl == null
+                    ? Icon(Icons.person)
+                    : MatrixUserImage(profile: profile),
                 title: Text(profile.displayname),
                 subtitle: Text(profile.userId),
               );
@@ -113,8 +106,7 @@ class FriendsVue extends StatelessWidget {
                         ),
                         Wrap(children: [
                           for (int i = 0; i < users.length; i++)
-                            AccountCard(
-                                user: users[i]),
+                            AccountCard(user: users[i]),
                         ]),
                       ],
                     )),
