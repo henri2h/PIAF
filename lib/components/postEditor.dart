@@ -1,6 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:minestrix/components/MatrixUserImage.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -31,8 +32,14 @@ class _PostEditorState extends State<PostEditor>
           children: [
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Text("What's up ?",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+              child: Row(
+                children: [
+                  MatrixUserImage(user: sclient.userRoom.user),
+                  SizedBox(width:5),
+                  Text("What's up ?",
+                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
