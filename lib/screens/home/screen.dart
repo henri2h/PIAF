@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/MatrixUserImage.dart';
 import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -277,19 +278,7 @@ class _MobileContainerState extends State<MobileContainer> {
                           (BuildContext context, AsyncSnapshot<Profile> p) {
                         if (p.data?.avatarUrl == null)
                           return Icon(Icons.person);
-                        return CachedNetworkImage(
-                          imageUrl: p.data.avatarUrl.getThumbnail(
-                            sclient,
-                            width: 32,
-                            height: 32,
-                          ),
-                          progressIndicatorBuilder:
-                              (context, url, downloadProgress) =>
-                                  CircularProgressIndicator(
-                                      value: downloadProgress.progress),
-                          errorWidget: (context, url, error) =>
-                              Icon(Icons.error),
-                        );
+                        return MatrixUserImage(profile: p.data);
                       })),
             ],
           ),
