@@ -1,7 +1,10 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:minestrix/components/Theme.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class ChatView extends StatelessWidget {
   final String roomId;
@@ -10,17 +13,17 @@ class ChatView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).sclient;
+    final sclient = Matrix.of(context).sclient;
     final TextEditingController _sendController = TextEditingController();
     return StreamBuilder<Object>(
-        stream: client.onSync.stream,
+        stream: sclient.onSync.stream,
         builder: (context, _) {
-          final room = client.getRoomById(roomId);
+          final room = sclient.getRoomById(roomId);
 
           print("Encryption :");
           print(room.encrypted);
-          print(client.encryptionEnabled);
-          print(client.encryption.crossSigning.enabled);
+          print(sclient.encryptionEnabled);
+          print(sclient.encryption.crossSigning.enabled);
 
           return Scaffold(
             appBar: AppBar(
@@ -44,20 +47,76 @@ class ChatView extends StatelessWidget {
                           itemBuilder: (BuildContext context, int i) {
                             final event = timeline.events[i];
                             final sender = event.sender;
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage: sender.avatarUrl == null
-                                    ? null
-                                    : NetworkImage(
-                                        sender.avatarUrl.getThumbnail(
-                                          client,
-                                          width: 64,
-                                          height: 64,
+                            bool sendByUser = sender.id == sclient.userID;
+
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment: sendByUser
+                                    ? MainAxisAlignment.end
+                                    : MainAxisAlignment.start,
+                                children: [
+                                  if (sendByUser == false)
+                                    MatrixUserImage(
+                                        url: sender.avatarUrl,
+                                        width: 40,
+                                        height: 40),
+                                  if (sendByUser == false) SizedBox(width: 10),
+                                  Flexible(
+                                    child: Column(
+                                      crossAxisAlignment: sendByUser
+                                          ? CrossAxisAlignment.end
+                                          : CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Material(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: Colors.white,
+                                              elevation: 0,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      vertical: 4,
+                                                      horizontal: 8),
+                                                  child: Text(event.body,
+                                                      style: TextStyle(
+                                                          color: Colors.white)),
+                                                ),
+                                              )),
                                         ),
-                                      ),
+                                        if (sendByUser == false)
+                                          Row(
+                                            children: [
+                                              Text(sender.calcDisplayname(),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              Text(" - ",
+                                                  style: TextStyle(
+                                                      color: Colors.grey)),
+                                              Text(
+                                                  timeago.format(
+                                                      event.originServerTs),
+                                                  style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey)),
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                              title: Text(sender.calcDisplayname()),
-                              subtitle: Text(event.body),
                             );
                           },
                         ),

@@ -17,11 +17,14 @@ class _ChatsVueState extends State<ChatsVue>
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).sclient;
+    List<Room> sortedRooms = client.rooms.toList();
+    sortedRooms.sort((Room a, Room b) =>
+        b.lastEvent.originServerTs.compareTo(a.lastEvent.originServerTs));
     return Flexible(
       child: StreamBuilder(
         stream: client.onSync.stream,
         builder: (context, _) => ListView.builder(
-            itemCount: client.rooms.length + 1,
+            itemCount: sortedRooms.length + 1,
             itemBuilder: (BuildContext context, int i) {
               if (i == 0)
                 return Row(
@@ -42,16 +45,16 @@ class _ChatsVueState extends State<ChatsVue>
                 hoverColor: Colors.grey,
                 enableFeedback: true,
                 leading: MatrixUserImage(
-                    url: client.rooms[pos].avatar, width: 50, height: 50),
-                title: Text(client.rooms[pos].displayname,
+                    url: sortedRooms[pos].avatar, width: 50, height: 50),
+                title: Text(sortedRooms[pos].displayname,
                     style: TextStyle(fontWeight: FontWeight.w600)),
                 trailing: Column(
                   children: [
                     Text(
                         timeago
-                            .format(client.rooms[pos].lastEvent.originServerTs),
+                            .format(sortedRooms[pos].lastEvent.originServerTs),
                         style: TextStyle(fontSize: 14, color: Colors.grey)),
-                    if (client.rooms[pos].notificationCount != 0)
+                    if (sortedRooms[pos].notificationCount != 0)
                       Padding(
                         padding: const EdgeInsets.all(4),
                         child: Material(
@@ -64,9 +67,10 @@ class _ChatsVueState extends State<ChatsVue>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical:4, horizontal:8),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4, horizontal: 8),
                                 child: Text(
-                                    client.rooms[pos].notificationCount
+                                    sortedRooms[pos].notificationCount
                                         .toString(),
                                     style: TextStyle(color: Colors.white)),
                               ),
@@ -76,11 +80,11 @@ class _ChatsVueState extends State<ChatsVue>
                 ),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(client.rooms[pos].lastMessage, maxLines: 2),
+                  child: Text(sortedRooms[pos].lastMessage, maxLines: 2),
                 ),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => ChatView(roomId: client.rooms[pos].id),
+                    builder: (_) => ChatView(roomId: sortedRooms[pos].id),
                   ),
                 ),
               );

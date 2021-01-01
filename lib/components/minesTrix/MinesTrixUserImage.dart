@@ -5,14 +5,22 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class MatrixUserImage extends StatelessWidget {
-  MatrixUserImage({Key key, @required this.url, this.width, this.height}) : super(key: key);
+  MatrixUserImage({Key key, @required this.url, this.width, this.height})
+      : super(key: key);
   final Uri url;
   final double width;
   final double height;
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    if (url == null) return Icon(Icons.image);
+    if (url == null)
+      return Container(
+          height: height != null ? height : 30,
+          width: width != null ? width : 30,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(50)),
+          ),
+          child: Icon(Icons.image));
     return CachedNetworkImage(
       imageUrl: url.getThumbnail(
         sclient,
