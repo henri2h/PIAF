@@ -35,9 +35,10 @@ class _PostEditorState extends State<PostEditor>
               child: Row(
                 children: [
                   MatrixUserImage(user: sclient.userRoom.user),
-                  SizedBox(width:5),
+                  SizedBox(width: 5),
                   Text("What's up ?",
-                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
