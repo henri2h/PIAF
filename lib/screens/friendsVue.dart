@@ -11,9 +11,9 @@ class FriendsVue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
-    List<User> users = sclient.userRoom.room.getParticipants();
-    List<User> friendRequest =
-        users.where((User u) => u.membership == Membership.invite).toList();
+    List<User> users = sclient.userRoom.room.getParticipants().where((User u) => u.membership == Membership.join).toList();
+    /*List<User> friendRequest =
+        users.where((User u) => u.membership == Membership.invite).toList();*/
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -112,9 +112,9 @@ class FriendsVue extends StatelessWidget {
                                   fontSize: 25, fontWeight: FontWeight.bold)),
                         ),
                         Wrap(children: [
-                          for (int i = 0; i < sclient.srooms.length; i++)
+                          for (int i = 0; i < users.length; i++)
                             AccountCard(
-                                user: sclient.srooms.values.toList()[i].user),
+                                user: users[i]),
                         ]),
                       ],
                     )),
