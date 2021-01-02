@@ -131,7 +131,9 @@ class ChatView extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: TextField(
+                                    maxLines: null,
                                       controller: _sendController,
+                                      keyboardType: TextInputType.multiline,
                                       decoration: InputDecoration(
                                           border: InputBorder.none,
                                           enabledBorder: OutlineInputBorder(
