@@ -209,8 +209,8 @@ class _MobileContainerState extends State<MobileContainer> {
     Widget widgetFeedView = FeedView(sclient: sclient);
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
+      extendBody: true,
       body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await showDialog(
@@ -233,59 +233,101 @@ class _MobileContainerState extends State<MobileContainer> {
         ),
         elevation: 4.0,
       ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 30),
         child: Container(
-          margin: EdgeInsets.only(left: 12.0, right: 12.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                //update the bottom app bar view each time an item is clicked
-                onPressed: () {
-                  changePage(widgetFeedView);
-                },
-                icon: Icon(
-                  Icons.home,
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  changePage(FriendsVue());
-                },
-                icon: Icon(
-                  Icons.people,
-                ),
-              ),
-              SizedBox(
-                width: 50.0,
-              ),
-              IconButton(
-                onPressed: () {
-                  changePage(ChatsVue());
-                },
-                icon: Icon(
-                  Icons.message,
-                ),
-              ),
-              IconButton(
-                  onPressed: () {
-                    changePage(UserFeedView(userId: sclient.userID));
-                  },
-                  icon: FutureBuilder(
-                      future: sclient.getProfileFromUserId(sclient.userID),
-                      builder:
-                          (BuildContext context, AsyncSnapshot<Profile> p) {
-                        if (p.data?.avatarUrl == null)
-                          return Icon(Icons.person);
-                        return MatrixUserImage(url: p.data.avatarUrl);
-                      })),
-            ],
-          ),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              color: Colors.white),
+          child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal:14),
+              child: NavigationBar(changePage: changePage)),
         ),
-        //to add a space between the FAB and BottomAppBar
-        shape: CircularNotchedRectangle(),
       ),
     );
   }
+}
+
+class NavigationBar extends StatefulWidget {
+  static int _selectedIndex = 0;
+  NavigationBar({Key key, @required this.changePage}) : super(key: key);
+  final Function changePage;
+  @override
+  NavigationBarState createState() => NavigationBarState();
+}
+
+class NavigationBarState extends State<NavigationBar> {
+  int _selectedIndex = -1;
+  void _onItemTapped(int index, SClient sclient) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        widget.changePage(FeedView(sclient: sclient));
+        break;
+      case 1:
+        widget.changePage(FriendsVue());
+        break;
+      case 2:
+        widget.changePage(ChatsVue());
+        break;
+      case 3:
+        widget.changePage(UserFeedView(userId: sclient.userID));
+        break;
+      default:
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
+    List<Widget> items = [
+      Icon(
+        Icons.home_outlined,
+      ),
+      Icon(
+        Icons.people_outlined,
+      ),
+      Icon(
+        Icons.message_outlined,
+      ),
+      FutureBuilder(
+          future: sclient.getProfileFromUserId(sclient.userID),
+          builder: (BuildContext context, AsyncSnapshot<Profile> p) {
+            if (p.data?.avatarUrl == null) return Icon(Icons.person);
+            return MatrixUserImage(url: p.data.avatarUrl);
+          }),
+    ];
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        for (int i = 0; i < items.length; i++)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    _onItemTapped(i, sclient);
+                  },
+                  icon: items[i]),
+              if (i == _selectedIndex)
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: new BoxDecoration(
+                    color: Color(0xFFd24800),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          )
+      ],
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
