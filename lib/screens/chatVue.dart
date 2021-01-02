@@ -30,123 +30,147 @@ class ChatView extends StatelessWidget {
               title: Text(room.displayname),
             ),
             body: SafeArea(
-              child: FutureBuilder<Timeline>(
-                future: room.getTimeline(),
-                builder:
-                    (BuildContext context, AsyncSnapshot<Timeline> snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  final timeline = snapshot.data;
-                  List<Event> filteredEvents =
-                      sclient.getSRoomFilteredEvents(timeline);
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
+              child: ColoredBox(
+                color: Colors.white,
+                child: FutureBuilder<Timeline>(
+                  future: room.getTimeline(),
+                  builder:
+                      (BuildContext context, AsyncSnapshot<Timeline> snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    final timeline = snapshot.data;
+                    List<Event> filteredEvents =
+                        sclient.getSRoomFilteredEvents(timeline);
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            reverse: true,
+                            itemCount: filteredEvents.length,
+                            itemBuilder: (BuildContext context, int i) {
+                              final event = filteredEvents[i];
+                              final sender = event.sender;
+                              bool sendByUser = sender.id == sclient.userID;
 
-                          reverse: true,
-                          itemCount: filteredEvents.length,
-                          itemBuilder: (BuildContext context, int i) {
-                            final event = filteredEvents[i];
-                            final sender = event.sender;
-                            bool sendByUser = sender.id == sclient.userID;
-
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                mainAxisAlignment: sendByUser
-                                    ? MainAxisAlignment.end
-                                    : MainAxisAlignment.start,
-                                children: [
-                                  if (sendByUser == false)
-                                    MatrixUserImage(
-                                        url: sender.avatarUrl,
-                                        width: 40,
-                                        height: 40),
-                                  if (sendByUser == false) SizedBox(width: 10),
-                                  Flexible(
-                                    child: Column(
-                                      crossAxisAlignment: sendByUser
-                                          ? CrossAxisAlignment.end
-                                          : CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(10),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsets
-                                                      .symmetric(
-                                                  vertical: 6,
-                                                  horizontal: 12),
-                                              child: Text(event.body,
-                                                  style: TextStyle(
-                                                      color: Colors.white)),
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: sendByUser
+                                      ? MainAxisAlignment.end
+                                      : MainAxisAlignment.start,
+                                  children: [
+                                    if (sendByUser == false)
+                                      MatrixUserImage(
+                                          url: sender.avatarUrl,
+                                          width: 40,
+                                          height: 40),
+                                    if (sendByUser == false)
+                                      SizedBox(width: 10),
+                                    Flexible(
+                                      child: Column(
+                                        crossAxisAlignment: sendByUser
+                                            ? CrossAxisAlignment.end
+                                            : CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 6,
+                                                        horizontal: 12),
+                                                child: Text(event.body,
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        if (sendByUser == false)
-                                          Row(
-                                            children: [
-                                              Text(sender.calcDisplayname(),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              Text(" - ",
-                                                  style: TextStyle(
-                                                      color: Colors.grey)),
-                                              Text(
-                                                  timeago.format(
-                                                      event.originServerTs),
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.grey)),
-                                            ],
-                                          ),
-                                      ],
+                                          if (sendByUser == false)
+                                            Row(
+                                              children: [
+                                                Text(sender.calcDisplayname(),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                Text(" - ",
+                                                    style: TextStyle(
+                                                        color: Colors.grey)),
+                                                Text(
+                                                    timeago.format(
+                                                        event.originServerTs),
+                                                    style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey)),
+                                              ],
+                                            ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      Card(
-                        margin: EdgeInsets.only(
-                            left: 20, right: 20, bottom: 5, top: 5),
-                        elevation: 7,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _sendController,
+                                  ],
                                 ),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.send),
-                                onPressed: () {
-                                  room.sendTextEvent(_sendController.text);
-                                  _sendController.clear();
-                                },
-                              ),
-                            ],
+                              );
+                            },
                           ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+                        Padding(
+                          padding: EdgeInsets.only(
+                              left: 20, right: 20, bottom: 5, top: 5),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                      controller: _sendController,
+                                      decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.white, width: 0),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                              const Radius.circular(20),
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.blue, width: 3.0),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                              const Radius.circular(20),
+                                            ),
+                                          ),
+                                          filled: true,
+                                          hintStyle: new TextStyle(
+                                              color: Colors.grey[800]),
+                                          hintText: "Message",
+                                          fillColor: Color(0xfff6f8fd))),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.send),
+                                  onPressed: () {
+                                    room.sendTextEvent(_sendController.text);
+                                    _sendController.clear();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           );
