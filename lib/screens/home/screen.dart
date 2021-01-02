@@ -5,6 +5,7 @@ import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/chatVue.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/feedView.dart';
@@ -189,13 +190,17 @@ class MobileContainer extends StatefulWidget {
 }
 
 class _MobileContainerState extends State<MobileContainer> {
-  final int selectedIndex = 1;
   Widget widgetView;
   bool changing = false;
+  bool isChatVue = false;
 
-  void changePage(Widget widgetIn) {
+  void changePage(Widget widgetIn, {bool chatVue}) {
     if (mounted && changing == false) {
       changing = true;
+      if (chatVue != null)
+        isChatVue = true;
+      else
+        isChatVue = false;
       setState(() {
         widgetView = widgetIn;
         changing = false;
@@ -210,13 +215,24 @@ class _MobileContainerState extends State<MobileContainer> {
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
       extendBody: true,
-      body: Container(
-          color: Colors.white, child: widgetView ?? Text("hello")),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          changePage(PostEditor());
-          //    await showDialog(              context: context, builder: (_) => Dialog(child: PostEditor()));
-          /* NavigatorState nav = Navigator.of(context);
+      body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
+      floatingActionButton: isChatVue
+          ? FloatingActionButton(
+              onPressed: () async {
+                changePage(PostEditor());
+              },
+              tooltip: "New message",
+              child: Container(
+                margin: EdgeInsets.all(15.0),
+                child: Icon(Icons.message_outlined),
+              ),
+              elevation: 4.0,
+            )
+          : FloatingActionButton(
+              onPressed: () async {
+                changePage(PostEditor());
+                //    await showDialog(              context: context, builder: (_) => Dialog(child: PostEditor()));
+                /* NavigatorState nav = Navigator.of(context);
           if (nav.canPop()) {
             nav.pop<PostEditor>();
             
@@ -226,14 +242,14 @@ class _MobileContainerState extends State<MobileContainer> {
                 builder: (_) => Scaffold(body: PostEditor()),
               ),
             );*/
-        },
-        tooltip: "New post",
-        child: Container(
-          margin: EdgeInsets.all(15.0),
-          child: Icon(Icons.edit),
-        ),
-        elevation: 4.0,
-      ),
+              },
+              tooltip: "New post",
+              child: Container(
+                margin: EdgeInsets.all(15.0),
+                child: Icon(Icons.edit),
+              ),
+              elevation: 4.0,
+            ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 30),
         child: Container(
@@ -271,7 +287,7 @@ class NavigationBarState extends State<NavigationBar> {
         widget.changePage(FriendsVue());
         break;
       case 2:
-        widget.changePage(ChatsVue());
+        widget.changePage(ChatsVue(), chatVue: true);
         break;
       case 3:
         widget.changePage(UserFeedView(userId: sclient.userID));
