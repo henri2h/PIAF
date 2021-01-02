@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/components/Theme.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixImage.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -30,6 +32,7 @@ class UserFeedView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       PageTitle("User feed"),
+                      
                       Row(
                         children: [
                           IconButton(
@@ -53,10 +56,17 @@ class UserFeedView extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(40),
-                    child: UserInfo(user: sroom.user),
+                  Stack(
+                    children: [
+                      Center(child: MinesTrixImage(url: sroom.room.avatar)),
+                      Container(
+                       // alignment: Alignment.bottomCenter,
+                        padding: const EdgeInsets.only(left:40, right:40, top:200),
+                        child: UserInfo(user: sroom.user),
+                      ),
+                    ],
                   ),
+               
                   Padding(
                       padding: const EdgeInsets.all(15),
                       child: FriendsView(sroom: sroom)),

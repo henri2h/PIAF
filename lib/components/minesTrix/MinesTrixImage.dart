@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
-class MatrixUserImage extends StatelessWidget {
-  MatrixUserImage(
+class MinesTrixImage extends StatelessWidget {
+  MinesTrixImage(
       {Key key,
       @required this.url,
       this.width,
@@ -30,21 +30,8 @@ class MatrixUserImage extends StatelessWidget {
               : null,
           child: Icon(Icons.image));
     return CachedNetworkImage(
-      imageUrl: url.getThumbnail(
+      imageUrl: url.getDownloadLink(
         sclient,
-        height: height != null ? height : 30,
-        width: width != null ? width : 30,
-      ),
-      imageBuilder: (context, imageProvider) => Container(
-        height: height != null ? height : 30,
-        width: width != null ? width : 30,
-        decoration: BoxDecoration(
-            borderRadius:
-                isCircle ? BorderRadius.all(Radius.circular(50)) : null,
-            image: DecorationImage(
-              image: imageProvider,
-              fit: BoxFit.cover,
-            )),
       ),
       progressIndicatorBuilder: (context, url, downloadProgress) =>
           CircularProgressIndicator(value: downloadProgress.progress),
