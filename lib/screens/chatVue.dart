@@ -38,14 +38,18 @@ class ChatView extends StatelessWidget {
                     return Center(child: CircularProgressIndicator());
                   }
                   final timeline = snapshot.data;
+                  List<Event> filteredEvents =
+                      sclient.getSRoomFilteredEvents(timeline);
                   return Column(
                     children: [
                       Expanded(
                         child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+
                           reverse: true,
-                          itemCount: timeline.events.length,
+                          itemCount: filteredEvents.length,
                           itemBuilder: (BuildContext context, int i) {
-                            final event = timeline.events[i];
+                            final event = filteredEvents[i];
                             final sender = event.sender;
                             bool sendByUser = sender.id == sclient.userID;
 
@@ -69,28 +73,23 @@ class ChatView extends StatelessWidget {
                                           : CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.all(4),
-                                          child: Material(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue,
                                               borderRadius:
-                                                  BorderRadius.circular(10),
-                                              color: Colors.white,
-                                              elevation: 0,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.blue,
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                          .symmetric(
-                                                      vertical: 4,
-                                                      horizontal: 8),
-                                                  child: Text(event.body,
-                                                      style: TextStyle(
-                                                          color: Colors.white)),
-                                                ),
-                                              )),
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets
+                                                      .symmetric(
+                                                  vertical: 6,
+                                                  horizontal: 12),
+                                              child: Text(event.body,
+                                                  style: TextStyle(
+                                                      color: Colors.white)),
+                                            ),
+                                          ),
                                         ),
                                         if (sendByUser == false)
                                           Row(
@@ -121,24 +120,28 @@ class ChatView extends StatelessWidget {
                           },
                         ),
                       ),
-                      Divider(height: 1),
-                      Container(
-                        height: 56,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _sendController,
+                      Card(
+                        margin: EdgeInsets.only(
+                            left: 20, right: 20, bottom: 5, top: 5),
+                        elevation: 7,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _sendController,
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.send),
-                              onPressed: () {
-                                room.sendTextEvent(_sendController.text);
-                                _sendController.clear();
-                              },
-                            ),
-                          ],
+                              IconButton(
+                                icon: Icon(Icons.send),
+                                onPressed: () {
+                                  room.sendTextEvent(_sendController.text);
+                                  _sendController.clear();
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

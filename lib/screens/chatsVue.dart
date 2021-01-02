@@ -49,6 +49,7 @@ class _ChatsVueState extends State<ChatsVue>
                 title: Text(sortedRooms[pos].displayname,
                     style: TextStyle(fontWeight: FontWeight.w600)),
                 trailing: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
                         timeago
@@ -56,7 +57,7 @@ class _ChatsVueState extends State<ChatsVue>
                         style: TextStyle(fontSize: 14, color: Colors.grey)),
                     if (sortedRooms[pos].notificationCount != 0)
                       Padding(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.symmetric(vertical:4, horizontal:15),
                         child: Material(
                             borderRadius: BorderRadius.circular(10),
                             color: Colors.white,
