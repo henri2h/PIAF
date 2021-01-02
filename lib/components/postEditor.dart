@@ -1,3 +1,5 @@
+import 'dart:js_util';
+
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -5,6 +7,7 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/home/screen.dart';
 
 class PostEditor extends StatefulWidget {
   @override
@@ -68,7 +71,7 @@ class _PostEditorState extends State<PostEditor>
                   label: "Send post",
                   onPressed: () {
                     sendPost(sclient, postContent);
-                    Navigator.of(context).pop();
+                    //Navigator.of(context).pop();
                   }),
             ),
             Padding(

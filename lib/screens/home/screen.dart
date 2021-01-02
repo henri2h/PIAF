@@ -197,7 +197,7 @@ class _MobileContainerState extends State<MobileContainer> {
     if (mounted && changing == false) {
       changing = true;
       setState(() {
-        widgetView = widgetIn;
+        widgetView = SafeArea(child: widgetIn);
         changing = false;
       });
     }
@@ -213,8 +213,8 @@ class _MobileContainerState extends State<MobileContainer> {
       body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await showDialog(
-              context: context, builder: (_) => Dialog(child: PostEditor()));
+          changePage(PostEditor());
+          //    await showDialog(              context: context, builder: (_) => Dialog(child: PostEditor()));
           /* NavigatorState nav = Navigator.of(context);
           if (nav.canPop()) {
             nav.pop<PostEditor>();
@@ -240,7 +240,7 @@ class _MobileContainerState extends State<MobileContainer> {
               borderRadius: BorderRadius.all(Radius.circular(30.0)),
               color: Colors.white),
           child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal:14),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
               child: NavigationBar(changePage: changePage)),
         ),
       ),
@@ -249,7 +249,6 @@ class _MobileContainerState extends State<MobileContainer> {
 }
 
 class NavigationBar extends StatefulWidget {
-  static int _selectedIndex = 0;
   NavigationBar({Key key, @required this.changePage}) : super(key: key);
   final Function changePage;
   @override
