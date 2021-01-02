@@ -197,7 +197,7 @@ class _MobileContainerState extends State<MobileContainer> {
     if (mounted && changing == false) {
       changing = true;
       setState(() {
-        widgetView = SafeArea(child: widgetIn);
+        widgetView = widgetIn;
         changing = false;
       });
     }
@@ -210,7 +210,8 @@ class _MobileContainerState extends State<MobileContainer> {
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
       extendBody: true,
-      body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
+      body: Container(
+          color: Colors.white, child: widgetView ?? Text("hello")),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           changePage(PostEditor());
