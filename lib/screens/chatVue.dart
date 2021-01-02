@@ -2,6 +2,7 @@ import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/Theme.dart';
+import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -87,9 +88,7 @@ class ChatView extends StatelessWidget {
                                                     const EdgeInsets.symmetric(
                                                         vertical: 6,
                                                         horizontal: 12),
-                                                child: Text(event.body,
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
+                                                child: MessageDisplay(event:event)
                                               ),
                                             ),
                                           ),
