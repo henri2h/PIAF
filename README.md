@@ -119,7 +119,7 @@ To add E2E support now, we need to build and link the 1.2.0 version of olm.
 
 [famedlysdk](https://gitlab.com/famedly/famedlysdk/)
 
-[fluffy chat](https://gitlab.com/ChristianPauly/fluffychat-flutter/)
+[fluffy chat](https://gitlab.com/famedly/fluffychat)
 
 ## License
 
