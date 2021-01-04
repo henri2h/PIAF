@@ -104,10 +104,12 @@ class FriendsVue extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 25, fontWeight: FontWeight.bold)),
                         ),
-                        Wrap(children: [
-                          for (int i = 0; i < users.length; i++)
-                            AccountCard(user: users[i]),
-                        ]),
+                        Center(
+                          child: Wrap(children: [
+                            for (int i = 0; i < users.length; i++)
+                              AccountCard(user: users[i]),
+                          ]),
+                        ),
                       ],
                     )),
           ),

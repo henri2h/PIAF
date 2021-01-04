@@ -118,12 +118,16 @@ class FriendsView extends StatelessWidget {
           child: Text("Friends",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ),
-        Wrap(children: [
-          for (User user in sroom.room
-              .getParticipants()
-              .where((User u) => u.membership == Membership.join))
-            AccountCard(user: user),
-        ]),
+        Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            children: [
+            for (User user in sroom.room
+                .getParticipants()
+                .where((User u) => u.membership == Membership.join))
+              AccountCard(user: user),
+          ]),
+        ),
       ],
     );
   }

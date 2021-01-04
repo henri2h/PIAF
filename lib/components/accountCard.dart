@@ -11,26 +11,36 @@ class AccountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (user.avatarUrl == null)
-          Text(user.displayName[0])
-        else
-          CachedNetworkImage(
-            imageUrl: user.avatarUrl.getThumbnail(
-              sclient,
-              width: 300,
-              height: 300,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          if (user.avatarUrl == null)
+            Text(user.displayName[0])
+          else
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: CachedNetworkImage(
+                imageUrl: user.avatarUrl.getThumbnail(
+                  sclient,
+                  width: 300,
+                  height: 300,
+                ),
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    CircularProgressIndicator(value: downloadProgress.progress),
+                errorWidget: (context, url, error) => Icon(Icons.error),
+              ),
             ),
-            progressIndicatorBuilder: (context, url, downloadProgress) =>
-                CircularProgressIndicator(value: downloadProgress.progress),
-            errorWidget: (context, url, error) => Icon(Icons.error),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal:0, vertical:3),
+            child: Text(user.displayName,
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black)),
           ),
-        Text(user.displayName,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      ],
+        ],
+      ),
     );
   }
 }
