@@ -115,12 +115,14 @@ class LoginCardState extends State<LoginCard> {
                               });
                             }
                           }
-                        } catch (_) {
-                           setState(() {
-                                domain = "";
-                                canTryLogIn = false;
-                              });
-                          print("error");
+                        } catch (e) {
+                          setState(() {
+                            domain = "";
+                            canTryLogIn = false;
+                          });
+                          print("error : " + userid);
+                          print(e);
+                          
                         }
                       },
                       tController: _usernameController),
