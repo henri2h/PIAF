@@ -7,6 +7,25 @@ class MImage extends StatelessWidget {
   const MImage({Key key, @required this.event}) : super(key: key);
   final Event event;
 
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) {
+            return SafeArea(
+                child: Scaffold(
+                    appBar: AppBar(title: Text("Image display " + event.body)),
+                    body: MImageDisplay(event: event)));
+          }));
+        },
+        child: MImageDisplay(event: event));
+  }
+}
+
+class MImageDisplay extends StatelessWidget {
+  const MImageDisplay({Key key, @required this.event}) : super(key: key);
+  final Event event;
+
   Widget getImage(url) {
     return Material(
       elevation: 3,
@@ -34,7 +53,6 @@ class MImage extends StatelessWidget {
         future: event.downloadAndDecryptAttachment(),
         builder: (BuildContext context, AsyncSnapshot<MatrixFile> file) {
           if (file.hasData) {
-            print(file.data.mimeType);
             return ClipRRect(
                 borderRadius: BorderRadius.circular(5),
                 child: Image.memory(file.data.bytes));
