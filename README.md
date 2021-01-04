@@ -4,13 +4,10 @@ FLUTTER version
 
 Connect people without sacrifying privacy.
 
-<p align='center'> 
-    <img src="readmeassets/feedVue.png"/>
-	<img src="readmeassets/chatsVue.png"/>
-	<img src="readmeassets/friendsVue.png"/>
-	<img src="readmeassets/userVue.png"/>
-</p>
 
+![](readmeassets/feedVue.png)  |  ![](readmeassets/friendsVue.png)|  ![](readmeassets/chatsVue.png)|  ![](readmeassets/userVue.png)
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+Feed vue        |  Friends vue | Chats vue | User vue
 ## Goal of the platform
 
 * Enable people share information freely between friends
