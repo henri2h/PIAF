@@ -313,7 +313,7 @@ class NavigationBarState extends State<NavigationBar> {
           future: sclient.getProfileFromUserId(sclient.userID),
           builder: (BuildContext context, AsyncSnapshot<Profile> p) {
             if (p.data?.avatarUrl == null) return Icon(Icons.person);
-            return MatrixUserImage(url: p.data.avatarUrl);
+            return MinesTrixUserImage(url: p.data.avatarUrl);
           }),
     ];
     return Row(

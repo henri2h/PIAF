@@ -2,6 +2,7 @@ import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -26,19 +27,15 @@ class _PostEditorState extends State<PostEditor>
     SClient sclient = Matrix.of(context).sclient;
     return Container(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // to make the dialog compact
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             Padding(
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  MatrixUserImage(url: sclient.userRoom.user.avatarUrl),
+                  MinesTrixUserImage(url: sclient.userRoom.user.avatarUrl),
                   SizedBox(width: 5),
-                  Text("What's up ?",
-                      style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+                  H1Title("What's up ?"),
                 ],
               ),
             ),

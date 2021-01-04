@@ -1,7 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/components/Theme.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -63,7 +62,7 @@ class ChatView extends StatelessWidget {
                                       : MainAxisAlignment.start,
                                   children: [
                                     if (sendByUser == false)
-                                      MatrixUserImage(
+                                      MinesTrixUserImage(
                                           url: sender.avatarUrl,
                                           width: 40,
                                           height: 40),

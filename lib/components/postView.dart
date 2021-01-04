@@ -47,7 +47,7 @@ class PostHeader extends StatelessWidget {
         Flexible(
           child: Row(
             children: [
-              MatrixUserImage(
+              MinesTrixUserImage(
                   url: event.sender.avatarUrl, width: 45, height: 45),
               SizedBox(width: 15),
               Flexible(
@@ -219,7 +219,7 @@ class RepliesVue extends StatelessWidget {
                       children: [
                         Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: MatrixUserImage(
+                            child: MinesTrixUserImage(
                                 url: revent.sender.avatarUrl,
                                 width: 16,
                                 height: 16)),
@@ -287,7 +287,7 @@ class ReplyBox extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          MatrixUserImage(url: event.sender.avatarUrl),
+          MinesTrixUserImage(url: event.sender.avatarUrl),
           SizedBox(width: 10),
           Expanded(
               child: TextField(

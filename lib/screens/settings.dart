@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/pageTitle.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
@@ -13,7 +13,7 @@ class SettingsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PageTitle("Settings"),
+            H1Title("Settings"),
             TextField(
                 decoration: InputDecoration(labelText: "Key Password"),
                 controller: _passphraseController),

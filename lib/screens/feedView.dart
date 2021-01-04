@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/pageTitle.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
 
@@ -21,12 +21,7 @@ class FeedView extends StatelessWidget {
             itemCount: sclient.stimeline.length + 1,
             itemBuilder: (BuildContext context, int i) {
               if (i == 0) {
-                return Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text("Feed",
-                      style: TextStyle(
-                          fontSize: 30, fontWeight: FontWeight.bold)),
-                );
+                return H1Title("Feed");
               }
               return Padding(
                 padding: const EdgeInsets.all(8.0),

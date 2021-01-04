@@ -1,8 +1,8 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/Theme.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTheme.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
-import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatVue.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -30,7 +30,7 @@ class _ChatsVueState extends State<ChatsVue>
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    PageTitle("MATRIX Chats"),
+                    H1Title("MATRIX Chats"),
                     Padding(
                       padding: const EdgeInsets.all(15),
                       child:
@@ -44,7 +44,7 @@ class _ChatsVueState extends State<ChatsVue>
                 focusColor: Colors.grey,
                 hoverColor: Colors.grey,
                 enableFeedback: true,
-                leading: MatrixUserImage(
+                leading: MinesTrixUserImage(
                     url: sortedRooms[pos].avatar, width: 50, height: 50),
                 title: Text(sortedRooms[pos].displayname,
                     style: TextStyle(fontWeight: FontWeight.w600)),
@@ -57,7 +57,8 @@ class _ChatsVueState extends State<ChatsVue>
                         style: TextStyle(fontSize: 14, color: Colors.grey)),
                     if (sortedRooms[pos].notificationCount != 0)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical:4, horizontal:15),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 15),
                         child: Material(
                             borderRadius: BorderRadius.circular(10),
                             color: Colors.white,
@@ -71,7 +72,8 @@ class _ChatsVueState extends State<ChatsVue>
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 4, horizontal: 8),
                                 child: Text(
-                                    sortedRooms[pos].notificationCount
+                                    sortedRooms[pos]
+                                        .notificationCount
                                         .toString(),
                                     style: TextStyle(color: Colors.white)),
                               ),

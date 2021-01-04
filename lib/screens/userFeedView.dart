@@ -1,11 +1,9 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/Theme.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixImage.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
-import 'package:minestrix/components/pageTitle.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -31,7 +29,7 @@ class UserFeedView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      PageTitle("User feed"),
+                      H1Title("User feed"),
                       
                       Row(
                         children: [
@@ -75,6 +73,10 @@ class UserFeedView extends StatelessWidget {
                     child: MinesTrixButton(
                         onPressed: () {}, label: "ok", icon: Icons.data_usage),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal:15, vertical:8.0),
+                    child: H2Title("Posts"),
+                  ),
                   for (Event e in sevents)
                     Column(
                       children: [
@@ -114,9 +116,8 @@ class FriendsView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text("Friends",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          padding: const EdgeInsets.symmetric(vertical:8.0),
+          child: H2Title("Friends"),
         ),
         Center(
           child: Wrap(

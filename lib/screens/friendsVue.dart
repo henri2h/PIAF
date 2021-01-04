@@ -2,8 +2,8 @@ import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/accountCard.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
-import 'package:minestrix/components/pageTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
@@ -18,12 +18,12 @@ class FriendsVue extends StatelessWidget {
     /*List<User> friendRequest =
         users.where((User u) => u.membership == Membership.invite).toList();*/
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ListView(
-        children: [
-          PageTitle("Users"),
-          TypeAheadField(
+    return ListView(
+      children: [
+        H1Title("Users"),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TypeAheadField(
             hideOnEmpty: true,
             textFieldConfiguration: TextFieldConfiguration(
                 autofocus: false,
@@ -45,7 +45,7 @@ class FriendsVue extends StatelessWidget {
               return ListTile(
                 leading: profile.avatarUrl == null
                     ? Icon(Icons.person)
-                    : MatrixUserImage(url: profile.avatarUrl),
+                    : MinesTrixUserImage(url: profile.avatarUrl),
                 title: Text(profile.displayname),
                 subtitle: Text(profile.userId),
               );
@@ -56,65 +56,60 @@ class FriendsVue extends StatelessWidget {
               await sclient.addFriend(p.userId);
             },
           ),
-          Text("Can write on feed : "),
-          Flexible(
-            child: StreamBuilder(
-                stream: sclient.onEvent.stream,
-                builder: (context, _) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Friend requests",
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.bold)),
+        ),
+        Flexible(
+          child: StreamBuilder(
+              stream: sclient.onEvent.stream,
+              builder: (context, _) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: H2Title("Friend requests"),
+                      ),
+                      for (SMatrixRoom sm in sclient.sInvites.values)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                MinesTrixUserImage(url: sm.user.avatarUrl),
+                                SizedBox(width: 10),
+                                Text(sm.user.displayName),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                    icon: Icon(Icons.check,
+                                        color: Colors.green),
+                                    onPressed: () async {
+                                      await sm.room.join();
+                                    }),
+                                IconButton(
+                                    icon:
+                                        Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () async {
+                                      await sm.room.leave();
+                                    }),
+                              ],
+                            ),
+                          ],
                         ),
-                        for (SMatrixRoom sm in sclient.sInvites.values)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  MatrixUserImage(url: sm.user.avatarUrl),
-                                  SizedBox(width: 10),
-                                  Text(sm.user.displayName),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                      icon: Icon(Icons.check,
-                                          color: Colors.green),
-                                      onPressed: () async {
-                                        await sm.room.join();
-                                      }),
-                                  IconButton(
-                                      icon:
-                                          Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () async {
-                                        await sm.room.leave();
-                                      }),
-                                ],
-                              ),
-                            ],
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Friends",
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.bold)),
-                        ),
-                        Center(
-                          child: Wrap(children: [
-                            for (int i = 0; i < users.length; i++)
-                              AccountCard(user: users[i]),
-                          ]),
-                        ),
-                      ],
-                    )),
-          ),
-        ],
-      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: H2Title("Friends"),
+                      ),
+                      Center(
+                        child: Wrap(children: [
+                          for (int i = 0; i < users.length; i++)
+                            AccountCard(user: users[i]),
+                        ]),
+                      ),
+                    ],
+                  )),
+        ),
+      ],
     );
   }
 }

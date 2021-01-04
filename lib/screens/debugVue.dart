@@ -1,6 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/pageTitle.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
@@ -63,7 +63,7 @@ class _DebugViewState extends State<DebugView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageTitle("Debug"),
+          H1Title("Debug"),
           if (sclient != null && sclient.rooms != null)
             Text("srooms length : " + sclient.srooms.length.toString()),
           if (srooms.length != 0)

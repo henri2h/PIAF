@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
-class MatrixUserImage extends StatelessWidget {
-  MatrixUserImage(
+class MinesTrixUserImage extends StatelessWidget {
+  MinesTrixUserImage(
       {Key key,
       @required this.url,
       this.width,
