@@ -4,6 +4,13 @@ FLUTTER version
 
 Connect people without sacrifying privacy.
 
+<p align='center'> 
+    <img src="readmeassets/feedVue.png"/>
+	<img src="readmeassets/chatsVue.png"/>
+	<img src="readmeassets/friendsVue.png"/>
+	<img src="readmeassets/userVue.png"/>
+</p>
+
 ## Goal of the platform
 
 * Enable people share information freely between friends
@@ -33,19 +40,20 @@ Connect people without sacrifying privacy.
 * Help other discover other users (enable an easier user discoveration (woooo... TODO : find a better name))
 * Could convince people to know and adopt matrix
 
-
 ## Be a game changer, help us spread the world
 
 * Try, and love, tell us what you think
 * Tell your friends about it, the more you spread, the less you relie on other social media
 
-## Want to go further, help us build the future :
+## Want to go further, help us build the future
+
 * Code
 * Translate
 
-## Features :
+## Features
+
 * Profile : post and see what your friends have posted
-* Events : 
+* Events :
 	* birthday (remind people of their friend birthday)
 	* Events : federate people
 * Groups : A formal way of sharing information between people
@@ -79,20 +87,25 @@ Connect people without sacrifying privacy.
 Find our documentation in our [separate repo](https://gitlab.com/minestrix/minestrix-doc)
 
 ### Using matrix rooms
+
 When we create an account : we create a room and we invite in it all our friends
+
 * Adding a friend involve adding a user to our created room
 
 Using this we could benefit using E2E encryption and be sure only our friends could see our posts
 
-
 ## Displaying feed
+
 Our client retrive all the rooms and then using the algorithm we choose to display posts.
 
-## Posting :
+## Posting
+
 we just send a post to our custom room
 
 ## Adding, sending friend request and removing friends
-* Add to our conversation
+
+* Add to your conversations
+
 We should decide if we accept that "friendship" could be one way (I add you to my friend list but you don't)
 I think we should only accept two way
 TODO : think to how we could implement this (TLS handshake :D )
@@ -101,7 +114,7 @@ TODO : think to how we could implement this (TLS handshake :D )
 
 ### Installing OLM
 
-We use the fameldy library for that https://gitlab.com/famedly/libraries/dart-olm
+We use the fameldy library for that [https://gitlab.com/famedly/libraries/dart-olm](https://gitlab.com/famedly/libraries/dart-olm)
 
 ## For linux platforms (/!\ E2EE not available yet !!)
 
