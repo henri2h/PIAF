@@ -13,14 +13,16 @@ class MImage extends StatelessWidget {
       elevation: 3,
       borderRadius: BorderRadius.all(Radius.circular(5)),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: CachedNetworkImage(
-          imageUrl: url,
-          progressIndicatorBuilder: (context, url, downloadProgress) =>
-              CircularProgressIndicator(value: downloadProgress.progress),
-          errorWidget: (context, url, error) => Icon(Icons.error),
-        ),
-      ),
+          borderRadius: BorderRadius.circular(5),
+          child: url != null
+              ? CachedNetworkImage(
+                  imageUrl: url,
+                  progressIndicatorBuilder: (context, url, downloadProgress) =>
+                      CircularProgressIndicator(
+                          value: downloadProgress.progress),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                )
+              : Icon(Icons.error)),
     );
   }
 }
