@@ -34,6 +34,7 @@ class MinesTrixThumbnailImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10.0),
       child: CachedNetworkImage(
+        fit: BoxFit.contain,
         height: h,
         width: w,
         imageUrl: url.getThumbnail(

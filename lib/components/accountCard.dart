@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixThumbnailImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
@@ -18,19 +19,8 @@ class AccountCard extends StatelessWidget {
           if (user.avatarUrl == null)
             Text(user.displayName[0])
           else
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: CachedNetworkImage(
-                imageUrl: user.avatarUrl.getThumbnail(
-                  sclient,
-                  width: 300,
-                  height: 300,
-                ),
-                progressIndicatorBuilder: (context, url, downloadProgress) =>
-                    CircularProgressIndicator(value: downloadProgress.progress),
-                errorWidget: (context, url, error) => Icon(Icons.error),
-              ),
-            ),
+          MinesTrixThumbnailImage(url: user.avatarUrl, width:100, height:100),
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal:0, vertical:3),
             child: Text(user.displayName,
