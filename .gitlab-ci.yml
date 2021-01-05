@@ -1,48 +1,60 @@
 image: cirrusci/flutter:dev
 
 stages:
-  - build
   - analyze
+  - build
   - test
-
-before_script:
-  - flutter pub get
-  - flutter clean
 
 build_linux:
   stage: build
-
+  before_script: [sudo apt update && sudo apt install curl clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev -y]
   script:
     - flutter config --enable-linux-desktop
+    - flutter clean
+    - flutter pub get
     - flutter build linux --release
+  artifacts:
+    when: on_success
+    paths:
+      - build/linux/release/bundle/
+
 
   tags:
-    - shared
+    - build
+    - desktop
+    - linux
 
 build_android:
   stage: build
 
   script:
+    - flutter clean
+    - flutter pub get
     - flutter build apk --release
 
   tags:
-    - shared
+    - build
+    - android
 
 build_web:
   stage: build
 
   script:
     - flutter config --enable-web
+    - flutter clean
+    - flutter pub get
     - flutter build web --release
   
   tags:
-    - shared
+    - build
+    - web
 
 analyze:
   stage: analyze
 
   script:
     - flutter analyze
+    - flutter format lib/ test/ --set-exit-if-changed
 
 unit_test:
   stage: test
