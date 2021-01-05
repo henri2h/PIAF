@@ -9,29 +9,43 @@ before_script:
   - flutter pub get
   - flutter clean
 
-build:
+build_linux:
   stage: build
 
   script:
-    - flutter build linux
+    - flutter config --enable-linux-desktop
+    - flutter build linux --release
 
   tags:
     - shared
 
+build_android:
+  stage: build
+
+  script:
+    - flutter build apk --release
+
+  tags:
+    - shared
+
+build_web:
+  stage: build
+
+  script:
+    - flutter config --enable-web
+    - flutter build web --release
+  
+  tags:
+    - shared
+
+analyze:
+  stage: analyze
+
+  script:
+    - flutter analyze
 
 unit_test:
   stage: test
 
   script:
     - flutter test test/*
-
-  tags:
-    - shared
-
-  stage: analyze
-
-  script:
-    - echo job excluded
-
-  tags:
-  - shared
