@@ -107,6 +107,12 @@ We should decide if we accept that "friendship" could be one way (I add you to m
 I think we should only accept two way
 TODO : think to how we could implement this (TLS handshake :D )
 
+## Contributing
+
+### Before publish a commit
+
+Make sure to run ./scripts/before_commit.sh
+
 ## Building
 
 ### Installing OLM
