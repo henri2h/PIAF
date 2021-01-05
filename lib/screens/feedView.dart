@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/postView.dart';
+import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class FeedView extends StatelessWidget {
