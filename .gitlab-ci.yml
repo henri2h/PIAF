@@ -1,4 +1,4 @@
-image: cirrusci/flutter:stable
+image: cirrusci/flutter:dev
 
 stages:
   - build
