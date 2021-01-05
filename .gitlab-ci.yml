@@ -35,6 +35,3 @@ unit_test:
 
   tags:
   - shared
-
-  only:
-    - merge_requests
