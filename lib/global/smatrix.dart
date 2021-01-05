@@ -63,7 +63,7 @@ class SClient extends Client {
       print(" ");*/
       print("event");
       print(eUp.type);
-      if (eUp.eventType ==  "m.room.message") {
+      if (eUp.eventType == "m.room.message") {
         await loadNewTimeline();
         print("New timeline");
       }
@@ -249,7 +249,9 @@ class SClient extends Client {
 
   Future<Profile> getUserFromRoom(Room room) async {
     String userId = getUserIdFromRoomName(room.name);
-    return await getProfileFromUserId(userId);
+    Profile p = await getProfileFromUserId(userId);
+    p.userId = userId;
+    return p;
   }
 
   Future<bool> addFriend(String userId) async {

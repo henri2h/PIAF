@@ -1,4 +1,3 @@
-
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:famedlysdk/matrix_api/model/event_types.dart';
 import 'package:flutter/material.dart';
@@ -20,31 +19,37 @@ class PostHeader extends StatelessWidget {
         Flexible(
           child: Row(
             children: [
-              MinesTrixThumbnailImage(
-                  url: event.sender.avatarUrl, width: 45, height: 45),
-              SizedBox(width: 15),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: MinesTrixThumbnailImage(
+                    url: event.sender.avatarUrl, width: 48, height: 48),
+              ),
+              SizedBox(width: 10),
               Flexible(
-                child: FutureBuilder<String>(
-                    future: sclient.getRoomDisplayName(event.room),
-                    builder: (context, AsyncSnapshot<String> name) {
-                      if (name.hasData) {
+                child: FutureBuilder<Profile>(
+                    future: sclient.getUserFromRoom(event.room),
+                    builder: (context, AsyncSnapshot<Profile> p) {
+                      if (p.hasData) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(event.sender.displayName,
+                            Text(
+                                event.sender.displayName,
                                 style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
-                            Row(
-                              children: [
-                                Text("to",
-                                    style: TextStyle(color: Colors.grey[600])),
-                                SizedBox(width: 2),
-                                Text(name.data,
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400)),
-                              ],
-                            ),
+                            if (event.sender.id != p.data.userId)
+                              Row(
+                                children: [
+                                  Text("to",
+                                      style:
+                                          TextStyle(color: Colors.grey[600])),
+                                  SizedBox(width: 2),
+                                  Text(p.data.displayname,
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400)),
+                                ],
+                              ),
                             Text(timeago.format(event.originServerTs),
                                 style: TextStyle(
                                     fontWeight: FontWeight.normal,
