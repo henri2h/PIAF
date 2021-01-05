@@ -132,6 +132,7 @@ class LoginCardState extends State<LoginCard> {
                       obscureText: true),
                   Text("Domain : "),
                   Text(domain),
+                  if (_errorText != null) Text(_errorText),
                   if (_isLoading)
                     Padding(
                       padding: const EdgeInsets.all(8.0),

@@ -3,13 +3,12 @@
  */
 
 import 'dart:async';
-import 'dart:math';
 
 import 'package:famedlysdk/famedlysdk.dart';
 
 class SClient extends Client {
-  static String SMatrixRoomPrefix = "smatrix_";
-  static String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
+  static const String SMatrixRoomPrefix = "smatrix_";
+  static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
   StreamSubscription onSyncUpdate;
   StreamSubscription onEventUpdate;
   StreamSubscription onRoomUpdateSub;
@@ -240,6 +239,7 @@ class SClient extends Client {
     onSyncUpdate?.cancel();
     onEventUpdate?.cancel();
     onTimelineUpdate?.close();
+    onRoomUpdateSub?.cancel();
     await super.dispose(closeDatabase: closeDatabase);
   }
 
@@ -339,7 +339,6 @@ class SMatrixRoom {
     if (room.name.startsWith(SClient.SMatrixRoomPrefix)) {
       // check if is a use room, in which case, it's user must be admin
       if (room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
-        String userid = SClient.getUserIdFromRoomName(room.name);
         return true;
       }
 

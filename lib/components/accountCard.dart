@@ -1,16 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixThumbnailImage.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/global/smatrix.dart';
 
 class AccountCard extends StatelessWidget {
   AccountCard({Key key, this.user}) : super(key: key);
   final User user;
   @override
   Widget build(BuildContext context) {
-    final SClient sclient = Matrix.of(context).sclient;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

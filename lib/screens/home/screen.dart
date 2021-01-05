@@ -339,7 +339,4 @@ class NavigationBarState extends State<NavigationBar> {
       ],
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
