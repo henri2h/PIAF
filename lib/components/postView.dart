@@ -4,6 +4,7 @@ import 'package:emoji_picker/emoji_picker.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTheme.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -154,18 +155,12 @@ class PostReactions extends StatelessWidget {
         for (MapEntry<String, int> key in keys.entries)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Row(children: [
-                  Text(key.key),
-                  SizedBox(width: 10),
-                  Text(key.value.toString())
-                ]),
-              ),
+            child: ReactionItemWidget(
+              Row(children: [
+                Text(key.key),
+                SizedBox(width: 10),
+                Text(key.value.toString())
+              ]),
             ),
           ),
       ],
@@ -181,11 +176,19 @@ class ReactionItemWidget extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Material(
-      borderRadius: BorderRadius.circular(5),
-      color: Colors.white,
-      elevation: 2,
-      child: Padding(padding: const EdgeInsets.all(6), child: child),
+    return Container(
+      padding: const EdgeInsets.all(1.6),
+      decoration: BoxDecoration(
+        gradient: MinesTrixTheme.buttonGradient,
+        borderRadius: BorderRadius.circular(32),
+      ),
+      child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.white),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32)),
+          child: child),
     );
   }
 }
