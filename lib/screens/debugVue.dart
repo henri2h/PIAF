@@ -32,7 +32,7 @@ class _DebugViewState extends State<DebugView> {
     timelineLength.clear();
     for (var i = 0; i < srooms.length; i++) {
       Timeline t = srooms[i].timeline;
-      
+
       timelineLength.add(t.events.length);
     }
 

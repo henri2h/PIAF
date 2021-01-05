@@ -12,6 +12,7 @@ class H1Title extends StatelessWidget {
     );
   }
 }
+
 class H2Title extends StatelessWidget {
   const H2Title(this.title, {Key key}) : super(key: key);
   final String title;

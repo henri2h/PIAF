@@ -30,7 +30,7 @@ class MinesTrixButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon,color: Colors.white),
+                Icon(icon, color: Colors.white),
                 SizedBox(width: 10),
                 Text(label, style: TextStyle(color: Colors.white)),
               ],

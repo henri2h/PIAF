@@ -83,12 +83,12 @@ class ChatView extends StatelessWidget {
                                                     BorderRadius.circular(20),
                                               ),
                                               child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 6,
-                                                        horizontal: 12),
-                                                child: MessageDisplay(event:event)
-                                              ),
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      vertical: 6,
+                                                      horizontal: 12),
+                                                  child: MessageDisplay(
+                                                      event: event)),
                                             ),
                                           ),
                                           if (sendByUser == false)
@@ -129,7 +129,7 @@ class ChatView extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: TextField(
-                                    maxLines: null,
+                                      maxLines: null,
                                       controller: _sendController,
                                       keyboardType: TextInputType.multiline,
                                       decoration: InputDecoration(

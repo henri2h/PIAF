@@ -30,7 +30,6 @@ class UserFeedView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       H1Title("User feed"),
-                      
                       Row(
                         children: [
                           IconButton(
@@ -58,13 +57,13 @@ class UserFeedView extends StatelessWidget {
                     children: [
                       Center(child: MinesTrixImage(url: sroom.room.avatar)),
                       Container(
-                       // alignment: Alignment.bottomCenter,
-                        padding: const EdgeInsets.only(left:40, right:40, top:200),
+                        // alignment: Alignment.bottomCenter,
+                        padding: const EdgeInsets.only(
+                            left: 40, right: 40, top: 200),
                         child: UserInfo(user: sroom.user),
                       ),
                     ],
                   ),
-               
                   Padding(
                       padding: const EdgeInsets.all(15),
                       child: FriendsView(sroom: sroom)),
@@ -74,7 +73,8 @@ class UserFeedView extends StatelessWidget {
                         onPressed: () {}, label: "ok", icon: Icons.data_usage),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal:15, vertical:8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 8.0),
                     child: H2Title("Posts"),
                   ),
                   for (Event e in sevents)
@@ -116,13 +116,11 @@ class FriendsView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical:8.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: H2Title("Friends"),
         ),
         Center(
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            children: [
+          child: Wrap(alignment: WrapAlignment.center, children: [
             for (User user in sroom.room
                 .getParticipants()
                 .where((User u) => u.membership == Membership.join))

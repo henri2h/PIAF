@@ -81,14 +81,13 @@ class FriendsVue extends StatelessWidget {
                             Row(
                               children: [
                                 IconButton(
-                                    icon: Icon(Icons.check,
-                                        color: Colors.green),
+                                    icon:
+                                        Icon(Icons.check, color: Colors.green),
                                     onPressed: () async {
                                       await sm.room.join();
                                     }),
                                 IconButton(
-                                    icon:
-                                        Icon(Icons.delete, color: Colors.red),
+                                    icon: Icon(Icons.delete, color: Colors.red),
                                     onPressed: () async {
                                       await sm.room.leave();
                                     }),

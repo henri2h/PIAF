@@ -1,4 +1,3 @@
-
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:famedlysdk/matrix_api/model/event_types.dart';
 import 'package:famedlysdk/matrix_api/model/message_types.dart';

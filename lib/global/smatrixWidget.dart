@@ -107,20 +107,18 @@ class MatrixState extends State<Matrix> {
 
       // check if it is a message
       if (SMatrixRoom.isValidSRoom(room)) {
-         Profile profile = await sclient.getUserFromRoom(room);
+        Profile profile = await sclient.getUserFromRoom(room);
         Flushbar(
           title: "New post from " + profile.displayname,
           message: event.body,
           duration: Duration(seconds: 3),
         )..show(context);
-       
       } else {
-         Flushbar(
+        Flushbar(
           title: room.name,
           message: event.body,
           duration: Duration(seconds: 3),
         )..show(context);
-       
       }
     });
 

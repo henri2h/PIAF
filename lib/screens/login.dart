@@ -122,7 +122,6 @@ class LoginCardState extends State<LoginCard> {
                           });
                           print("error : " + userid);
                           print(e);
-                          
                         }
                       },
                       tController: _usernameController),

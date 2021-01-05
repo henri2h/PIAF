@@ -23,7 +23,7 @@ Future<Database> getDatabase(Client client) async {
       newPassword = true;
       password = randomString(255);
     }
-  
+
     _db = await constructDb(
       logStatements: false,
       filename: 'moor.sqlite',
@@ -37,7 +37,6 @@ Future<Database> getDatabase(Client client) async {
     _generateDatabaseLock = false;
   }
 }
-
 
 Database _db;
 bool _generateDatabaseLock = false;

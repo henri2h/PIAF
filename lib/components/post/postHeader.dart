@@ -33,8 +33,7 @@ class PostHeader extends StatelessWidget {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                                event.sender.displayName,
+                            Text(event.sender.displayName,
                                 style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                             if (event.sender.id != p.data.userId)

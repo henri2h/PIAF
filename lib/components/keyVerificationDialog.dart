@@ -94,8 +94,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
           margin: EdgeInsets.only(left: 8.0, right: 8.0),
           child: Column(
             children: <Widget>[
-              Text("askSSSSSign",
-                  style: TextStyle(fontSize: 20)),
+              Text("askSSSSSign", style: TextStyle(fontSize: 20)),
               Container(height: 10),
               TextField(
                 controller: textEditingController,
@@ -133,8 +132,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         break;
       case KeyVerificationState.askAccept:
         body = Container(
-          child: Text(
-              "askVerificationRequest(widget.request.userId)",
+          child: Text("askVerificationRequest(widget.request.userId)",
               style: TextStyle(fontSize: 20)),
           margin: EdgeInsets.only(left: 8.0, right: 8.0),
         );
@@ -236,7 +234,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
             Icon(Icons.check_circle_outlined, color: Colors.green, size: 200.0),
             SizedBox(height: 10),
             Text(
-             "verifySuccess",
+              "verifySuccess",
               textAlign: TextAlign.center,
             ),
           ],
@@ -307,7 +305,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
     final title = PlatformInfos.isCupertinoStyle
         ? Text("verifyTitle")
         : ListTile(
-            leading: Text(otherName),  // Avatar(profile?.avatarUrl, otherName),
+            leading: Text(otherName), // Avatar(profile?.avatarUrl, otherName),
             contentPadding: EdgeInsets.zero,
             subtitle: Text("verifyTitle", maxLines: 1),
             title: userNameTitle,

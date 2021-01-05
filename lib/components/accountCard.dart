@@ -19,10 +19,10 @@ class AccountCard extends StatelessWidget {
           if (user.avatarUrl == null)
             Text(user.displayName[0])
           else
-          MinesTrixThumbnailImage(url: user.avatarUrl, width:100, height:100),
-          
+            MinesTrixThumbnailImage(
+                url: user.avatarUrl, width: 100, height: 100),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal:0, vertical:3),
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 3),
             child: Text(user.displayName,
                 style: TextStyle(
                     fontSize: 20,
