@@ -7,7 +7,7 @@ import 'dart:async';
 import 'dart:core';
 import 'package:random_string/random_string.dart';
 
-import 'database/mobile.dart';
+import 'database/shared.dart';
 
 Future<Database> getDatabase(Client client) async {
   while (_generateDatabaseLock) {
