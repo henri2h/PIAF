@@ -1,3 +1,4 @@
+// ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 
 import 'package:famedlysdk/famedlysdk.dart';
@@ -14,5 +15,6 @@ Future<Database> constructDb(
 }
 
 Future<String> getLocalstorage(String key) async {
+  // ignore: await_only_futures
   return await window.localStorage[key];
 }
