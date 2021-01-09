@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/settings.dart';
 import 'package:minestrix/screens/smatrixRoomsVue.dart';
+import 'package:minestrix/screens/userFeedView.dart';
 
 class LeftBar extends StatelessWidget {
   const LeftBar({Key key}) : super(key: key);
@@ -17,12 +20,18 @@ class LeftBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           LeftBarButton(name: "Feed", icon: Icons.home, onPressed: () {}),
           LeftBarButton(
-              name: "My account", icon: Icons.person, onPressed: () {}),
+              name: "My account",
+              icon: Icons.person,
+              onPressed: () {
+                changePage(context, UserFeedView(userId: sclient.userID),
+                    "Friends vue");
+              }),
           LeftBarButton(
               name: "Friends",
               icon: Icons.people,
@@ -43,14 +52,7 @@ class LeftBar extends StatelessWidget {
             },
           ),
           LeftBarButton(
-            name: "SMatrix rooms",
-            icon: Icons.lock,
-            onPressed: () {
-              changePage(context, SMatrixRoomsVue(), "SMatrix rooms view");
-            },
-          ),
-          LeftBarButton(
-            name: "Chat",
+            name: "Chats",
             icon: Icons.message,
             onPressed: () {
               changePage(context, ChatsVue(), "Chats view");
@@ -73,7 +75,7 @@ class LeftBarButton extends StatelessWidget {
       child: RaisedButton(
         onPressed: onPressed,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

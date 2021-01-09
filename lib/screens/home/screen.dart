@@ -80,17 +80,20 @@ class WideContainer extends StatelessWidget {
             Expanded(
               child:
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Text("Help bar"),
-                      LeftBar(),
-                    ],
+                Flexible(
+                  flex:2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Text("Help bar"),
+                        LeftBar(),
+                      ],
+                    ),
                   ),
                 ),
                 Flexible(
-                  flex: 7,
+                  flex: 6,
                   child: StreamBuilder(
                     stream: sclient.onTimelineUpdate.stream,
                     builder: (context, _) => ListView.builder(
