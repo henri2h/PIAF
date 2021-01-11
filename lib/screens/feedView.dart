@@ -14,7 +14,7 @@ class FeedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color(0xfff4f3f4),
+      //color: Color(0xfff4f3f4),
       child: StreamBuilder(
         stream: sclient.onTimelineUpdate.stream,
         builder: (context, _) => ListView.builder(

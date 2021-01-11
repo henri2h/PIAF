@@ -253,14 +253,15 @@ class _MobileContainerState extends State<MobileContainer> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30),
         child: Material(
-          elevation:30,
+          elevation: 30,
           borderRadius: BorderRadius.all(Radius.circular(30)),
           child: Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(30.0)),
                 color: Colors.white),
             child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
                 child: NavigationBar(changePage: changePage)),
           ),
         ),

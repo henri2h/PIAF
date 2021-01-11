@@ -32,8 +32,7 @@ class _ChatsVueState extends State<ChatsVue>
                   H1Title("MATRIX Chats"),
                   Padding(
                     padding: const EdgeInsets.all(15),
-                    child:
-                        IconButton(icon: Icon(Icons.add), onPressed: () {}),
+                    child: IconButton(icon: Icon(Icons.add), onPressed: () {}),
                   ),
                 ],
               );
@@ -51,8 +50,7 @@ class _ChatsVueState extends State<ChatsVue>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                      timeago
-                          .format(sortedRooms[pos].lastEvent.originServerTs),
+                      timeago.format(sortedRooms[pos].lastEvent.originServerTs),
                       style: TextStyle(fontSize: 14, color: Colors.grey)),
                   if (sortedRooms[pos].notificationCount != 0)
                     Padding(
@@ -71,9 +69,7 @@ class _ChatsVueState extends State<ChatsVue>
                               padding: const EdgeInsets.symmetric(
                                   vertical: 4, horizontal: 8),
                               child: Text(
-                                  sortedRooms[pos]
-                                      .notificationCount
-                                      .toString(),
+                                  sortedRooms[pos].notificationCount.toString(),
                                   style: TextStyle(color: Colors.white)),
                             ),
                           )),
