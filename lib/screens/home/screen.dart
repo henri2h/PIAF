@@ -73,6 +73,7 @@ class WideContainer extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
           onPressed: () {}, tooltip: 'Write post', child: Icon(Icons.edit)),
       body: Container(
+        color: Colors.white,
         child: Column(
           children: [
             NavBar(),
@@ -81,7 +82,7 @@ class WideContainer extends StatelessWidget {
               child:
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Flexible(
-                  flex:2,
+                  flex: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
