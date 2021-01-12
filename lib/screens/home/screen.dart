@@ -216,23 +216,44 @@ class _MobileContainerState extends State<MobileContainer> {
     return Scaffold(
       extendBody: true,
       body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
-      floatingActionButton: isChatVue
-          ? FloatingActionButton(
-              onPressed: () async {
-                changePage(PostEditor());
-              },
-              tooltip: "New message",
-              child: Container(
-                margin: EdgeInsets.all(15.0),
-                child: Icon(Icons.message_outlined),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20),
+        child: Row(
+          children: [
+            Expanded(
+              child: Material(
+                elevation: 30,
+                borderRadius: BorderRadius.all(Radius.circular(30)),
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      color: Colors.white),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 14),
+                      child: NavigationBar(changePage: changePage)),
+                ),
               ),
-              elevation: 4.0,
-            )
-          : FloatingActionButton(
-              onPressed: () async {
-                changePage(PostEditor());
-                //    await showDialog(              context: context, builder: (_) => Dialog(child: PostEditor()));
-                /* NavigatorState nav = Navigator.of(context);
+            ),
+            SizedBox(width: 20),
+            isChatVue
+                ? FloatingActionButton(
+                    highlightElevation: 30,
+                    onPressed: () async {
+                      changePage(PostEditor());
+                    },
+                    tooltip: "New message",
+                    child: Container(
+                      margin: EdgeInsets.all(15.0),
+                      child: Icon(Icons.message_outlined),
+                    ),
+                    elevation: 30,
+                  )
+                : FloatingActionButton(
+                    onPressed: () async {
+                      changePage(PostEditor());
+                      //    await showDialog(              context: context, builder: (_) => Dialog(child: PostEditor()));
+                      /* NavigatorState nav = Navigator.of(context);
           if (nav.canPop()) {
             nav.pop<PostEditor>();
             
@@ -242,28 +263,15 @@ class _MobileContainerState extends State<MobileContainer> {
                 builder: (_) => Scaffold(body: PostEditor()),
               ),
             );*/
-              },
-              tooltip: "New post",
-              child: Container(
-                margin: EdgeInsets.all(15.0),
-                child: Icon(Icons.edit),
-              ),
-              elevation: 4.0,
-            ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 30),
-        child: Material(
-          elevation: 30,
-          borderRadius: BorderRadius.all(Radius.circular(30)),
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                color: Colors.white),
-            child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
-                child: NavigationBar(changePage: changePage)),
-          ),
+                    },
+                    tooltip: "New post",
+                    child: Container(
+                      margin: EdgeInsets.all(15.0),
+                      child: Icon(Icons.edit),
+                    ),
+                    elevation: 30,
+                  ),
+          ],
         ),
       ),
     );

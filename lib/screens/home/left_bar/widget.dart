@@ -5,7 +5,6 @@ import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/settings.dart';
-import 'package:minestrix/screens/smatrixRoomsVue.dart';
 import 'package:minestrix/screens/userFeedView.dart';
 
 class LeftBar extends StatelessWidget {
