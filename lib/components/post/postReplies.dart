@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
+import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class RepliesVue extends StatelessWidget {
@@ -96,11 +98,12 @@ class ReplyBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextEditingController tc = TextEditingController();
+    SClient sclient = Matrix.of(context).sclient;
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          MinesTrixUserImage(url: event.sender.avatarUrl),
+          MinesTrixUserImage(url: sclient.userRoom.user.avatarUrl),
           SizedBox(width: 10),
           Expanded(
               child: TextField(
