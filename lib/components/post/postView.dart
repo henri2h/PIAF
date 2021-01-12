@@ -37,6 +37,19 @@ class PostContent extends StatelessWidget {
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   bool showReplyBox = false;
 
+  Future<void> pickEmoji(Event e) async {
+    Emoji emoji = await showModalBottomSheet(
+        context: context,
+        builder: (context) => Column(children: [
+              EmojiPicker(
+                onEmojiSelected: (emoji, category) {
+                  Navigator.of(context).pop<Emoji>(emoji);
+                },
+              ),
+            ]));
+    await e.room.sendReaction(e.eventId, emoji.emoji);
+  }
+
   @override
   Widget build(BuildContext context) {
     Event e = widget.event;
@@ -50,7 +63,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     return StreamBuilder<Object>(
       stream: e.room.onUpdate.stream,
       builder: (context, snapshot) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -61,39 +74,36 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                 PostHeader(event: e),
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                   child: PostContent(e),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    FlatButton(
-                      onPressed: () async {
-                        Emoji emoji = await showModalBottomSheet(
-                            context: context,
-                            builder: (context) => Column(children: [
-                                  EmojiPicker(
-                                    onEmojiSelected: (emoji, category) {
-                                      Navigator.of(context).pop<Emoji>(emoji);
-                                    },
-                                  ),
-                                ]));
-                        await e.room.sendReaction(e.eventId, emoji.emoji);
-                      },
-                      child: reactions.isNotEmpty
-                          ? PostReactions(event: e, reactions: reactions)
-                          : ReactionItemWidget(
-                              Row(children: [
-                                Icon(Icons.emoji_emotions, size: 16),
-                                SizedBox(width: 10),
-                                Text("0")
-                              ]),
-                            ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: FlatButton(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                  child: Row(
+                    children: [
+                      FlatButton(
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minWidth: 0,
+                        padding: EdgeInsets.all(0),
+                        onPressed: () async {
+                          await pickEmoji(e);
+                        },
+                        child: reactions.isNotEmpty
+                            ? PostReactions(event: e, reactions: reactions)
+                            : ReactionItemWidget(
+                                Row(children: [
+                                  Icon(Icons.emoji_emotions, size: 16),
+                                  SizedBox(width: 10),
+                                  Text("0")
+                                ]),
+                              ),
+                      ),
+                      SizedBox(width: 10),
+                      FlatButton(
                         onPressed: replyButtonClick,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minWidth: 0,
+                        padding: EdgeInsets.all(0),
                         child: ReactionItemWidget(
                           Row(children: [
                             Icon(Icons.reply, size: 16),
@@ -102,8 +112,8 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                           ]),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -41,13 +41,13 @@ class ReactionItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(1.6),
+      padding: const EdgeInsets.all(1.2),
       decoration: BoxDecoration(
         gradient: MinesTrixTheme.buttonGradient,
         borderRadius: BorderRadius.circular(32),
       ),
       child: Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
               border: Border.all(color: Colors.white),
               color: Colors.white,
