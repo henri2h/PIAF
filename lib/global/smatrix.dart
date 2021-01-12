@@ -9,7 +9,6 @@ import 'package:famedlysdk/famedlysdk.dart';
 class SClient extends Client {
   static const String SMatrixRoomPrefix = "smatrix_";
   static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
-  StreamSubscription onSyncUpdate;
   StreamSubscription onEventUpdate;
   StreamSubscription onRoomUpdateSub;
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
@@ -69,7 +68,7 @@ class SClient extends Client {
     });
     onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
       await loadSRooms();
-      await loadSTimeline();
+      await loadNewTimeline();
       print("room update");
     });
   }
@@ -236,7 +235,6 @@ class SClient extends Client {
 
   @override
   Future<void> dispose({bool closeDatabase = true}) async {
-    onSyncUpdate?.cancel();
     onEventUpdate?.cancel();
     onTimelineUpdate?.close();
     onRoomUpdateSub?.cancel();
