@@ -2,6 +2,7 @@ import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixThumbnailImage.dart';
+import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/userFeedView.dart';
@@ -28,21 +29,15 @@ class PostHeader extends StatelessWidget {
               Flexible(
                 child: FutureBuilder<Profile>(
                     future: sclient.getUserFromRoom(event.room),
-                    builder: (context, AsyncSnapshot<Profile> p) {
+                    builder: (BuildContext context, AsyncSnapshot<Profile> p) {
                       if (p.hasData) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             TextButton(
                               onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (_) => Scaffold(
-                                      appBar: AppBar(
-                                          title: Text(event.sender.displayName +
-                                              " timeline")),
-                                      body: UserFeedView(
-                                          userId: event.sender.id)),
-                                ));
+                                NavigationHelper.navigateToUserFeed(
+                                    context, event.sender);
                               },
                               child: Text(event.sender.displayName,
                                   style: TextStyle(
