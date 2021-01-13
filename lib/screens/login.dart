@@ -1,4 +1,4 @@
-import 'package:famedlysdk/matrix_api/model/well_known_informations.dart';
+import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/screen.dart';

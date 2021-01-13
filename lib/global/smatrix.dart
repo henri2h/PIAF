@@ -11,7 +11,6 @@ class SClient extends Client {
   static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
   StreamSubscription onEventUpdate;
   StreamSubscription onRoomUpdateSub; // event subscription
-  StreamSubscription onFirstSyncSub;
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
   Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>(); // friends
