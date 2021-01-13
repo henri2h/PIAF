@@ -1,10 +1,10 @@
 import 'package:famedlysdk/famedlysdk.dart';
-import 'package:famedlysdk/matrix_api/model/event_types.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixThumbnailImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/userFeedView.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
@@ -33,9 +33,22 @@ class PostHeader extends StatelessWidget {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(event.sender.displayName,
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold)),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => Scaffold(
+                                      appBar: AppBar(
+                                          title: Text(event.sender.displayName +
+                                              " timeline")),
+                                      body: UserFeedView(
+                                          userId: event.sender.id)),
+                                ));
+                              },
+                              child: Text(event.sender.displayName,
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                            ),
                             if (event.sender.id != p.data.userId)
                               Row(
                                 children: [
