@@ -10,7 +10,7 @@ class MinesTrixAccountCreation extends StatelessWidget {
       children: [
         H1Title("Account creation"),
         Text("hello"),
-        FlatButton(onPressed: (){}, child:Text("create account"))
+        FlatButton(onPressed: () {}, child: Text("create account"))
       ],
     )));
   }

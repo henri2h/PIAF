@@ -32,8 +32,7 @@ class Minetrix extends StatelessWidget {
               }
               if (snapshot.data == LoginState.logged) {
                 return StreamBuilder<String>(
-                    stream:
-                        Matrix.of(context).sclient.onTimelineUpdate.stream,
+                    stream: Matrix.of(context).sclient.onTimelineUpdate.stream,
                     builder: (BuildContext context, snapshot) {
                       SClient sclient = Matrix.of(context).sclient;
                       print("sclient.userRoom exits ? : " +

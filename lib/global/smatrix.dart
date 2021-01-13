@@ -21,6 +21,7 @@ class SClient extends Client {
   List<Event> stimeline = [];
 
   bool _firstSync = true;
+  // ignore: unused_field
   Timer _timer; // timer used to sync all the conversations on the first run
 
   SClient(String clientName,
