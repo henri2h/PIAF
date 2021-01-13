@@ -1,6 +1,8 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/screens/createMinesTrixAccount.dart';
 import 'package:minestrix/screens/home/screen.dart';
 import 'package:minestrix/screens/login.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -29,7 +31,19 @@ class Minetrix extends StatelessWidget {
                 );
               }
               if (snapshot.data == LoginState.logged) {
-                return HomeScreen();
+                return StreamBuilder<String>(
+                    stream:
+                        Matrix.of(context).sclient.onTimelineUpdate.stream,
+                    builder: (BuildContext context, snapshot) {
+                      SClient sclient = Matrix.of(context).sclient;
+                      print("sclient.userRoom exits ? : " +
+                          (sclient.userRoom == null).toString());
+
+                      if (sclient.userRoom == null)
+                        return MinesTrixAccountCreation();
+                      else
+                        return HomeScreen();
+                    });
               }
               return LoginScreen();
             },
