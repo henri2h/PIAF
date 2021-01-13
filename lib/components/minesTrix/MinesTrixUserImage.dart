@@ -10,45 +10,54 @@ class MinesTrixUserImage extends StatelessWidget {
       @required this.url,
       this.width,
       this.height,
-      this.isCircle = true})
+      this.maxWidth,
+      this.maxHeight,
+      this.rounded = true,
+      this.thumnail = false,
+      this.unconstraigned = false})
       : super(key: key);
   final Uri url;
   final double width;
   final double height;
-  final bool isCircle;
+  final bool rounded;
+  final bool thumnail;
+  final bool unconstraigned;
+  final int maxWidth;
+  final int maxHeight;
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
+    double h = height != null ? height : 30;
+    double w = width != null ? width : 30;
     if (url == null)
       return Container(
-          height: height != null ? height : 30,
-          width: width != null ? width : 30,
-          decoration: isCircle
+          height: h,
+          width: w,
+          decoration: rounded
               ? BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(50)),
                 )
               : null,
           child: Icon(Icons.image));
-    return CachedNetworkImage(
-      imageUrl: url.getThumbnail(
-        sclient,
-        height: height != null ? height : 30,
-        width: width != null ? width : 30,
+    return ClipRRect(
+      borderRadius: rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
+      child: CachedNetworkImage(
+        fit: BoxFit.contain,
+        height: unconstraigned ? null : h,
+        width: unconstraigned ? null : w,
+        maxHeightDiskCache: maxHeight,
+        maxWidthDiskCache: maxWidth,
+        imageUrl: thumnail
+            ? url.getThumbnail(
+                sclient,
+                height: h,
+                width: w,
+              )
+            : url.getDownloadLink(sclient),
+        progressIndicatorBuilder: (context, url, downloadProgress) =>
+            CircularProgressIndicator(value: downloadProgress.progress),
+        errorWidget: (context, url, error) => Icon(Icons.error),
       ),
-      imageBuilder: (context, imageProvider) => Container(
-        height: height != null ? height : 30,
-        width: width != null ? width : 30,
-        decoration: BoxDecoration(
-            borderRadius:
-                isCircle ? BorderRadius.all(Radius.circular(50)) : null,
-            image: DecorationImage(
-              image: imageProvider,
-              fit: BoxFit.cover,
-            )),
-      ),
-      progressIndicatorBuilder: (context, url, downloadProgress) =>
-          CircularProgressIndicator(value: downloadProgress.progress),
-      errorWidget: (context, url, error) => Icon(Icons.error),
     );
   }
 }

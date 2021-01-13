@@ -2,8 +2,8 @@ import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixImage.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -48,7 +48,12 @@ class UserFeedView extends StatelessWidget {
                 ),
                 Stack(
                   children: [
-                    Center(child: MinesTrixImage(url: sroom.room.avatar)),
+                    Center(
+                        child: MinesTrixUserImage(
+                            url: sroom.room.avatar,
+                            unconstraigned: true,
+                            rounded: false,
+                            maxHeight: 500)),
                     Container(
                       // alignment: Alignment.bottomCenter,
                       padding:
@@ -137,7 +142,8 @@ class UserFeedView extends StatelessWidget {
                       child: Text("😧", style: TextStyle(fontSize: 40)),
                     ),
                     Text(
-                        "Or he/she may not have a MINESTRIX account (yet), send him a message ;)", style: TextStyle(fontSize: 20))
+                        "Or he/she may not have a MINESTRIX account (yet), send him a message ;)",
+                        style: TextStyle(fontSize: 20))
                   ],
                 ),
               ),
@@ -185,7 +191,6 @@ class UserInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
     String userId = user?.id;
     String displayName = user?.displayName;
     Uri avatarUrl = user?.avatarUrl;
@@ -209,18 +214,8 @@ class UserInfo extends StatelessWidget {
                     IconButton(icon: Icon(Icons.more_horiz), onPressed: () {}),
               ),
               Center(
-                child: CircleAvatar(
-                  backgroundImage: avatarUrl == null
-                      ? null
-                      : NetworkImage(
-                          avatarUrl.getThumbnail(
-                            sclient,
-                            width: 64,
-                            height: 64,
-                          ),
-                        ),
-                ),
-              )
+                  child: MinesTrixUserImage(
+                      url: avatarUrl, width: 200, height: 200))
             ]),
             Text(displayName,
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),

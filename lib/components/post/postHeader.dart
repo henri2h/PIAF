@@ -1,7 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixThumbnailImage.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -21,8 +21,12 @@ class PostHeader extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: MinesTrixThumbnailImage(
-                    url: event.sender.avatarUrl, width: 48, height: 48),
+                child: MinesTrixUserImage(
+                  url: event.sender.avatarUrl,
+                  width: 48,
+                  height: 48,
+                  thumnail: true,
+                ),
               ),
               SizedBox(width: 10),
               Flexible(

@@ -1,6 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixThumbnailImage.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 
 class AccountCard extends StatelessWidget {
@@ -24,8 +24,11 @@ class AccountCard extends StatelessWidget {
               if (user.avatarUrl == null)
                 Text(user.displayName[0])
               else
-                MinesTrixThumbnailImage(
-                    url: user.avatarUrl, width: 100, height: 100),
+                MinesTrixUserImage(
+                    url: user.avatarUrl,
+                    width: 100,
+                    height: 100,
+                    thumnail: true),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 3),
                 child: Text(user.displayName,
