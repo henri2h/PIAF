@@ -53,11 +53,11 @@ analyze:
   tags:
     - shared
 
-unit_test:
-  stage: test
-
-  script:
-    - flutter test test/*
-
-  tags:
-    - shared
+#unit_test:
+#  stage: test
+#
+#  script:
+#    - flutter test test/*
+#
+#  tags:
+#    - shared
