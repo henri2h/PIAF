@@ -38,6 +38,13 @@ class LeftBar extends StatelessWidget {
                 changePage(context, FriendsVue(), "Friends vue");
               }),
           LeftBarButton(
+            name: "Chats",
+            icon: Icons.message,
+            onPressed: () {
+              changePage(context, ChatsVue(), "Chats view");
+            },
+          ),
+          LeftBarButton(
               name: "Settings",
               icon: Icons.settings,
               onPressed: () {
@@ -48,13 +55,6 @@ class LeftBar extends StatelessWidget {
             icon: Icons.bug_report,
             onPressed: () {
               changePage(context, DebugView(), "Well... Debug time !!");
-            },
-          ),
-          LeftBarButton(
-            name: "Chats",
-            icon: Icons.message,
-            onPressed: () {
-              changePage(context, ChatsVue(), "Chats view");
             },
           ),
         ]);
