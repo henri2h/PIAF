@@ -5,6 +5,7 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixImage.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
+import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/debugVue.dart';
@@ -68,14 +69,20 @@ class UserFeedView extends StatelessWidget {
                       padding: const EdgeInsets.all(15),
                       child: FriendsView(sroom: sroom)),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 80),
-                    child: MinesTrixButton(
-                        onPressed: () {}, label: "ok", icon: Icons.data_usage),
-                  ),
-                  Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 15, vertical: 8.0),
                     child: H2Title("Posts"),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 80),
+                    child: MinesTrixButton(
+                        onPressed: () {
+                          NavigationHelper.navigateToWritePost(context, sroom);
+                        },
+                        label: "Write post on " +
+                            sroom.user.displayName +
+                            " timeline",
+                        icon: Icons.edit),
                   ),
                   for (Event e in sevents)
                     Column(

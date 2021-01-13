@@ -8,6 +8,8 @@ import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
 class PostEditor extends StatefulWidget {
+  PostEditor({Key key, this.sroom}) : super(key: key);
+  final SMatrixRoom sroom;
   @override
   _PostEditorState createState() => _PostEditorState();
 }
@@ -16,15 +18,20 @@ class _PostEditorState extends State<PostEditor>
     with SingleTickerProviderStateMixin {
   String postContent = "";
 
+  SMatrixRoom sroom;
+
   Future<void> sendPost(SClient sclient, String postContent,
       {Event inReplyTo}) async {
-    await sclient.userRoom.room
-        .sendTextEvent(postContent, inReplyTo: inReplyTo);
+    await sroom.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
   }
 
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
+
+    sroom = widget.sroom;
+    if (sroom == null) sroom = sclient.userRoom;
+
     return Container(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
@@ -33,7 +40,7 @@ class _PostEditorState extends State<PostEditor>
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  MinesTrixUserImage(url: sclient.userRoom.user.avatarUrl),
+                  MinesTrixUserImage(url: sroom.user.avatarUrl),
                   SizedBox(width: 5),
                   H1Title("What's up ?"),
                 ],
