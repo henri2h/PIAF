@@ -10,7 +10,8 @@ class SClient extends Client {
   static const String SMatrixRoomPrefix = "smatrix_";
   static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
   StreamSubscription onEventUpdate;
-  StreamSubscription onRoomUpdateSub;
+  StreamSubscription onRoomUpdateSub; // event subscription
+  StreamSubscription onFirstSyncSub;
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
   Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>(); // friends
@@ -19,6 +20,9 @@ class SClient extends Client {
 
   Map<String, String> userIdToRoomId = Map<String, String>();
   List<Event> stimeline = [];
+
+  bool _firstSync = true;
+  Timer _timer; // timer used to sync all the conversations on the first run
 
   SClient(String clientName,
       {bool enableE2eeRecovery,
@@ -50,9 +54,11 @@ class SClient extends Client {
 
   Future<void> initSMatrix() async {
     // initialisation
+
     await loadSRooms();
     await sendInvitesToFriends();
     await loadNewTimeline();
+
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
       /*   print("Event update");
       print(eUp.eventType);
@@ -66,6 +72,7 @@ class SClient extends Client {
         print("New timeline");
       }
     });
+
     onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
       await loadSRooms();
       await loadNewTimeline();
@@ -77,12 +84,27 @@ class SClient extends Client {
   Future<void> loadNewTimeline() async {
     if (ntimelineLock != true) {
       ntimelineLock = false;
-
+      print("Timeline update");
       await loadSTimeline();
       sortTimeline();
 
       onTimelineUpdate.add("up");
       //await onTimelineUpdate.done;
+
+      if (_firstSync) {
+        Duration duration = Duration(seconds: 2); // let the app start
+        _timer = Timer(duration, () async {
+          print("Timer, sync threads");
+          sRoomLock = true;
+          for (SMatrixRoom sr in srooms.values) {
+            await sr.timeline.requestHistory();
+          }
+          sRoomLock = false;
+        });
+        print("timer set");
+        _firstSync = false;
+      }
+
       ntimelineLock = false;
     } else {
       print("Locked...");
@@ -132,15 +154,11 @@ class SClient extends Client {
       sRoomLock = false;
     }
 
-    // check if user room has been created
-    if (userRoom == null) {
-      await createSMatrixRoom();
-    }
-
     // get invited rooms (friends requests)
   }
 
   Future createSMatrixRoom() async {
+    print("Create smatrix room");
     String roomID = await createRoom(
         name: SMatrixRoomPrefix + userID,
         topic: "Mines'Trix room name",
