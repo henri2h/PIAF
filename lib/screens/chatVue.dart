@@ -23,7 +23,7 @@ class ChatView extends StatelessWidget {
           print("Encryption :");
           print(room.encrypted);
           print(sclient.encryptionEnabled);
-          print(sclient.encryption.crossSigning.enabled);
+          print(sclient.encryption?.crossSigning?.enabled);
 
           return Scaffold(
             appBar: AppBar(
