@@ -29,28 +29,34 @@ class SettingsView extends StatelessWidget {
                 onPressed: () async {
                   await sclient.logout();
                 }),
-                H2Title("Encryption"),
-                sclient.encryptionEnabled ? Column(
-                  children: [
-                    Text("Encrytpion enabled ✅"),
-
-                    Text("Encryption.enabled : " + sclient.encryption.enabled.toString()),
-                    Text("Cross signing enabled : " + sclient.encryption.crossSigning.enabled.toString()),
-                    Text("Unknown session : " + sclient.isUnknownSession.toString()),
-
-                    if(sclient.isUnknownSession == false) Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check, size:50),
-                          SizedBox(width:10),
-                          Flexible(child: Text("Verified session, you're good to go !!", style:TextStyle(fontSize: 20)))
-                        ],
-                      ),
-                    )
-                  ],
-                ) : Text("Encrytpion disabled ❌"),
-                
+            H2Title("Encryption"),
+            sclient.encryptionEnabled
+                ? Column(
+                    children: [
+                      Text("Encrytpion enabled ✅"),
+                      Text("Encryption.enabled : " +
+                          sclient.encryption.enabled.toString()),
+                      Text("Cross signing enabled : " +
+                          sclient.encryption.crossSigning.enabled.toString()),
+                      Text("Unknown session : " +
+                          sclient.isUnknownSession.toString()),
+                      if (sclient.isUnknownSession == false)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check, size: 50),
+                              SizedBox(width: 10),
+                              Flexible(
+                                  child: Text(
+                                      "Verified session, you're good to go !!",
+                                      style: TextStyle(fontSize: 20)))
+                            ],
+                          ),
+                        )
+                    ],
+                  )
+                : Text("Encrytpion disabled ❌"),
           ],
         ));
   }

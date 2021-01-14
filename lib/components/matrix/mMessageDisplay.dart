@@ -10,7 +10,7 @@ class MessageDisplay extends StatelessWidget {
     Key key,
     @required this.event,
   }) : super(key: key);
-  Widget build_page(BuildContext context, Event event) {
+  Widget buildPage(BuildContext context, Event event) {
     switch (event.type) {
       case EventTypes.Message:
       case EventTypes.Encrypted:
@@ -38,9 +38,9 @@ class MessageDisplay extends StatelessWidget {
       return FutureBuilder(
           future: event.requestKey(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            return build_page(context, event);
+            return buildPage(context, event);
           });
     }
-    return build_page(context, event);
+    return buildPage(context, event);
   }
 }
