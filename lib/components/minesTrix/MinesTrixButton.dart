@@ -27,13 +27,18 @@ class MinesTrixButton extends StatelessWidget {
             constraints: const BoxConstraints(
                 minWidth: 88.0,
                 minHeight: 36.0), // min sizes for Material buttons
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white),
-                SizedBox(width: 10),
-                Text(label, style: TextStyle(color: Colors.white)),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: Colors.white),
+                  SizedBox(width: 10),
+                  Flexible(
+                      child:
+                          Text(label, style: TextStyle(color: Colors.white))),
+                ],
+              ),
             ),
           ),
         ),
