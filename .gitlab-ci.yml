@@ -27,6 +27,13 @@ build_android:
     - flutter clean
     - flutter pub get
     - flutter build apk --release
+  artifacts:
+    when: on_success
+    paths:
+      - build/android/app-release.apk
+ 
+  only:
+    - main
 
   tags:
     - shared
@@ -39,7 +46,11 @@ build_web:
     - flutter clean
     - flutter pub get
     - flutter build web --release
-  
+
+  artifacts:
+    paths:
+      - build/web/
+
   tags:
     - shared
 
