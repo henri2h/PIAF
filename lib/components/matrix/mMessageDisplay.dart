@@ -10,9 +10,7 @@ class MessageDisplay extends StatelessWidget {
     Key key,
     @required this.event,
   }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build_page(BuildContext context, Event event) {
     switch (event.type) {
       case EventTypes.Message:
       case EventTypes.Encrypted:
@@ -32,5 +30,17 @@ class MessageDisplay extends StatelessWidget {
       default:
         return Text("Unknown event type");
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (event.messageType == MessageTypes.BadEncrypted) {
+      return FutureBuilder(
+          future: event.requestKey(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            return build_page(context, event);
+          });
+    }
+    return build_page(context, event);
   }
 }
