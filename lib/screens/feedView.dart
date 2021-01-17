@@ -10,7 +10,7 @@ class FeedView extends StatelessWidget {
   const FeedView({
     Key key,
     @required this.sclient,
-    @required this.changePage,
+    this.changePage,
   }) : super(key: key);
 
   final Function changePage;

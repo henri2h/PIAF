@@ -7,15 +7,14 @@ class CreateGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: ListView(
-          children: [
-            H1Title("Create group"),
-            
-            Padding(
-              padding: const EdgeInsets.all(40.0),
-              child: MinesTrixButton(
-                  label: "Create group", onPressed: () {}, icon: Icons.group_add),
-            )
-          ],
-        ));
+      children: [
+        H1Title("Create group"),
+        Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: MinesTrixButton(
+              label: "Create group", onPressed: () {}, icon: Icons.group_add),
+        )
+      ],
+    ));
   }
 }
