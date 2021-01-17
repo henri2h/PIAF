@@ -66,7 +66,7 @@ class _PostEditorState extends State<PostEditor>
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(30),
               child: MinesTrixButton(
                   icon: Icons.edit,
                   label: "Send post",
