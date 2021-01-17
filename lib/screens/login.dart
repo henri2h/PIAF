@@ -65,7 +65,7 @@ class LoginCardState extends State<LoginCard> {
   bool _isLoading = false;
   String password = "";
   String domain = "";
-  bool sso_login = false;
+  bool ssoLogin = false;
   bool canTryLogIn = false;
 
   void _loginAction(SClient client, {String token}) async {
@@ -80,7 +80,7 @@ class LoginCardState extends State<LoginCard> {
         AuthenticationTypes.token
       });
       await client.login(
-          type: sso_login
+          type: ssoLogin
               ? AuthenticationTypes.token
               : AuthenticationTypes.password,
           user: _usernameController.text,
@@ -100,8 +100,7 @@ class LoginCardState extends State<LoginCard> {
       print(item.type.toString());
     }
     setState(() {
-      sso_login = lg.flows.firstWhere(
-              (Flows elem) => elem.type == "m.login.sso",
+      ssoLogin = lg.flows.firstWhere((Flows elem) => elem.type == "m.login.sso",
               orElse: () => null) !=
           null;
     });
@@ -178,7 +177,7 @@ class LoginCardState extends State<LoginCard> {
                         });
                       },
                       tController: _usernameController),
-                  if (sso_login == false)
+                  if (ssoLogin == false)
                     LoginInput(
                         name: "password",
                         icon: Icons.lock_outline,
@@ -192,7 +191,7 @@ class LoginCardState extends State<LoginCard> {
                       padding: const EdgeInsets.all(8.0),
                       child: LinearProgressIndicator(),
                     ),
-                  sso_login == false
+                  ssoLogin == false
                       ? FloatingActionButton.extended(
                           icon: const Icon(Icons.login),
                           label: Text('Login'),

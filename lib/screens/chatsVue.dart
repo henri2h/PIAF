@@ -89,7 +89,7 @@ class _ChatsVueState extends State<ChatsVue>
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: Text(sortedRooms[pos].lastMessage, maxLines: 2),
+                child: Text(sortedRooms[pos].lastEvent.body, maxLines: 2),
               ),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(

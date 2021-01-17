@@ -34,7 +34,7 @@ class _SMatrixRoomsVueState extends State<SMatrixRoomsVue>
                           ),
                   ),
                   title: Text(sclient.srooms[i].room.displayname),
-                  subtitle: Text(sclient.srooms[i].room.lastMessage),
+                  subtitle: Text(sclient.srooms[i].room.lastEvent.body),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) =>
