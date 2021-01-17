@@ -19,11 +19,8 @@ class _ChatsVueState extends State<ChatsVue>
     final client = Matrix.of(context).sclient;
     List<Room> sortedRooms = client.rooms.toList();
     sortedRooms.sort((Room a, Room b) {
-      if (a.lastEvent == null) {
-        print(a.name);
-      }
-      if (b.lastEvent == null) {
-        print(b.name);
+      if (a.lastEvent == null || b.lastEvent == null) {
+        return 1; // we just can't do anything here..., we just throw this conversation at the end
       }
       return b.lastEvent?.originServerTs
           ?.compareTo(a.lastEvent?.originServerTs);
@@ -58,7 +55,7 @@ class _ChatsVueState extends State<ChatsVue>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                      sortedRooms[pos].lastEvent.originServerTs != null
+                      sortedRooms[pos].lastEvent?.originServerTs != null
                           ? timeago
                               .format(sortedRooms[pos].lastEvent.originServerTs)
                           : "Invalid time",
@@ -89,7 +86,9 @@ class _ChatsVueState extends State<ChatsVue>
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: Text(sortedRooms[pos].lastEvent.body, maxLines: 2),
+                child: sortedRooms[pos].lastEvent != null
+                    ? Text(sortedRooms[pos].lastEvent.body, maxLines: 2)
+                    : Text("Error"),
               ),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
