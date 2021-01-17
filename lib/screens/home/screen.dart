@@ -5,6 +5,7 @@ import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatsVue.dart';
+import 'package:minestrix/screens/createGroup.dart';
 import 'package:minestrix/screens/feedView.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
@@ -194,6 +195,8 @@ class _MobileContainerState extends State<MobileContainer> {
   bool changing = false;
   bool isChatVue = false;
 
+  bool isNavBarExtended = false;
+
   void changePage(Widget widgetIn, {bool chatVue}) {
     if (mounted && changing == false) {
       changing = true;
@@ -204,6 +207,7 @@ class _MobileContainerState extends State<MobileContainer> {
       setState(() {
         widgetView = widgetIn;
         changing = false;
+        isNavBarExtended = false;
       });
     }
   }
@@ -219,6 +223,7 @@ class _MobileContainerState extends State<MobileContainer> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: Material(
@@ -249,27 +254,65 @@ class _MobileContainerState extends State<MobileContainer> {
                     ),
                     elevation: 30,
                   )
-                : FloatingActionButton(
-                    onPressed: () async {
-                      changePage(PostEditor());
-                      //    await showDialog(              context: context, builder: (_) => Dialog(child: PostEditor()));
-                      /* NavigatorState nav = Navigator.of(context);
-          if (nav.canPop()) {
-            nav.pop<PostEditor>();
-            
-          } else
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => Scaffold(body: PostEditor()),
-              ),
-            );*/
-                    },
-                    tooltip: "New post",
-                    child: Container(
-                      margin: EdgeInsets.all(15.0),
-                      child: Icon(Icons.edit),
-                    ),
-                    elevation: 30,
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (isNavBarExtended)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 15.0),
+                          child: Material(
+                            color: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(30))),
+                            elevation: 30,
+                            child: Column(
+                              children: [
+                                FloatingActionButton(
+                                  onPressed: () async {
+                                    changePage(PostEditor());
+                                  },
+                                  tooltip: "Create post",
+                                  child: Container(
+                                    margin: EdgeInsets.all(15.0),
+                                    child: Icon(Icons.post_add),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                SizedBox(height: 10),
+                                FloatingActionButton(
+                                  onPressed: () async {
+                                    changePage(CreateGroup());
+                                  },
+                                  tooltip: "New group",
+                                  child: Container(
+                                    margin: EdgeInsets.all(15.0),
+                                    child: Icon(Icons.group_add),
+                                  ),
+                                  elevation: 0,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            setState(() {
+                              isNavBarExtended = !isNavBarExtended;
+                            });
+                          },
+                          tooltip: "New post",
+                          child: Container(
+                            margin: EdgeInsets.all(15.0),
+                            child: Icon(Icons.add),
+                          ),
+                          elevation: 30,
+                        ),
+                      ),
+                    ],
                   ),
           ],
         ),
