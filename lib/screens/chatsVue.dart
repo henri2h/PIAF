@@ -18,8 +18,16 @@ class _ChatsVueState extends State<ChatsVue>
   Widget build(BuildContext context) {
     final client = Matrix.of(context).sclient;
     List<Room> sortedRooms = client.rooms.toList();
-    sortedRooms.sort((Room a, Room b) =>
-        b.lastEvent.originServerTs.compareTo(a.lastEvent.originServerTs));
+    sortedRooms.sort((Room a, Room b) {
+      if (a.lastEvent == null) {
+        print(a.name);
+      }
+      if (b.lastEvent == null) {
+        print(b.name);
+      }
+      return b.lastEvent?.originServerTs
+          ?.compareTo(a.lastEvent?.originServerTs);
+    });
     return StreamBuilder(
       stream: client.onSync.stream,
       builder: (context, _) => ListView.builder(
@@ -50,7 +58,10 @@ class _ChatsVueState extends State<ChatsVue>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                      timeago.format(sortedRooms[pos].lastEvent.originServerTs),
+                      sortedRooms[pos].lastEvent.originServerTs != null
+                          ? timeago
+                              .format(sortedRooms[pos].lastEvent.originServerTs)
+                          : "Invalid time",
                       style: TextStyle(fontSize: 14, color: Colors.grey)),
                   if (sortedRooms[pos].notificationCount != 0)
                     Padding(
