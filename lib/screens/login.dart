@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/screen.dart';
 import 'package:minestrix/global/smatrix.dart';
+
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({Key key, this.title}) : super(key: key);
@@ -59,6 +65,7 @@ class LoginCardState extends State<LoginCard> {
   bool _isLoading = false;
   String password = "";
   String domain = "";
+  bool sso_login = false;
   bool canTryLogIn = false;
 
   void _loginAction(SClient client) async {
@@ -79,6 +86,28 @@ class LoginCardState extends State<LoginCard> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  Future<void> _requestSupportedTypes(SClient client) async {
+    LoginTypes lg = await client.requestLoginTypes();
+    print(lg.toJson());
+    for (Flows item in lg.flows) {
+      print(item.type.toString());
+    }
+    setState(() {
+      sso_login = lg.flows.firstWhere(
+              (Flows elem) => elem.type == "m.login.sso",
+              orElse: () => null) !=
+          null;
+    });
+  }
+
+  _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
 // according to the matrix specification https://matrix.org/docs/spec/appendices#id9
   RegExp userRegex = RegExp(
       r"@((([a-z]|\.|_|-|=|\/|[0-9])+):(((.+)\.(.+))|\[((([0-9]|[a-f]|[A-F])+):){2,7}:?([0-9]|[a-f]|[A-F])+\]))(:([0-9]+))?");
@@ -94,42 +123,54 @@ class LoginCardState extends State<LoginCard> {
                       name: "userid",
                       icon: Icons.account_circle,
                       onChanged: (String userid) async {
-                        try {
-                          RegExpMatch reguserIdMatched =
-                              userRegex.firstMatch(userid);
-
-                          if (reguserIdMatched != null) {
-                            String userIdMatched = reguserIdMatched.group(0);
-                            WellKnownInformations infos =
-                                await client.getWellKnownInformationsByUserId(
-                                    userIdMatched);
+                        if (userid.isValidMatrixId) {
+                          try {
+                            WellKnownInformations infos = await client
+                                .getWellKnownInformationsByUserId(userid);
                             if (infos?.mHomeserver?.baseUrl != null) {
                               setState(() {
                                 domain = infos.mHomeserver.baseUrl;
+                                print("Domain : " + domain);
                                 canTryLogIn = true;
                               });
-                            } else {
-                              setState(() {
-                                domain = "";
-                                canTryLogIn = false;
-                              });
+
+                              client.homeserver =
+                                  Uri.parse(infos.mHomeserver.baseUrl);
+                              await _requestSupportedTypes(client);
+                              return;
+                            }
+                          } catch (e) {
+                            // try a catch back for home server not suporting well known ... sigh
+                            try {
+                              client.homeserver = Uri.https(userid.domain, "");
+                              await _requestSupportedTypes(client);
+                            } catch (e) {
+                              try {
+                                client.homeserver =
+                                    Uri.https("matrix." + userid.domain, "");
+                                await _requestSupportedTypes(client);
+
+                                return;
+                              } catch (e) {
+                                print("error : " + userid);
+                                print(e);
+                              }
                             }
                           }
-                        } catch (e) {
-                          setState(() {
-                            domain = "";
-                            canTryLogIn = false;
-                          });
-                          print("error : " + userid);
-                          print(e);
                         }
+                        // if we are here, we had an issue somewhere...
+                        setState(() {
+                          domain = "";
+                          canTryLogIn = false;
+                        });
                       },
                       tController: _usernameController),
-                  LoginInput(
-                      name: "password",
-                      icon: Icons.lock_outline,
-                      tController: _passwordController,
-                      obscureText: true),
+                  if (sso_login == false)
+                    LoginInput(
+                        name: "password",
+                        icon: Icons.lock_outline,
+                        tController: _passwordController,
+                        obscureText: true),
                   Text("Domain : "),
                   Text(domain),
                   if (_errorText != null) Text(_errorText),
@@ -138,12 +179,89 @@ class LoginCardState extends State<LoginCard> {
                       padding: const EdgeInsets.all(8.0),
                       child: LinearProgressIndicator(),
                     ),
-                  FloatingActionButton.extended(
-                      icon: const Icon(Icons.login),
-                      label: Text('Login'),
-                      onPressed: _isLoading || !canTryLogIn
-                          ? null
-                          : () => _loginAction(client)),
+                  sso_login == false
+                      ? FloatingActionButton.extended(
+                          icon: const Icon(Icons.login),
+                          label: Text('Login'),
+                          onPressed: _isLoading || !canTryLogIn
+                              ? null
+                              : () {
+                                  print("sso login : to implement");
+                                })
+                      : FloatingActionButton.extended(
+                          icon: const Icon(Icons.login),
+                          label: Text('SSO Login'),
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  String url =
+                                      "https://matrix.emse.fr/_matrix/client/r0/login/sso/redirect?redirectUrl=https://matrix.emse.fr/#/";
+                                  print("try nav push");
+
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Platform
+                                                    .isAndroid ||
+                                                Platform.isIOS
+                                            ? WebView(initialUrl: url)
+                                            : Scaffold(
+                                                appBar: AppBar(
+                                                    title: Text("SSO Login")),
+                                                body: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      30.0),
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                          "Oups... you're not on Android or IOS"),
+                                                      Text(
+                                                          "Please copy and paste this link into your web browser"),
+                                                      TextField(
+                                                        controller:
+                                                            TextEditingController(
+                                                                text: url),
+                                                        toolbarOptions:
+                                                            ToolbarOptions(
+                                                          paste: true,
+                                                          cut: true,
+                                                          copy: true,
+                                                          selectAll: true,
+                                                        ),
+                                                        autocorrect: false,
+                                                      ),
+                                                      SelectableText(url),
+                                                      SizedBox(height: 30),
+                                                      Text(
+                                                          "And paste response"),
+                                                      SizedBox(height: 30),
+                                                      if (Platform.isAndroid ||
+                                                          Platform.isIOS)
+                                                        TextButton(
+                                                            onPressed:
+                                                                () async {
+                                                              await _launchURL(
+                                                                  url);
+                                                            },
+                                                            child:
+                                                                Text("Copy")),
+                                                      TextField(
+                                                        autocorrect: false,
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(30.0),
+                                                        child: MinesTrixButton(
+                                                            onPressed: () {},
+                                                            icon: Icons.send,
+                                                            label: "Login"),
+                                                      )
+                                                    ],
+                                                  ),
+                                                )),
+                                      ));
+                                }),
                 ]))));
   }
 
@@ -184,6 +302,7 @@ class LoginInput extends StatelessWidget {
         controller: tController,
         obscureText: obscureText,
         onChanged: onChanged,
+        autocorrect: false,
         decoration: InputDecoration(
           errorText: errorText,
           border: OutlineInputBorder(
