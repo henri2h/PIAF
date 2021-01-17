@@ -60,7 +60,7 @@ analyze:
 
   script:
     - flutter analyze
-    - flutter format lib/ test/ --set-exit-if-changed
+    - flutter format lib/ --set-exit-if-changed
     
   tags:
     - shared
