@@ -41,6 +41,9 @@ dependencies:
   flutter_markdown:
   emoji_picker:
 
+  image_picker:
+  file_picker_cross:
+
   # time formating
   timeago: ^2.0.29
 

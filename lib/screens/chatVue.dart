@@ -1,7 +1,9 @@
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:file_picker_cross/file_picker_cross.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -11,6 +13,25 @@ class ChatView extends StatelessWidget {
   final String roomId;
 
   const ChatView({Key key, @required this.roomId}) : super(key: key);
+
+  Future getImage() async {
+    final pickedFile = await ImagePicker().getImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      print(pickedFile.path);
+    } else {
+      print('No image selected.');
+    }
+  }
+
+  void sendImage(BuildContext context, Room room) async {
+    final file =
+        await FilePickerCross.importFromStorage(type: FileTypeCross.image);
+    if (file == null) return;
+    MatrixFile f =
+        MatrixImageFile(bytes: file.toUint8List(), name: "pomme de terre");
+    room.sendFileEvent(f);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -149,12 +170,20 @@ class ChatView extends StatelessWidget {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(
-                              left: 20, right: 20, bottom: 5, top: 5),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
                               children: [
+                                FloatingActionButton(
+                                  onPressed: () {
+                                    sendImage(context, room);
+                                  },
+                                  tooltip: 'Send file',
+                                  child: Icon(Icons.file_upload),
+                                ),
+                                SizedBox(width: 5),
                                 Expanded(
                                   child: TextField(
                                       maxLines: null,
