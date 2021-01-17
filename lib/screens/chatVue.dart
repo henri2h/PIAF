@@ -1,6 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -60,36 +61,63 @@ class ChatView extends StatelessWidget {
                                   mainAxisAlignment: sendByUser
                                       ? MainAxisAlignment.end
                                       : MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (sendByUser == false)
-                                      MinesTrixUserImage(
-                                          url: sender.avatarUrl,
-                                          width: 40,
-                                          height: 40),
-                                    if (sendByUser == false)
-                                      SizedBox(width: 10),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 6.0),
+                                        child: MinesTrixUserImage(
+                                            url: sender.avatarUrl,
+                                            width: 40,
+                                            height: 40,
+                                            thumnail: true,
+                                            fit: true),
+                                      ),
+                                    if (sendByUser == false) SizedBox(width: 8),
                                     Flexible(
                                       child: Column(
                                         crossAxisAlignment: sendByUser
                                             ? CrossAxisAlignment.end
                                             : CrossAxisAlignment.start,
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue,
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                              ),
-                                              child: Padding(
-                                                  padding: const EdgeInsets
-                                                          .symmetric(
-                                                      vertical: 6,
-                                                      horizontal: 12),
-                                                  child: MessageDisplay(
-                                                      event: event)),
-                                            ),
+                                          ConstrainedBox(
+                                            constraints:
+                                                BoxConstraints(maxWidth: 280),
+                                            child: MessageDisplay(
+                                                event: event,
+                                                widgetDisplay: (String data) {
+                                                  return Card(
+                                                      color: Colors.blue,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                      ),
+                                                      child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .symmetric(
+                                                                  vertical: 10,
+                                                                  horizontal:
+                                                                      16),
+                                                          child: MarkdownBody(
+                                                            data: data,
+                                                            styleSheet: MarkdownStyleSheet
+                                                                    .fromTheme(
+                                                                        Theme.of(
+                                                                            context))
+                                                                .copyWith(
+                                                                    p: Theme.of(
+                                                                            context)
+                                                                        .textTheme
+                                                                        .bodyText1
+                                                                        .copyWith(
+                                                                            color:
+                                                                                Colors.white)),
+                                                          )));
+                                                }),
                                           ),
                                           if (sendByUser == false)
                                             Row(

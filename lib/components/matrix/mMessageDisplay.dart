@@ -9,7 +9,10 @@ class MessageDisplay extends StatelessWidget {
   const MessageDisplay({
     Key key,
     @required this.event,
+    this.widgetDisplay,
   }) : super(key: key);
+  final Function widgetDisplay;
+
   Widget buildPage(BuildContext context, Event event) {
     switch (event.type) {
       case EventTypes.Message:
@@ -17,7 +20,12 @@ class MessageDisplay extends StatelessWidget {
         switch (event.messageType) {
           case MessageTypes.Text:
           case MessageTypes.Emote:
-            return MarkdownBody(data: event.body); // markdown support
+            if (widgetDisplay == null) {
+              return MarkdownBody(data: event.body); // markdown support
+            }
+
+            return widgetDisplay(event.body);
+
           case MessageTypes.Image:
             return MImage(event: event);
           case MessageTypes.Video:
