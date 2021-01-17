@@ -30,6 +30,10 @@ dependencies:
   flutter_redux: 0.7.0
   provider: ^4.3.2+3
   
+  # web navigator for SSO
+  webview_flutter: ^1.0.7
+  url_launcher: ^5.7.10
+
   flutter_typeahead: ^1.9.1
   cached_network_image: ^2.4.1
   
