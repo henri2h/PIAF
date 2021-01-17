@@ -218,6 +218,7 @@ class _MobileContainerState extends State<MobileContainer> {
     Widget widgetFeedView = FeedView(sclient: sclient);
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
+      // we could wrap this in SafeArea
       extendBody: true,
       body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
       bottomNavigationBar: Padding(
@@ -337,7 +338,8 @@ class NavigationBarState extends State<NavigationBar> {
 
     switch (index) {
       case 0:
-        widget.changePage(FeedView(sclient: sclient));
+        widget.changePage(
+            FeedView(sclient: sclient, changePage: widget.changePage));
         break;
       case 1:
         widget.changePage(FriendsVue());
