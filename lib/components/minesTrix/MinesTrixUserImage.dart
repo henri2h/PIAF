@@ -14,6 +14,7 @@ class MinesTrixUserImage extends StatelessWidget {
       this.maxHeight,
       this.rounded = true,
       this.thumnail = false,
+      this.fit = false,
       this.unconstraigned = false})
       : super(key: key);
   final Uri url;
@@ -22,8 +23,11 @@ class MinesTrixUserImage extends StatelessWidget {
   final bool rounded;
   final bool thumnail;
   final bool unconstraigned;
+  final bool fit;
+
   final int maxWidth;
   final int maxHeight;
+
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
@@ -42,7 +46,7 @@ class MinesTrixUserImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
       child: CachedNetworkImage(
-        fit: BoxFit.contain,
+        fit: fit ? BoxFit.cover : BoxFit.contain,
         height: unconstraigned ? null : h,
         width: unconstraigned ? null : w,
         maxHeightDiskCache: maxHeight,
