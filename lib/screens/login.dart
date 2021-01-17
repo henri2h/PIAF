@@ -68,17 +68,24 @@ class LoginCardState extends State<LoginCard> {
   bool sso_login = false;
   bool canTryLogIn = false;
 
-  void _loginAction(SClient client) async {
+  void _loginAction(SClient client, {String token}) async {
     if (mounted)
       setState(() {
         _isLoading = true;
         _errorText = null;
       });
     try {
-      await client.checkHomeserver(domain);
+      await client.checkHomeserver(domain, supportedLoginTypes: {
+        AuthenticationTypes.password,
+        AuthenticationTypes.token
+      });
       await client.login(
+          type: sso_login
+              ? AuthenticationTypes.token
+              : AuthenticationTypes.password,
           user: _usernameController.text,
           password: _passwordController.text,
+          token: token,
           initialDeviceDisplayName: client.clientName);
     } catch (error) {
       if (mounted) setState(() => _errorText = error.toString());
@@ -108,6 +115,13 @@ class LoginCardState extends State<LoginCard> {
     }
   }
 
+  void updateDomain(String url) {
+    setState(() {
+      domain = url;
+      canTryLogIn = true;
+    });
+  }
+
 // according to the matrix specification https://matrix.org/docs/spec/appendices#id9
   RegExp userRegex = RegExp(
       r"@((([a-z]|\.|_|-|=|\/|[0-9])+):(((.+)\.(.+))|\[((([0-9]|[a-f]|[A-F])+):){2,7}:?([0-9]|[a-f]|[A-F])+\]))(:([0-9]+))?");
@@ -128,11 +142,7 @@ class LoginCardState extends State<LoginCard> {
                             WellKnownInformations infos = await client
                                 .getWellKnownInformationsByUserId(userid);
                             if (infos?.mHomeserver?.baseUrl != null) {
-                              setState(() {
-                                domain = infos.mHomeserver.baseUrl;
-                                print("Domain : " + domain);
-                                canTryLogIn = true;
-                              });
+                              updateDomain(infos.mHomeserver.baseUrl);
 
                               client.homeserver =
                                   Uri.parse(infos.mHomeserver.baseUrl);
@@ -144,11 +154,14 @@ class LoginCardState extends State<LoginCard> {
                             try {
                               client.homeserver = Uri.https(userid.domain, "");
                               await _requestSupportedTypes(client);
+                              updateDomain("https://" + userid.domain);
+                              return;
                             } catch (e) {
                               try {
                                 client.homeserver =
                                     Uri.https("matrix." + userid.domain, "");
                                 await _requestSupportedTypes(client);
+                                updateDomain("https://matrix." + userid.domain);
 
                                 return;
                               } catch (e) {
@@ -185,26 +198,44 @@ class LoginCardState extends State<LoginCard> {
                           label: Text('Login'),
                           onPressed: _isLoading || !canTryLogIn
                               ? null
-                              : () {
-                                  print("sso login : to implement");
-                                })
+                              : () => _loginAction(client))
                       : FloatingActionButton.extended(
                           icon: const Icon(Icons.login),
                           label: Text('SSO Login'),
-                          onPressed: _isLoading
+                          onPressed: _isLoading || !canTryLogIn
                               ? null
-                              : () {
-                                  String url =
-                                      "https://matrix.emse.fr/_matrix/client/r0/login/sso/redirect?redirectUrl=https://matrix.emse.fr/#/";
+                              : () async {
+                                  print("domain : " + domain);
+                                  String url = domain +
+                                      "/_matrix/client/r0/login/sso/redirect?redirectUrl=" +
+                                      domain +
+                                      "/#/"; // we should not reach the redirect url ...
                                   print("try nav push");
 
-                                  Navigator.push(
+                                  String nav = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => Platform
                                                     .isAndroid ||
                                                 Platform.isIOS
-                                            ? WebView(initialUrl: url)
+                                            ? WebView(
+                                                initialUrl: url,
+                                                javascriptMode: JavascriptMode
+                                                    .unrestricted, // well, we need to enable javascript
+                                                navigationDelegate: (action) {
+                                                  if (action.url
+                                                      .startsWith(domain)) {
+                                                    Navigator.pop(
+                                                        context,
+                                                        action
+                                                            .url); // we have the login token now ;)
+                                                    return NavigationDecision
+                                                        .prevent;
+                                                  }
+                                                  return NavigationDecision
+                                                      .navigate;
+                                                },
+                                              )
                                             : Scaffold(
                                                 appBar: AppBar(
                                                     title: Text("SSO Login")),
@@ -261,6 +292,11 @@ class LoginCardState extends State<LoginCard> {
                                                   ),
                                                 )),
                                       ));
+
+                                  Uri tokenUrl = Uri.parse(nav);
+                                  _loginAction(client,
+                                      token: tokenUrl
+                                          .queryParameters["loginToken"]);
                                 }),
                 ]))));
   }
