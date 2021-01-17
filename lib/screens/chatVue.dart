@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/conversationSettings.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ChatView extends StatelessWidget {
@@ -40,7 +41,7 @@ class ChatView extends StatelessWidget {
     return StreamBuilder<Object>(
         stream: sclient.onSync.stream,
         builder: (context, _) {
-          final room = sclient.getRoomById(roomId);
+          final Room room = sclient.getRoomById(roomId);
 
           print("Encryption :");
           print(room.encrypted);
@@ -50,6 +51,16 @@ class ChatView extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: Text(room.displayname),
+              actions: [
+                IconButton(
+                  icon: Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ConversationSettings(room: room),
+                    ));
+                  },
+                ),
+              ],
             ),
             body: SafeArea(
               child: ColoredBox(
