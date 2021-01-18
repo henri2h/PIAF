@@ -101,7 +101,6 @@ class MatrixState extends State<Matrix> {
                 .contains(event.eventType) &&
             event.content['sender'] != sclient.userID)
         .listen((EventUpdate eventUpdate) async {
-          
       // we should react differently depending on wether the event is a smatrix one or not...
       Room room = sclient.getRoomById(eventUpdate.roomID);
       Event event = Event.fromJson(eventUpdate.content, room);
