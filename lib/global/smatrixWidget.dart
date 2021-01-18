@@ -115,12 +115,14 @@ class MatrixState extends State<Matrix> {
           title: "New post from " + profile.displayname,
           message: event.body,
           duration: Duration(seconds: 3),
+          flushbarPosition: FlushbarPosition.TOP,
         )..show(context);
       } else {
         Flushbar(
-          title: room.name,
+          title: event.sender.displayName + "@" + room.name,
           message: event.body,
           duration: Duration(seconds: 3),
+          flushbarPosition: FlushbarPosition.TOP,
         )..show(context);
       }
     });
