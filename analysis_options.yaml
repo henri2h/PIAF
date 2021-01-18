@@ -1,0 +1,3 @@
+analyzer:
+  exclude: 
+    - '**/generated_*.dart'
