@@ -38,22 +38,17 @@ class ChatView extends StatelessWidget {
   Widget build(BuildContext context) {
     final sclient = Matrix.of(context).sclient;
     final TextEditingController _sendController = TextEditingController();
-    return StreamBuilder<Object>(
-        stream: sclient.onSync.stream,
-        builder: (context, _) {
-          final Room room = sclient.getRoomById(roomId);
 
-          print("Encryption :");
-          print(room.encrypted);
-          print(sclient.encryptionEnabled);
-          print(sclient.encryption?.crossSigning?.enabled);
-
+    final Room room = sclient.getRoomById(roomId);
+    return StreamBuilder<String>(
+        stream: room.onUpdate.stream,
+        builder: (context, AsyncSnapshot<String> snapshot) {
           return Scaffold(
             appBar: AppBar(
               title: Text(room.displayname),
               actions: [
                 IconButton(
-                  icon: Icon(Icons.settings),
+                  icon: Icon(Icons.info),
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => ConversationSettings(room: room),
@@ -180,27 +175,31 @@ class ChatView extends StatelessWidget {
                             },
                           ),
                         ),
-                        Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                FloatingActionButton(
-                                  onPressed: () {
-                                    sendImage(context, room);
-                                  },
-                                  tooltip: 'Send file',
-                                  child: Icon(Icons.file_upload),
-                                ),
-                                SizedBox(width: 5),
-                                Expanded(
+                        Container(
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  sendImage(context, room);
+                                },
+                                tooltip: 'Send file',
+                                icon: Icon(Icons.image_outlined),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
                                   child: TextField(
-                                      maxLines: null,
+                                      maxLines: 1,
                                       controller: _sendController,
-                                      keyboardType: TextInputType.multiline,
+                                      keyboardType: TextInputType.text,
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
                                       decoration: InputDecoration(
+                                          isDense: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8, horizontal: 12),
                                           border: InputBorder.none,
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
@@ -212,7 +211,7 @@ class ChatView extends StatelessWidget {
                                           ),
                                           focusedBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Colors.blue, width: 3.0),
+                                                color: Colors.blue, width: 2.0),
                                             borderRadius:
                                                 const BorderRadius.all(
                                               const Radius.circular(20),
@@ -224,15 +223,17 @@ class ChatView extends StatelessWidget {
                                           hintText: "Message",
                                           fillColor: Color(0xfff6f8fd))),
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.send),
-                                  onPressed: () {
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.send),
+                                onPressed: () {
+                                  if (_sendController.text != "") {
                                     room.sendTextEvent(_sendController.text);
                                     _sendController.clear();
-                                  },
-                                ),
-                              ],
-                            ),
+                                  }
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ],
