@@ -7,7 +7,6 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/createGroup.dart';
 import 'package:minestrix/screens/feedView.dart';
-import 'package:minestrix/screens/friendsVue.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
@@ -222,7 +221,7 @@ class _MobileContainerState extends State<MobileContainer> {
       extendBody: true,
       body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -330,7 +329,7 @@ class NavigationBar extends StatefulWidget {
 }
 
 class NavigationBarState extends State<NavigationBar> {
-  int _selectedIndex = -1;
+  int _selectedIndex = 0;
   void _onItemTapped(int index, SClient sclient) {
     setState(() {
       _selectedIndex = index;
@@ -342,12 +341,9 @@ class NavigationBarState extends State<NavigationBar> {
             FeedView(sclient: sclient, changePage: widget.changePage));
         break;
       case 1:
-        widget.changePage(FriendsVue());
-        break;
-      case 2:
         widget.changePage(ChatsVue(), chatVue: true);
         break;
-      case 3:
+      case 2:
         widget.changePage(UserFeedView(userId: sclient.userID));
         break;
       default:
@@ -362,9 +358,6 @@ class NavigationBarState extends State<NavigationBar> {
         Icons.home_outlined,
       ),
       Icon(
-        Icons.people_outlined,
-      ),
-      Icon(
         Icons.message_outlined,
       ),
       FutureBuilder(
@@ -373,6 +366,7 @@ class NavigationBarState extends State<NavigationBar> {
             if (p.data?.avatarUrl == null) return Icon(Icons.person);
             return MinesTrixUserImage(url: p.data.avatarUrl);
           }),
+      Icon(Icons.search_outlined)
     ];
     return Row(
       mainAxisSize: MainAxisSize.max,
