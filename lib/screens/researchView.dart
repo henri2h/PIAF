@@ -27,14 +27,7 @@ class _ResearchViewState extends State<ResearchView> {
               decoration: InputDecoration(border: OutlineInputBorder())),
           suggestionsCallback: (pattern) async {
             UserSearchResult ur = await sclient.searchUser(pattern);
-            List<User> sFriends = await sclient.getSfriends();
-
-            return ur.results
-                .where((element) =>
-                    sFriends.firstWhere((friend) => friend.id == element.userId,
-                        orElse: () => null) ==
-                    null)
-                .toList(); // exclude current friends
+            return ur.results.toList();
           },
           itemBuilder: (context, suggestion) {
             Profile profile = suggestion;
