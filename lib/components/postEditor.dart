@@ -76,8 +76,11 @@ class _PostEditorState extends State<PostEditor>
             IconButton(
                 icon: Icon(Icons.image),
                 onPressed: () async {
-                  file = await FilePickerCross.importFromStorage(
+                  FilePickerCross f = await FilePickerCross.importFromStorage(
                       type: FileTypeCross.image);
+                  setState(() {
+                    file = f;
+                  });
                 }),
             Padding(
               padding: const EdgeInsets.all(30),
@@ -86,13 +89,22 @@ class _PostEditorState extends State<PostEditor>
                   label: "Send post",
                   onPressed: () {
                     sendPost(sclient, postContent);
-                    //Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                   }),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text("Post preview", style: TextStyle(fontSize: 20)),
             ),
+            if (file != null) Image.memory(file.toUint8List()),
+            if (file != null)
+              IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    setState(() {
+                      file = null;
+                    });
+                  }),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: MarkdownBody(data: postContent),
