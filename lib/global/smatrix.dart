@@ -118,7 +118,8 @@ class SClient extends Client {
       print("sroom lock...");
       return;
     }
-    userRoom = null;
+    // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
+    // if the user room is removed, the user should restart the app
     sRoomLock = true;
     srooms.clear(); // clear rooms
     sInvites.clear(); // clear invites
