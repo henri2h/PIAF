@@ -10,6 +10,7 @@ import 'package:minestrix/screens/feedView.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
+import 'package:minestrix/screens/researchView.dart';
 import 'package:minestrix/screens/userFeedView.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 
@@ -345,6 +346,9 @@ class NavigationBarState extends State<NavigationBar> {
         break;
       case 2:
         widget.changePage(UserFeedView(userId: sclient.userID));
+        break;
+      case 3:
+        widget.changePage(ResearchView());
         break;
       default:
     }
