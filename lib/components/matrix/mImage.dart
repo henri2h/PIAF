@@ -15,7 +15,11 @@ class MImage extends StatelessWidget {
             return SafeArea(
                 child: Scaffold(
                     appBar: AppBar(title: Text("Image display " + event.body)),
-                    body: MImageDisplay(event: event)));
+                    body: InteractiveViewer(
+                        boundaryMargin: EdgeInsets.all(20.0),
+                        minScale: 0.1,
+                        maxScale: 4,
+                        child: MImageDisplay(event: event))));
           }));
         },
         child: MImageDisplay(event: event));
