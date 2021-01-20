@@ -31,7 +31,7 @@ class ChatView extends StatelessWidget {
     if (file == null) return;
     MatrixFile f =
         MatrixImageFile(bytes: file.toUint8List(), name: "pomme de terre");
-    room.sendFileEvent(f);
+    await room.sendFileEvent(f);
   }
 
   @override
