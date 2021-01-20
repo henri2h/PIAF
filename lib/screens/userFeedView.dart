@@ -8,6 +8,8 @@ import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/chatVue.dart';
+import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/settings.dart';
 
@@ -109,6 +111,7 @@ class UserFeedView extends StatelessWidget {
       List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
       return buildPage(sroom, sevents);
     } else {
+      print("else");
       return FutureBuilder<Profile>(
           future: sclient.getProfileFromUserId(userId),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -131,20 +134,44 @@ class UserFeedView extends StatelessWidget {
                 child: UserInfo(profile: p),
               ),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                 child: Row(
                   children: [
-                    MinesTrixButton(
-                        icon: Icons.person_add,
-                        label: "Add to friends",
-                        onPressed: () async {
-                          await sclient.addFriend(p.userId);
-                        }),
-                    SizedBox(width: 10),
-                    MinesTrixButton(
-                        icon: Icons.message,
-                        label: "Send message",
-                        onPressed: () {}),
+                    Flexible(
+                      child: MinesTrixButton(
+                          icon: Icons.person_add,
+                          label: "Add to friends",
+                          onPressed: () async {
+                            await sclient.addFriend(p.userId);
+                          }),
+                    ),
+                    SizedBox(width: 30),
+                    Flexible(
+                      child: MinesTrixButton(
+                          icon: Icons.message,
+                          label: "Send message",
+                          onPressed: () {
+                            String roomId =
+                                sclient.getDirectChatFromUserId(userId);
+                            if (roomId != null) {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          ChatView(roomId: roomId)));
+                            } else {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          Scaffold(
+                                              appBar: AppBar(
+                                                  title: Text("Start chat")),
+                                              body: ChatsVue())));
+                            }
+                          }),
+                    ),
                   ],
                 ),
               ),
