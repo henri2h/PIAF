@@ -30,7 +30,7 @@ class ChatView extends StatelessWidget {
         await FilePickerCross.importFromStorage(type: FileTypeCross.image);
     if (file == null) return;
     MatrixFile f =
-        MatrixImageFile(bytes: file.toUint8List(), name: "pomme de terre");
+        MatrixImageFile(bytes: file.toUint8List(), name: file.fileName);
     await room.sendFileEvent(f);
   }
 
@@ -108,6 +108,26 @@ class ChatView extends StatelessWidget {
                                             ? CrossAxisAlignment.end
                                             : CrossAxisAlignment.start,
                                         children: [
+                                          if (sendByUser == false)
+                                            Row(
+                                              children: [
+                                                Text(sender.calcDisplayname(),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                Text(" - ",
+                                                    style: TextStyle(
+                                                        color: Colors.grey)),
+                                                Text(
+                                                    timeago.format(
+                                                        event.originServerTs),
+                                                    style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey)),
+                                              ],
+                                            ),
                                           ConstrainedBox(
                                             constraints:
                                                 BoxConstraints(maxWidth: 280),
@@ -146,26 +166,6 @@ class ChatView extends StatelessWidget {
                                                           )));
                                                 }),
                                           ),
-                                          if (sendByUser == false)
-                                            Row(
-                                              children: [
-                                                Text(sender.calcDisplayname(),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                Text(" - ",
-                                                    style: TextStyle(
-                                                        color: Colors.grey)),
-                                                Text(
-                                                    timeago.format(
-                                                        event.originServerTs),
-                                                    style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors.grey)),
-                                              ],
-                                            ),
                                         ],
                                       ),
                                     ),
