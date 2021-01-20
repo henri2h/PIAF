@@ -124,11 +124,29 @@ class UserFeedView extends StatelessWidget {
             p.userId = userId; // fix a nasty bug :(
 
             return Container(
-                child: Column(children: [
+                child: ListView(children: [
               Container(
                 // alignment: Alignment.bottomCenter,
                 padding: const EdgeInsets.only(left: 40, right: 40, top: 200),
                 child: UserInfo(profile: p),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    MinesTrixButton(
+                        icon: Icons.person_add,
+                        label: "Add to friends",
+                        onPressed: () async {
+                          await sclient.addFriend(p.userId);
+                        }),
+                    SizedBox(width: 10),
+                    MinesTrixButton(
+                        icon: Icons.message,
+                        label: "Send message",
+                        onPressed: () {}),
+                  ],
+                ),
               ),
               Padding(
                 padding:
