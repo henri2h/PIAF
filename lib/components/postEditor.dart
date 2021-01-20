@@ -1,4 +1,5 @@
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:file_picker_cross/file_picker_cross.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
@@ -17,12 +18,19 @@ class PostEditor extends StatefulWidget {
 class _PostEditorState extends State<PostEditor>
     with SingleTickerProviderStateMixin {
   String postContent = "";
+  FilePickerCross file;
 
   SMatrixRoom sroom;
 
   Future<void> sendPost(SClient sclient, String postContent,
       {Event inReplyTo}) async {
-    await sroom.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
+    if (file != null) {
+      MatrixFile f =
+          MatrixImageFile(bytes: file.toUint8List(), name: postContent);
+      await sroom.room.sendFileEvent(f);
+    } else {
+      await sroom.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
+    }
   }
 
   @override
@@ -65,6 +73,12 @@ class _PostEditorState extends State<PostEditor>
                 },
               ),
             ),
+            IconButton(
+                icon: Icon(Icons.image),
+                onPressed: () async {
+                  file = await FilePickerCross.importFromStorage(
+                      type: FileTypeCross.image);
+                }),
             Padding(
               padding: const EdgeInsets.all(30),
               child: MinesTrixButton(
