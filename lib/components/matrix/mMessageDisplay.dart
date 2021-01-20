@@ -27,7 +27,14 @@ class MessageDisplay extends StatelessWidget {
             return widgetDisplay(event.body);
 
           case MessageTypes.Image:
-            return MImage(event: event);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MarkdownBody(data: event.body),
+                SizedBox(height: 10),
+                MImage(event: event),
+              ],
+            );
           case MessageTypes.Video:
             return Text(event.body);
 
