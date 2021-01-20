@@ -74,7 +74,7 @@ class _PostEditorState extends State<PostEditor>
               ),
             ),
             IconButton(
-                icon: Icon(Icons.image),
+                icon: Icon(Icons.add_a_photo),
                 onPressed: () async {
                   FilePickerCross f = await FilePickerCross.importFromStorage(
                       type: FileTypeCross.image);
