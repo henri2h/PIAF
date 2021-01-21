@@ -246,27 +246,21 @@ class UserInfo extends StatelessWidget {
       avatarUrl = profile.avatarUrl;
     }
 
-    return Card(
-      elevation: 15,
-      child: Padding(
-        padding: const EdgeInsets.all(15),
-        child: Column(
-          children: [
-            Stack(children: [
-              Align(
-                alignment: Alignment.topRight,
-                child:
-                    IconButton(icon: Icon(Icons.more_horiz), onPressed: () {}),
-              ),
-              Center(
-                  child: MinesTrixUserImage(
-                      url: avatarUrl, width: 200, height: 200))
-            ]),
-            Text(displayName,
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            Text(userId,
-                style: TextStyle(fontSize: 20, color: Colors.grey[600])),
-          ],
+    return Center(
+      child: Card(
+        elevation: 15,
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MinesTrixUserImage(url: avatarUrl, width: 200, height: 200),
+              Text(displayName,
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+              Text(userId,
+                  style: TextStyle(fontSize: 20, color: Colors.grey[600])),
+            ],
+          ),
         ),
       ),
     );
