@@ -50,16 +50,20 @@ class UserFeedView extends StatelessWidget {
                 ),
                 Stack(
                   children: [
-                    Center(
-                        child: MinesTrixUserImage(
-                            url: sroom.room.avatar,
-                            unconstraigned: true,
-                            rounded: false,
-                            maxHeight: 500)),
+                    if (sroom.room.avatar != null)
+                      Center(
+                          child: MinesTrixUserImage(
+                              url: sroom.room.avatar,
+                              unconstraigned: true,
+                              rounded: false,
+                              maxHeight: 500)),
                     Container(
                       // alignment: Alignment.bottomCenter,
-                      padding:
-                          const EdgeInsets.only(left: 40, right: 40, top: 200),
+                      padding: sroom.room.avatar == null
+                          ? const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 20)
+                          : const EdgeInsets.only(
+                              left: 40, right: 40, top: 200),
                       child: UserInfo(user: sroom.user),
                     ),
                   ],
