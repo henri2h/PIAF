@@ -117,17 +117,15 @@ Make sure to run ./scripts/before_commit.sh
 
 We use the fameldy library for that [https://gitlab.com/famedly/libraries/dart-olm](https://gitlab.com/famedly/libraries/dart-olm)
 
-## For linux platforms (/!\ E2EE not available yet !!)
+## For linux platforms
 
 ### Requirements
 
 * libsqlite3
 
-> sudo apt install libsqlite3-dev
-
-We need to figure out how to add olm binary into the makefile.
-First we have to wait for [olm version 3.2 support to land in famedlysdk](https://gitlab.com/famedly/famedlysdk/-/issues/134)
-To add E2E support now, we need to build and link the 1.2.0 version of olm.
+```bash
+sudo apt install libolm3 libsqlite3-dev
+```
 
 ## Special thanks to
 
