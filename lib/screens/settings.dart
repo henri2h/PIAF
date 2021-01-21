@@ -33,7 +33,7 @@ class SettingsView extends StatelessWidget {
             sclient.encryptionEnabled
                 ? Column(
                     children: [
-                      Text("Encrytpion enabled ✅"),
+                      Text("Encryption enabled ✅"),
                       Text("Encryption.enabled : " +
                           sclient.encryption.enabled.toString()),
                       Text("Cross signing enabled : " +
