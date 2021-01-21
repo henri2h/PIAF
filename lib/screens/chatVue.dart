@@ -70,109 +70,130 @@ class ChatView extends StatelessWidget {
                     final timeline = snapshot.data;
                     List<Event> filteredEvents =
                         sclient.getSRoomFilteredEvents(timeline);
+                    filteredEvents = filteredEvents.reversed.toList();
                     return Column(
                       children: [
                         Expanded(
-                          child: ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            reverse: true,
-                            itemCount: filteredEvents.length,
-                            itemBuilder: (BuildContext context, int i) {
-                              final event = filteredEvents[i];
-                              final sender = event.sender;
-                              bool sendByUser = sender.id == sclient.userID;
-
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  mainAxisAlignment: sendByUser
-                                      ? MainAxisAlignment.end
-                                      : MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (sendByUser == false)
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 6.0),
-                                        child: MinesTrixUserImage(
-                                            url: sender.avatarUrl,
-                                            width: 40,
-                                            height: 40,
-                                            thumnail: true,
-                                            fit: true),
-                                      ),
-                                    if (sendByUser == false) SizedBox(width: 8),
-                                    Flexible(
-                                      child: Column(
-                                        crossAxisAlignment: sendByUser
-                                            ? CrossAxisAlignment.end
-                                            : CrossAxisAlignment.start,
-                                        children: [
-                                          if (sendByUser == false)
-                                            Row(
-                                              children: [
-                                                Text(sender.calcDisplayname(),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                Text(" - ",
-                                                    style: TextStyle(
-                                                        color: Colors.grey)),
-                                                Text(
-                                                    timeago.format(
-                                                        event.originServerTs),
-                                                    style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors.grey)),
-                                              ],
-                                            ),
-                                          ConstrainedBox(
-                                            constraints:
-                                                BoxConstraints(maxWidth: 280),
-                                            child: MessageDisplay(
-                                                event: event,
-                                                widgetDisplay: (String data) {
-                                                  return Card(
-                                                      color: Colors.blue,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(20),
-                                                      ),
-                                                      child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                      .symmetric(
-                                                                  vertical: 10,
-                                                                  horizontal:
-                                                                      16),
-                                                          child: MarkdownBody(
-                                                            data: data,
-                                                            styleSheet: MarkdownStyleSheet
-                                                                    .fromTheme(
-                                                                        Theme.of(
-                                                                            context))
-                                                                .copyWith(
-                                                                    p: Theme.of(
-                                                                            context)
-                                                                        .textTheme
-                                                                        .bodyText1
-                                                                        .copyWith(
-                                                                            color:
-                                                                                Colors.white)),
-                                                          )));
-                                                }),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              await timeline.requestHistory();
                             },
+                            backgroundColor: Colors.teal,
+                            color: Colors.white,
+                            displacement: 200,
+                            strokeWidth: 5,
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              reverse: false,
+                              itemCount: filteredEvents.length,
+                              itemBuilder: (BuildContext context, int i) {
+                                final event = filteredEvents[i];
+                                final sender = event.sender;
+                                bool sendByUser = sender.id == sclient.userID;
+
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisAlignment: sendByUser
+                                        ? MainAxisAlignment.end
+                                        : MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (sendByUser == false)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 4, top: 6.0),
+                                          child: MinesTrixUserImage(
+                                              url: sender.avatarUrl,
+                                              width: 40,
+                                              height: 40,
+                                              thumnail: true,
+                                              fit: true),
+                                        ),
+                                      if (sendByUser == false)
+                                        SizedBox(width: 8),
+                                      Flexible(
+                                        child: Column(
+                                          crossAxisAlignment: sendByUser
+                                              ? CrossAxisAlignment.end
+                                              : CrossAxisAlignment.start,
+                                          children: [
+                                            if (sendByUser == false)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 10.0),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                        sender
+                                                            .calcDisplayname(),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                    Text(" - ",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.grey)),
+                                                    Text(
+                                                        timeago.format(event
+                                                            .originServerTs),
+                                                        style: TextStyle(
+                                                            fontSize: 14,
+                                                            color:
+                                                                Colors.grey)),
+                                                  ],
+                                                ),
+                                              ),
+                                            ConstrainedBox(
+                                              constraints:
+                                                  BoxConstraints(maxWidth: 280),
+                                              child: MessageDisplay(
+                                                  event: event,
+                                                  widgetDisplay: (String data) {
+                                                    return Card(
+                                                        color: Colors.blue,
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(20),
+                                                        ),
+                                                        child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .symmetric(
+                                                                    vertical:
+                                                                        10,
+                                                                    horizontal:
+                                                                        16),
+                                                            child: MarkdownBody(
+                                                              data: data,
+                                                              styleSheet: MarkdownStyleSheet
+                                                                      .fromTheme(
+                                                                          Theme.of(
+                                                                              context))
+                                                                  .copyWith(
+                                                                      p: Theme.of(
+                                                                              context)
+                                                                          .textTheme
+                                                                          .bodyText1
+                                                                          .copyWith(
+                                                                              color: Colors.white)),
+                                                            )));
+                                                  }),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
                         Container(
@@ -199,7 +220,7 @@ class ChatView extends StatelessWidget {
                                           isDense: true,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
-                                                  vertical: 8, horizontal: 12),
+                                                  vertical: 15, horizontal: 12),
                                           border: InputBorder.none,
                                           enabledBorder: OutlineInputBorder(
                                             borderSide: BorderSide(
