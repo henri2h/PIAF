@@ -63,19 +63,17 @@ Feed vue        |  Friends vue | Chats vue | User vue
 - [x] Account creation
 - [x] Display account feed
 - [x] Send posts
-- [ ] Send/Display images
-- [ ] Adding and removing friends
-- [ ] Implement sorting algorithm
+- [x] Send/Display images
+- [ ] Adding and removing friends (partial)
+- [x] Implement sorting algorithm by date
 	- [x] By date
-	- [ ] Custom ones (we could use some federate learning tech here)
+- [x] E2EE: Device verification
 
 ### V2.0 : Planned
 
-- [ ] Implement E2E (in progress)
-
-### V3.0
-
-- [ ] Events and groups (pages)
+- [ ] Implement E2E (device verification working)
+- [ ] Events and groups (pages) (in progress)
+- [ ] Sorting : Custom one (we could use some federate learning tech here)
 
 ## How it works ?
 
@@ -136,7 +134,3 @@ To add E2E support now, we need to build and link the 1.2.0 version of olm.
 [famedlysdk](https://gitlab.com/famedly/famedlysdk/)
 
 [fluffy chat](https://gitlab.com/famedly/fluffychat)
-
-## License
-
-TODO !
