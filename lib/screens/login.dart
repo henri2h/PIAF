@@ -67,6 +67,8 @@ class LoginCardState extends State<LoginCard> {
   String domain = "";
   bool ssoLogin = false;
   bool canTryLogIn = false;
+  int verificationTrial = 0;
+  bool checkingUserId = false;
 
   void _loginAction(SClient client, {String token}) async {
     if (mounted)
@@ -118,7 +120,61 @@ class LoginCardState extends State<LoginCard> {
     setState(() {
       domain = url;
       canTryLogIn = true;
+      checkingUserId = false;
     });
+  }
+
+  void _verifyDomain(SClient client, String userid) async {
+    verificationTrial++;
+    int localVerificationNumber = verificationTrial;
+    if (userid.isValidMatrixId) {
+      setState(() {
+        checkingUserId = true;
+      });
+
+      try {
+        WellKnownInformations infos =
+            await client.getWellKnownInformationsByUserId(userid);
+        if (infos?.mHomeserver?.baseUrl != null) {
+          updateDomain(infos.mHomeserver.baseUrl);
+
+          client.homeserver = Uri.parse(infos.mHomeserver.baseUrl);
+          await _requestSupportedTypes(client);
+          return;
+        }
+      } catch (e) {
+        // try a catch back for home server not suporting well known ... sigh
+        try {
+          client.homeserver = Uri.https(userid.domain, "");
+          await _requestSupportedTypes(client);
+
+          if (verificationTrial == localVerificationNumber)
+            updateDomain("https://" + userid.domain);
+          return;
+        } catch (e) {
+          try {
+            client.homeserver = Uri.https("matrix." + userid.domain, "");
+            await _requestSupportedTypes(client);
+
+            if (verificationTrial == localVerificationNumber)
+              updateDomain("https://matrix." + userid.domain);
+
+            return;
+          } catch (e) {
+            print("error : " + userid);
+            print(e);
+          }
+        }
+      }
+    }
+
+    if (localVerificationNumber == verificationTrial)
+      // if we are here, we had an issue somewhere...
+      setState(() {
+        domain = "";
+        canTryLogIn = false;
+        checkingUserId = false;
+      });
   }
 
 // according to the matrix specification https://matrix.org/docs/spec/appendices#id9
@@ -132,59 +188,35 @@ class LoginCardState extends State<LoginCard> {
             child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(children: <Widget>[
-                  LoginInput(
-                      name: "userid",
-                      icon: Icons.account_circle,
-                      onChanged: (String userid) async {
-                        if (userid.isValidMatrixId) {
-                          try {
-                            WellKnownInformations infos = await client
-                                .getWellKnownInformationsByUserId(userid);
-                            if (infos?.mHomeserver?.baseUrl != null) {
-                              updateDomain(infos.mHomeserver.baseUrl);
-
-                              client.homeserver =
-                                  Uri.parse(infos.mHomeserver.baseUrl);
-                              await _requestSupportedTypes(client);
-                              return;
-                            }
-                          } catch (e) {
-                            // try a catch back for home server not suporting well known ... sigh
-                            try {
-                              client.homeserver = Uri.https(userid.domain, "");
-                              await _requestSupportedTypes(client);
-                              updateDomain("https://" + userid.domain);
-                              return;
-                            } catch (e) {
-                              try {
-                                client.homeserver =
-                                    Uri.https("matrix." + userid.domain, "");
-                                await _requestSupportedTypes(client);
-                                updateDomain("https://matrix." + userid.domain);
-
-                                return;
-                              } catch (e) {
-                                print("error : " + userid);
-                                print(e);
-                              }
-                            }
-                          }
-                        }
-                        // if we are here, we had an issue somewhere...
-                        setState(() {
-                          domain = "";
-                          canTryLogIn = false;
-                        });
-                      },
-                      tController: _usernameController),
-                  if (ssoLogin == false)
-                    LoginInput(
-                        name: "password",
-                        icon: Icons.lock_outline,
-                        tController: _passwordController,
-                        obscureText: true),
-                  Text("Domain : "),
-                  Text(domain),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: LoginInput(
+                            name: "userid",
+                            icon: Icons.account_circle,
+                            onChanged: (String userid) async {
+                              await _verifyDomain(client, userid);
+                            },
+                            tController: _usernameController),
+                      ),
+                      SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: checkingUserId
+                              ? CircularProgressIndicator()
+                              : Container())
+                    ],
+                  ),
+                  if (canTryLogIn && ssoLogin == false)
+                    Padding(
+                      padding: const EdgeInsets.only(right:40),
+                      child: LoginInput(
+                          name: "password",
+                          icon: Icons.lock_outline,
+                          tController: _passwordController,
+                          obscureText: true),
+                    ),
+                  if (canTryLogIn) Text("Domain : " + domain),
                   if (_errorText != null) Text(_errorText),
                   if (_isLoading)
                     Padding(
@@ -204,12 +236,10 @@ class LoginCardState extends State<LoginCard> {
                           onPressed: _isLoading || !canTryLogIn
                               ? null
                               : () async {
-                                  print("domain : " + domain);
                                   String url = domain +
                                       "/_matrix/client/r0/login/sso/redirect?redirectUrl=" +
                                       domain +
                                       "/#/"; // we should not reach the redirect url ...
-                                  print("try nav push");
 
                                   String nav = await Navigator.push(
                                       context,
