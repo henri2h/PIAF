@@ -80,31 +80,6 @@ Make sure to run
 
 Find our documentation in our [separate repo](https://gitlab.com/minestrix/minestrix-doc)
 
-### Using matrix rooms
-
-When we create an account : we create a room and we invite in it all our friends
-
-* Adding a friend involve adding a user to our created room
-
-Using this we could benefit using E2E encryption and be sure only our friends could see our posts
-
-## Displaying feed
-
-Our client retrive all the rooms and then using the algorithm we choose to display posts.
-
-## Posting
-
-we just send a post to our custom room
-
-## Adding, sending friend request and removing friends
-
-* Add to your conversations
-
-We should decide if we accept that "friendship" could be one way (I add you to my friend list but you don't)
-I think we should only accept two way
-TODO : think to how we could implement this (TLS handshake :D )
-
-
 ## 🏗 Building
 
 WIP 🙃
