@@ -209,7 +209,7 @@ class LoginCardState extends State<LoginCard> {
                   ),
                   if (canTryLogIn && ssoLogin == false)
                     Padding(
-                      padding: const EdgeInsets.only(right:40),
+                      padding: const EdgeInsets.only(right: 40),
                       child: LoginInput(
                           name: "password",
                           icon: Icons.lock_outline,
