@@ -13,6 +13,7 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -79,11 +80,11 @@ class PostHeader extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              if (event.type == EventTypes.Encrypted)
+              /*  if (encyrpted)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.enhanced_encryption),
-                ),
+                ),*/
               PopupMenuButton<String>(
                   itemBuilder: (_) => [
                         if (event.canRedact)
