@@ -60,12 +60,6 @@ class SClient extends Client {
     await loadNewTimeline();
 
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
-      /*   print("Event update");
-      print(eUp.eventType);
-      print(eUp.roomID);
-      print(eUp.content);
-      print(" ");*/
-      print("event");
       print(eUp.type);
       if (eUp.eventType == "m.room.message") {
         await loadNewTimeline();
@@ -76,51 +70,35 @@ class SClient extends Client {
     onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
       await loadSRooms();
       await loadNewTimeline();
-      print("room update");
     });
   }
 
-  bool ntimelineLock = false;
   Future<void> loadNewTimeline() async {
-    if (ntimelineLock != true) {
-      ntimelineLock = false;
-      print("Timeline update");
-      await loadSTimeline();
-      sortTimeline();
+    print("Timeline update");
+    await loadSTimeline();
+    sortTimeline();
 
-      onTimelineUpdate.add("up");
-      //await onTimelineUpdate.done;
+    onTimelineUpdate.add("up");
+    //await onTimelineUpdate.done;
 
-      if (_firstSync) {
-        Duration duration = Duration(seconds: 2); // let the app start
-        _timer = Timer(duration, () async {
-          print("Timer, sync threads");
-          sRoomLock = true;
-          for (SMatrixRoom sr in srooms.values) {
-            await sr.timeline.requestHistory();
-          }
-          sRoomLock = false;
-        });
-        print("timer set");
-        _firstSync = false;
-      }
-
-      ntimelineLock = false;
-    } else {
-      print("Locked...");
+    if (_firstSync) {
+      Duration duration = Duration(seconds: 2); // let the app start
+      _timer = Timer(duration, () async {
+        print("Timer, sync threads");
+        sRoomLock = true;
+        for (SMatrixRoom sr in srooms.values) {
+          await sr.timeline.requestHistory();
+        }
+        sRoomLock = false;
+      });
+      _firstSync = false;
     }
   }
 
-  // load rooms
-  bool sRoomLock = false;
   Future<void> loadSRooms() async {
-    if (sRoomLock) {
-      print("sroom lock...");
-      return;
-    }
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
-    sRoomLock = true;
+
     srooms.clear(); // clear rooms
     sInvites.clear(); // clear invites
     userIdToRoomId.clear();
@@ -151,8 +129,6 @@ class SClient extends Client {
           sInvites[rs.room.id] = rs;
         }
       }
-
-      sRoomLock = false;
     }
 
     // get invited rooms (friends requests)
@@ -199,13 +175,7 @@ class SClient extends Client {
     return filteredEvents;
   }
 
-  bool sTimelineLock = false;
   Future<void> loadSTimeline() async {
-    if (sTimelineLock) {
-      print("stimelinelock ...");
-      return;
-    }
-    sTimelineLock = true;
     // init
     stimeline.clear();
 
@@ -214,7 +184,6 @@ class SClient extends Client {
       final filteredEvents = getSRoomFilteredEvents(t);
       stimeline.addAll(filteredEvents);
     }
-    sTimelineLock = false;
   }
 
   void sortTimeline() {

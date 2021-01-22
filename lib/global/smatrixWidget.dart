@@ -42,7 +42,6 @@ class MatrixState extends State<Matrix> {
 
   @override
   void initState() {
-    print("Init state...");
     super.initState();
     initMatrix();
   }
@@ -104,7 +103,8 @@ class MatrixState extends State<Matrix> {
       // we should react differently depending on wether the event is a smatrix one or not...
       Room room = sclient.getRoomById(eventUpdate.roomID);
       Event event = Event.fromJson(eventUpdate.content, room);
-// don't throw a notification for old events
+
+      // don't throw a notification for old events
       if (event.originServerTs
               .compareTo(DateTime.now().subtract(Duration(seconds: 5))) >
           0)
@@ -138,25 +138,9 @@ class MatrixState extends State<Matrix> {
 
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.logged) {
-        print("Logged in");
-
-        print(sclient.deviceID);
-        print(sclient.deviceName);
-
         await sclient.initSMatrix();
       } else {
         print("Not logged in");
-
-        /*await Matrix.of(context)
-            .client
-            .requestThirdPartyIdentifiers()
-            .then((l) {
-          if (l.isEmpty) {
-            print(l);
-          } else {
-            print("empty");
-          }
-        });*/
       }
     } catch (e) {
       print(e);
