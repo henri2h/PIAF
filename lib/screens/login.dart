@@ -241,6 +241,9 @@ class LoginCardState extends State<LoginCard> {
                                       domain +
                                       "/#/"; // we should not reach the redirect url ...
 
+                                  TextEditingController ssoResponse =
+                                      TextEditingController();
+
                                   String nav = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -307,13 +310,18 @@ class LoginCardState extends State<LoginCard> {
                                                                 Text("Copy")),
                                                       TextField(
                                                         autocorrect: false,
+                                                        controller: ssoResponse
                                                       ),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
                                                                 .all(30.0),
                                                         child: MinesTrixButton(
-                                                            onPressed: () {},
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context,
+                                                                  ssoResponse.text); // we have the login token now ;)
+                                                            },
                                                             icon: Icons.send,
                                                             label: "Login"),
                                                       )
