@@ -257,7 +257,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
           ],
           mainAxisSize: MainAxisSize.min,
         );
-        buttons.add(FlatButton(
+        buttons.add(TextButton(
           child: Text("close"),
           onPressed: () => Navigator.of(context).pop(),
         ));

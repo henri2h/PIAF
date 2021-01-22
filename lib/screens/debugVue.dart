@@ -78,7 +78,7 @@ class _DebugViewState extends State<DebugView> {
                             child: Text(timelineLength[i].toString()),
                           )
                         : null,
-                    trailing: RaisedButton(
+                    trailing: TextButton(
                         child: Text("Load"),
                         onPressed: () async {
                           await loadElements(context, srooms[i]);
@@ -87,7 +87,7 @@ class _DebugViewState extends State<DebugView> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
+                child: TextButton(
                     child: Text("Load all more"),
                     onPressed: () async {
                       for (SMatrixRoom room in srooms) {

@@ -36,11 +36,13 @@ class ContactView extends StatelessWidget {
       return SizedBox(
           child: Padding(
         padding: EdgeInsets.all(10.0),
-        child: RaisedButton(
-          color: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
-          padding: EdgeInsets.all(20.0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0)),
+            padding: EdgeInsets.all(20.0),
+          ),
           onPressed: () {
             NavigationHelper.navigateToUserFeed(context, sroom.user);
           },

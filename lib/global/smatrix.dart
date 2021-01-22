@@ -63,7 +63,6 @@ class SClient extends Client {
       print(eUp.type);
       if (eUp.eventType == "m.room.message") {
         await loadNewTimeline();
-        print("New timeline");
       }
     });
 
@@ -74,7 +73,6 @@ class SClient extends Client {
   }
 
   Future<void> loadNewTimeline() async {
-    print("Timeline update");
     await loadSTimeline();
     sortTimeline();
 
@@ -85,11 +83,9 @@ class SClient extends Client {
       Duration duration = Duration(seconds: 2); // let the app start
       _timer = Timer(duration, () async {
         print("Timer, sync threads");
-        sRoomLock = true;
         for (SMatrixRoom sr in srooms.values) {
           await sr.timeline.requestHistory();
         }
-        sRoomLock = false;
       });
       _firstSync = false;
     }
@@ -131,7 +127,7 @@ class SClient extends Client {
       }
     }
 
-    // get invited rooms (friends requests)
+    if (userRoom == null) print("❌ User room not found");
   }
 
   Future createSMatrixRoom() async {

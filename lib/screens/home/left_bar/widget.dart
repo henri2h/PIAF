@@ -71,7 +71,7 @@ class LeftBarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: RaisedButton(
+      child: ElevatedButton(
         onPressed: onPressed,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 20),

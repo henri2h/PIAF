@@ -10,13 +10,15 @@ class AccountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: RaisedButton(
-        color: Colors.white,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          primary: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
+        ),
         onPressed: () {
           NavigationHelper.navigateToUserFeed(context, user);
         },
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
         child: Padding(
           padding: const EdgeInsets.all(15),
           child: Column(

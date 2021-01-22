@@ -23,9 +23,8 @@ class AdaptiveFlatButton extends StatelessWidget {
         textStyle: textColor != null ? TextStyle(color: textColor) : null,
       );
     }
-    return FlatButton(
+    return TextButton(
       child: child,
-      textColor: textColor,
       onPressed: onPressed,
     );
   }

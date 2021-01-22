@@ -81,10 +81,8 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                   padding: const EdgeInsets.symmetric(horizontal: 6.0),
                   child: Row(
                     children: [
-                      FlatButton(
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        minWidth: 0,
-                        padding: EdgeInsets.all(0),
+                      TextButton(
+                        style: TextButton.styleFrom(primary: Colors.black),
                         onPressed: () async {
                           await pickEmoji(e);
                         },
@@ -99,11 +97,9 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                               ),
                       ),
                       SizedBox(width: 10),
-                      FlatButton(
+                      TextButton(
                         onPressed: replyButtonClick,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        minWidth: 0,
-                        padding: EdgeInsets.all(0),
+                        style: TextButton.styleFrom(primary: Colors.black),
                         child: ReactionItemWidget(
                           Row(children: [
                             Icon(Icons.reply, size: 16),
