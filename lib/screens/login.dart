@@ -278,7 +278,8 @@ class LoginCardState extends State<LoginCard> {
                                                     children: [
                                                       Text(
                                                           "Oups... you're not on Android or IOS"),
-                                                      Text("We can't open a web page inside minestrix"),
+                                                      Text(
+                                                          "We can't open a web page inside minestrix"),
                                                       Text(
                                                           "So please copy and paste this link into your web browser"),
                                                       SelectableText(url),
