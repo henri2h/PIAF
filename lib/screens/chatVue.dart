@@ -10,11 +10,17 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/conversationSettings.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class ChatView extends StatelessWidget {
-  final String roomId;
-
+class ChatView extends StatefulWidget {
   const ChatView({Key key, @required this.roomId}) : super(key: key);
 
+  final String roomId;
+  @override
+  _ChatViewState createState() => _ChatViewState();
+}
+
+class _ChatViewState extends State<ChatView> {
+  int reloadedCount = 0;
+  int roomUpdate = 0;
   Future getImage() async {
     final pickedFile = await ImagePicker().getImage(source: ImageSource.camera);
 
@@ -39,13 +45,19 @@ class ChatView extends StatelessWidget {
     final sclient = Matrix.of(context).sclient;
     final TextEditingController _sendController = TextEditingController();
 
-    final Room room = sclient.getRoomById(roomId);
+    reloadedCount++;
+
+    final Room room = sclient.getRoomById(widget.roomId);
     return StreamBuilder<String>(
         stream: room.onUpdate.stream,
         builder: (context, AsyncSnapshot<String> snapshot) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(room.displayname),
+              title: Text(room.displayname +
+                  " : " +
+                  reloadedCount.toString() +
+                  " : " +
+                  roomUpdate.toString()),
               actions: [
                 IconButton(
                   icon: Icon(Icons.info),
@@ -61,13 +73,18 @@ class ChatView extends StatelessWidget {
               child: ColoredBox(
                 color: Colors.white,
                 child: FutureBuilder<Timeline>(
-                  future: room.getTimeline(),
+                  future: room.getTimeline(onUpdate: () {
+                    setState(() {
+                      roomUpdate++;
+                    });
+                  }),
                   builder:
                       (BuildContext context, AsyncSnapshot<Timeline> snapshot) {
                     if (!snapshot.hasData) {
                       return Center(child: CircularProgressIndicator());
                     }
                     final timeline = snapshot.data;
+                    timeline.onUpdate;
                     List<Event> filteredEvents =
                         sclient.getSRoomFilteredEvents(timeline);
                     filteredEvents = filteredEvents.reversed.toList();
