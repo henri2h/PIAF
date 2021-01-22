@@ -280,19 +280,6 @@ class LoginCardState extends State<LoginCard> {
                                                           "Oups... you're not on Android or IOS"),
                                                       Text(
                                                           "Please copy and paste this link into your web browser"),
-                                                      TextField(
-                                                        controller:
-                                                            TextEditingController(
-                                                                text: url),
-                                                        toolbarOptions:
-                                                            ToolbarOptions(
-                                                          paste: true,
-                                                          cut: true,
-                                                          copy: true,
-                                                          selectAll: true,
-                                                        ),
-                                                        autocorrect: false,
-                                                      ),
                                                       SelectableText(url),
                                                       SizedBox(height: 30),
                                                       Text(
@@ -309,9 +296,9 @@ class LoginCardState extends State<LoginCard> {
                                                             child:
                                                                 Text("Copy")),
                                                       TextField(
-                                                        autocorrect: false,
-                                                        controller: ssoResponse
-                                                      ),
+                                                          autocorrect: false,
+                                                          controller:
+                                                              ssoResponse),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
@@ -320,7 +307,8 @@ class LoginCardState extends State<LoginCard> {
                                                             onPressed: () {
                                                               Navigator.pop(
                                                                   context,
-                                                                  ssoResponse.text); // we have the login token now ;)
+                                                                  ssoResponse
+                                                                      .text); // we have the login token now ;)
                                                             },
                                                             icon: Icons.send,
                                                             label: "Login"),
