@@ -1,0 +1,42 @@
+name: minestrix
+version: 0.0.7
+summary: A privacy focused social media based on matrix
+description: A new social media based on matrix
+
+confinement: strict
+base: core18
+grade: devel
+
+slots:
+  dbus-svc: # name that is used with 'snap connect' on slots side
+    interface: dbus
+    bus: session
+    name: fr.henri2h.minestrix
+
+
+
+parts:
+  olm:
+      plugin: cmake
+      source: https://gitlab.matrix.org/matrix-org/olm.git
+      source-type: git
+      source-tag: 3.2.1
+      build-packages:
+        - g++
+
+  minestrix:
+    plugin: flutter
+    source: .
+    flutter-target: lib/main.dart
+    stage-packages:
+    - libsqlite3-dev
+
+
+
+apps:
+  minestrix:
+    command: minestrix
+    extensions: [flutter-dev]
+    slots: [ dbus-svc ]
+    plugs:
+    - network
