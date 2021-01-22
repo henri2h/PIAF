@@ -53,7 +53,8 @@ class MessageDisplay extends StatelessWidget {
       return FutureBuilder(
           future: event.requestKey(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-            return buildPage(context, event);
+            if (snapshot.hasData) return buildPage(context, snapshot.data);
+            return LinearProgressIndicator();
           });
     }
     return buildPage(context, event);
