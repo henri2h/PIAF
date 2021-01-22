@@ -72,11 +72,13 @@ class ContactView extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(sroom.user.displayName,
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black)),
                                 Text(
                                   sroom.user.id,
                                   overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.black),
                                 )
                               ]),
                         ),
