@@ -1,62 +1,61 @@
-# Mines'Trix : A Matrix social media
+# Mines'Trix : 
 
-FLUTTER version
-
-Connect people without sacrifying privacy.
+**A privacy focused social media based on MATRIX**
 
 
 ![](readmeassets/feedVue.png)  |  ![](readmeassets/friendsVue.png)|  ![](readmeassets/chatsVue.png)|  ![](readmeassets/userVue.png)
 :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
 Feed vue        |  Friends vue | Chats vue | User vue
-## Goal of the platform
 
-* Enable people share information freely between friends
-* Create event, celebrate birthday or party
-* Networking : enable people to ~~build~~ revive networks
-* Simple : privacy online shouldn't be a geek only thing
-* Be able to choose the algorithms to sort your posts.
-* :rocket: We rock
 
-## Keywords
+![](https://img.shields.io/badge/License-AGPLv3-success)
+![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
+## 🤔 Why
 
-**privacy**, **simple**
+MinesTrix goal is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your post or edit them.
+That's why MinesTrix supports E2EE (not by default yet) to protect your posts and is decentralized to be able to choose where your data are stored.
 
-## Why should I use it ?
 
-* For Privacy : you own all your post which are E2E encrypted
-* For freedom : you choose how your post are sorted by an open, transparent algorithm you can choose
+We choosed MATRIX because it's the best protocol for supporting decentralised, E2EE communication and because it's Open Source !!
 
-## Why matrix ?
+## ✨ Features
 
-* because we don't wan't to reinvant the wheel and a social media need a messaging platform
-* Matrix : Secure, decentralised give back control to people. And... because it's Open Source !!
-* we could use matrix rooms to store personal data
+* Simplicity
+* Privacy : E2EE using [Olm](https://gitlab.matrix.org/matrix-org/olm)
+* No analytics
+* Post and see what your friends are saying
+* Create groups
+* Find your friends
+* Chat : supports chats
+* Not for profit
 
-### Why it will benefit the matrix ecosystem
+## 🚀 Goals
 
-* Help other discover other users (enable an easier user discoveration (woooo... TODO : find a better name))
-* Could convince people to know and adopt matrix
+* [ ] E2EE
+* [ ] Filter and sort your feed as you want
+* [ ] P2P
 
-## Be a game changer, help us spread the world
+## 😀🏆 Contributing
 
-* Try, and love, tell us what you think
-* Tell your friends about it, the more you spread, the less you relie on other social media
+### Be a game changer, help us spread the world
 
-## Want to go further, help us build the future
+* Try and tell us what you think
+* Spread the world 🎉
+
+### Want to go further, help us build the future
 
 * Code
-* Translate
+* Translate (will come later)
 
-## Features
+### Before publish a commit
 
-* Profile : post and see what your friends have posted
-* Events :
-	* birthday (remind people of their friend birthday)
-	* Events : federate people
-* Groups : A formal way of sharing information between people
-* Share pictures
+Make sure to run
 
-## Roadmap
+```bash
+./scripts/before_commit.sh
+```
+
+## 🛣 Roadmap
 
 ### V1.0 : (Work in progress)
 
@@ -75,7 +74,7 @@ Feed vue        |  Friends vue | Chats vue | User vue
 - [ ] Events and groups (pages) (in progress)
 - [ ] Sorting : Custom one (we could use some federate learning tech here)
 
-## How it works ?
+## 🧐 How it works ?
 
 ## [Specifications](https://gitlab.com/minestrix/minestrix-doc)
 
@@ -105,13 +104,10 @@ We should decide if we accept that "friendship" could be one way (I add you to m
 I think we should only accept two way
 TODO : think to how we could implement this (TLS handshake :D )
 
-## Contributing
 
-### Before publish a commit
+## 🏗 Building
 
-Make sure to run ./scripts/before_commit.sh
-
-## Building
+WIP 🙃
 
 ### Installing OLM
 
