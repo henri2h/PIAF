@@ -90,16 +90,15 @@ class PostHeader extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                     ),
-                    
-                      Row(
-                        children: [
-                          Text("to", style: TextStyle(color: Colors.grey[600])),
-                          SizedBox(width: 2),
-                          Text(event.room.name,
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w400)),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        Text("to", style: TextStyle(color: Colors.grey[600])),
+                        SizedBox(width: 2),
+                        Text(event.room.name,
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w400)),
+                      ],
+                    ),
                     Text(timeago.format(event.originServerTs),
                         style: TextStyle(
                             fontWeight: FontWeight.normal,
