@@ -38,32 +38,47 @@ class PostHeader extends StatelessWidget {
                       builder:
                           (BuildContext context, AsyncSnapshot<Profile> p) {
                         if (p.hasData) {
+                          User u = User(
+                            p.data.userId,
+                            displayName: p.data.displayname,
+                            avatarUrl: p.data.avatarUrl.toString(),
+                          );
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextButton(
-                                onPressed: () {
-                                  NavigationHelper.navigateToUserFeed(
-                                      context, event.sender);
-                                },
-                                child: Text(event.sender.displayName,
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                              if (event.sender.id != p.data.userId)
-                                Row(
-                                  children: [
-                                    Text("to",
-                                        style:
-                                            TextStyle(color: Colors.grey[600])),
-                                    SizedBox(width: 2),
-                                    Text(p.data.displayname,
+                              Row(
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      NavigationHelper.navigateToUserFeed(
+                                          context, event.sender);
+                                    },
+                                    child: Text(event.sender.displayName,
                                         style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w400)),
-                                  ],
-                                ),
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  if (event.sender.id != p.data.userId)
+                                    Row(children: [
+                                      SizedBox(width: 5),
+                                      Text("to",
+                                          style: TextStyle(
+                                              color: Colors.grey[600])),
+                                      SizedBox(width: 5),
+                                      TextButton(
+                                        onPressed: () {
+                                          NavigationHelper.navigateToUserFeed(
+                                              context, u);
+                                        },
+                                        child: Text(p.data.displayname,
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400)),
+                                      ),
+                                    ]),
+                                ],
+                              ),
                               Text(timeago.format(event.originServerTs),
                                   style: TextStyle(
                                       fontWeight: FontWeight.normal,
@@ -81,19 +96,20 @@ class PostHeader extends StatelessWidget {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        NavigationHelper.navigateToUserFeed(
-                            context, event.sender);
-                      },
-                      child: Text(event.sender.displayName,
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                    ),
                     Row(
                       children: [
+                        TextButton(
+                          onPressed: () {
+                            NavigationHelper.navigateToUserFeed(
+                                context, event.sender);
+                          },
+                          child: Text(event.sender.displayName,
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                        ),
+                        SizedBox(width: 5),
                         Text("to", style: TextStyle(color: Colors.grey[600])),
-                        SizedBox(width: 2),
+                        SizedBox(width: 5),
                         Text(event.room.name,
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w400)),
