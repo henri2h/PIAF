@@ -21,6 +21,39 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   int reloadedCount = 0;
   int roomUpdate = 0;
+  Timeline timeline;
+
+  bool updating = false;
+  void scrollListener() async {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      if (updating == false) {
+        setState(() {
+          updating = true;
+        });
+        print("update");
+        await timeline.requestHistory();
+        setState(() {
+          updating = false;
+        });
+      }
+    }
+  }
+
+  // scrolling logic
+  ScrollController _scrollController = new ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(scrollListener);
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    _scrollController.removeListener(scrollListener);
+  }
+
   Future getImage() async {
     final pickedFile = await ImagePicker().getImage(source: ImageSource.camera);
 
@@ -83,25 +116,27 @@ class _ChatViewState extends State<ChatView> {
                     if (!snapshot.hasData) {
                       return Center(child: CircularProgressIndicator());
                     }
-                    final timeline = snapshot.data;
-                    timeline.onUpdate;
+
+                    timeline = snapshot.data;
                     List<Event> filteredEvents =
                         sclient.getSRoomFilteredEvents(timeline);
-                    filteredEvents = filteredEvents.reversed.toList();
+                    //filteredEvents = filteredEvents.reversed.toList();
                     return Column(
                       children: [
+                        if (updating) CircularProgressIndicator(),
                         Expanded(
                           child: RefreshIndicator(
                             onRefresh: () async {
-                              await timeline.requestHistory();
+                              print("refresh");
                             },
                             backgroundColor: Colors.teal,
                             color: Colors.white,
                             displacement: 200,
                             strokeWidth: 5,
                             child: ListView.builder(
+                              controller: _scrollController,
                               physics: const AlwaysScrollableScrollPhysics(),
-                              reverse: false,
+                              reverse: true,
                               itemCount: filteredEvents.length,
                               itemBuilder: (BuildContext context, int i) {
                                 final event = filteredEvents[i];
