@@ -52,6 +52,8 @@ class SMatrixRoom {
             }
             return true; // we cannot yet access to the room participants
           }
+        } else if (roomType == SRoomType.Group) {
+          return true;
         }
       }
     } catch (e) {

@@ -18,9 +18,9 @@ class _RightBarState extends State<RightBar>
     return StreamBuilder(
         stream: sclient.onSync.stream,
         builder: (context, _) => ListView.builder(
-            itemCount: sclient.srooms.values.length,
+            itemCount: sclient.sfriends.values.length,
             itemBuilder: (BuildContext context, int i) =>
-                ContactView(sroom: sclient.srooms.values.toList()[i])));
+                ContactView(sroom: sclient.sfriends.values.toList()[i])));
   }
 }
 

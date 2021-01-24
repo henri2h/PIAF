@@ -14,8 +14,14 @@ class SClient extends Client {
   StreamSubscription onRoomUpdateSub; // event subscription
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
-  Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>(); // friends
-  Map<String, SMatrixRoom> sgroups = Map<String, SMatrixRoom>();
+  Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>();
+
+  // room sub types
+  Map<String, SMatrixRoom> get sgroups => Map.from(srooms)
+    ..removeWhere((key, value) => value.roomType != SRoomType.Group);
+  Map<String, SMatrixRoom> get sfriends => Map.from(srooms)
+    ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
+
   Map<String, SMatrixRoom> sInvites =
       Map<String, SMatrixRoom>(); // friends requests
 
@@ -98,13 +104,14 @@ class SClient extends Client {
     // if the user room is removed, the user should restart the app
 
     srooms.clear(); // clear rooms
+
     sInvites.clear(); // clear invites
     userIdToRoomId.clear();
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
       if (r.membership == Membership.invite) {
-        print("Pre Invite : " + r.name);
+        print("Friendship requests sent : " + r.name);
       }
       SMatrixRoom rs = SMatrixRoom();
       if (await rs.init(r, this)) {
@@ -112,18 +119,21 @@ class SClient extends Client {
         // if we are here, it means that we have a valid smatrix room
         if (r.membership == Membership.join) {
           rs.timeline = await rs.room.getTimeline();
-
           srooms[rs.room.id] = rs;
-          userIdToRoomId[rs.user.id] = rs.room.id;
 
-          if (userID == rs.user.id) {
-            userRoom = rs; // we have found our user smatrix room
-            // this means that the client has been initialisated
-            // we can load the friendsVue
+          if (rs.roomType == SRoomType.UserRoom) {
+            userIdToRoomId[rs.user.id] = rs.room.id;
+
+            if (userID == rs.user.id) {
+              userRoom = rs; // we have found our user smatrix room
+              // this means that the client has been initialisated
+              // we can load the friendsVue
+            }
           }
         }
         if (r.membership == Membership.invite) {
           print("Invite : " + r.name);
+
           sInvites[rs.room.id] = rs;
         }
       }
@@ -188,6 +198,8 @@ class SClient extends Client {
     stimeline.sort((a, b) {
       return b.originServerTs.compareTo(a.originServerTs);
     });
+
+    print("stimeline length : " + stimeline.length.toString());
   }
 
   /* this function iterate over all accepted friends invitations and ensure that they are in the user room
@@ -209,7 +221,7 @@ class SClient extends Client {
 
     List<User> users = await getSUsers();
     // iterate through rooms and add every user from thoose rooms not in our friend list
-    for (SMatrixRoom r in srooms.values) {
+    for (SMatrixRoom r in sfriends.values) {
       bool exists = (users.firstWhere((User u) => r.user.id == u.id,
               orElse: () => null) !=
           null);

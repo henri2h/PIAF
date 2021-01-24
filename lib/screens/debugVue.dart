@@ -22,7 +22,7 @@ class _DebugViewState extends State<DebugView> {
       await sclient.loadNewTimeline();
       getTimelineLength();
     } else {
-      print("error");
+      print("error [debugVue] : timeline is null");
     }
     setState(() {
       progressing = false;

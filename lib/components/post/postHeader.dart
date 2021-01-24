@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -13,7 +14,7 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
-
+    SRoomType roomType = SMatrixRoom.getSRoomType(event.room);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -30,49 +31,81 @@ class PostHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 10),
-              Flexible(
-                child: FutureBuilder<Profile>(
-                    future: sclient.getUserFromRoom(event.room),
-                    builder: (BuildContext context, AsyncSnapshot<Profile> p) {
-                      if (p.hasData) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextButton(
-                              onPressed: () {
-                                NavigationHelper.navigateToUserFeed(
-                                    context, event.sender);
-                              },
-                              child: Text(event.sender.displayName,
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                            if (event.sender.id != p.data.userId)
-                              Row(
-                                children: [
-                                  Text("to",
-                                      style:
-                                          TextStyle(color: Colors.grey[600])),
-                                  SizedBox(width: 2),
-                                  Text(p.data.displayname,
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400)),
-                                ],
+              if (roomType == SRoomType.UserRoom)
+                Flexible(
+                  child: FutureBuilder<Profile>(
+                      future: sclient.getUserFromRoom(event.room),
+                      builder:
+                          (BuildContext context, AsyncSnapshot<Profile> p) {
+                        if (p.hasData) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  NavigationHelper.navigateToUserFeed(
+                                      context, event.sender);
+                                },
+                                child: Text(event.sender.displayName,
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold)),
                               ),
-                            Text(timeago.format(event.originServerTs),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.grey[600])),
-                          ],
-                        );
-                      }
-                      return Text(event.sender.displayName,
+                              if (event.sender.id != p.data.userId)
+                                Row(
+                                  children: [
+                                    Text("to",
+                                        style:
+                                            TextStyle(color: Colors.grey[600])),
+                                    SizedBox(width: 2),
+                                    Text(p.data.displayname,
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400)),
+                                  ],
+                                ),
+                              Text(timeago.format(event.originServerTs),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.grey[600])),
+                            ],
+                          );
+                        }
+                        return Text(event.sender.displayName,
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold));
+                      }),
+                ),
+              if (roomType == SRoomType.Group)
+                Flexible(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        NavigationHelper.navigateToUserFeed(
+                            context, event.sender);
+                      },
+                      child: Text(event.sender.displayName,
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold));
-                    }),
-              ),
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                    ),
+                    
+                      Row(
+                        children: [
+                          Text("to", style: TextStyle(color: Colors.grey[600])),
+                          SizedBox(width: 2),
+                          Text(event.room.name,
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w400)),
+                        ],
+                      ),
+                    Text(timeago.format(event.originServerTs),
+                        style: TextStyle(
+                            fontWeight: FontWeight.normal,
+                            color: Colors.grey[600])),
+                  ],
+                )),
             ],
           ),
         ),

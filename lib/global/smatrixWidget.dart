@@ -145,7 +145,7 @@ class MatrixState extends State<Matrix> {
       }
     } catch (e) {
       print(e);
-      print("error");
+      print("error : Could not initWithStore");
     }
   }
 
