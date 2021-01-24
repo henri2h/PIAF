@@ -5,6 +5,7 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
@@ -109,7 +110,7 @@ class MatrixState extends State<Matrix> {
               .compareTo(DateTime.now().subtract(Duration(seconds: 5))) >
           0)
       // check if it is a message
-      if (SMatrixRoom.isValidSRoom(room)) {
+      if (SMatrixRoom.getSRoomType(room) != null) {
         Profile profile = await sclient.getUserFromRoom(room);
         Flushbar(
           title: "New post from " + profile.displayname,

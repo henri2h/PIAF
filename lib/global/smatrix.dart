@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 
 class SClient extends Client {
   static const String SMatrixRoomPrefix = "smatrix_";
@@ -14,6 +15,7 @@ class SClient extends Client {
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
   Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>(); // friends
+  Map<String, SMatrixRoom> sgroups = Map<String, SMatrixRoom>();
   Map<String, SMatrixRoom> sInvites =
       Map<String, SMatrixRoom>(); // friends requests
 
@@ -250,82 +252,5 @@ class SClient extends Client {
       return p.displayname;
     }
     return "ERROR !";
-  }
-}
-
-class SMatrixRoom {
-  // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
-  // initialize the class, return false, if it could not generate the classes
-  // i.e, it is not a valid class
-  User user;
-  Room room;
-  Timeline timeline;
-  bool _validSRoom = false;
-  bool get validSRoom => _validSRoom;
-  Future<bool> init(Room r, SClient sclient) async {
-    try {
-      if (isValidSRoom(r)) {
-        room = r;
-        String userId = SClient.getUserIdFromRoomName(room.name);
-
-        // find local on local users
-        List<User> users = room.getParticipants();
-        user = findUser(users, userId);
-
-        // or in the server ones
-        if (user == null) {
-          users = await room.requestParticipants();
-          user = findUser(users, userId);
-        }
-
-        if (user != null) {
-          /* if (room.powerLevels != null)
-            print(room.powerLevels[user.id]); // throw an error....
-          else
-            print("error reading power levels");
-          print(room.ownPowerLevel);*/
-          _validSRoom = true;
-          return true;
-        }
-
-        if (r.membership == Membership.invite) {
-          // in the case we can't request participants
-          if (user == null) {
-            Profile p = await sclient.getProfileFromUserId(userId);
-            user = User(userId,
-                membership: "m.join",
-                avatarUrl: p.avatarUrl.toString(),
-                displayName: p.displayname,
-                room: r);
-          }
-          return true; // we cannot yet access to the room participants
-        }
-      }
-    } catch (e) {
-      print("crash");
-    }
-    return false;
-  }
-
-  static User findUser(List<User> users, String userId) {
-    try {
-      return users.firstWhere((User u) => userId == u.id);
-    } catch (_) {
-      // return null if no element
-
-    }
-    return null;
-  }
-
-  static bool isValidSRoom(Room room) {
-    if (room.name.startsWith(SClient.SMatrixRoomPrefix)) {
-      // check if is a use room, in which case, it's user must be admin
-      if (room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
-        return true;
-      }
-
-      return false; // we don't support other room types yet
-    }
-    return false;
   }
 }
