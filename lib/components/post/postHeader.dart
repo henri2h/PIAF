@@ -14,7 +14,7 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
-    SRoomType roomType = SMatrixRoom.getSRoomType(event.room);
+    SMatrixRoom sroom = sclient.srooms[event.roomId];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -31,7 +31,7 @@ class PostHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 10),
-              if (roomType == SRoomType.UserRoom)
+              if (sroom.roomType == SRoomType.UserRoom)
                 Flexible(
                   child: FutureBuilder<Profile>(
                       future: sclient.getUserFromRoom(event.room),
@@ -91,7 +91,7 @@ class PostHeader extends StatelessWidget {
                                 fontSize: 20, fontWeight: FontWeight.bold));
                       }),
                 ),
-              if (roomType == SRoomType.Group)
+              if (sroom.roomType == SRoomType.Group)
                 Flexible(
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,7 +115,7 @@ class PostHeader extends StatelessWidget {
                             NavigationHelper.navigateToGroup(
                                 context, event.roomId);
                           },
-                          child: Text(event.room.name,
+                          child: Text(sroom.name,
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w400)),
                         ),

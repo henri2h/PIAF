@@ -33,7 +33,7 @@ class PostWriterModal extends StatelessWidget {
                       children: [
                         Icon(Icons.edit),
                         SizedBox(width: 10),
-                        Text("Write a post"),
+                        Text("Write a post on " + sroom.name),
                       ],
                     ),
                   )))

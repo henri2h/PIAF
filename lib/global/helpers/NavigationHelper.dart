@@ -20,7 +20,7 @@ class NavigationHelper {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => Scaffold(
               appBar: AppBar(
-                  title: Text("Write post on " + sroom.user.displayName)),
+                  title: Text("Write post on " + sroom.name)),
               body: PostEditor(sroom: sroom),
             )));
   }
@@ -32,7 +32,7 @@ class NavigationHelper {
 
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => Scaffold(
-          appBar: AppBar(title: Text(sroom.room.name + " timeline")),
+          appBar: AppBar(title: Text(sroom.name + " timeline")),
           body: GroupView(sroom: sroom)),
     ));
   }

@@ -11,6 +11,15 @@ class SMatrixRoom {
   Timeline timeline;
   bool _validSRoom = false;
   bool get validSRoom => _validSRoom;
+
+  String get name {
+    if (roomType == SRoomType.UserRoom)
+      return user.displayName;
+    else {
+      return room.name.replaceFirst(SClient.SMatrixRoomPrefix + "#", "");
+    }
+  }
+
   Future<bool> init(Room r, SClient sclient) async {
     try {
       roomType = getSRoomType(r);

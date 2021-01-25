@@ -49,7 +49,7 @@ class _PostEditorState extends State<PostEditor>
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  MinesTrixUserImage(url: sroom.user.avatarUrl),
+                  MinesTrixUserImage(url: sclient.userRoom.user.avatarUrl),
                   SizedBox(width: 5),
                   H1Title("What's up ?"),
                 ],
@@ -57,7 +57,7 @@ class _PostEditorState extends State<PostEditor>
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Post on your wall"),
+              child: Text("Post on " + sroom.name),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),

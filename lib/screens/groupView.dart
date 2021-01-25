@@ -41,7 +41,7 @@ class _GroupViewState extends State<GroupView> {
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 15, vertical: 8.0),
-                      child: H1Title(sroom.room.name),
+                      child: H1Title(sroom.name),
                     ),
                     Padding(
                         padding: const EdgeInsets.all(15),
