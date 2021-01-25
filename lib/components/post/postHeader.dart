@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -13,6 +14,7 @@ class PostHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;
+    SMatrixRoom sroom = sclient.srooms[event.roomId];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -29,49 +31,102 @@ class PostHeader extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 10),
-              Flexible(
-                child: FutureBuilder<Profile>(
-                    future: sclient.getUserFromRoom(event.room),
-                    builder: (BuildContext context, AsyncSnapshot<Profile> p) {
-                      if (p.hasData) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextButton(
-                              onPressed: () {
-                                NavigationHelper.navigateToUserFeed(
-                                    context, event.sender);
-                              },
-                              child: Text(event.sender.displayName,
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                            if (event.sender.id != p.data.userId)
+              if (sroom.roomType == SRoomType.UserRoom)
+                Flexible(
+                  child: FutureBuilder<Profile>(
+                      future: sclient.getUserFromRoom(event.room),
+                      builder:
+                          (BuildContext context, AsyncSnapshot<Profile> p) {
+                        if (p.hasData) {
+                          User u = User(
+                            p.data.userId,
+                            displayName: p.data.displayname,
+                            avatarUrl: p.data.avatarUrl.toString(),
+                          );
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Row(
                                 children: [
-                                  Text("to",
-                                      style:
-                                          TextStyle(color: Colors.grey[600])),
-                                  SizedBox(width: 2),
-                                  Text(p.data.displayname,
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400)),
+                                  TextButton(
+                                    onPressed: () {
+                                      NavigationHelper.navigateToUserFeed(
+                                          context, event.sender);
+                                    },
+                                    child: Text(event.sender.displayName,
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  if (event.sender.id != p.data.userId)
+                                    Row(children: [
+                                      SizedBox(width: 5),
+                                      Text("to",
+                                          style: TextStyle(
+                                              color: Colors.grey[600])),
+                                      SizedBox(width: 5),
+                                      TextButton(
+                                        onPressed: () {
+                                          NavigationHelper.navigateToUserFeed(
+                                              context, u);
+                                        },
+                                        child: Text(p.data.displayname,
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400)),
+                                      ),
+                                    ]),
                                 ],
                               ),
-                            Text(timeago.format(event.originServerTs),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.grey[600])),
-                          ],
-                        );
-                      }
-                      return Text(event.sender.displayName,
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold));
-                    }),
-              ),
+                              Text(timeago.format(event.originServerTs),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.grey[600])),
+                            ],
+                          );
+                        }
+                        return Text(event.sender.displayName,
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold));
+                      }),
+                ),
+              if (sroom.roomType == SRoomType.Group)
+                Flexible(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            NavigationHelper.navigateToUserFeed(
+                                context, event.sender);
+                          },
+                          child: Text(event.sender.displayName,
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                        ),
+                        SizedBox(width: 5),
+                        Text("to", style: TextStyle(color: Colors.grey[600])),
+                        SizedBox(width: 5),
+                        TextButton(
+                          onPressed: () {
+                            NavigationHelper.navigateToGroup(
+                                context, event.roomId);
+                          },
+                          child: Text(sroom.name,
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w400)),
+                        ),
+                      ],
+                    ),
+                    Text(timeago.format(event.originServerTs),
+                        style: TextStyle(
+                            fontWeight: FontWeight.normal,
+                            color: Colors.grey[600])),
+                  ],
+                )),
             ],
           ),
         ),
@@ -79,11 +134,11 @@ class PostHeader extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              if (event.type == EventTypes.Encrypted)
+              /*  if (encyrpted)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(Icons.enhanced_encryption),
-                ),
+                ),*/
               PopupMenuButton<String>(
                   itemBuilder: (_) => [
                         if (event.canRedact)

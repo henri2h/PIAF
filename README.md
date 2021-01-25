@@ -1,4 +1,4 @@
-# Mines'Trix : 
+# Mines'Trix
 
 **A privacy focused social media based on MATRIX**
 
@@ -9,6 +9,7 @@ Feed vue        |  Friends vue | Chats vue | User vue
 
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
+![](https://img.shields.io/badge/Version-ALPHA_0.0.8-teal)
 ![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
 ## 🤔 Why
 

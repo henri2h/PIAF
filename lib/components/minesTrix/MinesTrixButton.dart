@@ -14,10 +14,11 @@ class MinesTrixButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RaisedButton(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
-        padding: const EdgeInsets.all(0.0),
+    return ElevatedButton(
+        style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(80.0)),
+            padding: const EdgeInsets.all(0.0)),
         child: Ink(
           decoration: const BoxDecoration(
             gradient: MinesTrixTheme.buttonGradient,

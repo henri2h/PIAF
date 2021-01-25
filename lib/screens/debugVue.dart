@@ -2,6 +2,7 @@ import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
 class DebugView extends StatefulWidget {
@@ -21,7 +22,7 @@ class _DebugViewState extends State<DebugView> {
       await sclient.loadNewTimeline();
       getTimelineLength();
     } else {
-      print("error");
+      print("error [debugVue] : timeline is null");
     }
     setState(() {
       progressing = false;
@@ -78,7 +79,7 @@ class _DebugViewState extends State<DebugView> {
                             child: Text(timelineLength[i].toString()),
                           )
                         : null,
-                    trailing: RaisedButton(
+                    trailing: TextButton(
                         child: Text("Load"),
                         onPressed: () async {
                           await loadElements(context, srooms[i]);
@@ -87,7 +88,7 @@ class _DebugViewState extends State<DebugView> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
+                child: TextButton(
                     child: Text("Load all more"),
                     onPressed: () async {
                       for (SMatrixRoom room in srooms) {

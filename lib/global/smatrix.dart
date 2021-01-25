@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 
 class SClient extends Client {
   static const String SMatrixRoomPrefix = "smatrix_";
@@ -13,7 +14,14 @@ class SClient extends Client {
   StreamSubscription onRoomUpdateSub; // event subscription
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
-  Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>(); // friends
+  Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>();
+
+  // room sub types
+  Map<String, SMatrixRoom> get sgroups => Map.from(srooms)
+    ..removeWhere((key, value) => value.roomType != SRoomType.Group);
+  Map<String, SMatrixRoom> get sfriends => Map.from(srooms)
+    ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
+
   Map<String, SMatrixRoom> sInvites =
       Map<String, SMatrixRoom>(); // friends requests
 
@@ -60,75 +68,50 @@ class SClient extends Client {
     await loadNewTimeline();
 
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
-      /*   print("Event update");
-      print(eUp.eventType);
-      print(eUp.roomID);
-      print(eUp.content);
-      print(" ");*/
-      print("event");
       print(eUp.type);
       if (eUp.eventType == "m.room.message") {
         await loadNewTimeline();
-        print("New timeline");
       }
     });
 
     onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
       await loadSRooms();
       await loadNewTimeline();
-      print("room update");
     });
   }
 
-  bool ntimelineLock = false;
   Future<void> loadNewTimeline() async {
-    if (ntimelineLock != true) {
-      ntimelineLock = false;
-      print("Timeline update");
-      await loadSTimeline();
-      sortTimeline();
+    await loadSTimeline();
+    sortTimeline();
 
-      onTimelineUpdate.add("up");
-      //await onTimelineUpdate.done;
+    onTimelineUpdate.add("up");
+    //await onTimelineUpdate.done;
 
-      if (_firstSync) {
-        Duration duration = Duration(seconds: 2); // let the app start
-        _timer = Timer(duration, () async {
-          print("Timer, sync threads");
-          sRoomLock = true;
-          for (SMatrixRoom sr in srooms.values) {
-            await sr.timeline.requestHistory();
-          }
-          sRoomLock = false;
-        });
-        print("timer set");
-        _firstSync = false;
-      }
-
-      ntimelineLock = false;
-    } else {
-      print("Locked...");
+    if (_firstSync) {
+      Duration duration = Duration(seconds: 2); // let the app start
+      _timer = Timer(duration, () async {
+        print("Timer, sync threads");
+        for (SMatrixRoom sr in srooms.values) {
+          await sr.timeline.requestHistory();
+        }
+      });
+      _firstSync = false;
     }
   }
 
-  // load rooms
-  bool sRoomLock = false;
   Future<void> loadSRooms() async {
-    if (sRoomLock) {
-      print("sroom lock...");
-      return;
-    }
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
-    sRoomLock = true;
+
     srooms.clear(); // clear rooms
+
     sInvites.clear(); // clear invites
     userIdToRoomId.clear();
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
       if (r.membership == Membership.invite) {
-        print("Pre Invite : " + r.name);
+        print("Friendship requests sent : " + r.name);
       }
       SMatrixRoom rs = SMatrixRoom();
       if (await rs.init(r, this)) {
@@ -136,26 +119,27 @@ class SClient extends Client {
         // if we are here, it means that we have a valid smatrix room
         if (r.membership == Membership.join) {
           rs.timeline = await rs.room.getTimeline();
-
           srooms[rs.room.id] = rs;
-          userIdToRoomId[rs.user.id] = rs.room.id;
 
-          if (userID == rs.user.id) {
-            userRoom = rs; // we have found our user smatrix room
-            // this means that the client has been initialisated
-            // we can load the friendsVue
+          if (rs.roomType == SRoomType.UserRoom) {
+            userIdToRoomId[rs.user.id] = rs.room.id;
+
+            if (userID == rs.user.id) {
+              userRoom = rs; // we have found our user smatrix room
+              // this means that the client has been initialisated
+              // we can load the friendsVue
+            }
           }
         }
         if (r.membership == Membership.invite) {
           print("Invite : " + r.name);
+
           sInvites[rs.room.id] = rs;
         }
       }
-
-      sRoomLock = false;
     }
 
-    // get invited rooms (friends requests)
+    if (userRoom == null) print("❌ User room not found");
   }
 
   Future createSMatrixRoom() async {
@@ -199,13 +183,7 @@ class SClient extends Client {
     return filteredEvents;
   }
 
-  bool sTimelineLock = false;
   Future<void> loadSTimeline() async {
-    if (sTimelineLock) {
-      print("stimelinelock ...");
-      return;
-    }
-    sTimelineLock = true;
     // init
     stimeline.clear();
 
@@ -214,13 +192,14 @@ class SClient extends Client {
       final filteredEvents = getSRoomFilteredEvents(t);
       stimeline.addAll(filteredEvents);
     }
-    sTimelineLock = false;
   }
 
   void sortTimeline() {
     stimeline.sort((a, b) {
       return b.originServerTs.compareTo(a.originServerTs);
     });
+
+    print("stimeline length : " + stimeline.length.toString());
   }
 
   /* this function iterate over all accepted friends invitations and ensure that they are in the user room
@@ -242,7 +221,7 @@ class SClient extends Client {
 
     List<User> users = await getSUsers();
     // iterate through rooms and add every user from thoose rooms not in our friend list
-    for (SMatrixRoom r in srooms.values) {
+    for (SMatrixRoom r in sfriends.values) {
       bool exists = (users.firstWhere((User u) => r.user.id == u.id,
               orElse: () => null) !=
           null);
@@ -285,82 +264,5 @@ class SClient extends Client {
       return p.displayname;
     }
     return "ERROR !";
-  }
-}
-
-class SMatrixRoom {
-  // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
-  // initialize the class, return false, if it could not generate the classes
-  // i.e, it is not a valid class
-  User user;
-  Room room;
-  Timeline timeline;
-  bool _validSRoom = false;
-  bool get validSRoom => _validSRoom;
-  Future<bool> init(Room r, SClient sclient) async {
-    try {
-      if (isValidSRoom(r)) {
-        room = r;
-        String userId = SClient.getUserIdFromRoomName(room.name);
-
-        // find local on local users
-        List<User> users = room.getParticipants();
-        user = findUser(users, userId);
-
-        // or in the server ones
-        if (user == null) {
-          users = await room.requestParticipants();
-          user = findUser(users, userId);
-        }
-
-        if (user != null) {
-          /* if (room.powerLevels != null)
-            print(room.powerLevels[user.id]); // throw an error....
-          else
-            print("error reading power levels");
-          print(room.ownPowerLevel);*/
-          _validSRoom = true;
-          return true;
-        }
-
-        if (r.membership == Membership.invite) {
-          // in the case we can't request participants
-          if (user == null) {
-            Profile p = await sclient.getProfileFromUserId(userId);
-            user = User(userId,
-                membership: "m.join",
-                avatarUrl: p.avatarUrl.toString(),
-                displayName: p.displayname,
-                room: r);
-          }
-          return true; // we cannot yet access to the room participants
-        }
-      }
-    } catch (e) {
-      print("crash");
-    }
-    return false;
-  }
-
-  static User findUser(List<User> users, String userId) {
-    try {
-      return users.firstWhere((User u) => userId == u.id);
-    } catch (_) {
-      // return null if no element
-
-    }
-    return null;
-  }
-
-  static bool isValidSRoom(Room room) {
-    if (room.name.startsWith(SClient.SMatrixRoomPrefix)) {
-      // check if is a use room, in which case, it's user must be admin
-      if (room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
-        return true;
-      }
-
-      return false; // we don't support other room types yet
-    }
-    return false;
   }
 }

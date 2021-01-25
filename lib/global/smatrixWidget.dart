@@ -5,6 +5,7 @@ import 'package:flushbar/flushbar.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
@@ -42,7 +43,6 @@ class MatrixState extends State<Matrix> {
 
   @override
   void initState() {
-    print("Init state...");
     super.initState();
     initMatrix();
   }
@@ -104,12 +104,13 @@ class MatrixState extends State<Matrix> {
       // we should react differently depending on wether the event is a smatrix one or not...
       Room room = sclient.getRoomById(eventUpdate.roomID);
       Event event = Event.fromJson(eventUpdate.content, room);
-// don't throw a notification for old events
+
+      // don't throw a notification for old events
       if (event.originServerTs
               .compareTo(DateTime.now().subtract(Duration(seconds: 5))) >
           0)
       // check if it is a message
-      if (SMatrixRoom.isValidSRoom(room)) {
+      if (SMatrixRoom.getSRoomType(room) != null) {
         Profile profile = await sclient.getUserFromRoom(room);
         Flushbar(
           title: "New post from " + profile.displayname,
@@ -138,29 +139,13 @@ class MatrixState extends State<Matrix> {
 
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.logged) {
-        print("Logged in");
-
-        print(sclient.deviceID);
-        print(sclient.deviceName);
-
         await sclient.initSMatrix();
       } else {
         print("Not logged in");
-
-        /*await Matrix.of(context)
-            .client
-            .requestThirdPartyIdentifiers()
-            .then((l) {
-          if (l.isEmpty) {
-            print(l);
-          } else {
-            print("empty");
-          }
-        });*/
       }
     } catch (e) {
       print(e);
-      print("error");
+      print("error : Could not initWithStore");
     }
   }
 

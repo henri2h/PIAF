@@ -1,6 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
@@ -17,9 +18,9 @@ class _RightBarState extends State<RightBar>
     return StreamBuilder(
         stream: sclient.onSync.stream,
         builder: (context, _) => ListView.builder(
-            itemCount: sclient.srooms.values.length,
+            itemCount: sclient.sfriends.values.length,
             itemBuilder: (BuildContext context, int i) =>
-                ContactView(sroom: sclient.srooms.values.toList()[i])));
+                ContactView(sroom: sclient.sfriends.values.toList()[i])));
   }
 }
 
@@ -36,11 +37,13 @@ class ContactView extends StatelessWidget {
       return SizedBox(
           child: Padding(
         padding: EdgeInsets.all(10.0),
-        child: RaisedButton(
-          color: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
-          padding: EdgeInsets.all(20.0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0)),
+            padding: EdgeInsets.all(20.0),
+          ),
           onPressed: () {
             NavigationHelper.navigateToUserFeed(context, sroom.user);
           },
@@ -70,11 +73,13 @@ class ContactView extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(sroom.user.displayName,
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black)),
                                 Text(
                                   sroom.user.id,
                                   overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.black),
                                 )
                               ]),
                         ),

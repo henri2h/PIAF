@@ -31,12 +31,12 @@ class Minetrix extends StatelessWidget {
                 );
               }
               if (snapshot.data == LoginState.logged) {
-                return StreamBuilder<String>(
-                    stream: Matrix.of(context).sclient.onTimelineUpdate.stream,
+                return StreamBuilder<EventUpdate>(
+                    stream: Matrix.of(context).sclient.onEvent.stream,
                     builder: (BuildContext context, snapshot) {
                       SClient sclient = Matrix.of(context).sclient;
                       print("sclient.userRoom exits ? : " +
-                          (sclient.userRoom == null).toString());
+                          (sclient.userRoom != null).toString());
 
                       if (sclient.userRoom == null)
                         return MinesTrixAccountCreation();
