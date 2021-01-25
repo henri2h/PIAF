@@ -1,7 +1,10 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/postEditor.dart';
+import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/groupView.dart';
 import 'package:minestrix/screens/userFeedView.dart';
 
 class NavigationHelper {
@@ -20,5 +23,17 @@ class NavigationHelper {
                   title: Text("Write post on " + sroom.user.displayName)),
               body: PostEditor(sroom: sroom),
             )));
+  }
+
+  static void navigateToGroup(BuildContext context, String roomID) {
+    SClient sclient = Matrix.of(context).sclient;
+    SMatrixRoom sroom =
+        sclient.srooms[roomID]; // do not use sclient.sgroups as it's slower
+
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => Scaffold(
+          appBar: AppBar(title: Text(sroom.room.name + " timeline")),
+          body: GroupView(sroom: sroom)),
+    ));
   }
 }
