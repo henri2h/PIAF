@@ -110,9 +110,15 @@ class PostHeader extends StatelessWidget {
                         SizedBox(width: 5),
                         Text("to", style: TextStyle(color: Colors.grey[600])),
                         SizedBox(width: 5),
-                        Text(event.room.name,
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w400)),
+                        TextButton(
+                          onPressed: () {
+                            NavigationHelper.navigateToGroup(
+                                context, event.roomId);
+                          },
+                          child: Text(event.room.name,
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w400)),
+                        ),
                       ],
                     ),
                     Text(timeago.format(event.originServerTs),
