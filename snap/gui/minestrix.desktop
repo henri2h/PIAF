@@ -1,6 +1,7 @@
 [DesktopEntry]
 Name=MinesTrix
 Comment=A privacy focused social media based on MATRIX
+Type=Application
 Terminal=false
 Exec=minestrix
 Categories=SocialMedia;
