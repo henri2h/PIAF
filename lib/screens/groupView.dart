@@ -32,17 +32,13 @@ class _GroupViewState extends State<GroupView> {
         stream: sroom.room.onUpdate.stream,
         builder: (context, _) => ListView(
               children: [
-                Stack(
-                  children: [
-                    if (sroom.room.avatar != null)
-                      Center(
-                          child: MinesTrixUserImage(
-                              url: sroom.room.avatar,
-                              unconstraigned: true,
-                              rounded: false,
-                              maxHeight: 500)),
-                  ],
-                ),
+                if (sroom.room.avatar != null)
+                  Center(
+                      child: MinesTrixUserImage(
+                          url: sroom.room.avatar,
+                          unconstraigned: true,
+                          rounded: false,
+                          maxHeight: 500)),
                 Row(
                   children: [
                     Padding(
@@ -53,8 +49,10 @@ class _GroupViewState extends State<GroupView> {
                     Padding(
                         padding: const EdgeInsets.all(15),
                         child: Row(children: [
-                          for (User user in sroom.room.getParticipants().where(
-                              (User u) => u.membership == Membership.join))
+                          for (User user in sroom.room
+                              .getParticipants()
+                              .where((User u) =>
+                                  u.membership == Membership.join))
                             MinesTrixUserImage(url: user.avatarUrl)
                         ])),
                   ],
