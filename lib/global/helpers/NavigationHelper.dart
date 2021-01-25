@@ -19,8 +19,7 @@ class NavigationHelper {
   static void navigateToWritePost(BuildContext context, SMatrixRoom sroom) {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => Scaffold(
-              appBar: AppBar(
-                  title: Text("Write post on " + sroom.name)),
+              appBar: AppBar(title: Text("Write post on " + sroom.name)),
               body: PostEditor(sroom: sroom),
             )));
   }

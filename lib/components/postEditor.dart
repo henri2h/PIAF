@@ -74,24 +74,31 @@ class _PostEditorState extends State<PostEditor>
                 },
               ),
             ),
-            IconButton(
-                icon: Icon(Icons.add_a_photo),
-                onPressed: () async {
-                  FilePickerCross f = await FilePickerCross.importFromStorage(
-                      type: FileTypeCross.image);
-                  setState(() {
-                    file = f;
-                  });
-                }),
-            Padding(
-              padding: const EdgeInsets.all(30),
-              child: MinesTrixButton(
-                  icon: Icons.edit,
-                  label: "Send post",
-                  onPressed: () {
-                    sendPost(sclient, postContent);
-                    Navigator.of(context).pop();
-                  }),
+            Row(
+              children: [
+                IconButton(
+                    icon: Icon(Icons.add_a_photo),
+                    onPressed: () async {
+                      FilePickerCross f =
+                          await FilePickerCross.importFromStorage(
+                              type: FileTypeCross.image);
+                      setState(() {
+                        file = f;
+                      });
+                    }),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.all(30),
+                    child: MinesTrixButton(
+                        icon: Icons.edit,
+                        label: "Send post",
+                        onPressed: () {
+                          sendPost(sclient, postContent);
+                          Navigator.of(context).pop();
+                        }),
+                  ),
+                ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
