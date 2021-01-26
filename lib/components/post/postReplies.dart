@@ -16,6 +16,7 @@ class RepliesVue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // get replies
+    SClient sclient = Matrix.of(context).sclient;
     int max = min(replies.length, 2);
 
     return Container(
@@ -26,58 +27,72 @@ class RepliesVue extends StatelessWidget {
           for (Event revent in replies.toList().sublist(0, max))
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
                 children: [
-                  Flexible(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: MinesTrixUserImage(
-                                url: revent.sender.avatarUrl,
-                                width: 16,
-                                height: 16)),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Card(
-                            elevation: 0.3,
-                            color: Color(0xfff6f6f6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                child: MinesTrixUserImage(
+                                    url: revent.sender.avatarUrl,
+                                    width: 16,
+                                    height: 16)),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Card(
+                                elevation: 0.3,
+                                color: Color(0xfff6f6f6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 12),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(revent.sender.asUser.displayName,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w700)),
-                                      Text(
-                                          " - " +
-                                              timeago.format(
-                                                  revent.originServerTs),
-                                          style: TextStyle(
-                                              color: Colors.black54,
-                                              fontWeight: FontWeight.w400)),
+                                      Row(
+                                        children: [
+                                          Text(revent.sender.asUser.displayName,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w700)),
+                                          Text(
+                                              " - " +
+                                                  timeago.format(
+                                                      revent.originServerTs),
+                                              style: TextStyle(
+                                                  color: Colors.black54,
+                                                  fontWeight: FontWeight.w400)),
+                                        ],
+                                      ),
+                                      SizedBox(height: 5),
+                                      Text(revent.body
+                                          .replaceFirst(new RegExp(regex), "")),
                                     ],
                                   ),
-                                  SizedBox(height: 5),
-                                  Text(revent.body
-                                      .replaceFirst(new RegExp(regex), "")),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 50.0),
+                    child: RepliesVue(
+                        event: revent,
+                        replies: revent.aggregatedEvents(
+                            sclient.srooms[revent.roomId].timeline,
+                            RelationshipTypes.Reply)),
+                  )
                 ],
               ),
             ),
