@@ -42,8 +42,13 @@ class MessageDisplay extends StatelessWidget {
             return Text("other message type : " + event.messageType);
         }
         break;
+      case EventTypes.RoomMember:
+        String text = "";
+        if (event.content.containsKey("displayname"))
+          text = event.content["displayname"];
+        return Text(text + " " + event.content["membership"]);
       default:
-        return Text("Unknown event type");
+        return Text("Unknown event type " + event.type);
     }
   }
 

@@ -86,11 +86,7 @@ class _ChatViewState extends State<ChatView> {
         builder: (context, AsyncSnapshot<String> snapshot) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(room.displayname +
-                  " : " +
-                  reloadedCount.toString() +
-                  " : " +
-                  roomUpdate.toString()),
+              title: Text(room.displayname),
               actions: [
                 IconButton(
                   icon: Icon(Icons.info),
@@ -118,9 +114,13 @@ class _ChatViewState extends State<ChatView> {
                     }
 
                     timeline = snapshot.data;
-                    List<Event> filteredEvents =
-                        sclient.getSRoomFilteredEvents(timeline);
-                    //filteredEvents = filteredEvents.reversed.toList();
+                    List<Event> filteredEvents = timeline.events
+                        .where((e) => !{
+                              RelationshipTypes.Edit,
+                              RelationshipTypes.Reaction
+                            }.contains(e.relationshipType))
+                        .toList();
+
                     return Column(
                       children: [
                         if (updating) CircularProgressIndicator(),
