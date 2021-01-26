@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -247,9 +248,9 @@ class LoginCardState extends State<LoginCard> {
                                   String nav = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => Platform
-                                                    .isAndroid ||
-                                                Platform.isIOS
+                                        builder: (context) => !kIsWeb &&
+                                                (Platform.isAndroid ||
+                                                    Platform.isIOS)
                                             ? WebView(
                                                 initialUrl: url,
                                                 javascriptMode: JavascriptMode
@@ -287,8 +288,9 @@ class LoginCardState extends State<LoginCard> {
                                                       Text(
                                                           "And paste response"),
                                                       SizedBox(height: 30),
-                                                      if (Platform.isAndroid ||
-                                                          Platform.isIOS)
+                                                      if (!kIsWeb &&
+                                                          (Platform.isAndroid ||
+                                                              Platform.isIOS))
                                                         TextButton(
                                                             onPressed:
                                                                 () async {
