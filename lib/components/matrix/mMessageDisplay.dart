@@ -47,6 +47,53 @@ class MessageDisplay extends StatelessWidget {
         if (event.content.containsKey("displayname"))
           text = event.content["displayname"];
         return Text(text + " " + event.content["membership"]);
+      case EventTypes.RoomCreate:
+        return Card(
+            child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Text("🎉"),
+              SizedBox(width: 10),
+              Column(
+                children: [
+                  Text(event.content["creator"] + " created room"),
+                ],
+              ),
+            ],
+          ),
+        ));
+      case EventTypes.RoomName:
+        return Card(
+            child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Column(
+                children: [
+                  Text("New room name : " + event.content["name"]),
+                ],
+              ),
+            ],
+          ),
+        ));
+      case EventTypes.Encryption:
+        return Card(
+            child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(Icons.enhanced_encryption),
+              SizedBox(width: 10),
+              Column(
+                children: [
+                  Text("End-To-End encryption activated"),
+                  Text(event.content["algorithm"]),
+                ],
+              ),
+            ],
+          ),
+        ));
       default:
         return Text("Unknown event type " + event.type);
     }
