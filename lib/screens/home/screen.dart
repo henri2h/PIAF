@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix/components/friendsRequestList.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
+import 'package:minestrix/components/notificationView.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -71,61 +73,62 @@ class WideContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {}, tooltip: 'Write post', child: Icon(Icons.edit)),
-      body: Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            NavBar(),
-            //PostEditor(),
-            Expanded(
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Flexible(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Text("Help bar"),
-                        LeftBar(),
-                      ],
-                    ),
-                  ),
-                ),
-                Flexible(
-                  flex: 6,
-                  child: StreamBuilder(
-                    stream: sclient.onTimelineUpdate.stream,
-                    builder: (context, _) => ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: sclient.stimeline.length,
-                        itemBuilder: (BuildContext context, int i) =>
-                            Post(event: sclient.stimeline[i])),
-                  ),
-                ),
-                Flexible(
-                    flex: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text("Contacts",
-                                style: TextStyle(fontSize: 30)),
+        floatingActionButton: FloatingActionButton(
+            onPressed: () {}, tooltip: 'Write post', child: Icon(Icons.edit)),
+        body: Container(
+          color: Colors.white,
+          child: Column(
+            children: [
+              NavBar(),
+              //PostEditor(),
+              Expanded(
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        flex: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Text("Help bar"),
+                              LeftBar(),
+                            ],
                           ),
-                          Flexible(child: RightBar()),
-                        ],
+                        ),
                       ),
-                    )),
-              ]),
-            ),
-          ],
+                      Flexible(
+                        flex: 6,
+                        child: StreamBuilder(
+                          stream: sclient.onTimelineUpdate.stream,
+                          builder: (context, _) => ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: sclient.stimeline.length,
+                              itemBuilder: (BuildContext context, int i) =>
+                                  Post(event: sclient.stimeline[i])),
+                        ),
+                      ),
+                      Flexible(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Text("Contacts",
+                                      style: TextStyle(fontSize: 30)),
+                                ),
+                                Flexible(child: RightBar()),
+                              ],
+                            ),
+                          )),
+                    ]),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+        endDrawer: NotificationView());
   }
 }
 

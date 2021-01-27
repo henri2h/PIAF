@@ -11,21 +11,30 @@ class NavBar extends StatelessWidget {
     SClient sclient = Matrix.of(context).sclient;
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text("Mines'Trix",
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Mines'Trix",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+            ),
+            NavBarButton(name: "Feed", icon: Icons.home, onPressed: () {}),
+            NavBarButton(
+                name: "My Acount",
+                icon: Icons.person,
+                onPressed: () {
+                  NavigationHelper.navigateToUserFeed(
+                      context, sclient.userRoom.user);
+                }),
+            NavBarButton(name: "Friends", icon: Icons.people, onPressed: () {}),
+          ],
         ),
-        NavBarButton(name: "Feed", icon: Icons.home, onPressed: () {}),
-        NavBarButton(
-            name: "My Acount",
-            icon: Icons.person,
+        IconButton(
+            icon: Icon(Icons.notifications),
             onPressed: () {
-              NavigationHelper.navigateToUserFeed(
-                  context, sclient.userRoom.user);
-            }),
-        NavBarButton(name: "Friends", icon: Icons.people, onPressed: () {})
+              Scaffold.of(context).openEndDrawer();
+            })
       ]),
     );
   }
