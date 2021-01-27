@@ -89,18 +89,15 @@ class WideContainer extends StatelessWidget {
                         flex: 2,
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              Text("Help bar"),
-                              LeftBar(),
-                            ],
-                          ),
+                          child: LeftBar(),
                         ),
                       ),
-                      Flexible(flex: 6, child: Padding(
-                        padding: const EdgeInsets.all(80.0),
-                        child: FeedView(),
-                      )),
+                      Flexible(
+                          flex: 6,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal:80.0),
+                            child: FeedView(),
+                          )),
                       Flexible(
                           flex: 3,
                           child: Padding(

@@ -58,7 +58,8 @@ class FeedView extends StatelessWidget {
                     child: PostWriterModal(sroom: sclient.userRoom),
                   );
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical:8, horizontal:15.0),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15.0),
                   child: Material(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
