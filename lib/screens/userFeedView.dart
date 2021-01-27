@@ -5,6 +5,7 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/post/postView.dart';
+import 'package:minestrix/components/postWriterModal.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
@@ -17,7 +18,7 @@ import 'package:minestrix/screens/settings.dart';
 class UserFeedView extends StatelessWidget {
   const UserFeedView({Key key, @required this.userId}) : super(key: key);
   final String userId;
-  Widget buildPage(SMatrixRoom sroom, List<Event> sevents) {
+  Widget buildPage(SClient sclient, SMatrixRoom sroom, List<Event> sevents) {
     return StreamBuilder(
         stream: sroom.room.onUpdate.stream,
         builder: (context, _) => ListView(
@@ -78,15 +79,8 @@ class UserFeedView extends StatelessWidget {
                   child: H2Title("Posts"),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 80),
-                  child: MinesTrixButton(
-                      onPressed: () {
-                        NavigationHelper.navigateToWritePost(context, sroom);
-                      },
-                      label: "Write post on " +
-                          sroom.user.displayName +
-                          " timeline",
-                      icon: Icons.edit),
+                  padding: const EdgeInsets.all(8.0),
+                  child: PostWriterModal(sroom: sclient.userRoom),
                 ),
                 for (Event e in sevents)
                   Column(
@@ -114,7 +108,7 @@ class UserFeedView extends StatelessWidget {
 
     if (sroom != null) {
       List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
-      return buildPage(sroom, sevents);
+      return buildPage(sclient, sroom, sevents);
     } else {
       print("else");
       return FutureBuilder<Profile>(
