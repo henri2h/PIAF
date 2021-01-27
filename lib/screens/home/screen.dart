@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/friendsRequestList.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/notificationView.dart';
 import 'package:minestrix/components/post/postView.dart';
@@ -211,7 +210,6 @@ class _MobileContainerState extends State<MobileContainer> {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
     Widget widgetFeedView = FeedView();
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
