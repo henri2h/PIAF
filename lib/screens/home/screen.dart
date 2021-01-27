@@ -97,7 +97,10 @@ class WideContainer extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Flexible(flex: 6, child: FeedView()),
+                      Flexible(flex: 6, child: Padding(
+                        padding: const EdgeInsets.all(80.0),
+                        child: FeedView(),
+                      )),
                       Flexible(
                           flex: 3,
                           child: Padding(
@@ -145,13 +148,16 @@ class TabletContainer extends StatelessWidget {
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(
                   flex: 9,
-                  child: StreamBuilder(
-                    stream: sclient.onTimelineUpdate.stream,
-                    builder: (context, _) => ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: sclient.stimeline.length,
-                        itemBuilder: (BuildContext context, int i) =>
-                            Post(event: sclient.stimeline[i])),
+                  child: Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: StreamBuilder(
+                      stream: sclient.onTimelineUpdate.stream,
+                      builder: (context, _) => ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: sclient.stimeline.length,
+                          itemBuilder: (BuildContext context, int i) =>
+                              Post(event: sclient.stimeline[i])),
+                    ),
                   ),
                 ),
                 Expanded(
