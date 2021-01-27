@@ -5,21 +5,20 @@ import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/components/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 
 class FeedView extends StatelessWidget {
   const FeedView({
     Key key,
-    @required this.sclient,
     this.changePage,
   }) : super(key: key);
 
   final Function changePage;
 
-  final SClient sclient;
-
   @override
   Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
     return Container(
       //color: Color(0xfff4f3f4),
       child: StreamBuilder(

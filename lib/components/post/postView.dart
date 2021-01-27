@@ -69,51 +69,71 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // post content
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PostHeader(event: e),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10),
-                      child: PostContent(e),
+
+                Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                      child: Row(
-                        children: [
-                          TextButton(
-                            style: TextButton.styleFrom(primary: Colors.black),
-                            onPressed: () async {
-                              await pickEmoji(e);
-                            },
-                            child: reactions.isNotEmpty
-                                ? PostReactions(event: e, reactions: reactions)
-                                : ReactionItemWidget(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PostHeader(event: e),
+                        Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 10),
+                            child: PostContent(e)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                          child: Row(
+                            children: [
+                              TextButton(
+                                style:
+                                    TextButton.styleFrom(primary: Colors.black),
+                                onPressed: () async {
+                                  await pickEmoji(e);
+                                },
+                                child: reactions.isNotEmpty
+                                    ? PostReactions(
+                                        event: e, reactions: reactions)
+                                    : ReactionItemWidget(
+                                        Row(children: [
+                                          Icon(Icons.emoji_emotions, size: 16),
+                                          SizedBox(width: 10),
+                                          Text("0")
+                                        ]),
+                                      ),
+                              ),
+                              SizedBox(width: 10),
+                              TextButton(
+                                  onPressed: replyButtonClick,
+                                  style: TextButton.styleFrom(
+                                      primary: Colors.black),
+                                  child: ReactionItemWidget(
                                     Row(children: [
-                                      Icon(Icons.emoji_emotions, size: 16),
+                                      Icon(Icons.reply, size: 16),
                                       SizedBox(width: 10),
-                                      Text("0")
+                                      Text("")
                                     ]),
-                                  ),
+                                  )),
+                            ],
                           ),
-                          SizedBox(width: 10),
-                          TextButton(
-                            onPressed: replyButtonClick,
-                            style: TextButton.styleFrom(primary: Colors.black),
-                            child: ReactionItemWidget(
-                              Row(children: [
-                                Icon(Icons.reply, size: 16),
-                                SizedBox(width: 10),
-                                Text("")
-                              ]),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                        )
+                      ],
+                    )),
                 Container(
                   //color: Color(0xfff6f6f6),
                   child: Column(

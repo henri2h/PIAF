@@ -97,17 +97,7 @@ class WideContainer extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Flexible(
-                        flex: 6,
-                        child: StreamBuilder(
-                          stream: sclient.onTimelineUpdate.stream,
-                          builder: (context, _) => ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: sclient.stimeline.length,
-                              itemBuilder: (BuildContext context, int i) =>
-                                  Post(event: sclient.stimeline[i])),
-                        ),
-                      ),
+                      Flexible(flex: 6, child: FeedView()),
                       Flexible(
                           flex: 3,
                           child: Padding(
@@ -218,7 +208,7 @@ class _MobileContainerState extends State<MobileContainer> {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    Widget widgetFeedView = FeedView(sclient: sclient);
+    Widget widgetFeedView = FeedView();
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
       // we could wrap this in SafeArea
@@ -341,8 +331,7 @@ class NavigationBarState extends State<NavigationBar> {
 
     switch (index) {
       case 0:
-        widget.changePage(
-            FeedView(sclient: sclient, changePage: widget.changePage));
+        widget.changePage(FeedView(changePage: widget.changePage));
         break;
       case 1:
         widget.changePage(ChatsVue(), chatVue: true);
