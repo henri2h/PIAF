@@ -77,28 +77,15 @@ class _ChatViewState extends State<ChatView> {
   Widget build(BuildContext context) {
     final sclient = Matrix.of(context).sclient;
     final TextEditingController _sendController = TextEditingController();
-
+    if (widget.roomId == null) return Text("Select a chat ;)");
     reloadedCount++;
 
     final Room room = sclient.getRoomById(widget.roomId);
     return StreamBuilder<String>(
         stream: room.onUpdate.stream,
         builder: (context, AsyncSnapshot<String> snapshot) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(room.displayname),
-              actions: [
-                IconButton(
-                  icon: Icon(Icons.info),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => ConversationSettings(room: room),
-                    ));
-                  },
-                ),
-              ],
-            ),
-            body: SafeArea(
+          return Container(
+            child: SafeArea(
               child: ColoredBox(
                 color: Colors.white,
                 child: FutureBuilder<Timeline>(
