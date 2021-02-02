@@ -99,6 +99,14 @@ class SClient extends Client {
     }
   }
 
+  void setupSRoom(SMatrixRoom sroom) async {
+    if (sroom.room.name.startsWith(SMatrixUserRoomPrefix)) {
+      print("setup room");
+      String roomName = sroom.room.name.replaceFirst("smatrix_", "");
+      await sroom.room.setName(roomName + " timeline");
+    }
+  }
+
   Future<void> loadSRooms() async {
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
@@ -115,11 +123,19 @@ class SClient extends Client {
       }
       SMatrixRoom rs = SMatrixRoom();
       if (await rs.init(r, this)) {
+        print(rs.room.name);
         // if class is correctly initialisated, we can add it
         // if we are here, it means that we have a valid smatrix room
         if (r.membership == Membership.join) {
           rs.timeline = await rs.room.getTimeline();
           srooms[rs.room.id] = rs;
+
+          // by default
+          if (rs.room.pushRuleState == PushRuleState.notify)
+            await rs.room.setPushRuleState(PushRuleState.mentions_only);
+          if (!rs.room.tags.containsKey("m.lowpriority")) {
+            await rs.room.addTag("m.lowpriority");
+          }
 
           if (rs.roomType == SRoomType.UserRoom) {
             userIdToRoomId[rs.user.id] = rs.room.id;
@@ -128,6 +144,7 @@ class SClient extends Client {
               userRoom = rs; // we have found our user smatrix room
               // this means that the client has been initialisated
               // we can load the friendsVue
+              await setupSRoom(userRoom);
             }
           }
         }
@@ -145,7 +162,7 @@ class SClient extends Client {
   Future createSMatrixRoom() async {
     print("Create smatrix room");
     String roomID = await createRoom(
-        name: SMatrixRoomPrefix + userID,
+        name: "@" + userID + " timeline",
         topic: "Mines'Trix room name",
         visibility: Visibility.private);
 
@@ -240,7 +257,8 @@ class SClient extends Client {
   }
 
   static String getUserIdFromRoomName(String name) {
-    return name.replaceFirst(SMatrixRoomPrefix, "");
+    name = name.split(" ")[0];
+    return name.replaceFirst("smatrix_", "");
   }
 
   Future<Profile> getUserFromRoom(Room room) async {
@@ -259,7 +277,7 @@ class SClient extends Client {
   }
 
   Future<String> getRoomDisplayName(Room room) async {
-    if (room.name.startsWith(SMatrixUserRoomPrefix)) {
+    if (room.name.startsWith("@")) {
       Profile p = await getUserFromRoom(room);
       return p.displayname;
     }

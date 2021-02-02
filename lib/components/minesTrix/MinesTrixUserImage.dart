@@ -15,6 +15,7 @@ class MinesTrixUserImage extends StatelessWidget {
       this.rounded = true,
       this.thumnail = false,
       this.fit = false,
+      this.defaultIcon = const Icon(Icons.image),
       this.unconstraigned = false})
       : super(key: key);
   final Uri url;
@@ -24,7 +25,7 @@ class MinesTrixUserImage extends StatelessWidget {
   final bool thumnail;
   final bool unconstraigned;
   final bool fit;
-
+  final Icon defaultIcon;
   final int maxWidth;
   final int maxHeight;
 
@@ -42,7 +43,7 @@ class MinesTrixUserImage extends StatelessWidget {
                   borderRadius: BorderRadius.all(Radius.circular(50)),
                 )
               : null,
-          child: Icon(Icons.image));
+          child: defaultIcon);
     return ClipRRect(
       borderRadius: rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
       child: CachedNetworkImage(

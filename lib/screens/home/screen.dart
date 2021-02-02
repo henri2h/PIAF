@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
-import 'package:minestrix/components/post/postView.dart';
+import 'package:minestrix/components/notificationView.dart';
 import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -29,169 +29,73 @@ class HomeScreen extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<HomeScreen> {
+class _HomePageState extends State<HomeScreen> {
+  Widget widgetView = null;
+
   @override
   Widget build(BuildContext context) {
-    final sclient = Matrix.of(context).sclient;
-
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return
-        /*appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text("Mines'Trix"),
-      ),*/
-        LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth > 1200)
-        return WideContainer(sclient: sclient);
-      else if (constraints.maxWidth > 900)
-        return TabletContainer(sclient: sclient);
+    return LayoutBuilder(builder: (context, constraints) {
+      if (constraints.maxWidth > 900)
+        return buildWideContainer(context);
       else
-        return MobileContainer();
+        return buildMobileContainer(context);
     });
   }
-}
 
-class WideContainer extends StatelessWidget {
-  const WideContainer({
-    Key key,
-    @required this.sclient,
-  }) : super(key: key);
-
-  final SClient sclient;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget buildWideContainer(BuildContext context) {
+    if (widgetView == null) widgetView = FeedView(changePage: changePage);
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {}, tooltip: 'Write post', child: Icon(Icons.edit)),
-      body: Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            NavBar(),
-            //PostEditor(),
-            Expanded(
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Flexible(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Text("Help bar"),
-                        LeftBar(),
-                      ],
-                    ),
-                  ),
-                ),
-                Flexible(
-                  flex: 6,
-                  child: StreamBuilder(
-                    stream: sclient.onTimelineUpdate.stream,
-                    builder: (context, _) => ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: sclient.stimeline.length,
-                        itemBuilder: (BuildContext context, int i) =>
-                            Post(event: sclient.stimeline[i])),
-                  ),
-                ),
-                Flexible(
-                    flex: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text("Contacts",
-                                style: TextStyle(fontSize: 30)),
-                          ),
-                          Flexible(child: RightBar()),
-                        ],
+        floatingActionButton: buildFloattingButton(),
+        body: Container(
+          color: Colors.white,
+          child: Column(
+            children: [
+              NavBar(),
+              //PostEditor(),
+              Expanded(
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        flex: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: LeftBar(),
+                        ),
                       ),
-                    )),
-              ]),
-            ),
-          ],
+                      Flexible(
+                          flex: 6,
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 80.0),
+                            child: widgetView,
+                          )),
+                      Flexible(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Text("Contacts",
+                                      style: TextStyle(fontSize: 30)),
+                                ),
+                                Flexible(child: RightBar()),
+                              ],
+                            ),
+                          )),
+                    ]),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+        endDrawer: NotificationView());
   }
-}
 
-class TabletContainer extends StatelessWidget {
-  const TabletContainer({
-    Key key,
-    @required this.sclient,
-  }) : super(key: key);
-
-  final SClient sclient;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {}, tooltip: 'Write post', child: Icon(Icons.edit)),
-      body: Container(
-        child: Column(
-          children: [
-            NavBar(),
-            //PostEditor(),
-            Expanded(
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Expanded(
-                  flex: 9,
-                  child: StreamBuilder(
-                    stream: sclient.onTimelineUpdate.stream,
-                    builder: (context, _) => ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: sclient.stimeline.length,
-                        itemBuilder: (BuildContext context, int i) =>
-                            Post(event: sclient.stimeline[i])),
-                  ),
-                ),
-                Expanded(
-                    flex: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text("Contacts",
-                                style: TextStyle(fontSize: 30)),
-                          ),
-                          Expanded(child: RightBar()),
-                        ],
-                      ),
-                    )),
-              ]),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MobileContainer extends StatefulWidget {
-  @override
-  _MobileContainerState createState() => _MobileContainerState();
-}
-
-class _MobileContainerState extends State<MobileContainer> {
-  Widget widgetView;
   bool changing = false;
   bool isChatVue = false;
 
@@ -212,10 +116,8 @@ class _MobileContainerState extends State<MobileContainer> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
-    Widget widgetFeedView = FeedView(sclient: sclient);
+  Widget buildMobileContainer(BuildContext context) {
+    Widget widgetFeedView = FeedView(changePage: changePage);
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
       // we could wrap this in SafeArea
@@ -255,69 +157,72 @@ class _MobileContainerState extends State<MobileContainer> {
                     ),
                     elevation: 30,
                   )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      if (isNavBarExtended)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 15.0),
-                          child: Material(
-                            color: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(30))),
-                            elevation: 30,
-                            child: Column(
-                              children: [
-                                FloatingActionButton(
-                                  onPressed: () async {
-                                    changePage(PostEditor());
-                                  },
-                                  tooltip: "Create post",
-                                  child: Container(
-                                    margin: EdgeInsets.all(15.0),
-                                    child: Icon(Icons.post_add),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                SizedBox(height: 10),
-                                FloatingActionButton(
-                                  onPressed: () async {
-                                    changePage(CreateGroup());
-                                  },
-                                  tooltip: "New group",
-                                  child: Container(
-                                    margin: EdgeInsets.all(15.0),
-                                    child: Icon(Icons.group_add),
-                                  ),
-                                  elevation: 0,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: FloatingActionButton(
-                          onPressed: () {
-                            setState(() {
-                              isNavBarExtended = !isNavBarExtended;
-                            });
-                          },
-                          tooltip: "New post",
-                          child: Container(
-                            margin: EdgeInsets.all(15.0),
-                            child: Icon(Icons.add),
-                          ),
-                          elevation: 30,
-                        ),
-                      ),
-                    ],
-                  ),
+                : buildFloattingButton()
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildFloattingButton() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        if (isNavBarExtended)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 15.0),
+            child: Material(
+              color: Colors.blue,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30))),
+              elevation: 30,
+              child: Column(
+                children: [
+                  FloatingActionButton(
+                    onPressed: () async {
+                      changePage(PostEditor());
+                    },
+                    tooltip: "Create post",
+                    child: Container(
+                      margin: EdgeInsets.all(15.0),
+                      child: Icon(Icons.post_add),
+                    ),
+                    elevation: 0,
+                  ),
+                  SizedBox(height: 10),
+                  FloatingActionButton(
+                    onPressed: () async {
+                      changePage(CreateGroup());
+                    },
+                    tooltip: "New group",
+                    child: Container(
+                      margin: EdgeInsets.all(15.0),
+                      child: Icon(Icons.group_add),
+                    ),
+                    elevation: 0,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: FloatingActionButton(
+            onPressed: () {
+              setState(() {
+                isNavBarExtended = !isNavBarExtended;
+              });
+            },
+            tooltip: "New post",
+            child: Container(
+              margin: EdgeInsets.all(15.0),
+              child: Icon(Icons.add),
+            ),
+            elevation: 30,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -338,8 +243,7 @@ class NavigationBarState extends State<NavigationBar> {
 
     switch (index) {
       case 0:
-        widget.changePage(
-            FeedView(sclient: sclient, changePage: widget.changePage));
+        widget.changePage(FeedView(changePage: widget.changePage));
         break;
       case 1:
         widget.changePage(ChatsVue(), chatVue: true);

@@ -3,22 +3,22 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/postEditor.dart';
+import 'package:minestrix/components/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/friendsVue.dart';
 
 class FeedView extends StatelessWidget {
   const FeedView({
     Key key,
-    @required this.sclient,
-    this.changePage,
+    @required this.changePage,
   }) : super(key: key);
 
   final Function changePage;
 
-  final SClient sclient;
-
   @override
   Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
     return Container(
       //color: Color(0xfff4f3f4),
       child: StreamBuilder(
@@ -50,10 +50,16 @@ class FeedView extends StatelessWidget {
               ],
             );
           return ListView.builder(
-              itemCount: sclient.stimeline.length,
+              itemCount: sclient.stimeline.length + 1,
               itemBuilder: (BuildContext context, int i) {
+                if (i == 0)
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: PostWriterModal(sroom: sclient.userRoom),
+                  );
                 return Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15.0),
                   child: Material(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
@@ -62,7 +68,7 @@ class FeedView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         padding: const EdgeInsets.all(0),
-                        child: Post(event: sclient.stimeline[i]),
+                        child: Post(event: sclient.stimeline[i - 1]),
                       )),
                 );
               });

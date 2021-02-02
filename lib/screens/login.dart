@@ -283,6 +283,13 @@ class LoginCardState extends State<LoginCard> {
                                                           "We can't open a web page inside minestrix"),
                                                       Text(
                                                           "So please copy and paste this link into your web browser"),
+                                                      Text(
+                                                        "Open it in private window",
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
                                                       SelectableText(url),
                                                       SizedBox(height: 30),
                                                       Text(
