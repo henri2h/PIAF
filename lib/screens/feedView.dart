@@ -11,7 +11,7 @@ import 'package:minestrix/screens/friendsVue.dart';
 class FeedView extends StatelessWidget {
   const FeedView({
     Key key,
-    this.changePage,
+    @required this.changePage,
   }) : super(key: key);
 
   final Function changePage;

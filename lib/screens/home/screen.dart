@@ -34,7 +34,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomeScreen> {
-  Widget widgetView = FeedView();
+  Widget widgetView = null;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class _HomePageState extends State<HomeScreen> {
   }
 
   Widget buildWideContainer(BuildContext context) {
-    if (widgetView == null) widgetView = FeedView();
+    if (widgetView == null) widgetView = FeedView(changePage: changePage);
     return Scaffold(
         floatingActionButton: buildFloattingButton(),
         body: Container(
