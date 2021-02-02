@@ -24,11 +24,11 @@ class PostHeader extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: MinesTrixUserImage(
-                  url: event.sender.avatarUrl,
-                  width: 48,
-                  height: 48,
-                  thumnail: true,
-                ),
+                    url: event.sender.avatarUrl,
+                    width: 48,
+                    height: 48,
+                    thumnail: true,
+                    defaultIcon: Icon(Icons.person, size: 48)),
               ),
               SizedBox(width: 10),
               if (sroom.roomType == SRoomType.UserRoom)
