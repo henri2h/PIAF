@@ -30,9 +30,7 @@ build_android:
   artifacts:
     when: on_success
     paths:
-      - build/android/app-release.apk
-    tags:
-      - shared
+      - build/android
  
   #only:
   #  - main
