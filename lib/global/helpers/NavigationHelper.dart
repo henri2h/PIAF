@@ -9,11 +9,12 @@ import 'package:minestrix/screens/userFeedView.dart';
 
 class NavigationHelper {
   static void navigateToUserFeed(BuildContext context, User user) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => Scaffold(
-          appBar: AppBar(title: Text(user.displayName + " timeline")),
-          body: UserFeedView(userId: user.id)),
-    ));
+    if (user != null)
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => Scaffold(
+            appBar: AppBar(title: Text(user.displayName + " timeline")),
+            body: UserFeedView(userId: user.id)),
+      ));
   }
 
   static void navigateToWritePost(BuildContext context, SMatrixRoom sroom) {

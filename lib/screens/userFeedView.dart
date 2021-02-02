@@ -14,9 +14,16 @@ import 'package:minestrix/screens/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/settings.dart';
 
-class UserFeedView extends StatelessWidget {
+class UserFeedView extends StatefulWidget {
   const UserFeedView({Key key, @required this.userId}) : super(key: key);
+
   final String userId;
+
+  @override
+  _UserFeedViewState createState() => _UserFeedViewState();
+}
+
+class _UserFeedViewState extends State<UserFeedView> {
   Widget buildPage(SClient sclient, SMatrixRoom sroom, List<Event> sevents) {
     return StreamBuilder(
         stream: sroom.room.onUpdate.stream,
@@ -102,16 +109,19 @@ class UserFeedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    String roomId = sclient.userIdToRoomId[userId];
+    String roomId = sclient.userIdToRoomId[widget.userId];
     SMatrixRoom sroom = sclient.srooms[roomId];
+
+    User user_in = sclient.userRoom.room
+        .getParticipants()
+        .firstWhere((User u) => (u.id == widget.userId), orElse: () => null);
 
     if (sroom != null) {
       List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
       return buildPage(sclient, sroom, sevents);
     } else {
-      print("else");
       return FutureBuilder<Profile>(
-          future: sclient.getProfileFromUserId(userId),
+          future: sclient.getProfileFromUserId(widget.userId),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData == false) {
               return Padding(
@@ -122,7 +132,7 @@ class UserFeedView extends StatelessWidget {
               );
             }
             Profile p = snapshot.data;
-            p.userId = userId; // fix a nasty bug :(
+            p.userId = widget.userId; // fix a nasty bug :(
 
             return Container(
                 child: ListView(children: [
@@ -136,14 +146,34 @@ class UserFeedView extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                 child: Row(
                   children: [
-                    Flexible(
-                      child: MinesTrixButton(
-                          icon: Icons.person_add,
-                          label: "Add to friends",
-                          onPressed: () async {
-                            await sclient.addFriend(p.userId);
-                          }),
-                    ),
+                    if (user_in == null ||
+                        (user_in.membership != Membership.join &&
+                            user_in.membership != Membership.invite))
+                      Flexible(
+                        child: MinesTrixButton(
+                            icon: Icons.person_add,
+                            label: "Add to friends",
+                            onPressed: () async {
+                              await sclient.addFriend(p.userId);
+                              setState(() {
+                                print("friend request sent");
+                              });
+                            }),
+                      ),
+                    if (user_in != null && user_in.membership == Membership.invite)
+                      Flexible(
+                          child: MinesTrixButton(
+                        icon: Icons.send,
+                        label: "Friend request sent",
+                        onPressed: null,
+                      )),
+                    if (user_in != null && user_in.membership == Membership.join)
+                      Flexible(
+                          child: MinesTrixButton(
+                        icon: Icons.person,
+                        label: "Friend",
+                        onPressed: null,
+                      )),
                     SizedBox(width: 30),
                     Flexible(
                       child: MinesTrixButton(
@@ -151,7 +181,7 @@ class UserFeedView extends StatelessWidget {
                           label: "Send message",
                           onPressed: () {
                             String roomId =
-                                sclient.getDirectChatFromUserId(userId);
+                                sclient.getDirectChatFromUserId(widget.userId);
                             if (roomId != null) {
                               Navigator.push(
                                   context,
