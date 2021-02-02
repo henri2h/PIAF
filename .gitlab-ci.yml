@@ -30,7 +30,7 @@ build_android:
   artifacts:
     when: on_success
     paths:
-      - build/android/app-release.apk
+      - build/app/outputs/flutter-apk/app-release.apk
  
   #only:
   #  - main
