@@ -130,6 +130,13 @@ class SClient extends Client {
           rs.timeline = await rs.room.getTimeline();
           srooms[rs.room.id] = rs;
 
+          // by default
+          if (rs.room.pushRuleState == PushRuleState.notify)
+            await rs.room.setPushRuleState(PushRuleState.mentions_only);
+          if (!rs.room.tags.containsKey("m.lowpriority")) {
+            await rs.room.addTag("m.lowpriority");
+          }
+
           if (rs.roomType == SRoomType.UserRoom) {
             userIdToRoomId[rs.user.id] = rs.room.id;
 
@@ -137,7 +144,7 @@ class SClient extends Client {
               userRoom = rs; // we have found our user smatrix room
               // this means that the client has been initialisated
               // we can load the friendsVue
-              setupSRoom(userRoom);
+              await setupSRoom(userRoom);
             }
           }
         }
