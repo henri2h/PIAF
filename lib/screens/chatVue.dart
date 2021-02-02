@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/conversationSettings.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ChatView extends StatefulWidget {

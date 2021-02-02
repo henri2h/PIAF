@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/notificationView.dart';
-import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -118,7 +117,7 @@ class _HomePageState extends State<HomeScreen> {
   }
 
   Widget buildMobileContainer(BuildContext context) {
-    Widget widgetFeedView = FeedView();
+    Widget widgetFeedView = FeedView(changePage: changePage);
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
       // we could wrap this in SafeArea
