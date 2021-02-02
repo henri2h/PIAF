@@ -16,7 +16,9 @@ class SMatrixRoom {
     if (roomType == SRoomType.UserRoom)
       return user.displayName;
     else {
-      return room.name.replaceFirst(SClient.SMatrixRoomPrefix + "#", "");
+      return room.name
+          .replaceFirst(SClient.SMatrixRoomPrefix + "#", "")
+          .replaceFirst("smatrix_", "");
     }
   }
 
@@ -28,7 +30,6 @@ class SMatrixRoom {
 
         if (roomType == SRoomType.UserRoom) {
           String userId = SClient.getUserIdFromRoomName(room.name);
-
           // find local on local users
           List<User> users = room.getParticipants();
           user = findUser(users, userId);
@@ -61,6 +62,9 @@ class SMatrixRoom {
             }
             return true; // we cannot yet access to the room participants
           }
+
+          print("issue");
+          print(r.name);
         } else if (roomType == SRoomType.Group) {
           return true;
         }
@@ -82,19 +86,18 @@ class SMatrixRoom {
   }
 
   static SRoomType getSRoomType(Room room) {
-    if (room.name.startsWith(SClient.SMatrixRoomPrefix)) {
-      // check if is a use room, in which case, it's user must be admin
-      if (room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
-        return SRoomType.UserRoom;
-      }
-      if (room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
-        // now, it is a group
-        return SRoomType.Group;
-      }
-
-      return null; // we don't support other room types yet
+    // check if is a use room, in which case, it's user must be admin
+    if (room.name.startsWith("@") ||
+        room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
+      return SRoomType.UserRoom;
     }
-    return null;
+    if (room.name.startsWith("#") ||
+        room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
+      // now, it is a group
+      return SRoomType.Group;
+    }
+
+    return null; // we don't support other room types yet
   }
 }
 
