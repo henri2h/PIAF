@@ -31,6 +31,8 @@ build_android:
     when: on_success
     paths:
       - build/android/app-release.apk
+    tags:
+      - shared
  
   #only:
   #  - main
