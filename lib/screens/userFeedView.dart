@@ -160,14 +160,16 @@ class _UserFeedViewState extends State<UserFeedView> {
                               });
                             }),
                       ),
-                    if (user_in != null && user_in.membership == Membership.invite)
+                    if (user_in != null &&
+                        user_in.membership == Membership.invite)
                       Flexible(
                           child: MinesTrixButton(
                         icon: Icons.send,
                         label: "Friend request sent",
                         onPressed: null,
                       )),
-                    if (user_in != null && user_in.membership == Membership.join)
+                    if (user_in != null &&
+                        user_in.membership == Membership.join)
                       Flexible(
                           child: MinesTrixButton(
                         icon: Icons.person,
