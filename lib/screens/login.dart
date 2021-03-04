@@ -78,10 +78,7 @@ class LoginCardState extends State<LoginCard> {
         _errorText = null;
       });
     try {
-      await client.checkHomeserver(domain, supportedLoginTypes: {
-        AuthenticationTypes.password,
-        AuthenticationTypes.token
-      });
+      await client.checkHomeserver(domain);
       await client.login(
           type: ssoLogin
               ? AuthenticationTypes.token
