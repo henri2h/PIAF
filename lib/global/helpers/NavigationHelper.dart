@@ -1,6 +1,6 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/postEditor.dart';
+import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';

@@ -3,7 +3,7 @@ import 'package:famedlysdk/encryption/utils/key_verification.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/components/keyVerificationDialog.dart';
+import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';

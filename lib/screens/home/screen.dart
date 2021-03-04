@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/notificationView.dart';
-import 'package:minestrix/components/postEditor.dart';
+import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chatsVue.dart';

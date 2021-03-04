@@ -5,7 +5,7 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/post/postView.dart';
-import 'package:minestrix/components/postWriterModal.dart';
+import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
