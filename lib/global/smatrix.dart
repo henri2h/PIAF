@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:minestrix/global/smatrix/Notifications.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 
 class SClient extends Client {
@@ -31,6 +32,8 @@ class SClient extends Client {
   bool _firstSync = true;
   // ignore: unused_field
   Timer _timer; // timer used to sync all the conversations on the first run
+
+  Notifications notifications = Notifications();
 
   SClient(String clientName,
       {bool enableE2eeRecovery,
@@ -68,6 +71,7 @@ class SClient extends Client {
     await loadSRooms();
     await sendInvitesToFriends();
     await loadNewTimeline();
+    await notifications.loadNotifications(this);
 
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
       print("eup");
@@ -75,7 +79,6 @@ class SClient extends Client {
       timerCallbackEventUpdate =
           new Timer(const Duration(milliseconds: 500), () async {
         if (eUp.eventType == "m.room.message") {
-          await loadSRooms(); // TODO : remove temporary
           await loadNewTimeline();
         }
       });
