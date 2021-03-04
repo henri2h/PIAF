@@ -60,7 +60,9 @@ class MinesTrixUserImage extends StatelessWidget {
               )
             : url.getDownloadLink(sclient),
         progressIndicatorBuilder: (context, url, downloadProgress) =>
-            CircularProgressIndicator(value: downloadProgress.progress),
+            downloadProgress.progress != null
+                ? CircularProgressIndicator(value: downloadProgress.progress)
+                : Icon(Icons.error),
         errorWidget: (context, url, error) => Icon(Icons.error),
       ),
     );
