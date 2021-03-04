@@ -14,6 +14,7 @@ class SClient extends Client {
   StreamSubscription onEventUpdate;
   StreamSubscription onRoomUpdateSub; // event subscription
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
+  StreamController<String> onSRoomsUpdate = StreamController.broadcast();
 
   Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>();
 
@@ -71,7 +72,7 @@ class SClient extends Client {
     await loadSRooms();
     await sendInvitesToFriends();
     await loadNewTimeline();
-    await notifications.loadNotifications(this);
+    notifications.loadNotifications(this);
 
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
       print("eup");
@@ -99,6 +100,8 @@ class SClient extends Client {
   Future<void> loadNewTimeline() async {
     await loadSTimeline();
     sortTimeline();
+
+    notifications.loadNotifications(this);
 
     onTimelineUpdate.add("up");
     //await onTimelineUpdate.done;
@@ -188,6 +191,8 @@ class SClient extends Client {
         }
       }
     }
+
+    onSRoomsUpdate.add("update");
 
     if (userRoom == null) print("❌ User room not found");
   }
