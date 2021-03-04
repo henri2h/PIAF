@@ -96,24 +96,6 @@ class SMatrixRoom {
     // check if is a use room, in which case, it's user must be admin
     if (room.name.startsWith("@") ||
         room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
-      if (room.id == "!NwRrEhGcEpObUUAbIh:carnot.cc") {
-        // TODO : remove
-        // temporary
-        print("roomstype length : " + room.states.states.length.toString());
-
-        room.states.states.forEach((key, value) {
-          print("getSRoomType " +
-              room.name +
-              " : " +
-              key +
-              " : count (" +
-              value.length.toString() +
-              ")");
-          value.forEach((name, event) {
-            print("f : " + name + " : " + event.body);
-          });
-        });
-      }
       Event state = room.getState("org.matrix.msc1840");
       if (state != null) {
         print("Room state " + state.toString());
