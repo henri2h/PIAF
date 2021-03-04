@@ -60,6 +60,8 @@ class SClient extends Client {
   SMatrixRoom userRoom;
   bool get userRoomCreated => userRoom != null;
 
+  Timer timerCallbackRoomUpdate;
+  Timer timerCallbackEventUpdate;
   Future<void> initSMatrix() async {
     // initialisation
 
@@ -68,15 +70,26 @@ class SClient extends Client {
     await loadNewTimeline();
 
     onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
-      print(eUp.type);
-      if (eUp.eventType == "m.room.message") {
-        await loadNewTimeline();
-      }
+      print("eup");
+      timerCallbackEventUpdate?.cancel();
+      timerCallbackEventUpdate =
+          new Timer(const Duration(milliseconds: 500), () async {
+        if (eUp.eventType == "m.room.message") {
+          await loadSRooms(); // TODO : remove temporary
+          await loadNewTimeline();
+        }
+      });
     });
 
     onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
-      await loadSRooms();
-      await loadNewTimeline();
+      print("Room update");
+      timerCallbackRoomUpdate?.cancel();
+      timerCallbackRoomUpdate =
+          new Timer(const Duration(milliseconds: 500), () async {
+        print("Callback room update");
+        await loadSRooms();
+        await loadNewTimeline();
+      });
     });
   }
 
@@ -89,21 +102,38 @@ class SClient extends Client {
 
     if (_firstSync) {
       Duration duration = Duration(seconds: 2); // let the app start
+      _timer?.cancel(); // cancel previous timer
       _timer = Timer(duration, () async {
         print("Timer, sync threads");
-        for (SMatrixRoom sr in srooms.values) {
-          await sr.timeline.requestHistory();
+        try {
+          for (SMatrixRoom sr in srooms.values) {
+            await sr.timeline.requestHistory();
+          }
+        } catch (e) {
+          print("Could not get history");
+          print(e);
         }
       });
       _firstSync = false;
     }
   }
 
-  void setupSRoom(SMatrixRoom sroom) async {
-    if (sroom.room.name.startsWith(SMatrixUserRoomPrefix)) {
-      print("setup room");
-      String roomName = sroom.room.name.replaceFirst("smatrix_", "");
-      await sroom.room.setName(roomName + " timeline");
+// setup the user room
+  Future<bool> setupSRoom(SMatrixRoom sroom) async {
+    try {
+      if (sroom.room.name.startsWith(SMatrixUserRoomPrefix)) {
+        print("setup room");
+        String roomName = sroom.room.name.replaceFirst("smatrix_", "");
+        await sroom.room.setName(roomName + " timeline");
+      }
+      Map<String, dynamic> content = new Map<String, dynamic>();
+      content["type"] = "fr.henri2h.minestrix";
+      String result =
+          await this.sendState(sroom.room.id, "org.matrix.msc1840", content);
+      print("Result room type : " + result);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 

@@ -35,9 +35,15 @@ class SMatrixRoom {
           user = findUser(users, userId);
 
           // or in the server ones
-          if (user == null) {
-            users = await room.requestParticipants();
-            user = findUser(users, userId);
+
+          try {
+            if (user == null) {
+              users = await room.requestParticipants();
+              user = findUser(users, userId);
+            }
+          } catch (e) {
+            print("Could not request participants");
+            print(e);
           }
 
           if (user != null) {
@@ -71,6 +77,7 @@ class SMatrixRoom {
       }
     } catch (e) {
       print("crash");
+      print(e.toString());
     }
     return false;
   }
@@ -89,12 +96,42 @@ class SMatrixRoom {
     // check if is a use room, in which case, it's user must be admin
     if (room.name.startsWith("@") ||
         room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
-      return SRoomType.UserRoom;
-    }
-    if (room.name.startsWith("#") ||
-        room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
-      // now, it is a group
-      return SRoomType.Group;
+      if (room.id == "!NwRrEhGcEpObUUAbIh:carnot.cc") {
+        // TODO : remove
+        // temporary
+        print("roomstype length : " + room.states.states.length.toString());
+
+        room.states.states.forEach((key, value) {
+          print("getSRoomType " +
+              room.name +
+              " : " +
+              key +
+              " : count (" +
+              value.length.toString() +
+              ")");
+          value.forEach((name, event) {
+            print("f : " + name + " : " + event.body);
+          });
+        });
+      }
+      Event state = room.getState("org.matrix.msc1840");
+      if (state != null) {
+        print("Room state " + state.toString());
+        return SRoomType.UserRoom;
+      }
+
+      // fall back
+      if (room.name.startsWith("@") ||
+          room.name.startsWith(SClient.SMatrixRoomPrefix + "@")) {
+        // now, it is a user
+        return SRoomType.UserRoom;
+      }
+
+      if (room.name.startsWith("#") ||
+          room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
+        // now, it is a group
+        return SRoomType.Group;
+      }
     }
 
     return null; // we don't support other room types yet
