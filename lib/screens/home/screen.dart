@@ -7,7 +7,6 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chat/chatsVue.dart';
 import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
 import 'package:minestrix/screens/smatrix/feedView.dart';
-import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
 import 'package:minestrix/screens/smatrix/friends/researchView.dart';
@@ -46,6 +45,7 @@ class _HomePageState extends State<HomeScreen> {
   }
 
   Widget buildWideContainer(BuildContext context) {
+    bool feedView = false;
     if (widgetView == null) widgetView = FeedView(changePage: changePage);
     return Scaffold(
         floatingActionButton: buildFloattingButton(),
@@ -59,35 +59,23 @@ class _HomePageState extends State<HomeScreen> {
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: LeftBar(),
-                        ),
-                      ),
-                      Flexible(
-                          flex: 6,
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 80.0),
-                            child: widgetView,
-                          )),
-                      Flexible(
-                          flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Text("Contacts",
-                                      style: TextStyle(fontSize: 30)),
-                                ),
-                                Flexible(child: RightBar()),
-                              ],
-                            ),
-                          )),
+                      Flexible(flex: 10, child: widgetView),
+                      if (feedView)
+                        Flexible(
+                            flex: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Text("Contacts",
+                                        style: TextStyle(fontSize: 30)),
+                                  ),
+                                  Flexible(child: RightBar()),
+                                ],
+                              ),
+                            )),
                     ]),
               ),
             ],

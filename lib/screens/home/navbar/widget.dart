@@ -28,6 +28,7 @@ class NavBar extends StatelessWidget {
                       context, sclient.userRoom.user);
                 }),
             NavBarButton(name: "Friends", icon: Icons.people, onPressed: () {}),
+            NavBarButton(name: "Chats", icon: Icons.chat, onPressed: () {}),
           ],
         ),
         StreamBuilder(

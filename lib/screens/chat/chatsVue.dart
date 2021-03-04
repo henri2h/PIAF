@@ -82,7 +82,7 @@ class _ChatsVueState extends State<ChatsVue>
                 children: [
                   H1Title("MATRIX Chats"),
                   Padding(
-                    padding: const EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(5),
                     child: IconButton(icon: Icon(Icons.add), onPressed: () {}),
                   ),
                 ],
