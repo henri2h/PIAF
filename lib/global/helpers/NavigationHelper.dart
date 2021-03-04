@@ -4,8 +4,8 @@ import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/groupView.dart';
-import 'package:minestrix/screens/userFeedView.dart';
+import 'package:minestrix/screens/smatrix/groups/groupView.dart';
+import 'package:minestrix/screens/smatrix/userFeedView.dart';
 
 class NavigationHelper {
   static void navigateToUserFeed(BuildContext context, User user) {

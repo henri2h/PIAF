@@ -6,7 +6,7 @@ import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/friendsVue.dart';
+import 'package:minestrix/screens/smatrix/friends/friendsVue.dart';
 
 class FeedView extends StatelessWidget {
   const FeedView({

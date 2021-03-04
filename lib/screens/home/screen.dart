@@ -4,14 +4,14 @@ import 'package:minestrix/components/notificationView.dart';
 import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chatsVue.dart';
-import 'package:minestrix/screens/createGroup.dart';
-import 'package:minestrix/screens/feedView.dart';
+import 'package:minestrix/screens/chat/chatsVue.dart';
+import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
+import 'package:minestrix/screens/smatrix/feedView.dart';
 import 'package:minestrix/screens/home/left_bar/widget.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
-import 'package:minestrix/screens/researchView.dart';
-import 'package:minestrix/screens/userFeedView.dart';
+import 'package:minestrix/screens/smatrix/friends/researchView.dart';
+import 'package:minestrix/screens/smatrix/userFeedView.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 
 class HomeScreen extends StatefulWidget {

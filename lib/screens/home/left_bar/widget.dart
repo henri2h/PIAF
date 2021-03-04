@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chatsVue.dart';
+import 'package:minestrix/screens/chat/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
-import 'package:minestrix/screens/friendsVue.dart';
+import 'package:minestrix/screens/smatrix/friends/friendsVue.dart';
 import 'package:minestrix/screens/settings.dart';
-import 'package:minestrix/screens/userFeedView.dart';
+import 'package:minestrix/screens/smatrix/userFeedView.dart';
 
 class LeftBar extends StatelessWidget {
   const LeftBar({Key key}) : super(key: key);

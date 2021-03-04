@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
-import 'package:minestrix/screens/addUser.dart';
+import 'package:minestrix/screens/smatrix/friends/addUser.dart';
 
 class ConversationSettings extends StatelessWidget {
   ConversationSettings({Key key, this.room}) : super(key: key);

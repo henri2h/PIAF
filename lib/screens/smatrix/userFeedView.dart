@@ -9,8 +9,8 @@ import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chatVue.dart';
-import 'package:minestrix/screens/chatsVue.dart';
+import 'package:minestrix/screens/chat/chatVue.dart';
+import 'package:minestrix/screens/chat/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/settings.dart';
 
