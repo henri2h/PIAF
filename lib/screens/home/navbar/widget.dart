@@ -35,9 +35,10 @@ class NavBar extends StatelessWidget {
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               return Column(
                 children: [
-                  if (snapshot.hasData) Text(snapshot.data),
                   IconButton(
-                      icon: Icon(Icons.notifications),
+                      icon: sclient.notifications.notifications.length == 0
+                          ? Icon(Icons.notifications_none)
+                          : Icon(Icons.notifications_active),
                       onPressed: () {
                         Scaffold.of(context).openEndDrawer();
                       }),

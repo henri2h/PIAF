@@ -21,13 +21,6 @@ class Notifications {
       notifications.add(n);
     });
 
-    Notification n = Notification();
-    n.body = "Test";
-    n.type = NotificationType.Text;
-    notifications.add(n);
-
-    print(notifications.length);
-
     onNotifications.add("update");
   }
 
@@ -39,8 +32,8 @@ class Notifications {
 }
 
 class Notification {
-  String title;
-  String body;
+  String title = "";
+  String body = "";
 
   NotificationType type = NotificationType.Text;
   DateTime timestamp;
