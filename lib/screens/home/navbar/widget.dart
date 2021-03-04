@@ -30,10 +30,19 @@ class NavBar extends StatelessWidget {
             NavBarButton(name: "Friends", icon: Icons.people, onPressed: () {}),
           ],
         ),
-        IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              Scaffold.of(context).openEndDrawer();
+        StreamBuilder(
+            stream: sclient.notifications.onNotifications.stream,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              return Column(
+                children: [
+                  if (snapshot.hasData) Text(snapshot.data),
+                  IconButton(
+                      icon: Icon(Icons.notifications),
+                      onPressed: () {
+                        Scaffold.of(context).openEndDrawer();
+                      }),
+                ],
+              );
             })
       ]),
     );
