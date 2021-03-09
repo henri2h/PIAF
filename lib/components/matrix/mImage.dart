@@ -40,19 +40,8 @@ class MImageDisplay extends StatelessWidget {
               ? CachedNetworkImage(
                   imageUrl: url,
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
-                      downloadProgress.progress != null
-                          ? CircularProgressIndicator(
-                              value: downloadProgress.progress)
-                          : Padding(
-                              padding: const EdgeInsets.all(35.0),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.error),
-                                  SizedBox(height: 18),
-                                  Text("Could not load the image"),
-                                ],
-                              ),
-                            ),
+                      CircularProgressIndicator(
+                          value: downloadProgress.progress),
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 )
               : Icon(Icons.error)),

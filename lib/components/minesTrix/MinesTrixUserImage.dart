@@ -63,15 +63,15 @@ class MinesTrixUserImage extends StatelessWidget {
         maxWidthDiskCache: maxWidth,
         imageUrl: httpurl,
         progressIndicatorBuilder: (context, url, downloadProgress) =>
-            downloadProgress.progress != null
-                ? CircularProgressIndicator(value: downloadProgress.progress)
-                : IconButton(
+            CircularProgressIndicator(value: downloadProgress.progress),
+        /*IconButton(
                     icon: Icon(Icons.error),
                     onPressed: () async {
                       print("evict from cache");
                       await CachedNetworkImage.evictFromCache(url);
                       print("done");
-                    }),
+                    })*/
+
         errorWidget: (context, url, error) => Icon(Icons.error),
       ),
     );
