@@ -97,14 +97,16 @@ class SClient extends Client {
     });
   }
 
+  bool syncing = false;
   Future<void> loadNewTimeline() async {
+    if (syncing) return;
+
     await loadSTimeline();
     sortTimeline();
 
     notifications.loadNotifications(this);
 
     onTimelineUpdate.add("up");
-    //await onTimelineUpdate.done;
 
     if (_firstSync) {
       Duration duration = Duration(seconds: 2); // let the app start
@@ -143,6 +145,7 @@ class SClient extends Client {
     }
   }
 
+  bool sroomsLoaded = false;
   Future<void> loadSRooms() async {
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
@@ -193,6 +196,7 @@ class SClient extends Client {
     }
 
     onSRoomsUpdate.add("update");
+    sroomsLoaded = true;
 
     if (userRoom == null) print("❌ User room not found");
   }

@@ -40,11 +40,16 @@ class _MinetrixState extends State<Minetrix> {
                 return StreamBuilder<String>(
                     stream: Matrix.of(context).sclient.onSRoomsUpdate.stream,
                     builder: (BuildContext context, snapshot) {
+                      print("room update building home");
                       SClient sclient = Matrix.of(context).sclient;
-                      print("sclient.userRoom exits ? : " +
-                          (sclient.userRoom != null).toString());
 
-                      if (sclient.userRoom == null) {
+                      if (!sclient.sroomsLoaded) {
+                        return Scaffold(
+                          body: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      } else if (sclient.userRoom == null) {
                         if (hmCreation == null)
                           hmCreation = MinesTrixAccountCreation();
                         return hmCreation;

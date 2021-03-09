@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:famedlysdk/famedlysdk.dart';
@@ -175,6 +176,7 @@ class LoginCardState extends State<LoginCard> {
       });
   }
 
+  Timer verifyDomainCallback;
 // according to the matrix specification https://matrix.org/docs/spec/appendices#id9
   RegExp userRegex = RegExp(
       r"@((([a-z]|\.|_|-|=|\/|[0-9])+):(((.+)\.(.+))|\[((([0-9]|[a-f]|[A-F])+):){2,7}:?([0-9]|[a-f]|[A-F])+\]))(:([0-9]+))?");
@@ -193,7 +195,11 @@ class LoginCardState extends State<LoginCard> {
                             name: "userid",
                             icon: Icons.account_circle,
                             onChanged: (String userid) async {
-                              await _verifyDomain(client, userid);
+                              verifyDomainCallback?.cancel();
+                              verifyDomainCallback = new Timer(
+                                  const Duration(milliseconds: 500), () async {
+                                await _verifyDomain(client, userid);
+                              });
                             },
                             tController: _usernameController),
                       ),
