@@ -15,7 +15,7 @@ class MinesTrixUserImage extends StatelessWidget {
       this.rounded = true,
       this.thumnail = false,
       this.fit = false,
-      this.defaultIcon = const Icon(Icons.image),
+      this.defaultIcon = const Icon(Icons.image, color: Colors.black),
       this.unconstraigned = false})
       : super(key: key);
   final Uri url;
@@ -34,7 +34,6 @@ class MinesTrixUserImage extends StatelessWidget {
     SClient sclient = Matrix.of(context).sclient;
     double h = height != null ? height : 30;
     double w = width != null ? width : 30;
-
     if (url == null)
       return Container(
           height: h,

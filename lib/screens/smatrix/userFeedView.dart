@@ -25,85 +25,112 @@ class UserFeedView extends StatefulWidget {
 
 class _UserFeedViewState extends State<UserFeedView> {
   Widget buildPage(SClient sclient, SMatrixRoom sroom, List<Event> sevents) {
-    return StreamBuilder(
-        stream: sroom.room.onUpdate.stream,
-        builder: (context, _) => ListView(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    H1Title("User feed"),
-                    Row(
-                      children: [
-                        IconButton(
-                            icon: Icon(Icons.bug_report),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (_) => Scaffold(
-                                      appBar:
-                                          AppBar(title: Text("Debug time !!")),
-                                      body: DebugView())));
-                            }),
-                        IconButton(
-                            icon: Icon(Icons.settings),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (_) => Scaffold(
-                                      appBar: AppBar(title: Text("Settings")),
-                                      body: SettingsView())));
-                            }),
-                      ],
-                    ),
-                  ],
-                ),
-                Stack(
-                  children: [
-                    if (sroom.room.avatar != null)
-                      Center(
-                          child: MinesTrixUserImage(
-                              url: sroom.room.avatar,
-                              unconstraigned: true,
-                              rounded: false,
-                              maxHeight: 500)),
-                    Container(
-                      // alignment: Alignment.bottomCenter,
-                      padding: sroom.room.avatar == null
-                          ? const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 20)
-                          : const EdgeInsets.only(
-                              left: 40, right: 40, top: 200),
-                      child: UserInfo(user: sroom.user),
-                    ),
-                  ],
-                ),
-                Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: FriendsView(sroom: sroom)),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 8.0),
-                  child: H2Title("Posts"),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: PostWriterModal(sroom: sclient.userRoom),
-                ),
-                for (Event e in sevents)
-                  Column(
+    return LayoutBuilder(
+      builder: (context, constraints) => StreamBuilder(
+          stream: sroom.room.onUpdate.stream,
+          builder: (context, _) => ListView(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Post(event: e),
+                      H1Title("User feed"),
+                      Row(
+                        children: [
+                          IconButton(
+                              icon: Icon(Icons.bug_report),
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(
+                                            title: Text("Debug time !!")),
+                                        body: DebugView())));
+                              }),
+                          IconButton(
+                              icon: Icon(Icons.settings),
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(title: Text("Settings")),
+                                        body: SettingsView())));
+                              }),
+                        ],
                       ),
-                      /* Divider(
-                          indent: 25,
-                          endIndent: 25,
-                          thickness: 0.5,
-                        ),*/
                     ],
                   ),
-              ],
-            ));
+                  Stack(
+                    children: [
+                      if (sroom.room.avatar != null)
+                        Center(
+                            child: MinesTrixUserImage(
+                                url: sroom.room.avatar,
+                                unconstraigned: true,
+                                rounded: false,
+                                maxHeight: 500)),
+                      Container(
+                        // alignment: Alignment.bottomCenter,
+                        padding: sroom.room.avatar == null
+                            ? const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 20)
+                            : const EdgeInsets.only(
+                                left: 40, right: 40, top: 200),
+                        child: UserInfo(user: sroom.user),
+                      ),
+                    ],
+                  ),
+                  if (constraints.maxWidth <= 900)
+                    Padding(
+                        padding: const EdgeInsets.all(15),
+                        child:
+                            FriendsView(sroom: sroom, userID: widget.userId)),
+
+                  // feed
+
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (constraints.maxWidth > 900)
+                        Flexible(
+                          flex: 4,
+                          child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: FriendsView(
+                                  sroom: sroom, userID: widget.userId)),
+                        ),
+                      Flexible(
+                        flex: 9,
+                        fit: FlexFit.loose,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 8.0),
+                              child: H2Title("Posts"),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: PostWriterModal(sroom: sclient.userRoom),
+                            ),
+                            for (Event e in sevents)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 5),
+                                child: Post(event: e),
+                              ),
+                            /* Divider(
+                                  indent: 25,
+                                  endIndent: 25,
+                                  thickness: 0.5,
+                                ),*/
+                          ],
+                        ),
+                      ),
+                      if (constraints.maxWidth > 900)
+                        Flexible(flex: 2, child: Container())
+                    ],
+                  ),
+                ],
+              )),
+    );
   }
 
   @override
@@ -229,30 +256,28 @@ class _UserFeedViewState extends State<UserFeedView> {
 }
 
 class FriendsView extends StatelessWidget {
-  const FriendsView({
-    Key key,
-    @required this.sroom,
-  }) : super(key: key);
+  const FriendsView({Key key, @required this.sroom, @required this.userID})
+      : super(key: key);
 
   final SMatrixRoom sroom;
+  final String userID;
 
   @override
   Widget build(BuildContext context) {
+    SClient sclient = Matrix.of(context).sclient;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: H2Title("Friends"),
         ),
-        Center(
-          child: Wrap(alignment: WrapAlignment.center, children: [
-            for (User user in sroom.room
-                .getParticipants()
-                .where((User u) => u.membership == Membership.join))
-              AccountCard(user: user),
-          ]),
-        ),
+        Wrap(alignment: WrapAlignment.spaceBetween, children: [
+          for (User user in sroom.room.getParticipants().where((User u) =>
+              u.membership == Membership.join &&
+              u.id != sclient.userID &&
+              u.id != userID))
+            AccountCard(user: user),
+        ]),
       ],
     );
   }
@@ -284,7 +309,12 @@ class UserInfo extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              MinesTrixUserImage(url: avatarUrl, width: 200, height: 200),
+              MinesTrixUserImage(
+                url: avatarUrl,
+                width: 200,
+                height: 200,
+                defaultIcon: Icon(Icons.person, color: Colors.black, size: 120),
+              ),
               Text(displayName,
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
               Text(userId,
