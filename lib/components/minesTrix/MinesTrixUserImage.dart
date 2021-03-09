@@ -34,6 +34,7 @@ class MinesTrixUserImage extends StatelessWidget {
     SClient sclient = Matrix.of(context).sclient;
     double h = height != null ? height : 30;
     double w = width != null ? width : 30;
+
     if (url == null)
       return Container(
           height: h,
@@ -64,7 +65,13 @@ class MinesTrixUserImage extends StatelessWidget {
         progressIndicatorBuilder: (context, url, downloadProgress) =>
             downloadProgress.progress != null
                 ? CircularProgressIndicator(value: downloadProgress.progress)
-                : Icon(Icons.error),
+                : IconButton(
+                    icon: Icon(Icons.error),
+                    onPressed: () async {
+                      print("evict from cache");
+                      await CachedNetworkImage.evictFromCache(url);
+                      print("done");
+                    }),
         errorWidget: (context, url, error) => Icon(Icons.error),
       ),
     );
