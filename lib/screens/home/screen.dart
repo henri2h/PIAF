@@ -53,8 +53,7 @@ class _HomePageState extends State<HomeScreen> {
           color: Colors.white,
           child: Column(
             children: [
-              NavBar(),
-              //PostEditor(),
+              NavBar(changePage: changePage),
               Expanded(
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,

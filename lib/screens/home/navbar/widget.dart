@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/chat/chatsVue.dart';
+import 'package:minestrix/screens/settings.dart';
+import 'package:minestrix/screens/smatrix/feedView.dart';
+import 'package:minestrix/screens/smatrix/friends/researchView.dart';
+import 'package:minestrix/screens/smatrix/userFeedView.dart';
 
 class NavBar extends StatelessWidget {
-  const NavBar({Key key}) : super(key: key);
+  const NavBar({Key key, this.changePage}) : super(key: key);
+
+  final Function changePage;
 
   @override
   Widget build(BuildContext context) {
@@ -19,16 +25,36 @@ class NavBar extends StatelessWidget {
               child: Text("Mines'Trix",
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
             ),
-            NavBarButton(name: "Feed", icon: Icons.home, onPressed: () {}),
+            NavBarButton(
+                name: "Feed",
+                icon: Icons.home,
+                onPressed: () {
+                  changePage(FeedView(changePage: changePage));
+                }),
             NavBarButton(
                 name: "My Acount",
                 icon: Icons.person,
                 onPressed: () {
-                  NavigationHelper.navigateToUserFeed(
-                      context, sclient.userRoom.user);
+                  changePage(UserFeedView(userId: sclient.userID));
                 }),
-            NavBarButton(name: "Friends", icon: Icons.people, onPressed: () {}),
-            NavBarButton(name: "Chats", icon: Icons.chat, onPressed: () {}),
+            NavBarButton(
+                name: "Chats",
+                icon: Icons.chat,
+                onPressed: () {
+                  changePage(ChatsVue(), chatVue: true);
+                }),
+            NavBarButton(
+                name: "Research",
+                icon: Icons.search,
+                onPressed: () {
+                  changePage(ResearchView());
+                }),
+            NavBarButton(
+                name: "Settings",
+                icon: Icons.settings,
+                onPressed: () {
+                  changePage(SettingsView());
+                }),
           ],
         ),
         StreamBuilder(
