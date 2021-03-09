@@ -88,6 +88,8 @@ class LoginCardState extends State<LoginCard> {
           password: _passwordController.text,
           token: token,
           initialDeviceDisplayName: client.clientName);
+
+      await client.initSMatrix(); // start synchronsiation
     } catch (error) {
       if (mounted) setState(() => _errorText = error.toString());
     }
