@@ -6,6 +6,7 @@ import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/screens/home/right_bar/widget.dart';
 import 'package:minestrix/screens/smatrix/friends/friendsVue.dart';
 
 class FeedView extends StatelessWidget {
@@ -19,64 +20,105 @@ class FeedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    return Container(
-      //color: Color(0xfff4f3f4),
-      child: StreamBuilder(
-        stream: sclient.onTimelineUpdate.stream,
-        builder: (context, _) {
-          print(sclient.stimeline.length.toString());
-          if (sclient.stimeline.length == 0)
-            return ListView(
+
+    return LayoutBuilder(builder: (context, constraints) {
+      return Container(
+        //color: Color(0xfff4f3f4),
+        child: StreamBuilder(
+          stream: sclient.onTimelineUpdate.stream,
+          builder: (context, _) {
+            print(sclient.stimeline.length.toString());
+            if (sclient.stimeline.length == 0)
+              return ListView(
+                children: [
+                  H1Title("Timeline is empty"),
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: MinesTrixButton(
+                        label: "Write your first post",
+                        icon: Icons.post_add,
+                        onPressed: () {
+                          changePage(PostEditor());
+                        }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: MinesTrixButton(
+                        label: "Add some friends",
+                        icon: Icons.person_add,
+                        onPressed: () {
+                          changePage(FriendsVue());
+                        }),
+                  )
+                ],
+              );
+            return Row(
               children: [
-                H1Title("Timeline is empty"),
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: MinesTrixButton(
-                      label: "Write your first post",
-                      icon: Icons.post_add,
-                      onPressed: () {
-                        changePage(PostEditor());
+                if (constraints.maxWidth > 900)
+                  Flexible(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Text("Quick links",
+                                  style: TextStyle(fontSize: 30)),
+                            ),
+                          ],
+                        ),
+                      )),
+                Expanded(
+                  flex: 8,
+                  child: ListView.builder(
+                      itemCount: sclient.stimeline.length + 1,
+                      itemBuilder: (BuildContext context, int i) {
+                        if (i == 0)
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: PostWriterModal(sroom: sclient.userRoom),
+                          );
+                        if (sclient.stimeline.length > 0)
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 15.0),
+                            child: Material(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.all(0),
+                                  child: Post(event: sclient.stimeline[i - 1]),
+                                )),
+                          );
+                        else
+                          return Text("Empty");
                       }),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: MinesTrixButton(
-                      label: "Add some friends",
-                      icon: Icons.person_add,
-                      onPressed: () {
-                        changePage(FriendsVue());
-                      }),
-                )
+                if (constraints.maxWidth > 900)
+                  Flexible(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(0),
+                              child: Text("Contacts",
+                                  style: TextStyle(fontSize: 30)),
+                            ),
+                            Expanded(child: RightBar()),
+                          ],
+                        ),
+                      )),
               ],
             );
-          return ListView.builder(
-              itemCount: sclient.stimeline.length + 1,
-              itemBuilder: (BuildContext context, int i) {
-                if (i == 0)
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: PostWriterModal(sroom: sclient.userRoom),
-                  );
-                if (sclient.stimeline.length > 0)
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 15.0),
-                    child: Material(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.all(0),
-                          child: Post(event: sclient.stimeline[i - 1]),
-                        )),
-                  );
-                else
-                  return Text("Empty");
-              });
-        },
-      ),
-    );
+          },
+        ),
+      );
+    });
   }
 }
