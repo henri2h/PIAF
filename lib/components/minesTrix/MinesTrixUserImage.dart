@@ -44,6 +44,14 @@ class MinesTrixUserImage extends StatelessWidget {
                 )
               : null,
           child: defaultIcon);
+
+    String httpurl = thumnail
+        ? url.getThumbnail(
+            sclient,
+            height: h,
+            width: w,
+          )
+        : url.getDownloadLink(sclient);
     return ClipRRect(
       borderRadius: rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
       child: CachedNetworkImage(
@@ -52,13 +60,7 @@ class MinesTrixUserImage extends StatelessWidget {
         width: unconstraigned ? null : w,
         maxHeightDiskCache: maxHeight,
         maxWidthDiskCache: maxWidth,
-        imageUrl: thumnail
-            ? url.getThumbnail(
-                sclient,
-                height: h,
-                width: w,
-              )
-            : url.getDownloadLink(sclient),
+        imageUrl: httpurl,
         progressIndicatorBuilder: (context, url, downloadProgress) =>
             downloadProgress.progress != null
                 ? CircularProgressIndicator(value: downloadProgress.progress)
