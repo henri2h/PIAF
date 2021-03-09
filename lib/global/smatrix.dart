@@ -31,8 +31,6 @@ class SClient extends Client {
   List<Event> stimeline = [];
 
   bool _firstSync = true;
-  // ignore: unused_field
-  Timer _timer; // timer used to sync all the conversations on the first run
 
   Notifications notifications = Notifications();
 
@@ -97,33 +95,24 @@ class SClient extends Client {
     });
   }
 
-  bool syncing = false;
   Future<void> loadNewTimeline() async {
-    if (syncing) return;
-
     await loadSTimeline();
     sortTimeline();
 
     notifications.loadNotifications(this);
 
-    onTimelineUpdate.add("up");
-
     if (_firstSync) {
-      Duration duration = Duration(seconds: 2); // let the app start
-      _timer?.cancel(); // cancel previous timer
-      _timer = Timer(duration, () async {
-        print("Timer, sync threads");
-        try {
-          for (SMatrixRoom sr in srooms.values) {
-            await sr.timeline.requestHistory();
-          }
-        } catch (e) {
-          print("Could not get history");
-          print(e);
+      try {
+        for (SMatrixRoom sr in srooms.values) {
+          await sr.timeline.requestHistory();
         }
-      });
+      } catch (e) {
+        print("Could not get history");
+        print(e);
+      }
       _firstSync = false;
     }
+    onTimelineUpdate.add("up");
   }
 
 // setup the user room
