@@ -53,10 +53,11 @@ class FeedView extends StatelessWidget {
                 ],
               );
             return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 if (constraints.maxWidth > 900)
                   Flexible(
-                      flex: 2,
+                      flex: 3,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
@@ -69,14 +70,15 @@ class FeedView extends StatelessWidget {
                           ],
                         ),
                       )),
-                Expanded(
-                  flex: 8,
+                Flexible(
+                  flex: 11,
                   child: ListView.builder(
                       itemCount: sclient.stimeline.length + 1,
                       itemBuilder: (BuildContext context, int i) {
                         if (i == 0)
                           return Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 25.0, horizontal: 8),
                             child: PostWriterModal(sroom: sclient.userRoom),
                           );
                         if (sclient.stimeline.length > 0)
@@ -100,20 +102,22 @@ class FeedView extends StatelessWidget {
                 ),
                 if (constraints.maxWidth > 900)
                   Flexible(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(0),
-                              child: Text("Contacts",
-                                  style: TextStyle(fontSize: 30)),
-                            ),
-                            Expanded(child: RightBar()),
-                          ],
-                        ),
-                      )),
+                    flex: 3,
+                    fit: FlexFit.loose,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(0),
+                            child: Text("Contacts",
+                                style: TextStyle(fontSize: 30)),
+                          ),
+                          Expanded(child: RightBar()),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             );
           },
