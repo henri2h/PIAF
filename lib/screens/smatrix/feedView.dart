@@ -57,20 +57,23 @@ class FeedView extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: PostWriterModal(sroom: sclient.userRoom),
                   );
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 15.0),
-                  child: Material(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.all(0),
-                        child: Post(event: sclient.stimeline[i - 1]),
-                      )),
-                );
+                if (sclient.stimeline.length > 0)
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 15.0),
+                    child: Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.all(0),
+                          child: Post(event: sclient.stimeline[i - 1]),
+                        )),
+                  );
+                else
+                  return Text("Empty");
               });
         },
       ),
