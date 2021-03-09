@@ -99,8 +99,10 @@ class ContactView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (sroom.room.encrypted) Icon(Icons.verified_user),
-                  if (!sroom.room.encrypted) Icon(Icons.no_encryption)
+                  if (sroom.room.encrypted)
+                    Icon(Icons.verified_user, color: Colors.black),
+                  if (!sroom.room.encrypted)
+                    Icon(Icons.no_encryption, color: Colors.black)
                 ]),
           ),
         ),
