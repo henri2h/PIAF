@@ -127,7 +127,7 @@ class SClient extends Client {
       content["type"] = "fr.henri2h.minestrix";
       String result =
           await this.sendState(sroom.room.id, "org.matrix.msc1840", content);
-      print("Result room type : " + result);
+      print("Setup room type : " + result);
       return true;
     } catch (e) {
       return false;
@@ -190,28 +190,26 @@ class SClient extends Client {
     if (userRoom == null) print("❌ User room not found");
   }
 
-  Future createSMatrixRoom() async {
-    print("Create smatrix room");
+  Future createSMatrixRoom(String name, String desc) async {
     String roomID = await createRoom(
-        name: "@" + userID + " timeline",
-        topic: "Mines'Trix room name",
-        visibility: Visibility.private);
-
+        name: name, topic: desc, visibility: Visibility.private);
     SMatrixRoom sroom = SMatrixRoom();
+
     Room r = getRoomById(roomID);
     bool result = await sroom.init(r, this);
 
-    /*
-    Map<String, dynamic> content = Map<String, dynamic>();
-    content["type"] = "fr.henri2h.smatirx";
-    String res = await r.sendEvent(content,
-        type: "org.matrix.msc1840"); // define room type, MSC 1840
-    print(res); 
-    // save user room*/ // NOT working...
+    await setupSRoom(sroom); // add the room type
+
     if (result)
       userRoom = sroom;
     else
       print("could not creat room ....");
+  }
+
+  Future createSMatrixUserProfile() async {
+    print("Create smatrix room");
+    String name = "@" + userID + " timeline";
+    await createSMatrixRoom(name, "Mines'Trix room name");
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t) {
