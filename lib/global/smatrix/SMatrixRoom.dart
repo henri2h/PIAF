@@ -69,8 +69,7 @@ class SMatrixRoom {
             return true; // we cannot yet access to the room participants
           }
 
-          print("issue");
-          print(r.name);
+          print("issue, not a smatrix room : " + r.name);
         } else if (roomType == SRoomType.Group) {
           return true;
         }
@@ -98,22 +97,20 @@ class SMatrixRoom {
         room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
       Event state = room.getState("org.matrix.msc1840");
       if (state != null) {
-        print("Room state " + state.toString());
+        print("############### Room state " + state.body);
         return SRoomType.UserRoom;
       }
+    }
 
-      // fall back
-      if (room.name.startsWith("@") ||
-          room.name.startsWith(SClient.SMatrixRoomPrefix + "@")) {
-        // now, it is a user
-        return SRoomType.UserRoom;
-      }
-
-      if (room.name.startsWith("#") ||
-          room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
-        // now, it is a group
-        return SRoomType.Group;
-      }
+    // fall back
+    if (room.name.startsWith("@") ||
+        room.name.startsWith(SClient.SMatrixRoomPrefix + "@")) {
+      // now, it is a user
+      return SRoomType.UserRoom;
+    } else if (room.name.startsWith("#") ||
+        room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
+      // now, it is a group
+      return SRoomType.Group;
     }
 
     return null; // we don't support other room types yet
