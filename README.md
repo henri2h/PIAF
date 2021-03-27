@@ -95,8 +95,13 @@ We use the fameldy library for that [https://gitlab.com/famedly/libraries/dart-o
 
 * libsqlite3
 
+From https://pub.dev/packages/flutter_secure_storage :
+
+* libsecret
+*libjsoncpp
+
 ```bash
-sudo apt install libolm3 libsqlite3-dev
+sudo apt install libolm3 libsqlite3-dev libsecret-1-dev libjsoncpp-dev
 ```
 
 ## Special thanks to
