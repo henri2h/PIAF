@@ -134,7 +134,7 @@ class LoginCardState extends State<LoginCard> {
       });
 
       try {
-        WellKnownInformations infos =
+        WellKnownInformation infos =
             await client.getWellKnownInformationsByUserId(userid);
         if (infos?.mHomeserver?.baseUrl != null) {
           updateDomain(infos.mHomeserver.baseUrl);
