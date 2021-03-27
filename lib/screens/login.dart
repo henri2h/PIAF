@@ -84,7 +84,8 @@ class LoginCardState extends State<LoginCard> {
           type: ssoLogin
               ? AuthenticationTypes.token
               : AuthenticationTypes.password,
-          user: _usernameController.text,
+          identifier:
+              AuthenticationUserIdentifier(user: _usernameController.text),
           password: _passwordController.text,
           token: token,
           initialDeviceDisplayName: client.clientName);

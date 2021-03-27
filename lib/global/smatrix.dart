@@ -77,7 +77,7 @@ class SClient extends Client {
       timerCallbackEventUpdate?.cancel();
       timerCallbackEventUpdate =
           new Timer(const Duration(milliseconds: 500), () async {
-        if (eUp.eventType == "m.room.message") {
+        if (eUp.content['type'] == "m.room.message") {
           await loadNewTimeline();
         }
       });

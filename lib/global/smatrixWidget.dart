@@ -98,7 +98,7 @@ class MatrixState extends State<Matrix> {
     onEvent ??= sclient.onEvent.stream
         .where((event) =>
             [EventTypes.Message, EventTypes.Encrypted]
-                .contains(event.eventType) &&
+                .contains(event.content['type']) &&
             event.content['sender'] != sclient.userID)
         .listen((EventUpdate eventUpdate) async {
       // we should react differently depending on wether the event is a smatrix one or not...
