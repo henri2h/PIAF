@@ -24,7 +24,7 @@ class SMatrixRoom {
 
   Future<bool> init(Room r, SClient sclient) async {
     try {
-      roomType = getSRoomType(r);
+      roomType = await getSRoomType(r);
       if (roomType != null) {
         room = r;
 
@@ -91,26 +91,25 @@ class SMatrixRoom {
     return null;
   }
 
-  static SRoomType getSRoomType(Room room) {
+  static Future<SRoomType> getSRoomType(Room room) async {
     // check if is a use room, in which case, it's user must be admin
     if (room.name.startsWith("@") ||
         room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
+      await room
+          .postLoad(); // we need to find a better solution, to speed up the loading process...
       Event state = room.getState("org.matrix.msc1840");
       if (state != null) {
-        print("############### Room state " + state.body);
-        return SRoomType.UserRoom;
+        // fall back
+        if (room.name.startsWith("@") ||
+            room.name.startsWith(SClient.SMatrixRoomPrefix + "@")) {
+          // now, it is a user
+          return SRoomType.UserRoom;
+        } else if (room.name.startsWith("#") ||
+            room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
+          // now, it is a group
+          return SRoomType.Group;
+        }
       }
-    }
-
-    // fall back
-    if (room.name.startsWith("@") ||
-        room.name.startsWith(SClient.SMatrixRoomPrefix + "@")) {
-      // now, it is a user
-      return SRoomType.UserRoom;
-    } else if (room.name.startsWith("#") ||
-        room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
-      // now, it is a group
-      return SRoomType.Group;
     }
 
     return null; // we don't support other room types yet

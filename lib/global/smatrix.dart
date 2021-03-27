@@ -115,6 +115,17 @@ class SClient extends Client {
     onTimelineUpdate.add("up");
   }
 
+  Future<bool> setRoomState(Room room) async {
+    try {
+      Map<String, dynamic> content = new Map<String, dynamic>();
+      content["type"] = "fr.henri2h.minestrix";
+      await this.sendState(room.id, "org.matrix.msc1840", content);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
 // setup the user room
   Future<bool> setupSRoom(SMatrixRoom sroom) async {
     try {
@@ -123,11 +134,7 @@ class SClient extends Client {
         String roomName = sroom.room.name.replaceFirst("smatrix_", "");
         await sroom.room.setName(roomName + " timeline");
       }
-      Map<String, dynamic> content = new Map<String, dynamic>();
-      content["type"] = "fr.henri2h.minestrix";
-      String result =
-          await this.sendState(sroom.room.id, "org.matrix.msc1840", content);
-      print("Setup room type : " + result);
+      await setRoomState(sroom.room);
       return true;
     } catch (e) {
       return false;
