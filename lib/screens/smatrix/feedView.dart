@@ -4,6 +4,7 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
+import 'package:minestrix/components/quickLinksList.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
@@ -67,6 +68,7 @@ class FeedView extends StatelessWidget {
                               child: Text("Quick links",
                                   style: TextStyle(fontSize: 30)),
                             ),
+                            Expanded(child: QuickLinksBar())
                           ],
                         ),
                       )),

@@ -122,6 +122,7 @@ class SClient extends Client {
       await this.sendState(room.id, "org.matrix.msc1840", content);
       return true;
     } catch (e) {
+      print("could not setup room state");
       return false;
     }
   }
@@ -197,26 +198,30 @@ class SClient extends Client {
     if (userRoom == null) print("❌ User room not found");
   }
 
-  Future createSMatrixRoom(String name, String desc) async {
+  Future<SMatrixRoom> createSMatrixRoom(String name, String desc) async {
     String roomID = await createRoom(
         name: name, topic: desc, visibility: Visibility.private);
     SMatrixRoom sroom = SMatrixRoom();
 
     Room r = getRoomById(roomID);
+    await setRoomState(r);
+
     bool result = await sroom.init(r, this);
 
     await setupSRoom(sroom); // add the room type
 
     if (result)
-      userRoom = sroom;
+      return sroom;
     else
-      print("could not creat room ....");
+      return null;
   }
 
   Future createSMatrixUserProfile() async {
     print("Create smatrix room");
     String name = "@" + userID + " timeline";
-    await createSMatrixRoom(name, "Mines'Trix room name");
+    SMatrixRoom sroom = await createSMatrixRoom(name, "Mines'Trix room name");
+
+    if (sroom != null) userRoom = sroom;
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t) {

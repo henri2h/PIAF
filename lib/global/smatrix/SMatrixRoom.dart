@@ -16,9 +16,7 @@ class SMatrixRoom {
     if (roomType == SRoomType.UserRoom)
       return user.displayName;
     else {
-      return room.name
-          .replaceFirst(SClient.SMatrixRoomPrefix + "#", "")
-          .replaceFirst("smatrix_", "");
+      return room.name.replaceFirst("#", "").replaceFirst("smatrix_", "");
     }
   }
 
@@ -94,7 +92,8 @@ class SMatrixRoom {
   static Future<SRoomType> getSRoomType(Room room) async {
     // check if is a use room, in which case, it's user must be admin
     if (room.name.startsWith("@") ||
-        room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
+        room.name.startsWith(SClient.SMatrixUserRoomPrefix) ||
+        room.name.startsWith("#")) {
       await room
           .postLoad(); // we need to find a better solution, to speed up the loading process...
       Event state = room.getState("org.matrix.msc1840");
