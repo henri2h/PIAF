@@ -65,7 +65,7 @@ class FeedView extends StatelessWidget {
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(20),
-                              child: Text("Quick links",
+                              child: Text("Groups",
                                   style: TextStyle(fontSize: 30)),
                             ),
                             Expanded(child: QuickLinksBar())
