@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsView extends StatelessWidget {
   @override
@@ -32,22 +31,6 @@ class SettingsView extends StatelessWidget {
                   if (Navigator.of(context).canPop())
                     Navigator.of(context).pop();
                 }),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: FutureBuilder<PackageInfo>(
-                  future: PackageInfo.fromPlatform(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<PackageInfo> snapshot) {
-                    if (snapshot.hasData) {
-                      return Column(
-                        children: [
-                          Text("Version " + snapshot.data.version),
-                        ],
-                      );
-                    }
-                    return Text("");
-                  }),
-            ),
             H2Title("Encryption"),
             sclient.encryptionEnabled
                 ? Column(

@@ -91,7 +91,7 @@ class RepliesVue extends StatelessWidget {
                         event: revent,
                         replies: revent.aggregatedEvents(
                             sclient.srooms[revent.roomId].timeline,
-                            RelationshipTypes.Reply)),
+                            RelationshipTypes.reply)),
                   )
                 ],
               ),

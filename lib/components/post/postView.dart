@@ -60,9 +60,9 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     return StreamBuilder<Object>(
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
-          Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.Reply);
+          Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.reply);
           Set<Event> reactions =
-              e.aggregatedEvents(t, RelationshipTypes.Reaction);
+              e.aggregatedEvents(t, RelationshipTypes.reaction);
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
             child: Column(

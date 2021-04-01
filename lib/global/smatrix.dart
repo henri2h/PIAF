@@ -168,7 +168,7 @@ class SClient extends Client {
 
           // by default
           if (rs.room.pushRuleState == PushRuleState.notify)
-            await rs.room.setPushRuleState(PushRuleState.mentions_only);
+            await rs.room.setPushRuleState(PushRuleState.mentionsOnly);
           if (!rs.room.tags.containsKey("m.lowpriority")) {
             await rs.room.addTag("m.lowpriority");
           }
@@ -228,9 +228,9 @@ class SClient extends Client {
     List<Event> filteredEvents = t.events
         .where((e) =>
             !{
-              RelationshipTypes.Edit,
-              RelationshipTypes.Reaction,
-              RelationshipTypes.Reply
+              RelationshipTypes.edit,
+              RelationshipTypes.reaction,
+              RelationshipTypes.reply
             }.contains(e.relationshipType) &&
             {EventTypes.Message, EventTypes.Encrypted}.contains(e.type) &&
             !e.redacted)

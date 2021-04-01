@@ -54,7 +54,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Future getImage() async {
-    final pickedFile = await ImagePicker().getImage(source: ImageSource.camera);
+    final pickedFile = await ImagePicker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
       print(pickedFile.path);
@@ -64,11 +64,9 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void sendImage(BuildContext context, Room room) async {
-    final file =
-        await FilePickerCross.importFromStorage(type: FileTypeCross.image);
+    final file = await FilePickerCross.pick(type: FileTypeCross.image);
     if (file == null) return;
-    MatrixFile f =
-        MatrixImageFile(bytes: file.toUint8List(), name: file.fileName);
+    MatrixFile f = MatrixImageFile(bytes: file.toUint8List(), name: file.path);
     await room.sendFileEvent(f);
   }
 
@@ -102,8 +100,8 @@ class _ChatViewState extends State<ChatView> {
                     timeline = snapshot.data;
                     List<Event> filteredEvents = timeline.events
                         .where((e) => !{
-                              RelationshipTypes.Edit,
-                              RelationshipTypes.Reaction
+                              RelationshipTypes.edit,
+                              RelationshipTypes.reaction
                             }.contains(e.relationshipType))
                         .toList();
 
