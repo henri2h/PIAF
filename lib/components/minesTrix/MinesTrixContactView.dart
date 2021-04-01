@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
 class MinesTrixContactView extends StatelessWidget {
