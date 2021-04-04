@@ -174,7 +174,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "0ceb2b26df4401c29885b4f3a04be9800f69636b"
+      resolved-ref: "08043c06f4f009ca37483b6325488544082f9383"
       url: "https://gitlab.com/famedly/famedlysdk.git"
     source: git
     version: "0.0.1"
@@ -423,7 +423,7 @@ packages:
       name: matrix_api_lite
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.1"
   matrix_file_e2ee:
     dependency: transitive
     description:
@@ -444,7 +444,7 @@ packages:
       name: mime
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.7"
+    version: "1.0.0"
   moor:
     dependency: "direct main"
     description:
@@ -904,7 +904,7 @@ packages:
       name: webview_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.2"
+    version: "2.0.3"
   win32:
     dependency: transitive
     description:

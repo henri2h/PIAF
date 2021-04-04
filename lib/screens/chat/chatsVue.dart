@@ -31,7 +31,10 @@ class _ChatsVueState extends State<ChatsVue>
                     selectedRoomID = roomId;
                   });
                 })),
-            Flexible(flex: 9, child: ChatView(roomId: selectedRoomID))
+            Flexible(flex: 9, child: ChatView(roomId: selectedRoomID)),
+            if (selectedRoomID != null)
+              Flexible(
+                  flex: 3, child: ConversationSettings(roomId: selectedRoomID))
           ],
         );
       } else {
@@ -47,7 +50,8 @@ class _ChatsVueState extends State<ChatsVue>
                         icon: Icon(Icons.info),
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => ConversationSettings(room: room),
+                            builder: (_) =>
+                                ConversationSettings(roomId: room.id),
                           ));
                         },
                       ),
