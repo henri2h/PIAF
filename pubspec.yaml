@@ -38,7 +38,7 @@ dependencies:
   url_launcher: ^6.0.3
 
   flutter_typeahead: ^3.1.1
-  cached_network_image: ^2.4.1
+  cached_network_image: ^3.0.0
   
   # Post formating
   flutter_markdown:
@@ -72,15 +72,13 @@ dependencies:
   adaptive_dialog: ^0.10.0+5
 
   flutter_olm: ^1.1.1
-  package_info_plus: ^0.0.1
+  package_info_plus: ^1.0.0
   
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-dependency_overrides:
-  # needed until crypto packages upgrade
-  convert: ^3.0.0
+
 
 
 # For information on the generic Dart part of this file, see the

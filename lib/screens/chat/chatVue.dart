@@ -6,6 +6,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
+import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -54,7 +55,8 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Future getImage() async {
-    final pickedFile = await ImagePicker.pickImage(source: ImageSource.camera);
+    ImagePicker pick = ImagePicker();
+    final pickedFile = await pick.getImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
       print(pickedFile.path);
@@ -70,10 +72,174 @@ class _ChatViewState extends State<ChatView> {
     await room.sendFileEvent(f);
   }
 
+  Widget buildChatView(SClient sclient, Room room, List<Event> filteredEvents) {
+    final TextEditingController _sendController = TextEditingController();
+
+    return Column(
+      children: [
+        if (updating) CircularProgressIndicator(),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              print("refresh");
+            },
+            backgroundColor: Colors.teal,
+            color: Colors.white,
+            displacement: 200,
+            strokeWidth: 5,
+            child: ListView.builder(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              reverse: true,
+              itemCount: filteredEvents.length,
+              itemBuilder: (BuildContext context, int i) {
+                final event = filteredEvents[i];
+                final sender = event.sender;
+                bool sendByUser = sender.id == sclient.userID;
+
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: sendByUser
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (sendByUser == false)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4, top: 6.0),
+                          child: MinesTrixUserImage(
+                              url: sender.avatarUrl,
+                              width: 40,
+                              height: 40,
+                              thumnail: true,
+                              fit: true),
+                        ),
+                      if (sendByUser == false) SizedBox(width: 8),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: sendByUser
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: [
+                            if (sendByUser == false)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: Row(
+                                  children: [
+                                    Text(sender.calcDisplayname(),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    Text(" - ",
+                                        style: TextStyle(color: Colors.grey)),
+                                    Text(timeago.format(event.originServerTs),
+                                        style: TextStyle(
+                                            fontSize: 14, color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 280),
+                              child: MessageDisplay(
+                                  event: event,
+                                  widgetDisplay: (String data) {
+                                    return Card(
+                                        color: Colors.blue,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 16),
+                                            child: MarkdownBody(
+                                              data: data,
+                                              styleSheet:
+                                                  MarkdownStyleSheet.fromTheme(
+                                                          Theme.of(context))
+                                                      .copyWith(
+                                                          p: Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText1
+                                                              .copyWith(
+                                                                  color: Colors
+                                                                      .white)),
+                                            )));
+                                  }),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        Container(
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  sendImage(context, room);
+                },
+                tooltip: 'Send file',
+                icon: Icon(Icons.image_outlined),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: TextField(
+                      maxLines: 1,
+                      controller: _sendController,
+                      keyboardType: TextInputType.text,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 12),
+                          border: InputBorder.none,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.white, width: 0),
+                            borderRadius: const BorderRadius.all(
+                              const Radius.circular(20),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue, width: 2.0),
+                            borderRadius: const BorderRadius.all(
+                              const Radius.circular(20),
+                            ),
+                          ),
+                          filled: true,
+                          hintStyle: new TextStyle(color: Colors.grey[800]),
+                          hintText: "Message",
+                          fillColor: Color(0xfff6f8fd))),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.send),
+                onPressed: () {
+                  if (_sendController.text != "") {
+                    room.sendTextEvent(_sendController.text);
+                    _sendController.clear();
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sclient = Matrix.of(context).sclient;
-    final TextEditingController _sendController = TextEditingController();
     if (widget.roomId == null) return Text("Select a chat ;)");
     reloadedCount++;
 
@@ -98,6 +264,7 @@ class _ChatViewState extends State<ChatView> {
                     }
 
                     timeline = snapshot.data;
+
                     List<Event> filteredEvents = timeline.events
                         .where((e) => !{
                               RelationshipTypes.edit,
@@ -105,196 +272,14 @@ class _ChatViewState extends State<ChatView> {
                             }.contains(e.relationshipType))
                         .toList();
 
-                    return Column(
-                      children: [
-                        if (updating) CircularProgressIndicator(),
-                        Expanded(
-                          child: RefreshIndicator(
-                            onRefresh: () async {
-                              print("refresh");
-                            },
-                            backgroundColor: Colors.teal,
-                            color: Colors.white,
-                            displacement: 200,
-                            strokeWidth: 5,
-                            child: ListView.builder(
-                              controller: _scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              reverse: true,
-                              itemCount: filteredEvents.length,
-                              itemBuilder: (BuildContext context, int i) {
-                                final event = filteredEvents[i];
-                                final sender = event.sender;
-                                bool sendByUser = sender.id == sclient.userID;
-
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisAlignment: sendByUser
-                                        ? MainAxisAlignment.end
-                                        : MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      if (sendByUser == false)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 4, top: 6.0),
-                                          child: MinesTrixUserImage(
-                                              url: sender.avatarUrl,
-                                              width: 40,
-                                              height: 40,
-                                              thumnail: true,
-                                              fit: true),
-                                        ),
-                                      if (sendByUser == false)
-                                        SizedBox(width: 8),
-                                      Flexible(
-                                        child: Column(
-                                          crossAxisAlignment: sendByUser
-                                              ? CrossAxisAlignment.end
-                                              : CrossAxisAlignment.start,
-                                          children: [
-                                            if (sendByUser == false)
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 10.0),
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                        sender
-                                                            .calcDisplayname(),
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold)),
-                                                    Text(" - ",
-                                                        style: TextStyle(
-                                                            color:
-                                                                Colors.grey)),
-                                                    Text(
-                                                        timeago.format(event
-                                                            .originServerTs),
-                                                        style: TextStyle(
-                                                            fontSize: 14,
-                                                            color:
-                                                                Colors.grey)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ConstrainedBox(
-                                              constraints:
-                                                  BoxConstraints(maxWidth: 280),
-                                              child: MessageDisplay(
-                                                  event: event,
-                                                  widgetDisplay: (String data) {
-                                                    return Card(
-                                                        color: Colors.blue,
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(20),
-                                                        ),
-                                                        child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .symmetric(
-                                                                    vertical:
-                                                                        10,
-                                                                    horizontal:
-                                                                        16),
-                                                            child: MarkdownBody(
-                                                              data: data,
-                                                              styleSheet: MarkdownStyleSheet
-                                                                      .fromTheme(
-                                                                          Theme.of(
-                                                                              context))
-                                                                  .copyWith(
-                                                                      p: Theme.of(
-                                                                              context)
-                                                                          .textTheme
-                                                                          .bodyText1
-                                                                          .copyWith(
-                                                                              color: Colors.white)),
-                                                            )));
-                                                  }),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        Container(
-                          child: Row(
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  sendImage(context, room);
-                                },
-                                tooltip: 'Send file',
-                                icon: Icon(Icons.image_outlined),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: TextField(
-                                      maxLines: 1,
-                                      controller: _sendController,
-                                      keyboardType: TextInputType.text,
-                                      textAlignVertical:
-                                          TextAlignVertical.center,
-                                      decoration: InputDecoration(
-                                          isDense: true,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  vertical: 15, horizontal: 12),
-                                          border: InputBorder.none,
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: Colors.white, width: 0),
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                              const Radius.circular(20),
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: Colors.blue, width: 2.0),
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                              const Radius.circular(20),
-                                            ),
-                                          ),
-                                          filled: true,
-                                          hintStyle: new TextStyle(
-                                              color: Colors.grey[800]),
-                                          hintText: "Message",
-                                          fillColor: Color(0xfff6f8fd))),
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.send),
-                                onPressed: () {
-                                  if (_sendController.text != "") {
-                                    room.sendTextEvent(_sendController.text);
-                                    _sendController.clear();
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
+                    // in case we need to load history because list is not long enough to use pull to refresh
+                    if (filteredEvents.length < 50)
+                      return FutureBuilder(
+                          future: timeline.requestHistory(),
+                          builder: (BuildContext context,
+                                  AsyncSnapshot<void> snapshot) =>
+                              buildChatView(sclient, room, filteredEvents));
+                    return buildChatView(sclient, room, filteredEvents);
                   },
                 ),
               ),

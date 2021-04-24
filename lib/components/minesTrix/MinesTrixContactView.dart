@@ -54,7 +54,7 @@ class MinesTrixContactView extends StatelessWidget {
                                   client,
                                   width: 64,
                                   height: 64,
-                                ),
+                                ).toString(),
                               ),
                       ),
                       Flexible(

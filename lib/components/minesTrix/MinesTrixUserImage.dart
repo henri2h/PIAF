@@ -50,8 +50,8 @@ class MinesTrixUserImage extends StatelessWidget {
             sclient,
             height: h,
             width: w,
-          )
-        : url.getDownloadLink(sclient);
+          ).toString()
+        : url.getDownloadLink(sclient).toString();
     return ClipRRect(
       borderRadius: rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
       child: CachedNetworkImage(

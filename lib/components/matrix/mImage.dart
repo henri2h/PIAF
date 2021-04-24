@@ -50,7 +50,7 @@ class MImageDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String url = event.getAttachmentUrl();
+    String url = event.getAttachmentUrl().toString();
 
     if (event.isAttachmentEncrypted) {
       return FutureBuilder<MatrixFile>(
