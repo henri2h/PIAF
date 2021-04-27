@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class MImage extends StatelessWidget {
   const MImage({Key key, @required this.event}) : super(key: key);
@@ -54,7 +55,13 @@ class MImageDisplay extends StatelessWidget {
 
     if (event.isAttachmentEncrypted) {
       return FutureBuilder<MatrixFile>(
-        future: event.downloadAndDecryptAttachment(),
+        future: event.downloadAndDecryptAttachment(
+          downloadCallback: (Uri url) async {
+            final file =
+                await DefaultCacheManager().getSingleFile(url.toString());
+            return await file.readAsBytes();
+          },
+        ),
         builder: (BuildContext context, AsyncSnapshot<MatrixFile> file) {
           if (file.hasData) {
             return ClipRRect(
