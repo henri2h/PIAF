@@ -66,7 +66,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void sendImage(BuildContext context, Room room) async {
-    final file = await FilePickerCross.pick(type: FileTypeCross.image);
+    final file = await FilePickerCross.importFromStorage(type: FileTypeCross.image);
     if (file == null) return;
     MatrixFile f = MatrixImageFile(bytes: file.toUint8List(), name: file.path);
     await room.sendFileEvent(f);
