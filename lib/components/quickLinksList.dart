@@ -68,18 +68,19 @@ class SRoomView extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          backgroundImage:
-                              sroom.user == null || sroom.user.avatarUrl == null
-                                  ? null
-                                  : NetworkImage(
-                                      sroom.user.avatarUrl.getThumbnail(
+                        sroom.room.avatar == null
+                            ? Icon(Icons.group, color: Colors.black)
+                            : CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  sroom.room.avatar
+                                      .getThumbnail(
                                         client,
                                         width: 64,
                                         height: 64,
-                                      ).toString(),
-                                    ),
-                        ),
+                                      )
+                                      .toString(),
+                                ),
+                              ),
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),

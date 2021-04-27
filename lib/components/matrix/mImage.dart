@@ -52,30 +52,41 @@ class MImageDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String url = event.getAttachmentUrl().toString();
+    int wi = event.infoMap["w"];
+    int hi = event.infoMap["h"];
+    double ratio = 1;
+
+    if (hi != null && wi != null) {
+      double h = hi.toDouble();
+      double w = wi.toDouble();
+      ratio = w / h;
+    }
 
     if (event.isAttachmentEncrypted) {
-      return FutureBuilder<MatrixFile>(
-        future: event.downloadAndDecryptAttachment(
-          downloadCallback: (Uri url) async {
-            final file =
-                await DefaultCacheManager().getSingleFile(url.toString());
-            return await file.readAsBytes();
-          },
-        ),
-        builder: (BuildContext context, AsyncSnapshot<MatrixFile> file) {
-          if (file.hasData) {
-            return ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: Image.memory(file.data.bytes));
-          }
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(30),
-              child: CircularProgressIndicator(),
+      return AspectRatio(
+          aspectRatio: ratio,
+          child: FutureBuilder<MatrixFile>(
+            future: event.downloadAndDecryptAttachment(
+              downloadCallback: (Uri url) async {
+                final file =
+                    await DefaultCacheManager().getSingleFile(url.toString());
+                return await file.readAsBytes();
+              },
             ),
-          );
-        },
-      );
+            builder: (BuildContext context, AsyncSnapshot<MatrixFile> file) {
+              if (file.hasData) {
+                return ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: Image.memory(file.data.bytes));
+              }
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(30),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+          ));
     }
     return getImage(url);
   }
