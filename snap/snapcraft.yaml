@@ -29,14 +29,20 @@ parts:
     source: .
     flutter-target: lib/main.dart
     stage-packages:
-    - libsqlite3-dev
+      - libsqlite3-dev
+      - libsecret-1-dev
+      - libjsoncpp-dev
+    build-packages:
+     - libsecret-1-dev
+     - libjsoncpp-dev
+     
 
 
 
 apps:
   minestrix:
     command: minestrix
-    extensions: [flutter-dev]
+    extensions: [flutter-stable]
     slots: [ dbus-svc ]
     plugs:
     - network
