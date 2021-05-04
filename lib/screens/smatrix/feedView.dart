@@ -75,6 +75,7 @@ class FeedView extends StatelessWidget {
                 Flexible(
                   flex: 11,
                   child: ListView.builder(
+                      cacheExtent: 8000,
                       itemCount: sclient.stimeline.length + 1,
                       itemBuilder: (BuildContext context, int i) {
                         if (i == 0)
