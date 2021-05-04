@@ -50,11 +50,13 @@ class MinesTrixContactView extends StatelessWidget {
                         backgroundImage: user == null || user.avatarUrl == null
                             ? null
                             : NetworkImage(
-                                user.avatarUrl.getThumbnail(
-                                  client,
-                                  width: 64,
-                                  height: 64,
-                                ).toString(),
+                                user.avatarUrl
+                                    .getThumbnail(
+                                      client,
+                                      width: 64,
+                                      height: 64,
+                                    )
+                                    .toString(),
                               ),
                       ),
                       Flexible(

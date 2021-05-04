@@ -71,11 +71,13 @@ class ContactView extends StatelessWidget {
                               sroom.user == null || sroom.user.avatarUrl == null
                                   ? null
                                   : NetworkImage(
-                                      sroom.user.avatarUrl.getThumbnail(
-                                        client,
-                                        width: 64,
-                                        height: 64,
-                                      ).toString(),
+                                      sroom.user.avatarUrl
+                                          .getThumbnail(
+                                            client,
+                                            width: 64,
+                                            height: 64,
+                                          )
+                                          .toString(),
                                     ),
                         ),
                         Flexible(

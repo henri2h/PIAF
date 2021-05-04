@@ -46,11 +46,13 @@ class MinesTrixUserImage extends StatelessWidget {
           child: defaultIcon);
 
     String httpurl = thumnail
-        ? url.getThumbnail(
-            sclient,
-            height: h,
-            width: w,
-          ).toString()
+        ? url
+            .getThumbnail(
+              sclient,
+              height: h,
+              width: w,
+            )
+            .toString()
         : url.getDownloadLink(sclient).toString();
     return ClipRRect(
       borderRadius: rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
