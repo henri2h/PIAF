@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
-class AddUser extends StatefulWidget {
-  AddUser(BuildContext context, {Key key}) : super(key: key);
+class FollowUser extends StatefulWidget {
+  FollowUser(BuildContext context, {Key key}) : super(key: key);
   @override
-  _AddUserState createState() => _AddUserState();
+  _FollowUserState createState() => _FollowUserState();
 }
 
-class _AddUserState extends State<AddUser> {
+class _FollowUserState extends State<FollowUser> {
   List<Profile> profiles = [];
 
   @override
@@ -38,15 +39,18 @@ class _AddUserState extends State<AddUser> {
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
                 UserSearchResult ur = await sclient.searchUser(pattern);
-                List<User> sFriends = await sclient.getSfriends();
+                List<User> following = List<User>.empty();
+                await sclient.following.forEach((key, SMatrixRoom sroom) {
+                  following.add(sroom.user);
+                });
 
                 return ur.results
                     .where((element) =>
-                        sFriends.firstWhere(
+                        following.firstWhere(
                             (friend) => friend.id == element.userId,
                             orElse: () => null) ==
                         null)
-                    .toList(); // exclude current friends
+                    .toList(); // exclude the users we are currently following
               },
               itemBuilder: (context, suggestion) {
                 Profile profile = suggestion;

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
 class MinesTrixUserSelection extends StatefulWidget {
   MinesTrixUserSelection({Key key, this.participants}) : super(key: key);
-  final List<User> participants;
+  final List<User>
+      participants; // list of the users who won't appear in the searchbox
   @override
   _MinesTrixUserSelectionState createState() => _MinesTrixUserSelectionState();
 }
@@ -42,8 +44,15 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
               suggestionsCallback: (pattern) async {
                 UserSearchResult ur = await sclient.searchUser(pattern);
                 if (participants == null) participants = widget.participants;
-                if (participants == null)
-                  participants = await sclient.getSfriends();
+
+                // by default we remove the users followed by the user
+                if (participants == null) {
+                  participants = List<User>.empty();
+
+                  await sclient.following.forEach((key, SMatrixRoom sroom) {
+                    participants.add(sroom.user);
+                  });
+                }
 
                 return ur.results
                     .where((element) =>

@@ -11,8 +11,10 @@ import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 class SClient extends Client {
   static const String SMatrixRoomPrefix = "smatrix_";
   static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
+
   StreamSubscription onEventUpdate;
   StreamSubscription onRoomUpdateSub; // event subscription
+
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
   StreamController<String> onSRoomsUpdate = StreamController.broadcast();
 
@@ -21,7 +23,11 @@ class SClient extends Client {
   // room sub types
   Map<String, SMatrixRoom> get sgroups => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.Group);
+
   Map<String, SMatrixRoom> get sfriends => Map.from(srooms)
+    ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
+
+  Map<String, SMatrixRoom> get following => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
 
   Map<String, SMatrixRoom> sInvites =
@@ -42,7 +48,7 @@ class SClient extends Client {
             verificationMethods: verificationMethods,
             databaseBuilder: databaseBuilder);
 
-  Future<List<User>> getSfriends() async {
+  Future<List<User>> getFollowers() async {
     return (await getSUsers())
         .where((User u) => u.membership == Membership.join)
         .toList();
@@ -68,7 +74,7 @@ class SClient extends Client {
     // initialisation
 
     await loadSRooms();
-    await sendInvitesToFriends();
+    await autoFollowFollowers();
     await loadNewTimeline();
     notifications.loadNotifications(this);
 
@@ -263,12 +269,12 @@ class SClient extends Client {
   /* this function iterate over all accepted friends invitations and ensure that they are in the user room
   then it accepts all friends invitations from members of the user room
     */
-  Future<void> sendInvitesToFriends() async {
-    List<User> friends = await getSfriends();
+  Future<void> autoFollowFollowers() async {
+    List<User> followers = await getFollowers();
     List<SMatrixRoom> sr = sInvites.values.toList();
     for (SMatrixRoom r in sr) {
       // check if the user is already in the list and accept invitation
-      bool exists = (friends.firstWhere((element) => r.user.id == element.id,
+      bool exists = (followers.firstWhere((element) => r.user.id == element.id,
               orElse: () => null) !=
           null);
       if (exists) {

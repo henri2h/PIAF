@@ -21,7 +21,7 @@ class FriendsVue extends StatelessWidget {
 
     return ListView(
       children: [
-        H1Title("Users"),
+        H1Title("Following"),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: TypeAheadField(
@@ -31,11 +31,15 @@ class FriendsVue extends StatelessWidget {
                 decoration: InputDecoration(border: OutlineInputBorder())),
             suggestionsCallback: (pattern) async {
               UserSearchResult ur = await sclient.searchUser(pattern);
-              List<User> sFriends = await sclient.getSfriends();
+
+              List<User> following = List<User>.empty();
+              await sclient.following.forEach((key, SMatrixRoom sroom) {
+                following.add(sroom.user);
+              });
 
               return ur.results
                   .where((element) =>
-                      sFriends.firstWhere(
+                      following.firstWhere(
                           (friend) => friend.id == element.userId,
                           orElse: () => null) ==
                       null)

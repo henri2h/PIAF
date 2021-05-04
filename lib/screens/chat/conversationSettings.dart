@@ -33,7 +33,7 @@ class ConversationSettings extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (BuildContext context) => AddUser(context)));
+                        builder: (BuildContext context) => FollowUser(context)));
               }),
         )
       ],
