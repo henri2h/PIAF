@@ -98,7 +98,7 @@ class LoginCardState extends State<LoginCard> {
   }
 
   Future<void> _requestSupportedTypes(SClient client) async {
-    LoginTypes lg = await client.requestLoginTypes();
+    LoginTypes lg = await client.getLoginFlows();
     print(lg.toJson());
     for (Flows item in lg.flows) {
       print(item.type.toString());

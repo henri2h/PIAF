@@ -125,7 +125,7 @@ class SClient extends Client {
     try {
       Map<String, dynamic> content = new Map<String, dynamic>();
       content["type"] = "fr.henri2h.minestrix";
-      await this.sendState(room.id, "org.matrix.msc1840", content);
+      await this.setRoomStateWithKey(room.id, "org.matrix.msc1840", content);
       return true;
     } catch (e) {
       print("could not setup room state");

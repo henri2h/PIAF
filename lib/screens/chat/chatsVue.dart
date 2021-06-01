@@ -24,17 +24,19 @@ class _ChatsVueState extends State<ChatsVue>
       if (constraints.maxWidth > 600) {
         return Row(
           children: [
-            Flexible(
-                flex: 2,
-                child: buildChatView(context, onSelection: (String roomId) {
-                  setState(() {
-                    selectedRoomID = roomId;
-                  });
-                })),
-            Flexible(flex: 9, child: ChatView(roomId: selectedRoomID)),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 350),
+              child: buildChatView(context, onSelection: (String roomId) {
+                setState(() {
+                  selectedRoomID = roomId;
+                });
+              }),
+            ),
+            Expanded(flex: 2, child: ChatView(roomId: selectedRoomID)),
             if (selectedRoomID != null)
-              Flexible(
-                  flex: 3, child: ConversationSettings(roomId: selectedRoomID))
+              ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 400),
+                  child: ConversationSettings(roomId: selectedRoomID))
           ],
         );
       } else {

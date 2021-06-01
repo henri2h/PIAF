@@ -42,7 +42,8 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                UserSearchResult ur = await sclient.searchUser(pattern);
+                UserSearchResult ur =
+                    await sclient.searchUserDirectory(pattern);
                 if (participants == null) participants = widget.participants;
 
                 // by default we remove the users followed by the user
