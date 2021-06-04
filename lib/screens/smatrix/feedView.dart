@@ -62,11 +62,13 @@ class FeedView extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(10),
                               child: Text("Groups",
-                                  style: TextStyle(fontSize: 30)),
+                                  style: TextStyle(
+                                      fontSize: 22, letterSpacing: 1.1)),
                             ),
                             Expanded(child: QuickLinksBar())
                           ],
@@ -119,7 +121,8 @@ class FeedView extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.all(0),
                             child: Text("Contacts",
-                                style: TextStyle(fontSize: 22, letterSpacing:1.2)),
+                                style: TextStyle(
+                                    fontSize: 22, letterSpacing: 1.1)),
                           ),
                           Expanded(child: RightBar()),
                         ],
