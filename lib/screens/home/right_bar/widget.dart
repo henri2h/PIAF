@@ -38,24 +38,10 @@ class ContactView extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Container(
           decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(6.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: Offset(0, 3), // changes position of shadow
-                ),
-              ]),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              primary: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6.0)),
-              padding: EdgeInsets.all(26.0),
-            ),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6.0),
+          ),
+          child: TextButton(
             onPressed: () {
               NavigationHelper.navigateToUserFeed(context, sroom.user);
             },

@@ -141,7 +141,7 @@ class _ChatViewState extends State<ChatView> {
                                 ),
                               ),
                             ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: 280),
+                              constraints: BoxConstraints(maxWidth: 480),
                               child: MessageDisplay(
                                   event: event,
                                   widgetDisplay: (String data) {
