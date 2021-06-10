@@ -7,24 +7,44 @@ import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class RepliesVue extends StatelessWidget {
+class RepliesVue extends StatefulWidget {
   final Event event;
   final Set<Event> replies;
   final String regex = "(>(.*)\n)*\n";
-  const RepliesVue({Key key, @required this.event, @required this.replies})
+  bool showEditBox;
+
+  RepliesVue(
+      {Key key,
+      @required this.event,
+      @required this.replies,
+      this.showEditBox = false})
       : super(key: key);
+
+  @override
+  _RepliesVueState createState() => _RepliesVueState();
+}
+
+class _RepliesVueState extends State<RepliesVue> {
   @override
   Widget build(BuildContext context) {
     // get replies
     SClient sclient = Matrix.of(context).sclient;
-    int max = min(replies.length, 2);
+    int max = min(widget.replies.length, 2);
 
     return Container(
 //      decoration: BoxDecoration(color: Colors.grey),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (Event revent in replies.toList().sublist(0, max))
+          if (widget.showEditBox)
+            ReplyBox(
+                event: widget.event,
+                onMessageSend: () {
+                  setState(() {
+                    widget.showEditBox = false;
+                  });
+                }),
+          for (Event revent in widget.replies.toList().sublist(0, max))
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2.0),
               child: Column(
@@ -73,8 +93,8 @@ class RepliesVue extends StatelessWidget {
                                         ],
                                       ),
                                       SizedBox(height: 5),
-                                      Text(revent.body
-                                          .replaceFirst(new RegExp(regex), "")),
+                                      Text(revent.body.replaceFirst(
+                                          new RegExp(widget.regex), "")),
                                     ],
                                   ),
                                 ),
@@ -96,7 +116,7 @@ class RepliesVue extends StatelessWidget {
                 ],
               ),
             ),
-          if (replies.length > max)
+          if (widget.replies.length > max)
             Center(
                 child:
                     MaterialButton(child: Text("load more"), onPressed: () {}))
@@ -108,7 +128,10 @@ class RepliesVue extends StatelessWidget {
 
 class ReplyBox extends StatelessWidget {
   final Event event;
-  const ReplyBox({Key key, @required this.event}) : super(key: key);
+  final Function onMessageSend;
+
+  const ReplyBox({Key key, @required this.event, this.onMessageSend})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +162,9 @@ class ReplyBox extends StatelessWidget {
               onPressed: () async {
                 await event.room.sendTextEvent(tc.text, inReplyTo: event);
                 tc.clear();
+
+                // send event
+                onMessageSend();
               })
         ],
       ),
