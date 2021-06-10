@@ -7,12 +7,12 @@ import 'package:minestrix/screens/home/screen.dart';
 import 'package:minestrix/screens/login.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
-class Minetrix extends StatefulWidget {
+class Minestrix extends StatefulWidget {
   @override
-  _MinetrixState createState() => _MinetrixState();
+  _MinestrixState createState() => _MinestrixState();
 }
 
-class _MinetrixState extends State<Minetrix> {
+class _MinestrixState extends State<Minestrix> {
   HomeScreen hm;
   MinesTrixAccountCreation hmCreation;
 

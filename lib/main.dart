@@ -4,5 +4,5 @@ import 'package:minestrix/app.dart';
 
 void main() {
   Logger.root.level = Level.ALL;
-  runApp(Minetrix());
+  runApp(Minestrix());
 }
