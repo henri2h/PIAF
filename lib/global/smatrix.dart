@@ -225,9 +225,13 @@ class SClient extends Client {
 
     await setupSRoom(sroom); // add the room type
 
-    if (result)
+    if (result) {
+      // launch sync
+      await loadSRooms();
+      await loadNewTimeline();
+
       return sroom;
-    else
+    } else
       return null;
   }
 
