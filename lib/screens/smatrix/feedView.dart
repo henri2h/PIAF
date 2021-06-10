@@ -26,7 +26,7 @@ class FeedView extends StatelessWidget {
       return Container(
         //color: Color(0xfff4f3f4),
         child: StreamBuilder(
-          stream: sclient.onTimelineUpdate.stream,
+          stream: sclient.onNewPostInTimeline.stream,
           builder: (context, _) {
             print(sclient.stimeline.length.toString());
             if (sclient.stimeline.length == 0)
