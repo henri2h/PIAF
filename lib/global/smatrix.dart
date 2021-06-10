@@ -5,10 +5,13 @@
 import 'dart:async';
 
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:logging/logging.dart';
 import 'package:minestrix/global/smatrix/Notifications.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 
 class SClient extends Client {
+  final log = Logger("SClient");
+
   static const String SMatrixRoomPrefix = "smatrix_";
   static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
 
@@ -16,6 +19,10 @@ class SClient extends Client {
   StreamSubscription onRoomUpdateSub; // event subscription
 
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
+
+  // This stream is used to notify the user that a new post has been added to the timeline
+  StreamController<String> onNewPostInTimeline = StreamController.broadcast();
+
   StreamController<String> onSRoomsUpdate = StreamController.broadcast();
 
   Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>();
@@ -74,30 +81,21 @@ class SClient extends Client {
     // initialisation
 
     await loadSRooms();
-    await autoFollowFollowers();
+    await autoFollowFollowers(); // TODO : Let's see if we keep this in the future
     await loadNewTimeline();
     notifications.loadNotifications(this);
 
-    onEventUpdate ??= this.onEvent.stream.listen((EventUpdate eUp) async {
-      print("eup");
-      timerCallbackEventUpdate?.cancel();
-      timerCallbackEventUpdate =
-          new Timer(const Duration(milliseconds: 500), () async {
-        if (eUp.content['type'] == "m.room.message") {
-          await loadNewTimeline();
-        }
-      });
-    });
-
+    // for smatrixrooms
     onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
-      print("Room update");
-      timerCallbackRoomUpdate?.cancel();
-      timerCallbackRoomUpdate =
-          new Timer(const Duration(milliseconds: 500), () async {
-        print("Callback room update");
-        await loadSRooms();
-        await loadNewTimeline();
-      });
+      if (srooms.containsKey(rUp.id)) {
+        // we use a timer to prevent calling
+        timerCallbackRoomUpdate?.cancel();
+        timerCallbackRoomUpdate =
+            new Timer(const Duration(milliseconds: 500), () async {
+          log.info("MinesTrix : callback new message");
+          await loadNewTimeline(); // new message, we only need to rebuild timeline
+        });
+      }
     });
   }
 
@@ -107,43 +105,51 @@ class SClient extends Client {
 
     notifications.loadNotifications(this);
 
+    // On first sync we fetch all the event history
     if (_firstSync) {
       try {
         for (SMatrixRoom sr in srooms.values) {
           await sr.timeline.requestHistory();
         }
       } catch (e) {
-        print("Could not get history");
-        print(e);
+        log.severe("Initial sync : failed to get history", e);
       }
       _firstSync = false;
     }
     onTimelineUpdate.add("up");
   }
 
-  Future<bool> setRoomState(Room room) async {
+  Future<bool> trySettingRoomState(Room room) async {
     try {
-      Map<String, dynamic> content = new Map<String, dynamic>();
-      content["type"] = "fr.henri2h.minestrix";
-      await this.setRoomStateWithKey(room.id, "org.matrix.msc1840", content);
-      return true;
+      Event e = room.getState("org.matrix.msc1840");
+
+      if (e == null || e.content["type"] != "fr.henri2h.minestrix") {
+        Map<String, dynamic> content = new Map<String, dynamic>();
+        content["type"] = "fr.henri2h.minestrix";
+        await this.setRoomStateWithKey(room.id, "org.matrix.msc1840", content);
+        return true;
+      }
     } catch (e) {
-      print("could not setup room state");
+      log.severe("could not set user thread room as minestrix room", e);
       return false;
     }
+    return true; // no update needed
   }
 
 // setup the user room
   Future<bool> setupSRoom(SMatrixRoom sroom) async {
     try {
+      // migration
+      // TODO : remove this if statement in a future release
       if (sroom.room.name.startsWith(SMatrixUserRoomPrefix)) {
-        print("setup room");
+        log.warning("Update sroom");
         String roomName = sroom.room.name.replaceFirst("smatrix_", "");
         await sroom.room.setName(roomName + " timeline");
       }
-      await setRoomState(sroom.room);
+      await trySettingRoomState(sroom.room);
       return true;
     } catch (e) {
+      log.severe("Error setup sroom", e);
       return false;
     }
   }
@@ -160,14 +166,16 @@ class SClient extends Client {
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
+
       if (r.membership == Membership.invite) {
-        print("Friendship requests sent : " + r.name);
+        log.info("Friendship requests sent : " + r.name);
       }
+
       SMatrixRoom rs = SMatrixRoom();
       if (await rs.init(r, this)) {
-        print(rs.room.name);
         // if class is correctly initialisated, we can add it
         // if we are here, it means that we have a valid smatrix room
+
         if (r.membership == Membership.join) {
           rs.timeline = await rs.room.getTimeline();
           srooms[rs.room.id] = rs;
@@ -179,6 +187,7 @@ class SClient extends Client {
             await rs.room.addTag("m.lowpriority");
           }
 
+          // check if this room is a user thread
           if (rs.roomType == SRoomType.UserRoom) {
             userIdToRoomId[rs.user.id] = rs.room.id;
 
@@ -201,7 +210,7 @@ class SClient extends Client {
     onSRoomsUpdate.add("update");
     sroomsLoaded = true;
 
-    if (userRoom == null) print("❌ User room not found");
+    if (userRoom == null) log.severe("❌ User room not found");
   }
 
   Future<SMatrixRoom> createSMatrixRoom(String name, String desc) async {
@@ -210,7 +219,7 @@ class SClient extends Client {
     SMatrixRoom sroom = SMatrixRoom();
 
     Room r = getRoomById(roomID);
-    await setRoomState(r);
+    await trySettingRoomState(r);
 
     bool result = await sroom.init(r, this);
 
@@ -223,7 +232,7 @@ class SClient extends Client {
   }
 
   Future createSMatrixUserProfile() async {
-    print("Create smatrix room");
+    log.info("Create smatrix room");
     String name = "@" + userID + " timeline";
     SMatrixRoom sroom = await createSMatrixRoom(name, "Mines'Trix room name");
 
@@ -263,7 +272,7 @@ class SClient extends Client {
       return b.originServerTs.compareTo(a.originServerTs);
     });
 
-    print("stimeline length : " + stimeline.length.toString());
+    log.info("stimeline length : " + stimeline.length.toString());
   }
 
   /* this function iterate over all accepted friends invitations and ensure that they are in the user room
