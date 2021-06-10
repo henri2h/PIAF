@@ -1,7 +1,10 @@
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:logging/logging.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class SMatrixRoom {
+  final log = Logger("SMatrixRoom");
+  
   // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
   // initialize the class, return false, if it could not generate the classes
   // i.e, it is not a valid class
@@ -40,8 +43,7 @@ class SMatrixRoom {
               user = findUser(users, userId);
             }
           } catch (e) {
-            print("Could not request participants");
-            print(e);
+            log.severe("Could not request participants", e);
           }
 
           if (user != null) {
@@ -73,8 +75,7 @@ class SMatrixRoom {
         }
       }
     } catch (e) {
-      print("crash");
-      print(e.toString());
+      log.severe("Could not init smatrix client", e);
     }
     return false;
   }

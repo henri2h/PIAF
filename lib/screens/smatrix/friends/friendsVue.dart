@@ -57,7 +57,6 @@ class FriendsVue extends StatelessWidget {
             },
             onSuggestionSelected: (suggestion) async {
               Profile p = suggestion;
-              print(p.userId);
               await sclient.addFriend(p.userId);
             },
           ),

@@ -40,7 +40,7 @@ class _MinetrixState extends State<Minetrix> {
                 return StreamBuilder<String>(
                     stream: Matrix.of(context).sclient.onSRoomsUpdate.stream,
                     builder: (BuildContext context, snapshot) {
-                      print("room update building home");
+                      print("Minestrix : room update building home");
                       SClient sclient = Matrix.of(context).sclient;
 
                       if (!sclient.sroomsLoaded) {
