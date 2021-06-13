@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class MImage extends StatelessWidget {
   const MImage({Key key, @required this.event}) : super(key: key);
@@ -50,25 +51,49 @@ class MImageDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String url = event.getAttachmentUrl();
+    String url = event.getAttachmentUrl(getThumbnail: true).toString();
+    int wi = event.infoMap["w"];
+    int hi = event.infoMap["h"];
+    double ratio = 1;
+
+    if (hi != null && wi != null) {
+      ratio = wi / hi;
+    }
+
+    int cache_size = 600;
+    //int cache_h = cache_size ~/ ratio;
+    int cache_w = (cache_size * ratio).toInt();
 
     if (event.isAttachmentEncrypted) {
-      return FutureBuilder<MatrixFile>(
-        future: event.downloadAndDecryptAttachment(),
-        builder: (BuildContext context, AsyncSnapshot<MatrixFile> file) {
-          if (file.hasData) {
-            return ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: Image.memory(file.data.bytes));
-          }
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(30),
-              child: CircularProgressIndicator(),
+      return AspectRatio(
+          aspectRatio: ratio,
+          child: FutureBuilder<MatrixFile>(
+            future: event.downloadAndDecryptAttachment(
+              downloadCallback: (Uri url) async {
+                final file =
+                    await DefaultCacheManager().getSingleFile(url.toString());
+                return await file.readAsBytes();
+              },
             ),
-          );
-        },
-      );
+            builder: (BuildContext context, AsyncSnapshot<MatrixFile> file) {
+              if (file.hasData) {
+                return ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: Image.memory(
+                      file.data.bytes,
+                      fit: BoxFit.fill,
+                      //cacheHeight: cache_h,
+                      cacheWidth: cache_w,
+                    ));
+              }
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(30),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+          ));
     }
     return getImage(url);
   }

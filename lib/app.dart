@@ -7,7 +7,12 @@ import 'package:minestrix/screens/home/screen.dart';
 import 'package:minestrix/screens/login.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
-class Minetrix extends StatelessWidget {
+class Minestrix extends StatefulWidget {
+  @override
+  _MinestrixState createState() => _MinestrixState();
+}
+
+class _MinestrixState extends State<Minestrix> {
   @override
   Widget build(BuildContext context) {
     return Matrix(
@@ -18,8 +23,6 @@ class Minetrix extends StatelessWidget {
           home: StreamBuilder<LoginState>(
             stream: Matrix.of(context).sclient.onLoginStateChanged.stream,
             builder: (BuildContext context, snapshot) {
-              print("hasData : " + snapshot.hasData.toString());
-              print(context);
               if (snapshot.hasError) {
                 return Center(child: Text(snapshot.error.toString()));
               }
@@ -31,17 +34,23 @@ class Minetrix extends StatelessWidget {
                 );
               }
               if (snapshot.data == LoginState.logged) {
-                return StreamBuilder<EventUpdate>(
-                    stream: Matrix.of(context).sclient.onEvent.stream,
+                return StreamBuilder<String>(
+                    stream: Matrix.of(context).sclient.onSRoomsUpdate.stream,
                     builder: (BuildContext context, snapshot) {
+                      print("Minestrix : room update building home");
                       SClient sclient = Matrix.of(context).sclient;
-                      print("sclient.userRoom exits ? : " +
-                          (sclient.userRoom != null).toString());
 
-                      if (sclient.userRoom == null)
+                      if (!sclient.sroomsLoaded) {
+                        return Scaffold(
+                          body: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      } else if (sclient.userRoom == null) {
                         return MinesTrixAccountCreation();
-                      else
+                      } else {
                         return HomeScreen();
+                      }
                     });
               }
               return LoginScreen();

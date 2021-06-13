@@ -20,24 +20,29 @@ class AccountCard extends StatelessWidget {
           NavigationHelper.navigateToUserFeed(context, user);
         },
         child: Padding(
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.all(4),
           child: Column(
             children: [
-              if (user.avatarUrl == null)
-                Text(user.displayName[0])
-              else
-                MinesTrixUserImage(
-                    url: user.avatarUrl,
-                    width: 100,
-                    height: 100,
-                    thumnail: true),
+              MinesTrixUserImage(
+                url: user.avatarUrl,
+                width: 100,
+                height: 100,
+                thumnail: true,
+                defaultIcon: Icon(Icons.person, color: Colors.black, size: 70),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 3),
-                child: Text(user.displayName,
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black)),
+                child: SizedBox(
+                  width: 140,
+                  height: 50,
+                  child: Center(
+                    child: Text(user.displayName,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                  ),
+                ),
               ),
             ],
           ),

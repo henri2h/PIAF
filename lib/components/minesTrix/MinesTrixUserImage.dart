@@ -15,7 +15,7 @@ class MinesTrixUserImage extends StatelessWidget {
       this.rounded = true,
       this.thumnail = false,
       this.fit = false,
-      this.defaultIcon = const Icon(Icons.image),
+      this.defaultIcon = const Icon(Icons.image, color: Colors.black),
       this.unconstraigned = false})
       : super(key: key);
   final Uri url;
@@ -44,6 +44,16 @@ class MinesTrixUserImage extends StatelessWidget {
                 )
               : null,
           child: defaultIcon);
+
+    String httpurl = thumnail
+        ? url
+            .getThumbnail(
+              sclient,
+              height: h,
+              width: w,
+            )
+            .toString()
+        : url.getDownloadLink(sclient).toString();
     return ClipRRect(
       borderRadius: rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
       child: CachedNetworkImage(
@@ -52,15 +62,17 @@ class MinesTrixUserImage extends StatelessWidget {
         width: unconstraigned ? null : w,
         maxHeightDiskCache: maxHeight,
         maxWidthDiskCache: maxWidth,
-        imageUrl: thumnail
-            ? url.getThumbnail(
-                sclient,
-                height: h,
-                width: w,
-              )
-            : url.getDownloadLink(sclient),
+        imageUrl: httpurl,
         progressIndicatorBuilder: (context, url, downloadProgress) =>
             CircularProgressIndicator(value: downloadProgress.progress),
+        /*IconButton(
+                    icon: Icon(Icons.error),
+                    onPressed: () async {
+                      print("evict from cache");
+                      await CachedNetworkImage.evictFromCache(url);
+                      print("done");
+                    })*/
+
         errorWidget: (context, url, error) => Icon(Icons.error),
       ),
     );

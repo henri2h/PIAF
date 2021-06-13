@@ -3,9 +3,9 @@ import 'package:famedlysdk/encryption/utils/key_verification.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/components/keyVerificationDialog.dart';
+import 'package:logging/logging.dart';
+import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
@@ -27,6 +27,8 @@ class Matrix extends StatefulWidget {
 }
 
 class MatrixState extends State<Matrix> {
+  final log = Logger("MatrixState");
+
   SClient sclient;
   @override
   BuildContext context;
@@ -95,40 +97,46 @@ class MatrixState extends State<Matrix> {
         await request.rejectVerification();
       }*/
     });
+
     onEvent ??= sclient.onEvent.stream
         .where((event) =>
             [EventTypes.Message, EventTypes.Encrypted]
-                .contains(event.eventType) &&
+                .contains(event.content['type']) &&
             event.content['sender'] != sclient.userID)
         .listen((EventUpdate eventUpdate) async {
       // we should react differently depending on wether the event is a smatrix one or not...
+      // get event object
       Room room = sclient.getRoomById(eventUpdate.roomID);
       Event event = Event.fromJson(eventUpdate.content, room);
 
       // don't throw a notification for old events
       if (event.originServerTs
               .compareTo(DateTime.now().subtract(Duration(seconds: 5))) >
-          0)
-      // check if it is a message
-      if (SMatrixRoom.getSRoomType(room) != null) {
-        Profile profile = await sclient.getUserFromRoom(room);
-        Flushbar(
-          title: "New post from " + profile.displayname,
-          message: event.body,
-          duration: Duration(seconds: 3),
-          flushbarPosition: FlushbarPosition.TOP,
-        )..show(context);
-      } else {
-        Flushbar(
-          title: event.sender.displayName + "@" + room.name,
-          message: event.body,
-          duration: Duration(seconds: 3),
-          flushbarPosition: FlushbarPosition.TOP,
-        )..show(context);
+          0) {
+        // check if it is a minestrix event or a message
+        // This method works only for already recognised SRooms
+        bool isSRoom = sclient.srooms.containsKey(eventUpdate.roomID);
+
+        if (isSRoom) {
+          Profile profile = await sclient.getUserFromRoom(room);
+          Flushbar(
+            title: "New post from " + profile.displayname,
+            message: event.body,
+            duration: Duration(seconds: 3),
+            flushbarPosition: FlushbarPosition.TOP,
+          )..show(context);
+        } else {
+          Flushbar(
+            title: event.sender.displayName + "@" + room.name,
+            message: event.body,
+            duration: Duration(seconds: 3),
+            flushbarPosition: FlushbarPosition.TOP,
+          )..show(context);
+        }
       }
     });
 
-    print("Matrix state initialisated");
+    log.info("Matrix state initialisated");
     _initWithStore();
   }
 
@@ -141,11 +149,10 @@ class MatrixState extends State<Matrix> {
       if (firstLoginState == LoginState.logged) {
         await sclient.initSMatrix();
       } else {
-        print("Not logged in");
+        log.warning("Not logged in");
       }
     } catch (e) {
-      print(e);
-      print("error : Could not initWithStore");
+      log.severe("error : Could not initWithStore", e);
     }
   }
 
@@ -158,7 +165,7 @@ class MatrixState extends State<Matrix> {
 
   @override
   Widget build(BuildContext context) {
-    print("build");
+    log.info("build");
     return _InheritedMatrix(data: this, child: widget.child);
   }
 }

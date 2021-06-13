@@ -60,9 +60,9 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     return StreamBuilder<Object>(
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
-          Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.Reply);
+          Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.reply);
           Set<Event> reactions =
-              e.aggregatedEvents(t, RelationshipTypes.Reaction);
+              e.aggregatedEvents(t, RelationshipTypes.reaction);
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
             child: Column(
@@ -81,9 +81,9 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                           bottomRight: Radius.circular(10)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
+                          color: Colors.grey.withOpacity(0.2),
                           spreadRadius: 5,
-                          blurRadius: 7,
+                          blurRadius: 6,
                           offset: Offset(0, 3), // changes position of shadow
                         ),
                       ],
@@ -138,9 +138,11 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                   //color: Color(0xfff6f6f6),
                   child: Column(
                     children: [
-                      if (showReplyBox) ReplyBox(event: e),
-                      if (replies.isNotEmpty)
-                        RepliesVue(event: e, replies: replies),
+                      if (replies.isNotEmpty || showReplyBox)
+                        RepliesVue(
+                            event: e,
+                            replies: replies,
+                            showEditBox: showReplyBox),
                     ],
                   ),
                 ),

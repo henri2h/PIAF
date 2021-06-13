@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/notificationView.dart';
-import 'package:minestrix/components/postEditor.dart';
+import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chatsVue.dart';
-import 'package:minestrix/screens/createGroup.dart';
-import 'package:minestrix/screens/feedView.dart';
-import 'package:minestrix/screens/home/left_bar/widget.dart';
+import 'package:minestrix/screens/chat/chatsVue.dart';
+import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
+import 'package:minestrix/screens/smatrix/feedView.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
-import 'package:minestrix/screens/researchView.dart';
-import 'package:minestrix/screens/userFeedView.dart';
+import 'package:minestrix/screens/smatrix/friends/researchView.dart';
+import 'package:minestrix/screens/smatrix/userFeedView.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -46,6 +45,7 @@ class _HomePageState extends State<HomeScreen> {
   }
 
   Widget buildWideContainer(BuildContext context) {
+    bool feedView = false;
     if (widgetView == null) widgetView = FeedView(changePage: changePage);
     return Scaffold(
         floatingActionButton: buildFloattingButton(),
@@ -53,41 +53,28 @@ class _HomePageState extends State<HomeScreen> {
           color: Colors.white,
           child: Column(
             children: [
-              NavBar(),
-              //PostEditor(),
+              NavBar(changePage: changePage),
               Expanded(
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: LeftBar(),
-                        ),
-                      ),
-                      Flexible(
-                          flex: 6,
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 80.0),
-                            child: widgetView,
-                          )),
-                      Flexible(
-                          flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Text("Contacts",
-                                      style: TextStyle(fontSize: 30)),
-                                ),
-                                Flexible(child: RightBar()),
-                              ],
-                            ),
-                          )),
+                      Flexible(flex: 10, child: widgetView),
+                      if (feedView)
+                        Flexible(
+                            flex: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Text("Contacts",
+                                        style: TextStyle(fontSize: 30)),
+                                  ),
+                                  Flexible(child: RightBar()),
+                                ],
+                              ),
+                            )),
                     ]),
               ),
             ],

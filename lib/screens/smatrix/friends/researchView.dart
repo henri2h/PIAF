@@ -26,7 +26,7 @@ class _ResearchViewState extends State<ResearchView> {
               autofocus: false,
               decoration: InputDecoration(border: OutlineInputBorder())),
           suggestionsCallback: (pattern) async {
-            UserSearchResult ur = await sclient.searchUser(pattern);
+            UserSearchResult ur = await sclient.searchUserDirectory(pattern);
             return ur.results.toList();
           },
           itemBuilder: (context, suggestion) {

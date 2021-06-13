@@ -167,7 +167,7 @@ class PostHeader extends StatelessWidget {
                   onSelected: (String action) async {
                     switch (action) {
                       case "delete":
-                        await event.redact();
+                        await event.redactEvent();
                         break;
                       default:
                     }
