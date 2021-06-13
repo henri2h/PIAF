@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 

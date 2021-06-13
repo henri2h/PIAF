@@ -61,7 +61,7 @@ class MImageDisplay extends StatelessWidget {
     }
 
     int cache_size = 400;
-    int cache_h = cache_size ~/ ratio;
+    //int cache_h = cache_size ~/ ratio;
     int cache_w = (cache_size * ratio).toInt();
 
     if (event.isAttachmentEncrypted) {

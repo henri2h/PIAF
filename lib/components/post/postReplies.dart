@@ -11,8 +11,7 @@ class RepliesVue extends StatefulWidget {
   final Event event;
   final Set<Event> replies;
   final String regex = "(>(.*)\n)*\n";
-  bool showEditBox;
-
+  final bool showEditBox;
   RepliesVue(
       {Key key,
       @required this.event,
@@ -25,8 +24,12 @@ class RepliesVue extends StatefulWidget {
 }
 
 class _RepliesVueState extends State<RepliesVue> {
+  bool showEditBox = null;
+
   @override
   Widget build(BuildContext context) {
+    if (showEditBox == null) showEditBox = widget.showEditBox;
+
     // get replies
     SClient sclient = Matrix.of(context).sclient;
     int max = min(widget.replies.length, 2);
@@ -41,7 +44,7 @@ class _RepliesVueState extends State<RepliesVue> {
                 event: widget.event,
                 onMessageSend: () {
                   setState(() {
-                    widget.showEditBox = false;
+                    showEditBox = false;
                   });
                 }),
           for (Event revent in widget.replies.toList().sublist(0, max))
