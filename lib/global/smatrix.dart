@@ -108,8 +108,13 @@ class SClient extends Client {
     // On first sync we fetch all the event history
     if (_firstSync) {
       try {
+        int n = srooms.values.length;
+        int counter = 0;
         for (SMatrixRoom sr in srooms.values) {
           await sr.timeline.requestHistory();
+
+          log.info("First sync progress : " + (counter / n * 100).toString());
+          counter++;
         }
       } catch (e) {
         log.severe("Initial sync : failed to get history", e);
@@ -237,7 +242,7 @@ class SClient extends Client {
 
   Future createSMatrixUserProfile() async {
     log.info("Create smatrix room");
-    String name = "@" + userID + " timeline";
+    String name = userID + " timeline";
     SMatrixRoom sroom = await createSMatrixRoom(name, "Mines'Trix room name");
 
     if (sroom != null) userRoom = sroom;

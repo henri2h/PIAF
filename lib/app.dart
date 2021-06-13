@@ -13,9 +13,6 @@ class Minestrix extends StatefulWidget {
 }
 
 class _MinestrixState extends State<Minestrix> {
-  HomeScreen hm;
-  MinesTrixAccountCreation hmCreation;
-
   @override
   Widget build(BuildContext context) {
     return Matrix(
@@ -50,11 +47,8 @@ class _MinestrixState extends State<Minestrix> {
                           ),
                         );
                       } else if (sclient.userRoom == null) {
-                        if (hmCreation == null)
-                          hmCreation = MinesTrixAccountCreation();
-                        return hmCreation;
+                        return MinesTrixAccountCreation();
                       } else {
-                        if (hm == null) hm = HomeScreen();
                         return HomeScreen();
                       }
                     });

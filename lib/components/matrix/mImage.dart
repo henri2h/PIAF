@@ -51,16 +51,18 @@ class MImageDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String url = event.getAttachmentUrl().toString();
+    String url = event.getAttachmentUrl(getThumbnail: true).toString();
     int wi = event.infoMap["w"];
     int hi = event.infoMap["h"];
     double ratio = 1;
 
     if (hi != null && wi != null) {
-      double h = hi.toDouble();
-      double w = wi.toDouble();
-      ratio = w / h;
+      ratio = wi / hi;
     }
+
+    int cache_size = 400;
+    int cache_h = cache_size ~/ ratio;
+    int cache_w = (cache_size * ratio).toInt();
 
     if (event.isAttachmentEncrypted) {
       return AspectRatio(
@@ -77,7 +79,11 @@ class MImageDisplay extends StatelessWidget {
               if (file.hasData) {
                 return ClipRRect(
                     borderRadius: BorderRadius.circular(5),
-                    child: Image.memory(file.data.bytes));
+                    child: Image.memory(
+                      file.data.bytes,
+                      //cacheHeight: cache_h,
+                      cacheWidth: cache_w,
+                    ));
               }
               return Center(
                 child: Padding(
