@@ -60,7 +60,7 @@ class MImageDisplay extends StatelessWidget {
       ratio = wi / hi;
     }
 
-    int cache_size = 400;
+    int cache_size = 600;
     //int cache_h = cache_size ~/ ratio;
     int cache_w = (cache_size * ratio).toInt();
 
@@ -81,6 +81,7 @@ class MImageDisplay extends StatelessWidget {
                     borderRadius: BorderRadius.circular(5),
                     child: Image.memory(
                       file.data.bytes,
+                      fit: BoxFit.fill,
                       //cacheHeight: cache_h,
                       cacheWidth: cache_w,
                     ));

@@ -4,7 +4,7 @@ import 'package:minestrix/global/smatrix.dart';
 
 class SMatrixRoom {
   final log = Logger("SMatrixRoom");
-  
+
   // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
   // initialize the class, return false, if it could not generate the classes
   // i.e, it is not a valid class
