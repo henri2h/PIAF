@@ -5,8 +5,8 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chatVue.dart';
-import 'package:minestrix/screens/conversationSettings.dart';
+import 'package:minestrix/screens/chat/chatVue.dart';
+import 'package:minestrix/screens/chat/conversationSettings.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ChatsVue extends StatefulWidget {
@@ -24,14 +24,19 @@ class _ChatsVueState extends State<ChatsVue>
       if (constraints.maxWidth > 600) {
         return Row(
           children: [
-            Flexible(
-                flex: 2,
-                child: buildChatView(context, onSelection: (String roomId) {
-                  setState(() {
-                    selectedRoomID = roomId;
-                  });
-                })),
-            Flexible(flex: 9, child: ChatView(roomId: selectedRoomID))
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 350),
+              child: buildChatView(context, onSelection: (String roomId) {
+                setState(() {
+                  selectedRoomID = roomId;
+                });
+              }),
+            ),
+            Expanded(flex: 2, child: ChatView(roomId: selectedRoomID)),
+            if (selectedRoomID != null)
+              ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 400),
+                  child: ConversationSettings(roomId: selectedRoomID))
           ],
         );
       } else {
@@ -47,7 +52,8 @@ class _ChatsVueState extends State<ChatsVue>
                         icon: Icon(Icons.info),
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => ConversationSettings(room: room),
+                            builder: (_) =>
+                                ConversationSettings(roomId: room.id),
                           ));
                         },
                       ),
@@ -82,7 +88,7 @@ class _ChatsVueState extends State<ChatsVue>
                 children: [
                   H1Title("MATRIX Chats"),
                   Padding(
-                    padding: const EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(5),
                     child: IconButton(icon: Icon(Icons.add), onPressed: () {}),
                   ),
                 ],

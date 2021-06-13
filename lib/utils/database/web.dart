@@ -10,7 +10,7 @@ Future<Database> constructDb(
     String password = ''}) async {
   print('[Moor] Using moor web');
   return Database(WebDatabase.withStorage(
-      MoorWebStorage.indexedDbIfSupported(filename),
+      await MoorWebStorage.indexedDbIfSupported(filename),
       logStatements: logStatements));
 }
 

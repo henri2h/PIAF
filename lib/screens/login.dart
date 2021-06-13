@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:famedlysdk/famedlysdk.dart';
@@ -78,18 +79,18 @@ class LoginCardState extends State<LoginCard> {
         _errorText = null;
       });
     try {
-      await client.checkHomeserver(domain, supportedLoginTypes: {
-        AuthenticationTypes.password,
-        AuthenticationTypes.token
-      });
+      await client.checkHomeserver(domain);
       await client.login(
           type: ssoLogin
               ? AuthenticationTypes.token
               : AuthenticationTypes.password,
-          user: _usernameController.text,
+          identifier:
+              AuthenticationUserIdentifier(user: _usernameController.text),
           password: _passwordController.text,
           token: token,
           initialDeviceDisplayName: client.clientName);
+
+      await client.initSMatrix(); // start synchronsiation
     } catch (error) {
       if (mounted) setState(() => _errorText = error.toString());
     }
@@ -97,7 +98,7 @@ class LoginCardState extends State<LoginCard> {
   }
 
   Future<void> _requestSupportedTypes(SClient client) async {
-    LoginTypes lg = await client.requestLoginTypes();
+    LoginTypes lg = await client.getLoginFlows();
     print(lg.toJson());
     for (Flows item in lg.flows) {
       print(item.type.toString());
@@ -134,7 +135,7 @@ class LoginCardState extends State<LoginCard> {
       });
 
       try {
-        WellKnownInformations infos =
+        WellKnownInformation infos =
             await client.getWellKnownInformationsByUserId(userid);
         if (infos?.mHomeserver?.baseUrl != null) {
           updateDomain(infos.mHomeserver.baseUrl);
@@ -178,6 +179,7 @@ class LoginCardState extends State<LoginCard> {
       });
   }
 
+  Timer verifyDomainCallback;
 // according to the matrix specification https://matrix.org/docs/spec/appendices#id9
   RegExp userRegex = RegExp(
       r"@((([a-z]|\.|_|-|=|\/|[0-9])+):(((.+)\.(.+))|\[((([0-9]|[a-f]|[A-F])+):){2,7}:?([0-9]|[a-f]|[A-F])+\]))(:([0-9]+))?");
@@ -196,7 +198,11 @@ class LoginCardState extends State<LoginCard> {
                             name: "userid",
                             icon: Icons.account_circle,
                             onChanged: (String userid) async {
-                              await _verifyDomain(client, userid);
+                              verifyDomainCallback?.cancel();
+                              verifyDomainCallback = new Timer(
+                                  const Duration(milliseconds: 500), () async {
+                                await _verifyDomain(client, userid);
+                              });
                             },
                             tController: _usernameController),
                       ),

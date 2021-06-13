@@ -34,7 +34,7 @@ class _MinesTrixAccountCreationState extends State<MinesTrixAccountCreation> {
                         });
                         SClient sclient = Matrix.of(context).sclient;
 
-                        await sclient.createSMatrixRoom();
+                        await sclient.createSMatrixUserProfile();
                       },
                       label: "Go",
                       icon: Icons.send)),

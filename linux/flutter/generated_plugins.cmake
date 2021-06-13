@@ -3,7 +3,8 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  file_chooser
+  file_selector_linux
+  flutter_secure_storage
   url_launcher_linux
 )
 

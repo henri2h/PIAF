@@ -1,7 +1,10 @@
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:logging/logging.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class SMatrixRoom {
+  final log = Logger("SMatrixRoom");
+
   // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
   // initialize the class, return false, if it could not generate the classes
   // i.e, it is not a valid class
@@ -16,15 +19,13 @@ class SMatrixRoom {
     if (roomType == SRoomType.UserRoom)
       return user.displayName;
     else {
-      return room.name
-          .replaceFirst(SClient.SMatrixRoomPrefix + "#", "")
-          .replaceFirst("smatrix_", "");
+      return room.name.replaceFirst("#", "").replaceFirst("smatrix_", "");
     }
   }
 
   Future<bool> init(Room r, SClient sclient) async {
     try {
-      roomType = getSRoomType(r);
+      roomType = await getSRoomType(r);
       if (roomType != null) {
         room = r;
 
@@ -35,9 +36,14 @@ class SMatrixRoom {
           user = findUser(users, userId);
 
           // or in the server ones
-          if (user == null) {
-            users = await room.requestParticipants();
-            user = findUser(users, userId);
+
+          try {
+            if (user == null) {
+              users = await room.requestParticipants();
+              user = findUser(users, userId);
+            }
+          } catch (e) {
+            log.severe("Could not request participants", e);
           }
 
           if (user != null) {
@@ -63,14 +69,13 @@ class SMatrixRoom {
             return true; // we cannot yet access to the room participants
           }
 
-          print("issue");
-          print(r.name);
+          print("issue, not a smatrix room : " + r.name);
         } else if (roomType == SRoomType.Group) {
           return true;
         }
       }
     } catch (e) {
-      print("crash");
+      log.severe("Could not init smatrix client", e);
     }
     return false;
   }
@@ -85,16 +90,26 @@ class SMatrixRoom {
     return null;
   }
 
-  static SRoomType getSRoomType(Room room) {
+  static Future<SRoomType> getSRoomType(Room room) async {
     // check if is a use room, in which case, it's user must be admin
     if (room.name.startsWith("@") ||
-        room.name.startsWith(SClient.SMatrixUserRoomPrefix)) {
-      return SRoomType.UserRoom;
-    }
-    if (room.name.startsWith("#") ||
-        room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
-      // now, it is a group
-      return SRoomType.Group;
+        room.name.startsWith(SClient.SMatrixUserRoomPrefix) ||
+        room.name.startsWith("#")) {
+      await room
+          .postLoad(); // we need to find a better solution, to speed up the loading process...
+      Event state = room.getState("org.matrix.msc1840");
+      if (state != null) {
+        // fall back
+        if (room.name.startsWith("@") ||
+            room.name.startsWith(SClient.SMatrixRoomPrefix + "@")) {
+          // now, it is a user
+          return SRoomType.UserRoom;
+        } else if (room.name.startsWith("#") ||
+            room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
+          // now, it is a group
+          return SRoomType.Group;
+        }
+      }
     }
 
     return null; // we don't support other room types yet

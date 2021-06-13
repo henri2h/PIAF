@@ -3,27 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
-class AddUser extends StatefulWidget {
-  AddUser(BuildContext context, {Key key}) : super(key: key);
+class MinesTrixUserSelection extends StatefulWidget {
+  MinesTrixUserSelection({Key key, this.participants}) : super(key: key);
+  final List<User>
+      participants; // list of the users who won't appear in the searchbox
   @override
-  _AddUserState createState() => _AddUserState();
+  _MinesTrixUserSelectionState createState() => _MinesTrixUserSelectionState();
 }
 
-class _AddUserState extends State<AddUser> {
+class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
   List<Profile> profiles = [];
+  List<User> participants;
 
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
+
     return Scaffold(
         appBar: AppBar(
           title: Text("Add users"),
           actions: [
             IconButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(context, profiles);
                 },
                 icon: Icon(Icons.done))
           ],
@@ -37,16 +42,26 @@ class _AddUserState extends State<AddUser> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                UserSearchResult ur = await sclient.searchUser(pattern);
-                List<User> sFriends = await sclient.getSfriends();
+                UserSearchResult ur =
+                    await sclient.searchUserDirectory(pattern);
+                if (participants == null) participants = widget.participants;
+
+                // by default we remove the users followed by the user
+                if (participants == null) {
+                  participants = List<User>.empty();
+
+                  await sclient.following.forEach((key, SMatrixRoom sroom) {
+                    participants.add(sroom.user);
+                  });
+                }
 
                 return ur.results
                     .where((element) =>
-                        sFriends.firstWhere(
+                        widget.participants.firstWhere(
                             (friend) => friend.id == element.userId,
                             orElse: () => null) ==
                         null)
-                    .toList(); // exclude current friends
+                    .toList(); // exclude current participants (we cannot add them twice)
               },
               itemBuilder: (context, suggestion) {
                 Profile profile = suggestion;

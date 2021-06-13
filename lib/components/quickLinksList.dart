@@ -5,27 +5,31 @@ import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 
-class RightBar extends StatefulWidget {
+class QuickLinksBar extends StatefulWidget {
   @override
-  _RightBarState createState() => _RightBarState();
+  _QuickLinksBarState createState() => _QuickLinksBarState();
 }
 
-class _RightBarState extends State<RightBar>
+class _QuickLinksBarState extends State<QuickLinksBar>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final sclient = Matrix.of(context).sclient;
+
+    List<SMatrixRoom> srooms = sclient.sgroups.values.toList();
     return StreamBuilder(
         stream: sclient.onSync.stream,
         builder: (context, _) => ListView.builder(
-            itemCount: sclient.sfriends.values.length,
-            itemBuilder: (BuildContext context, int i) =>
-                ContactView(sroom: sclient.sfriends.values.toList()[i])));
+            itemCount: srooms.length,
+            itemBuilder: (BuildContext context, int i) => Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: SRoomView(sroom: srooms[i]),
+                )));
   }
 }
 
-class ContactView extends StatelessWidget {
-  const ContactView({
+class SRoomView extends StatelessWidget {
+  const SRoomView({
     Key key,
     @required this.sroom,
   }) : super(key: key);
@@ -34,17 +38,21 @@ class ContactView extends StatelessWidget {
   Widget build(BuildContext context) {
     final SClient client = Matrix.of(context).sclient;
     if (sroom != null)
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6.0),
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: TextButton(
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
           ),
-          child: TextButton(
-            onPressed: () {
-              NavigationHelper.navigateToUserFeed(context, sroom.user);
-            },
+          onPressed: () {
+            NavigationHelper.navigateToGroup(context, sroom.room.id);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -52,32 +60,31 @@ class ContactView extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          backgroundImage:
-                              sroom.user == null || sroom.user.avatarUrl == null
-                                  ? null
-                                  : NetworkImage(
-                                      sroom.user.avatarUrl
-                                          .getThumbnail(
-                                            client,
-                                            width: 64,
-                                            height: 64,
-                                          )
-                                          .toString(),
-                                    ),
-                        ),
+                        sroom.room.avatar == null
+                            ? Icon(Icons.group, color: Colors.black)
+                            : CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  sroom.room.avatar
+                                      .getThumbnail(
+                                        client,
+                                        width: 64,
+                                        height: 64,
+                                      )
+                                      .toString(),
+                                ),
+                              ),
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text(sroom.user.displayName,
+                                  Text(sroom.name,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black)),
                                   Text(
-                                    sroom.user.id,
+                                    sroom.room.topic,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(color: Colors.black),
                                   )

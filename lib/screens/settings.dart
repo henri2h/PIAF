@@ -28,7 +28,8 @@ class SettingsView extends StatelessWidget {
                 child: Text("logout ?"),
                 onPressed: () async {
                   await sclient.logout();
-                  Navigator.of(context).pop();
+                  if (Navigator.of(context).canPop())
+                    Navigator.of(context).pop();
                 }),
             H2Title("Encryption"),
             sclient.encryptionEnabled
