@@ -18,55 +18,91 @@ class _CreateGroupState extends State<CreateGroup> {
     TextEditingController tName = TextEditingController();
     TextEditingController tDesc = TextEditingController();
 
-    return Container(
-        child: ListView(
-      children: [
-        H1Title("Create group"),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Column(
-            children: [
-              TextField(
-                controller: tName,
-                decoration: InputDecoration(
-                  labelText: "Group name",
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  filled: true,
-                ),
+    return SimpleDialog(title: H1Title("Create a new group"), children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Column(
+          children: [
+            TextField(
+              controller: tName,
+              decoration: InputDecoration(
+                labelText: "Group name",
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(15))),
+                filled: true,
               ),
-              SizedBox(height: 10),
-              TextField(
-                controller: tDesc,
-                decoration: InputDecoration(
-                  labelText: "Description",
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  errorText: errorText,
-                  filled: true,
-                ),
+            ),
+            SizedBox(height: 15),
+            TextField(
+              controller: tDesc,
+              decoration: InputDecoration(
+                labelText: "Topic (optional)",
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(15))),
+                errorText: errorText,
+                filled: true,
               ),
-            ],
-          ),
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Make this group public",
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold)),
+                    Text("Private group can only be joined with invitation")
+                  ],
+                ),
+                Switch(value: true, onChanged: (value) {}),
+              ],
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Enable end-to-end encryption",
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold)),
+                    Text("You can't disable it later.")
+                  ],
+                ),
+                Switch(value: true, onChanged: (value) {}),
+              ],
+            ),
+            SizedBox(height: 30),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              OutlinedButton(
+                child: Text('Abort'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                child: Text('Create group'),
+                onPressed: () async {
+                  if (tName.text != "") {
+                    await sclient.createSMatrixRoom(
+                        "#" + tName.text, tDesc.text);
+                    setState(() {
+                      errorText = "success";
+                    });
+                  } else
+                    setState(() {
+                      errorText = "Name can't be null";
+                    });
+                },
+              )
+            ])
+          ],
         ),
-        Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: MinesTrixButton(
-              label: "Create group",
-              onPressed: () async {
-                if (tName.text != "") {
-                  await sclient.createSMatrixRoom("#" + tName.text, tDesc.text);
-                  setState(() {
-                    errorText = "success";
-                  });
-                } else
-                  setState(() {
-                    errorText = "Name can't be null";
-                  });
-              },
-              icon: Icons.group_add),
-        )
-      ],
-    ));
+      ),
+    ]);
   }
 }

@@ -180,7 +180,8 @@ class _HomePageState extends State<HomeScreen> {
                   SizedBox(height: 10),
                   FloatingActionButton(
                     onPressed: () async {
-                      changePage(CreateGroup());
+                      showDialog(
+                          context: context, builder: (_) => CreateGroup());
                     },
                     tooltip: "New group",
                     child: Container(
