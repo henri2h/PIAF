@@ -220,7 +220,10 @@ class SClient extends Client {
 
   Future<SMatrixRoom> createSMatrixRoom(String name, String desc) async {
     String roomID = await createRoom(
-        name: name, topic: desc, visibility: Visibility.private);
+        name: name,
+        topic: desc,
+        visibility: Visibility.private,
+        creationContent: {"type": "fr.henri2h.minestrix"});
     SMatrixRoom sroom = SMatrixRoom();
 
     Room r = getRoomById(roomID);
@@ -243,7 +246,7 @@ class SClient extends Client {
   Future createSMatrixUserProfile() async {
     log.info("Create smatrix room");
     String name = userID + " timeline";
-    SMatrixRoom sroom = await createSMatrixRoom(name, "Mines'Trix room name");
+    SMatrixRoom sroom = await createSMatrixRoom(name, "A Mines'Trix profile");
 
     if (sroom != null) userRoom = sroom;
   }
