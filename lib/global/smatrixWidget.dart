@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:famedlysdk/encryption/utils/key_verification.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flushbar/flushbar.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
@@ -116,7 +117,6 @@ class MatrixState extends State<Matrix> {
         // check if it is a minestrix event or a message
         // This method works only for already recognised SRooms
         bool isSRoom = sclient.srooms.containsKey(eventUpdate.roomID);
-
         if (isSRoom) {
           Profile profile = await sclient.getUserFromRoom(room);
           Flushbar(
@@ -126,11 +126,21 @@ class MatrixState extends State<Matrix> {
             flushbarPosition: FlushbarPosition.TOP,
           )..show(context);
         } else {
+          // bah.... dirty
+
+          double mWidth = 500;
+          double margin_left = MediaQuery.of(context).size.width - mWidth - 20;
+          if (margin_left < 8) margin_left = 8;
           Flushbar(
+            margin: EdgeInsets.only(bottom: 8, right: 8, left: margin_left),
+            borderRadius: 8,
+            maxWidth: mWidth,
             title: event.sender.displayName + "@" + room.name,
+            dismissDirection: FlushbarDismissDirection.HORIZONTAL,
+            icon: Icon(Icons.info, color: Colors.white),
             message: event.body,
-            duration: Duration(seconds: 3),
-            flushbarPosition: FlushbarPosition.TOP,
+            duration: Duration(seconds: 5),
+            flushbarPosition: FlushbarPosition.BOTTOM,
           )..show(context);
         }
       }
