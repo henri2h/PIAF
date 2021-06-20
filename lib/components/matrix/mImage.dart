@@ -14,13 +14,19 @@ class MImage extends StatelessWidget {
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) {
             return SafeArea(
-                child: Scaffold(
-                    appBar: AppBar(title: Text("Image display " + event.body)),
-                    body: InteractiveViewer(
-                        boundaryMargin: EdgeInsets.all(20.0),
-                        minScale: 0.1,
-                        maxScale: 4,
-                        child: MImageDisplay(event: event))));
+              child: Scaffold(
+                  appBar: AppBar(title: Text("Image display " + event.body)),
+                  body: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(30.0),
+                      child: InteractiveViewer(
+                          boundaryMargin: EdgeInsets.all(20.0),
+                          minScale: 0.01,
+                          maxScale: 4,
+                          child: MImageDisplay(event: event)),
+                    ),
+                  )),
+            );
           }));
         },
         child: MImageDisplay(event: event));
