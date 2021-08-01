@@ -21,9 +21,9 @@ class ConversationSettings extends StatelessWidget {
         H2Title("Users"),
         for (User u in room.getParticipants())
           ListTile(
-              title: Text(u.displayName),
+              title: Text(u.displayName.toString()),
               leading: MinesTrixUserImage(url: u.avatarUrl, thumnail: true),
-              subtitle: Text(u.id)),
+              subtitle: Text(u.id.toString())),
         Padding(
           padding: const EdgeInsets.all(30.0),
           child: MinesTrixButton(
