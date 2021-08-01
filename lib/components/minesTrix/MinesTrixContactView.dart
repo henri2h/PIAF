@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
 
 class MinesTrixContactView extends StatelessWidget {
   const MinesTrixContactView({
@@ -13,8 +11,6 @@ class MinesTrixContactView extends StatelessWidget {
   final User user;
   @override
   Widget build(BuildContext context) {
-    final SClient client = Matrix.of(context).sclient;
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
