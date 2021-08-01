@@ -60,23 +60,28 @@ class PostHeader extends StatelessWidget {
                                             fontWeight: FontWeight.bold)),
                                   ),
                                   if (event.sender.id != p.data.userId)
-                                    Row(children: [
-                                      SizedBox(width: 5),
-                                      Text("to",
-                                          style: TextStyle(
-                                              color: Colors.grey[600])),
-                                      SizedBox(width: 5),
-                                      TextButton(
-                                        onPressed: () {
-                                          NavigationHelper.navigateToUserFeed(
-                                              context, u);
-                                        },
-                                        child: Text(p.data.displayname,
+                                    Flexible(
+                                      child: Row(children: [
+                                        Text("to",
                                             style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400)),
-                                      ),
-                                    ]),
+                                                color: Colors.grey[600])),
+                                        Flexible(
+                                          child: TextButton(
+                                            onPressed: () {
+                                              NavigationHelper
+                                                  .navigateToUserFeed(
+                                                      context, u);
+                                            },
+                                            child: Text(p.data.displayname,
+                                                overflow: TextOverflow.clip,
+                                                style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                          ),
+                                        ),
+                                      ]),
+                                    ),
                                 ],
                               ),
                               Text(timeago.format(event.originServerTs),
@@ -107,17 +112,17 @@ class PostHeader extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold)),
                         ),
-                        SizedBox(width: 5),
                         Text("to", style: TextStyle(color: Colors.grey[600])),
-                        SizedBox(width: 5),
-                        TextButton(
-                          onPressed: () {
-                            NavigationHelper.navigateToGroup(
-                                context, event.roomId);
-                          },
-                          child: Text(sroom.name,
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w400)),
+                        Flexible(
+                          child: TextButton(
+                            onPressed: () {
+                              NavigationHelper.navigateToGroup(
+                                  context, event.roomId);
+                            },
+                            child: Text(sroom.name,
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w400)),
+                          ),
                         ),
                       ],
                     ),
