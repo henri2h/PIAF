@@ -55,8 +55,11 @@ class _ChatsVueState extends State<ChatsVue>
                         icon: Icon(Icons.info),
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) =>
-                                ConversationSettings(roomId: room.id),
+                            builder: (_) => Scaffold(
+                                appBar: AppBar(
+                                    title: Text(
+                                        "Room info : " + room.displayname)),
+                                body: ConversationSettings(roomId: room.id)),
                           ));
                         },
                       ),
