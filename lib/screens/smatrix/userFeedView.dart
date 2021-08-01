@@ -37,49 +37,42 @@ class _UserFeedViewState extends State<UserFeedView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       H1Title(isUserPage ? "My account" : "User feed"),
-                      Row(
-                        children: [
-                          IconButton(
-                              icon: Icon(Icons.bug_report),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => Scaffold(
-                                        appBar: AppBar(
-                                            title: Text("Debug time !!")),
-                                        body: DebugView())));
-                              }),
-                          IconButton(
-                              icon: Icon(Icons.settings),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => Scaffold(
-                                        appBar: AppBar(title: Text("Settings")),
-                                        body: SettingsView())));
-                              }),
-                        ],
-                      ),
+                      if (isUserPage)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 20),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                  icon: Icon(Icons.bug_report),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (_) => Scaffold(
+                                                appBar: AppBar(
+                                                    title:
+                                                        Text("Debug time !!")),
+                                                body: DebugView())));
+                                  }),
+                              IconButton(
+                                  icon: Icon(Icons.settings),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (_) => Scaffold(
+                                                appBar: AppBar(
+                                                    title: Text("Settings")),
+                                                body: SettingsView())));
+                                  }),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
-                  Stack(
-                    children: [
-                      if (sroom.room.avatar != null)
-                        Center(
-                            child: MinesTrixUserImage(
-                                url: sroom.room.avatar,
-                                unconstraigned: true,
-                                rounded: false,
-                                maxHeight: 500)),
-                      Container(
-                        // alignment: Alignment.bottomCenter,
-                        padding: sroom.room.avatar == null
-                            ? const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 20)
-                            : const EdgeInsets.only(
-                                left: 40, right: 40, top: 200),
-                        child: UserInfo(user: sroom.user),
-                      ),
-                    ],
-                  ),
+                  UserInfo(
+                      user: sroom.user,
+                      avatar: sroom.room.avatar?.getDownloadLink(sclient)),
+
                   if (constraints.maxWidth <= 900)
                     Padding(
                         padding: const EdgeInsets.all(15),
@@ -289,10 +282,12 @@ class FriendsView extends StatelessWidget {
 }
 
 class UserInfo extends StatelessWidget {
-  const UserInfo({Key key, this.user, this.profile}) : super(key: key);
+  const UserInfo({Key key, this.user, this.profile, this.avatar})
+      : super(key: key);
 
   final Profile profile;
   final User user;
+  final Uri avatar;
 
   @override
   Widget build(BuildContext context) {
@@ -306,53 +301,96 @@ class UserInfo extends StatelessWidget {
       avatarUrl = profile.avatarUrl;
     }
 
-    return Center(
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 120.0),
-            child: CachedNetworkImage(
-                fit: BoxFit.cover,
-                imageUrl:
-                    "https://img.fotocommunity.com/the-plasma-core-d4d43874-fcdd-4def-b94b-8bcfd3db87de.jpg?height=1080"),
-          ),
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Card(
-                elevation: 15,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(40.0),
+    /*
+     Container(
+                    foregroundDecoration: const BoxDecoration(
+                      image: DecorationImage(
+                          image: NetworkImage(
+                              'https://p6.storage.canalblog.com/69/50/922142/85510911_o.png'),
+                          fit: BoxFit.fill),
+                    ),
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                          alignment: Alignment(-.2, 0),
+                          image: NetworkImage(
+                              'http://www.naturerights.com/blog/wp-content/uploads/2017/12/Taranaki-NR-post-1170x550.png'),
+                          fit: BoxFit.cover),
+                    ),
+                    alignment: Alignment.bottomCenter,
+                    padding: EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      "Hello World",
+                      style: Theme.of(context)
+                          .textTheme
+                          .display1
+                          .copyWith(color: Colors.white),
+                    ),
                   ),
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      MinesTrixUserImage(
-                        url: avatarUrl,
-                        width: 250,
-                        height: 250,
-                        thumnail: true,
-                        rounded: false,
-                        defaultIcon:
-                            Icon(Icons.person, color: Colors.black, size: 120),
-                      ),
-                      SizedBox(height: 10),
-                      Text(displayName,
-                          style: TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.bold)),
-                      Text(userId,
-                          style:
-                              TextStyle(fontSize: 20, color: Colors.grey[600])),
-                    ],
-                  ),
-                ),
+                     */
+
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      // small screens
+      if (constraints.maxWidth < 800)
+        return Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            if (avatar != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 180),
+                child: CachedNetworkImage(imageUrl: avatar.toString()),
               ),
+            buildUserProfileDisplay(avatarUrl, displayName, userId),
+          ],
+        );
+
+      // big screens
+      return Container(
+          decoration: avatar != null
+              ? BoxDecoration(
+                  image: DecorationImage(
+                      image: CachedNetworkImageProvider(avatar.toString()),
+                      fit: BoxFit.cover),
+                )
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 60.0, horizontal: 20),
+            child: Align(
+                alignment:
+                    avatar != null ? Alignment.centerLeft : Alignment.center,
+                child: buildUserProfileDisplay(avatarUrl, displayName, userId)),
+          ));
+    });
+  }
+
+  Widget buildUserProfileDisplay(
+      Uri avatarUrl, String displayName, String userId) {
+    return Card(
+      elevation: 15,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(40.0),
+        ),
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            MinesTrixUserImage(
+              url: avatarUrl,
+              width: 250,
+              height: 250,
+              thumnail: true,
+              rounded: false,
+              defaultIcon: Icon(Icons.person, color: Colors.black, size: 120),
             ),
-          ),
-        ],
+            SizedBox(height: 10),
+            Text(displayName,
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+            Text(userId,
+                style: TextStyle(fontSize: 20, color: Colors.grey[600])),
+          ],
+        ),
       ),
     );
   }
