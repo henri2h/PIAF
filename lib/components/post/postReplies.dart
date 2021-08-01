@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
@@ -65,6 +66,7 @@ class _RepliesVueState extends State<RepliesVue> {
                                 child: MinesTrixUserImage(
                                     url: revent.sender.avatarUrl,
                                     width: 16,
+                                    thumnail: true,
                                     height: 16)),
                             SizedBox(width: 10),
                             Expanded(

@@ -32,8 +32,10 @@ class MinesTrixUserImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
+
     double h = height != null ? height : 30;
     double w = width != null ? width : 30;
+
     if (url == null)
       return Container(
           height: h,

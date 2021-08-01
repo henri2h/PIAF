@@ -274,7 +274,7 @@ class _ChatViewState extends State<ChatView> {
                         .toList();
 
                     // in case we need to load history because list is not long enough to use pull to refresh
-                    if (filteredEvents.length < 50)
+                    if (filteredEvents.length < 70)
                       return FutureBuilder(
                           future: timeline.requestHistory(),
                           builder: (BuildContext context,

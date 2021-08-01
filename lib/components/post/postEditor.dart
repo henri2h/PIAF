@@ -49,7 +49,11 @@ class _PostEditorState extends State<PostEditor>
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  MinesTrixUserImage(url: sclient.userRoom.user.avatarUrl),
+                  MinesTrixUserImage(
+                      url: sclient.userRoom.user.avatarUrl,
+                      width: 48,
+                      thumnail: true,
+                      height: 48),
                   SizedBox(width: 5),
                   H1Title("What's up ?"),
                 ],

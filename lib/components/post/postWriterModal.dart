@@ -17,7 +17,10 @@ class PostWriterModal extends StatelessWidget {
       child: Row(
         children: [
           MinesTrixUserImage(
-              url: sclient.userRoom.user.avatarUrl, height: 50, width: 50),
+              url: sclient.userRoom.user.avatarUrl,
+              width: 48,
+              thumnail: true,
+              height: 48),
           SizedBox(width: 30),
           Expanded(
               child: ElevatedButton(

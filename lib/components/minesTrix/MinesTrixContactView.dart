@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:famedlysdk/famedlysdk.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
@@ -46,19 +47,11 @@ class MinesTrixContactView extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        backgroundImage: user == null || user.avatarUrl == null
-                            ? null
-                            : NetworkImage(
-                                user.avatarUrl
-                                    .getThumbnail(
-                                      client,
-                                      width: 64,
-                                      height: 64,
-                                    )
-                                    .toString(),
-                              ),
-                      ),
+                      MinesTrixUserImage(
+                          url: user.avatarUrl,
+                          width: 48,
+                          thumnail: true,
+                          height: 48),
                       Flexible(
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),

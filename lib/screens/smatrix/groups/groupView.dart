@@ -86,7 +86,8 @@ class _GroupViewState extends State<GroupView> {
                                       .getParticipants()
                                       .where((User u) =>
                                           u.membership == Membership.join))
-                                    MinesTrixUserImage(url: user.avatarUrl)
+                                    MinesTrixUserImage(
+                                        url: user.avatarUrl, thumnail: true)
                                 ])),
                           ],
                         ),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/accountCard.dart';
@@ -24,6 +25,8 @@ class UserFeedView extends StatefulWidget {
 }
 
 class _UserFeedViewState extends State<UserFeedView> {
+  bool isUserPage = false;
+
   Widget buildPage(SClient sclient, SMatrixRoom sroom, List<Event> sevents) {
     return LayoutBuilder(
       builder: (context, constraints) => StreamBuilder(
@@ -33,7 +36,7 @@ class _UserFeedViewState extends State<UserFeedView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      H1Title("User feed"),
+                      H1Title(isUserPage ? "My account" : "User feed"),
                       Row(
                         children: [
                           IconButton(
@@ -138,6 +141,8 @@ class _UserFeedViewState extends State<UserFeedView> {
     SClient sclient = Matrix.of(context).sclient;
     String roomId = sclient.userIdToRoomId[widget.userId];
     SMatrixRoom sroom = sclient.srooms[roomId];
+
+    if (widget.userId == sclient.userID) isUserPage = true;
 
     User user_in = sclient.userRoom.room
         .getParticipants()
@@ -302,26 +307,52 @@ class UserInfo extends StatelessWidget {
     }
 
     return Center(
-      child: Card(
-        elevation: 15,
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MinesTrixUserImage(
-                url: avatarUrl,
-                width: 200,
-                height: 200,
-                defaultIcon: Icon(Icons.person, color: Colors.black, size: 120),
-              ),
-              Text(displayName,
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-              Text(userId,
-                  style: TextStyle(fontSize: 20, color: Colors.grey[600])),
-            ],
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 120.0),
+            child: CachedNetworkImage(
+                fit: BoxFit.cover,
+                imageUrl:
+                    "https://img.fotocommunity.com/the-plasma-core-d4d43874-fcdd-4def-b94b-8bcfd3db87de.jpg?height=1080"),
           ),
-        ),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Card(
+                elevation: 15,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(40.0),
+                  ),
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      MinesTrixUserImage(
+                        url: avatarUrl,
+                        width: 250,
+                        height: 250,
+                        thumnail: true,
+                        rounded: false,
+                        defaultIcon:
+                            Icon(Icons.person, color: Colors.black, size: 120),
+                      ),
+                      SizedBox(height: 10),
+                      Text(displayName,
+                          style: TextStyle(
+                              fontSize: 25, fontWeight: FontWeight.bold)),
+                      Text(userId,
+                          style:
+                              TextStyle(fontSize: 20, color: Colors.grey[600])),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

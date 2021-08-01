@@ -32,7 +32,7 @@ class NavBar extends StatelessWidget {
                   changePage(FeedView(changePage: changePage));
                 }),
             NavBarButton(
-                name: "My Acount",
+                name: "My account",
                 icon: Icons.person,
                 onPressed: () {
                   changePage(UserFeedView(userId: sclient.userID));
