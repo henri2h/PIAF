@@ -28,7 +28,6 @@ class FeedView extends StatelessWidget {
         child: StreamBuilder(
           stream: sclient.onNewPostInTimeline.stream,
           builder: (context, _) {
-            print(sclient.stimeline.length.toString());
             if (sclient.stimeline.length == 0)
               return ListView(
                 children: [
