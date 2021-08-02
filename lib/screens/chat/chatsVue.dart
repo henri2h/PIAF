@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTheme.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
+import 'package:minestrix/global/helpers/TextHelper.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chat/chatVue.dart';
@@ -166,6 +167,13 @@ class _ChatsVueState extends State<ChatsVue>
                         enableFeedback: true,
                         leading: MinesTrixUserImage(
                             url: sortedRooms[pos].avatar,
+                            fit: true,
+                            defaultIcon: Text(
+                                TextHelper.getRoomInitial(
+                                    sortedRooms[pos].displayname),
+                                style: TextStyle(
+                                    fontSize: 20, color: Colors.white)),
+                            backgroundColor: Colors.blue,
                             width: 50,
                             height: 50),
                         title: Text(sortedRooms[pos].displayname,
