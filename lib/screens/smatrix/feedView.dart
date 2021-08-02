@@ -128,7 +128,7 @@ class FeedView extends StatelessWidget {
                         if (sclient.stimeline.length > 0)
                           return Padding(
                             padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 15.0),
+                                vertical: 2, horizontal: 6),
                             child: Material(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
