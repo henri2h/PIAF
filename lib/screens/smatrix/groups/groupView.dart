@@ -1,5 +1,5 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixContactView.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
@@ -53,7 +53,7 @@ class _GroupViewState extends State<GroupView> {
                                 ));
 
                                 profiles.forEach((Profile p) {
-                                  print(p.displayname);
+                                  print(p.displayName);
                                 });
                               }),
                         );

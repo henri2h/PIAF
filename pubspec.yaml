@@ -24,10 +24,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  famedlysdk: # Matrix library
-    git:
-      url: https://gitlab.com/famedly/famedlysdk.git
-      ref: main
+
+  matrix: ^0.2.1
+  flutter_olm: ^1.1.1
+  flutter_openssl_crypto: ^0.0.1
+
 
   redux: ^5.0.0
   flutter_redux: ^0.8.2
@@ -76,7 +77,6 @@ dependencies:
   adaptive_dialog: ^0.10.0+5
   logging: ^1.0.1
 
-  flutter_olm: ^1.1.1
   package_info_plus: ^1.0.0
   
 dev_dependencies:

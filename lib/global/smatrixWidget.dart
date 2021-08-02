@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:famedlysdk/encryption/utils/key_verification.dart';
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
+import 'package:matrix/encryption.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/utils/fameldysdk_store.dart';
@@ -120,7 +120,7 @@ class MatrixState extends State<Matrix> {
         if (isSRoom) {
           Profile profile = await sclient.getUserFromRoom(room);
           Flushbar(
-            title: "New post from " + profile.displayname,
+            title: "New post from " + profile.displayName,
             message: event.body,
             duration: Duration(seconds: 3),
             flushbarPosition: FlushbarPosition.TOP,

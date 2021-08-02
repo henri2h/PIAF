@@ -1,5 +1,5 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:logging/logging.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/global/smatrix.dart';
 
 class SMatrixRoom {
@@ -63,7 +63,7 @@ class SMatrixRoom {
               user = User(userId,
                   membership: "m.join",
                   avatarUrl: p.avatarUrl.toString(),
-                  displayName: p.displayname,
+                  displayName: p.displayName,
                   room: r);
             }
             return true; // we cannot yet access to the room participants

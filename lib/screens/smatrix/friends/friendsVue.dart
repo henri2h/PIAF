@@ -1,4 +1,4 @@
-import 'package:famedlysdk/famedlysdk.dart';
+import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/accountCard.dart';
@@ -30,7 +30,7 @@ class FriendsVue extends StatelessWidget {
                 autofocus: false,
                 decoration: InputDecoration(border: OutlineInputBorder())),
             suggestionsCallback: (pattern) async {
-              UserSearchResult ur = await sclient.searchUserDirectory(pattern);
+              var ur = await sclient.searchUserDirectory(pattern);
 
               List<User> following = List<User>.empty();
               await sclient.following.forEach((key, SMatrixRoom sroom) {
@@ -51,7 +51,7 @@ class FriendsVue extends StatelessWidget {
                 leading: profile.avatarUrl == null
                     ? Icon(Icons.person)
                     : MinesTrixUserImage(url: profile.avatarUrl),
-                title: Text(profile.displayname),
+                title: Text(profile.displayName),
                 subtitle: Text(profile.userId),
               );
             },

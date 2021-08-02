@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:famedlysdk/famedlysdk.dart';
+import 'package:matrix/matrix.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
@@ -81,9 +81,7 @@ class LoginCardState extends State<LoginCard> {
     try {
       await client.checkHomeserver(domain);
       await client.login(
-          type: ssoLogin
-              ? AuthenticationTypes.token
-              : AuthenticationTypes.password,
+          ssoLogin ? LoginType.mLoginToken : LoginType.mLoginPassword,
           identifier:
               AuthenticationUserIdentifier(user: _usernameController.text),
           password: _passwordController.text,
@@ -98,13 +96,12 @@ class LoginCardState extends State<LoginCard> {
   }
 
   Future<void> _requestSupportedTypes(SClient client) async {
-    LoginTypes lg = await client.getLoginFlows();
-    print(lg.toJson());
-    for (Flows item in lg.flows) {
+    List<LoginFlow> lg = await client.getLoginFlows();
+    for (LoginFlow item in lg) {
       print(item.type.toString());
     }
     setState(() {
-      ssoLogin = lg.flows.firstWhere((Flows elem) => elem.type == "m.login.sso",
+      ssoLogin = lg.firstWhere((LoginFlow elem) => elem.type == "m.login.sso",
               orElse: () => null) !=
           null;
     });
@@ -135,12 +132,11 @@ class LoginCardState extends State<LoginCard> {
       });
 
       try {
-        WellKnownInformation infos =
-            await client.getWellKnownInformationsByUserId(userid);
+        DiscoveryInformation infos = await client.getWellknown();
         if (infos?.mHomeserver?.baseUrl != null) {
-          updateDomain(infos.mHomeserver.baseUrl);
+          updateDomain(infos.mHomeserver.baseUrl.toString());
 
-          client.homeserver = Uri.parse(infos.mHomeserver.baseUrl);
+          client.homeserver = Uri.parse(infos.mHomeserver.baseUrl.toString());
           await _requestSupportedTypes(client);
           return;
         }

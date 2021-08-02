@@ -1,9 +1,9 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:file_picker_cross/file_picker_cross.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
@@ -56,7 +56,7 @@ class _ChatViewState extends State<ChatView> {
 
   Future getImage() async {
     ImagePicker pick = ImagePicker();
-    final pickedFile = await pick.getImage(source: ImageSource.camera);
+    final pickedFile = await pick.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
       print(pickedFile.path);

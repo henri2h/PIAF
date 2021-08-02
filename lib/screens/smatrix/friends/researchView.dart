@@ -1,6 +1,6 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
@@ -26,7 +26,7 @@ class _ResearchViewState extends State<ResearchView> {
               autofocus: false,
               decoration: InputDecoration(border: OutlineInputBorder())),
           suggestionsCallback: (pattern) async {
-            UserSearchResult ur = await sclient.searchUserDirectory(pattern);
+            var ur = await sclient.searchUserDirectory(pattern);
             return ur.results.toList();
           },
           itemBuilder: (context, suggestion) {
@@ -35,13 +35,13 @@ class _ResearchViewState extends State<ResearchView> {
               leading: profile.avatarUrl == null
                   ? Icon(Icons.person)
                   : MinesTrixUserImage(url: profile.avatarUrl),
-              title: Text(profile.displayname),
+              title: Text(profile.displayName),
               subtitle: Text(profile.userId),
             );
           },
           onSuggestionSelected: (suggestion) async {
             Profile p = suggestion;
-            User u = User(p.userId, displayName: p.displayname);
+            User u = User(p.userId, displayName: p.displayName);
             NavigationHelper.navigateToUserFeed(context, u);
           },
         ),
