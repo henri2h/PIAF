@@ -8,6 +8,8 @@ import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chat/chatVue.dart';
 import 'package:minestrix/screens/chat/conversationSettings.dart';
+import 'package:minestrix/screens/smatrix/friends/researchView.dart';
+import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 final log = Logger("ChatVue");
@@ -131,9 +133,28 @@ class _ChatsVueState extends State<ChatsVue>
                         children: [
                           H1Title("MATRIX Chats"),
                           Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: IconButton(
-                                icon: Icon(Icons.add), onPressed: () {}),
+                            padding: const EdgeInsets.all(8),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                    icon: Icon(Icons.add),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (_) => CreateGroup());
+                                    }),
+                                IconButton(
+                                    icon: Icon(Icons.search),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (_) => Scaffold(
+                                              appBar: AppBar(
+                                                  title: Text("Search a user")),
+                                              body: ResearchView()));
+                                    }),
+                              ],
+                            ),
                           ),
                         ],
                       );
