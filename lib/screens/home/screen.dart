@@ -107,62 +107,9 @@ class _HomePageState extends State<HomeScreen> {
     Widget widgetFeedView = FeedView();
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
-      body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
-      bottomNavigationBar: NavigationBar(changePage: changePage),
-      floatingActionButton: isChatVue
-          ? FloatingActionButton(
-              highlightElevation: 30,
-              onPressed: () async {
-                changePage(PostEditor());
-              },
-              tooltip: "New message",
-              child: Container(
-                margin: EdgeInsets.all(15.0),
-                child: Icon(Icons.message_outlined),
-              ),
-              elevation: 30,
-            )
-          : buildFloattingButton(),
-      /*
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Material(
-                elevation: 30,
-                borderRadius: BorderRadius.all(Radius.circular(30)),
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                      color: Colors.white),
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 14),
-                      child: NavigationBar(changePage: changePage)),
-                ),
-              ),
-            ),
-            SizedBox(width: 20),
-            isChatVue
-                ? FloatingActionButton(
-                    highlightElevation: 30,
-                    onPressed: () async {
-                      changePage(PostEditor());
-                    },
-                    tooltip: "New message",
-                    child: Container(
-                      margin: EdgeInsets.all(15.0),
-                      child: Icon(Icons.message_outlined),
-                    ),
-                    elevation: 30,
-                  )
-                : buildFloattingButton()
-          ],
-        ),
-      ),*/
-    );
+        body:
+            Container(color: Colors.white, child: widgetView ?? Text("hello")),
+        bottomNavigationBar: NavigationBar(changePage: changePage));
   }
 
   Widget buildFloattingButton() {
@@ -254,9 +201,6 @@ class NavigationBarState extends State<NavigationBar> {
       case 2:
         widget.changePage(UserFeedView(userId: userId));
         break;
-      case 3:
-        widget.changePage(ResearchView());
-        break;
       default:
     }
   }
@@ -283,9 +227,7 @@ class NavigationBarState extends State<NavigationBar> {
                   if (p.data?.avatarUrl == null) return Icon(Icons.person);
                   return MinesTrixUserImage(url: p.data.avatarUrl);
                 }),
-            label: "Screen B"),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.search, color: Colors.black), label: "Search"),
+            label: "My account"),
       ],
     );
   }
