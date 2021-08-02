@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/global/Managers/ThemeManager.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/screens/debugVue.dart';
+
+import 'package:provider/provider.dart';
 
 class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
     final TextEditingController _passphraseController = TextEditingController();
+
+    bool isDarkMode = context.read<ThemeNotifier>().isDarkMode();
     return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -19,6 +24,19 @@ class SettingsView extends StatelessWidget {
             Text("Homeserver : " + sclient.homeserver.toString()),
             Text("Device name : " + sclient.deviceName),
             Text("Device ID : " + sclient.deviceID),
+            SizedBox(height: 10),
+            SwitchListTile(
+                value: isDarkMode,
+                secondary:
+                    isDarkMode ? Icon(Icons.dark_mode) : Icon(Icons.light_mode),
+                title:
+                    isDarkMode ? Text("Set light mode") : Text("Set dark mode"),
+                onChanged: (value) {
+                  if (!value)
+                    context.read<ThemeNotifier>().setLightMode();
+                  else
+                    context.read<ThemeNotifier>().setDarkMode();
+                }),
             SizedBox(height: 10),
             MaterialButton(
                 color: Colors.red,
