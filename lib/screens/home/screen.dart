@@ -10,7 +10,7 @@ import 'package:minestrix/screens/smatrix/feedView.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
 import 'package:minestrix/screens/smatrix/userFeedView.dart';
-import 'package:famedlysdk/famedlysdk.dart';
+import 'package:matrix/matrix.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -49,7 +49,6 @@ class _HomePageState extends State<HomeScreen> {
     return Scaffold(
         floatingActionButton: buildFloattingButton(),
         body: Container(
-          color: Colors.white,
           child: Column(
             children: [
               NavBar(changePage: changePage),
@@ -106,8 +105,7 @@ class _HomePageState extends State<HomeScreen> {
     Widget widgetFeedView = FeedView();
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
-        body:
-            Container(color: Colors.white, child: widgetView ?? Text("hello")),
+        body: Container(child: widgetView ?? Text("hello")),
         bottomNavigationBar: NavigationBar(changePage: changePage));
   }
 
@@ -213,12 +211,9 @@ class NavigationBarState extends State<NavigationBar> {
       onTap: _onItemTapped,
       currentIndex: _selectedIndex,
       items: [
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Feed'),
         BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, color: Colors.black),
-            label: 'Feed'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.message_outlined, color: Colors.black),
-            label: "Messages"),
+            icon: Icon(Icons.message_outlined), label: "Messages"),
         BottomNavigationBarItem(
             icon: FutureBuilder(
                 future: sclient.getProfileFromUserId(sclient.userID),

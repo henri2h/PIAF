@@ -1,6 +1,6 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTheme.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';

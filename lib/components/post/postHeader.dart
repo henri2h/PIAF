@@ -1,4 +1,4 @@
-import 'package:famedlysdk/famedlysdk.dart';
+import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
@@ -40,7 +40,7 @@ class PostHeader extends StatelessWidget {
                         if (p.hasData) {
                           User u = User(
                             p.data.userId,
-                            displayName: p.data.displayname,
+                            displayName: p.data.displayName,
                             avatarUrl: p.data.avatarUrl.toString(),
                           );
 
@@ -72,7 +72,7 @@ class PostHeader extends StatelessWidget {
                                                   .navigateToUserFeed(
                                                       context, u);
                                             },
-                                            child: Text(p.data.displayname,
+                                            child: Text(p.data.displayName,
                                                 overflow: TextOverflow.clip,
                                                 style: TextStyle(
                                                     fontSize: 16,

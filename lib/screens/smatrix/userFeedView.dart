@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
@@ -12,7 +12,6 @@ import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/chat/chatVue.dart';
 import 'package:minestrix/screens/chat/chatsVue.dart';
-import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/settings.dart';
 
 class UserFeedView extends StatefulWidget {
@@ -287,7 +286,7 @@ class UserInfo extends StatelessWidget {
 
     if (profile != null) {
       userId = profile.userId;
-      displayName = profile.displayname;
+      displayName = profile.displayName;
       avatarUrl = profile.avatarUrl;
     }
 

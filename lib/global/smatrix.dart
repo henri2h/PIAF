@@ -4,8 +4,8 @@
 
 import 'dart:async';
 
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:logging/logging.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/global/smatrix/Notifications.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 
@@ -131,7 +131,8 @@ class SClient extends Client {
       if (e == null || e.content["type"] != "fr.henri2h.minestrix") {
         Map<String, dynamic> content = new Map<String, dynamic>();
         content["type"] = "fr.henri2h.minestrix";
-        await this.setRoomStateWithKey(room.id, "org.matrix.msc1840", content);
+        await this
+            .setRoomStateWithKey(room.id, "org.matrix.msc1840", null, content);
         return true;
       }
     } catch (e) {
@@ -347,7 +348,7 @@ class SClient extends Client {
   Future<String> getRoomDisplayName(Room room) async {
     if (room.name.startsWith("@")) {
       Profile p = await getUserFromRoom(room);
-      return p.displayname;
+      return p.displayName;
     }
     return "ERROR !";
   }

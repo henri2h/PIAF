@@ -1,6 +1,6 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';

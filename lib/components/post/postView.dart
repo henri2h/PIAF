@@ -1,5 +1,5 @@
 import 'package:emoji_picker/emoji_picker.dart';
-import 'package:famedlysdk/famedlysdk.dart';
+import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/post/postHeader.dart';

@@ -1,6 +1,6 @@
-import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
@@ -38,7 +38,7 @@ class _FollowUserState extends State<FollowUser> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                UserSearchResult ur =
+                var ur =
                     await sclient.searchUserDirectory(pattern);
                 List<User> following = List<User>.empty();
                 await sclient.following.forEach((key, SMatrixRoom sroom) {
@@ -59,7 +59,7 @@ class _FollowUserState extends State<FollowUser> {
                   leading: profile.avatarUrl == null
                       ? Icon(Icons.person)
                       : MinesTrixUserImage(url: profile.avatarUrl),
-                  title: Text(profile.displayname),
+                  title: Text(profile.displayName),
                   subtitle: Text(profile.userId),
                 );
               },
@@ -73,7 +73,7 @@ class _FollowUserState extends State<FollowUser> {
           ),
           for (Profile p in profiles)
             ListTile(
-                title: Text(p.displayname),
+                title: Text(p.displayName),
                 leading: MinesTrixUserImage(url: p.avatarUrl, thumnail: true),
                 subtitle: Text(p.userId)),
         ]));
