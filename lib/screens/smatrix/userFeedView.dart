@@ -43,17 +43,7 @@ class _UserFeedViewState extends State<UserFeedView> {
                               vertical: 8.0, horizontal: 20),
                           child: Row(
                             children: [
-                              IconButton(
-                                  icon: Icon(Icons.bug_report),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (_) => Scaffold(
-                                                appBar: AppBar(
-                                                    title:
-                                                        Text("Debug time !!")),
-                                                body: DebugView())));
-                                  }),
+                              
                               IconButton(
                                   icon: Icon(Icons.settings),
                                   onPressed: () {
