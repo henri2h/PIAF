@@ -12,6 +12,7 @@ class MinesTrixUserImage extends StatelessWidget {
       this.height,
       this.maxWidth,
       this.maxHeight,
+      this.backgroundColor,
       this.rounded = true,
       this.thumnail = false,
       this.fit = false,
@@ -25,9 +26,10 @@ class MinesTrixUserImage extends StatelessWidget {
   final bool thumnail;
   final bool unconstraigned;
   final bool fit;
-  final Icon defaultIcon;
+  final Widget defaultIcon;
   final int maxWidth;
   final int maxHeight;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +39,20 @@ class MinesTrixUserImage extends StatelessWidget {
     double w = width != null ? width : 30;
 
     if (url == null)
-      return Container(
-          height: h,
-          width: w,
-          decoration: rounded
+      return ClipRRect(
+          borderRadius:
+              rounded ? BorderRadius.circular(10.0) : BorderRadius.zero,
+          /*decoration: rounded
               ? BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(50)),
                 )
-              : null,
-          child: defaultIcon);
+              : null,*/
+          child: Container(
+              color: backgroundColor,
+              child: SizedBox(
+                  height: unconstraigned ? null : h,
+                  width: unconstraigned ? null : w,
+                  child: Center(child: defaultIcon))));
 
     String httpurl = thumnail
         ? url
