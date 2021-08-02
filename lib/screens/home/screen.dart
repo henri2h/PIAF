@@ -46,7 +46,7 @@ class _HomePageState extends State<HomeScreen> {
 
   Widget buildWideContainer(BuildContext context) {
     bool feedView = false;
-    if (widgetView == null) widgetView = FeedView(changePage: changePage);
+    if (widgetView == null) widgetView = FeedView();
     return Scaffold(
         floatingActionButton: buildFloattingButton(),
         body: Container(
@@ -104,12 +104,26 @@ class _HomePageState extends State<HomeScreen> {
   }
 
   Widget buildMobileContainer(BuildContext context) {
-    Widget widgetFeedView = FeedView(changePage: changePage);
+    Widget widgetFeedView = FeedView();
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
-      // we could wrap this in SafeArea
-      extendBody: true,
       body: Container(color: Colors.white, child: widgetView ?? Text("hello")),
+      bottomNavigationBar: NavigationBar(changePage: changePage),
+      floatingActionButton: isChatVue
+          ? FloatingActionButton(
+              highlightElevation: 30,
+              onPressed: () async {
+                changePage(PostEditor());
+              },
+              tooltip: "New message",
+              child: Container(
+                margin: EdgeInsets.all(15.0),
+                child: Icon(Icons.message_outlined),
+              ),
+              elevation: 30,
+            )
+          : buildFloattingButton(),
+      /*
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
         child: Row(
@@ -147,7 +161,7 @@ class _HomePageState extends State<HomeScreen> {
                 : buildFloattingButton()
           ],
         ),
-      ),
+      ),*/
     );
   }
 
@@ -224,20 +238,21 @@ class NavigationBar extends StatefulWidget {
 
 class NavigationBarState extends State<NavigationBar> {
   int _selectedIndex = 0;
-  void _onItemTapped(int index, SClient sclient) {
+  String userId;
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
     switch (index) {
       case 0:
-        widget.changePage(FeedView(changePage: widget.changePage));
+        widget.changePage(FeedView());
         break;
       case 1:
         widget.changePage(ChatsVue(), chatVue: true);
         break;
       case 2:
-        widget.changePage(UserFeedView(userId: sclient.userID));
+        widget.changePage(UserFeedView(userId: userId));
         break;
       case 3:
         widget.changePage(ResearchView());
@@ -249,45 +264,28 @@ class NavigationBarState extends State<NavigationBar> {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
-    List<Widget> items = [
-      Icon(
-        Icons.home_outlined,
-      ),
-      Icon(
-        Icons.message_outlined,
-      ),
-      FutureBuilder(
-          future: sclient.getProfileFromUserId(sclient.userID),
-          builder: (BuildContext context, AsyncSnapshot<Profile> p) {
-            if (p.data?.avatarUrl == null) return Icon(Icons.person);
-            return MinesTrixUserImage(url: p.data.avatarUrl);
-          }),
-      Icon(Icons.search_outlined)
-    ];
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        for (int i = 0; i < items.length; i++)
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                  onPressed: () {
-                    _onItemTapped(i, sclient);
-                  },
-                  icon: items[i]),
-              if (i == _selectedIndex)
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: new BoxDecoration(
-                    color: Color(0xFFd24800),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-            ],
-          )
+    userId = sclient.userID;
+
+    return BottomNavigationBar(
+      onTap: _onItemTapped,
+      currentIndex: _selectedIndex,
+      items: [
+        BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined, color: Colors.black),
+            label: 'Feed'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.message_outlined, color: Colors.black),
+            label: "Messages"),
+        BottomNavigationBarItem(
+            icon: FutureBuilder(
+                future: sclient.getProfileFromUserId(sclient.userID),
+                builder: (BuildContext context, AsyncSnapshot<Profile> p) {
+                  if (p.data?.avatarUrl == null) return Icon(Icons.person);
+                  return MinesTrixUserImage(url: p.data.avatarUrl);
+                }),
+            label: "Screen B"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.search, color: Colors.black), label: "Search"),
       ],
     );
   }

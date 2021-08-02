@@ -2,21 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
-import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/components/quickLinksList.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
-import 'package:minestrix/screens/smatrix/friends/friendsVue.dart';
 
 class FeedView extends StatelessWidget {
-  const FeedView({
-    Key key,
-    @required this.changePage,
-  }) : super(key: key);
-
-  final Function changePage;
+  const FeedView({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +31,7 @@ class FeedView extends StatelessWidget {
                         label: "Write your first post",
                         icon: Icons.post_add,
                         onPressed: () {
-                          changePage(PostEditor());
+                          // changePage(PostEditor());
                         }),
                   ),
                   Padding(
@@ -47,7 +40,7 @@ class FeedView extends StatelessWidget {
                         label: "Add some friends",
                         icon: Icons.person_add,
                         onPressed: () {
-                          changePage(FriendsVue());
+                          // changePage(FriendsVue());
                         }),
                   )
                 ],
