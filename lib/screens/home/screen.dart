@@ -9,7 +9,6 @@ import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
 import 'package:minestrix/screens/smatrix/feedView.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
-import 'package:minestrix/screens/smatrix/friends/researchView.dart';
 import 'package:minestrix/screens/smatrix/userFeedView.dart';
 import 'package:famedlysdk/famedlysdk.dart';
 
