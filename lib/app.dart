@@ -1,6 +1,7 @@
 import 'package:famedlysdk/famedlysdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/screens/createMinesTrixAccount.dart';
 import 'package:minestrix/screens/home/screen.dart';
@@ -29,7 +30,14 @@ class _MinestrixState extends State<Minestrix> {
               if (!snapshot.hasData) {
                 return Scaffold(
                   body: Center(
-                    child: CircularProgressIndicator(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        H1Title("MINESTRIX"),
+                        H2Title("Loading...."),
+                        CircularProgressIndicator(),
+                      ],
+                    ),
                   ),
                 );
               }
