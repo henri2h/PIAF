@@ -22,6 +22,7 @@ class _ChatViewState extends State<ChatView> {
   int reloadedCount = 0;
   int roomUpdate = 0;
   Timeline timeline;
+  final TextEditingController _sendController = TextEditingController();
 
   bool updating = false;
   void scrollListener() async {
@@ -74,8 +75,6 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Widget buildChatView(SClient sclient, Room room, List<Event> filteredEvents) {
-    final TextEditingController _sendController = TextEditingController();
-
     return Column(
       children: [
         if (updating) CircularProgressIndicator(),
@@ -174,61 +173,6 @@ class _ChatViewState extends State<ChatView> {
             ),
           ),
         ),
-        Container(
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  sendImage(context, room);
-                },
-                tooltip: 'Send file',
-                icon: Icon(Icons.image_outlined),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: TextField(
-                      maxLines: 1,
-                      controller: _sendController,
-                      keyboardType: TextInputType.text,
-                      textAlignVertical: TextAlignVertical.center,
-                      decoration: InputDecoration(
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 12),
-                          border: InputBorder.none,
-                          enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 0),
-                            borderRadius: const BorderRadius.all(
-                              const Radius.circular(20),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.blue, width: 2.0),
-                            borderRadius: const BorderRadius.all(
-                              const Radius.circular(20),
-                            ),
-                          ),
-                          filled: true,
-                          hintStyle: new TextStyle(color: Colors.grey[800]),
-                          hintText: "Message",
-                          fillColor: Color(0xfff6f8fd))),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.send),
-                onPressed: () {
-                  if (_sendController.text != "") {
-                    room.sendTextEvent(_sendController.text);
-                    _sendController.clear();
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -245,36 +189,98 @@ class _ChatViewState extends State<ChatView> {
         builder: (context, AsyncSnapshot<String> snapshot) {
           return Container(
             child: SafeArea(
-              child: FutureBuilder<Timeline>(
-                future: room.getTimeline(onUpdate: () {
-                  setState(() {
-                    roomUpdate++;
-                  });
-                }),
-                builder:
-                    (BuildContext context, AsyncSnapshot<Timeline> snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
-                  }
+              child: Column(
+                children: [
+                  Expanded(
+                    child: FutureBuilder<Timeline>(
+                      future: room.getTimeline(onUpdate: () {
+                        setState(() {
+                          roomUpdate++;
+                        });
+                      }),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<Timeline> snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(child: CircularProgressIndicator());
+                        }
 
-                  timeline = snapshot.data;
+                        timeline = snapshot.data;
 
-                  List<Event> filteredEvents = timeline.events
-                      .where((e) => !{
-                            RelationshipTypes.edit,
-                            RelationshipTypes.reaction
-                          }.contains(e.relationshipType))
-                      .toList();
+                        List<Event> filteredEvents = timeline.events
+                            .where((e) => !{
+                                  RelationshipTypes.edit,
+                                  RelationshipTypes.reaction
+                                }.contains(e.relationshipType))
+                            .toList();
 
-                  // in case we need to load history because list is not long enough to use pull to refresh
-                  if (filteredEvents.length < 70)
-                    return FutureBuilder(
-                        future: timeline.requestHistory(),
-                        builder: (BuildContext context,
-                                AsyncSnapshot<void> snapshot) =>
-                            buildChatView(sclient, room, filteredEvents));
-                  return buildChatView(sclient, room, filteredEvents);
-                },
+                        // in case we need to load history because list is not long enough to use pull to refresh
+                        if (filteredEvents.length < 70)
+                          return FutureBuilder(
+                              future: timeline.requestHistory(),
+                              builder: (BuildContext context,
+                                      AsyncSnapshot<void> snapshot) =>
+                                  buildChatView(sclient, room, filteredEvents));
+                        return buildChatView(sclient, room, filteredEvents);
+                      },
+                    ),
+                  ),
+                  Container(
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            sendImage(context, room);
+                          },
+                          tooltip: 'Send file',
+                          icon: Icon(Icons.image_outlined),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: TextField(
+                                maxLines: 1,
+                                controller: _sendController,
+                                keyboardType: TextInputType.text,
+                                textAlignVertical: TextAlignVertical.center,
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 15, horizontal: 12),
+                                  border: InputBorder.none,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: Colors.white, width: 0),
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(20),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: Colors.blue, width: 2.0),
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(20),
+                                    ),
+                                  ),
+                                  filled: true,
+                                  hintStyle:
+                                      new TextStyle(color: Colors.grey[800]),
+                                  hintText: "Message",
+                                )),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.send),
+                          onPressed: () {
+                            if (_sendController.text != "") {
+                              room.sendTextEvent(_sendController.text);
+                              _sendController.clear();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );
