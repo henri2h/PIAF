@@ -27,7 +27,7 @@ dependencies:
 
   matrix: ^0.2.1
   flutter_olm: ^1.1.1
-  flutter_openssl_crypto: ^0.0.1
+  #flutter_openssl_crypto: ^0.0.1
 
 
   redux: ^5.0.0
