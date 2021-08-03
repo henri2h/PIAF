@@ -87,7 +87,8 @@ class NavBarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: onPressed,
-      style: TextButton.styleFrom(primary: Colors.black),
+      style: TextButton.styleFrom(
+          primary: Theme.of(context).textTheme.bodyText1.color),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(

@@ -196,7 +196,6 @@ class _ChatsVueState extends State<ChatsVue>
                                     vertical: 4, horizontal: 15),
                                 child: Material(
                                     borderRadius: BorderRadius.circular(10),
-                                    color: Colors.white,
                                     elevation: 0,
                                     child: Container(
                                       decoration: BoxDecoration(

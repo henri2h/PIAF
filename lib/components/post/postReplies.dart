@@ -71,7 +71,6 @@ class _RepliesVueState extends State<RepliesVue> {
                             Expanded(
                               child: Card(
                                 elevation: 0.3,
-                                color: Color(0xfff6f6f6),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -92,7 +91,6 @@ class _RepliesVueState extends State<RepliesVue> {
                                                   timeago.format(
                                                       revent.originServerTs),
                                               style: TextStyle(
-                                                  color: Colors.black54,
                                                   fontWeight: FontWeight.w400)),
                                         ],
                                       ),

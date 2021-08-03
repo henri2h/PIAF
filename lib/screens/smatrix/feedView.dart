@@ -129,16 +129,7 @@ class FeedView extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 2, horizontal: 6),
-                            child: Material(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.all(0),
-                                  child: Post(event: sclient.stimeline[i - 1]),
-                                )),
+                            child: Post(event: sclient.stimeline[i - 1]),
                           );
                         else
                           return Text("Empty");

@@ -42,7 +42,6 @@ class _UserFeedViewState extends State<UserFeedView> {
                               vertical: 8.0, horizontal: 20),
                           child: Row(
                             children: [
-                              
                               IconButton(
                                   icon: Icon(Icons.settings),
                                   onPressed: () {
@@ -290,33 +289,6 @@ class UserInfo extends StatelessWidget {
       avatarUrl = profile.avatarUrl;
     }
 
-    /*
-     Container(
-                    foregroundDecoration: const BoxDecoration(
-                      image: DecorationImage(
-                          image: NetworkImage(
-                              'https://p6.storage.canalblog.com/69/50/922142/85510911_o.png'),
-                          fit: BoxFit.fill),
-                    ),
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                          alignment: Alignment(-.2, 0),
-                          image: NetworkImage(
-                              'http://www.naturerights.com/blog/wp-content/uploads/2017/12/Taranaki-NR-post-1170x550.png'),
-                          fit: BoxFit.cover),
-                    ),
-                    alignment: Alignment.bottomCenter,
-                    padding: EdgeInsets.only(bottom: 20),
-                    child: Text(
-                      "Hello World",
-                      style: Theme.of(context)
-                          .textTheme
-                          .display1
-                          .copyWith(color: Colors.white),
-                    ),
-                  ),
-                     */
-
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       // small screens
@@ -329,7 +301,7 @@ class UserInfo extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 180),
                 child: CachedNetworkImage(imageUrl: avatar.toString()),
               ),
-            buildUserProfileDisplay(avatarUrl, displayName, userId),
+            buildUserProfileDisplay(context, avatarUrl, displayName, userId),
           ],
         );
 
@@ -347,18 +319,18 @@ class UserInfo extends StatelessWidget {
             child: Align(
                 alignment:
                     avatar != null ? Alignment.centerLeft : Alignment.center,
-                child: buildUserProfileDisplay(avatarUrl, displayName, userId)),
+                child: buildUserProfileDisplay(
+                    context, avatarUrl, displayName, userId)),
           ));
     });
   }
 
   Widget buildUserProfileDisplay(
-      Uri avatarUrl, String displayName, String userId) {
+      BuildContext context, Uri avatarUrl, String displayName, String userId) {
     return Card(
       elevation: 15,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(40.0),
         ),
         padding: const EdgeInsets.only(bottom: 10),
@@ -371,13 +343,15 @@ class UserInfo extends StatelessWidget {
               height: 250,
               thumnail: true,
               rounded: false,
-              defaultIcon: Icon(Icons.person, color: Colors.black, size: 120),
+              defaultIcon: Icon(Icons.person, size: 120),
             ),
             SizedBox(height: 10),
             Text(displayName,
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
             Text(userId,
-                style: TextStyle(fontSize: 20, color: Colors.grey[600])),
+                style: TextStyle(
+                    fontSize: 20,
+                    color: Theme.of(context).textTheme.caption.color)),
           ],
         ),
       ),
