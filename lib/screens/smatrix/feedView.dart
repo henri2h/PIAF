@@ -117,6 +117,12 @@ class FeedView extends StatelessWidget {
                                                               "Search a user")),
                                                       body: ResearchView()));
                                             }),
+                                        IconButton(
+                                            icon: Icon(Icons.notifications),
+                                            onPressed: () {
+                                              Scaffold.of(context)
+                                                  .openEndDrawer();
+                                            }),
                                       ],
                                     ),
                                   ),

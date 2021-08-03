@@ -132,7 +132,7 @@ class SClient extends Client {
         Map<String, dynamic> content = new Map<String, dynamic>();
         content["type"] = "fr.henri2h.minestrix";
         await this
-            .setRoomStateWithKey(room.id, "org.matrix.msc1840", null, content);
+            .setRoomStateWithKey(room.id, "org.matrix.msc1840", "", content);
         return true;
       }
     } catch (e) {
