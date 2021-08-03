@@ -12,7 +12,7 @@ class AccountCard extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Colors.white,
+          primary: Theme.of(context).cardColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
         ),
@@ -28,7 +28,9 @@ class AccountCard extends StatelessWidget {
                 width: 100,
                 height: 100,
                 thumnail: true,
-                defaultIcon: Icon(Icons.person, color: Colors.black, size: 70),
+                defaultIcon: Icon(Icons.person,
+                    color: Theme.of(context).textTheme.bodyText1.color,
+                    size: 70),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 3),
@@ -40,7 +42,8 @@ class AccountCard extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black)),
+                            color:
+                                Theme.of(context).textTheme.bodyText1.color)),
                   ),
                 ),
               ),

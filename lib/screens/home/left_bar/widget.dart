@@ -74,8 +74,6 @@ class LeftBarButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
             elevation: 0,
-            primary: Colors.white,
-            onPrimary: Colors.black,
             textStyle: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         onPressed: onPressed,
         child: Padding(

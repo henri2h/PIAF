@@ -50,6 +50,11 @@ class PostHeader extends StatelessWidget {
                               Row(
                                 children: [
                                   TextButton(
+                                    style: TextButton.styleFrom(
+                                        primary: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1
+                                            .color),
                                     onPressed: () {
                                       NavigationHelper.navigateToUserFeed(
                                           context, event.sender);
@@ -62,11 +67,19 @@ class PostHeader extends StatelessWidget {
                                   if (event.sender.id != p.data.userId)
                                     Flexible(
                                       child: Row(children: [
-                                        Text("to",
+                                        Text(" to ",
                                             style: TextStyle(
-                                                color: Colors.grey[600])),
+                                                color: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText1
+                                                    .color)),
                                         Flexible(
                                           child: TextButton(
+                                            style: TextButton.styleFrom(
+                                                primary: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText1
+                                                    .color),
                                             onPressed: () {
                                               NavigationHelper
                                                   .navigateToUserFeed(
@@ -87,7 +100,10 @@ class PostHeader extends StatelessWidget {
                               Text(timeago.format(event.originServerTs),
                                   style: TextStyle(
                                       fontWeight: FontWeight.normal,
-                                      color: Colors.grey[600])),
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .caption
+                                          .color)),
                             ],
                           );
                         }
@@ -110,9 +126,19 @@ class PostHeader extends StatelessWidget {
                           },
                           child: Text(event.sender.displayName,
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1
+                                      .color,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold)),
                         ),
-                        Text("to", style: TextStyle(color: Colors.grey[600])),
+                        Text(" to ",
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyText1
+                                    .color)),
                         Flexible(
                           child: TextButton(
                             onPressed: () {
@@ -121,7 +147,12 @@ class PostHeader extends StatelessWidget {
                             },
                             child: Text(sroom.name,
                                 style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w400)),
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyText1
+                                        .color,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400)),
                           ),
                         ),
                       ],
@@ -129,7 +160,7 @@ class PostHeader extends StatelessWidget {
                     Text(timeago.format(event.originServerTs),
                         style: TextStyle(
                             fontWeight: FontWeight.normal,
-                            color: Colors.grey[600])),
+                            color: Theme.of(context).textTheme.caption.color)),
                   ],
                 )),
             ],

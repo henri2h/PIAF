@@ -84,8 +84,6 @@ class _ChatViewState extends State<ChatView> {
             onRefresh: () async {
               print("refresh");
             },
-            backgroundColor: Colors.teal,
-            color: Colors.white,
             displacement: 200,
             strokeWidth: 5,
             child: ListView.builder(
@@ -162,10 +160,7 @@ class _ChatViewState extends State<ChatView> {
                                                       .copyWith(
                                                           p: Theme.of(context)
                                                               .textTheme
-                                                              .bodyText1
-                                                              .copyWith(
-                                                                  color: Colors
-                                                                      .white)),
+                                                              .bodyText1),
                                             )));
                                   }),
                             ),
@@ -250,39 +245,36 @@ class _ChatViewState extends State<ChatView> {
         builder: (context, AsyncSnapshot<String> snapshot) {
           return Container(
             child: SafeArea(
-              child: ColoredBox(
-                color: Colors.white,
-                child: FutureBuilder<Timeline>(
-                  future: room.getTimeline(onUpdate: () {
-                    setState(() {
-                      roomUpdate++;
-                    });
-                  }),
-                  builder:
-                      (BuildContext context, AsyncSnapshot<Timeline> snapshot) {
-                    if (!snapshot.hasData) {
-                      return Center(child: CircularProgressIndicator());
-                    }
+              child: FutureBuilder<Timeline>(
+                future: room.getTimeline(onUpdate: () {
+                  setState(() {
+                    roomUpdate++;
+                  });
+                }),
+                builder:
+                    (BuildContext context, AsyncSnapshot<Timeline> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
-                    timeline = snapshot.data;
+                  timeline = snapshot.data;
 
-                    List<Event> filteredEvents = timeline.events
-                        .where((e) => !{
-                              RelationshipTypes.edit,
-                              RelationshipTypes.reaction
-                            }.contains(e.relationshipType))
-                        .toList();
+                  List<Event> filteredEvents = timeline.events
+                      .where((e) => !{
+                            RelationshipTypes.edit,
+                            RelationshipTypes.reaction
+                          }.contains(e.relationshipType))
+                      .toList();
 
-                    // in case we need to load history because list is not long enough to use pull to refresh
-                    if (filteredEvents.length < 70)
-                      return FutureBuilder(
-                          future: timeline.requestHistory(),
-                          builder: (BuildContext context,
-                                  AsyncSnapshot<void> snapshot) =>
-                              buildChatView(sclient, room, filteredEvents));
-                    return buildChatView(sclient, room, filteredEvents);
-                  },
-                ),
+                  // in case we need to load history because list is not long enough to use pull to refresh
+                  if (filteredEvents.length < 70)
+                    return FutureBuilder(
+                        future: timeline.requestHistory(),
+                        builder: (BuildContext context,
+                                AsyncSnapshot<void> snapshot) =>
+                            buildChatView(sclient, room, filteredEvents));
+                  return buildChatView(sclient, room, filteredEvents);
+                },
               ),
             ),
           );

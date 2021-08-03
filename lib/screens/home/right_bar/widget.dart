@@ -38,7 +38,6 @@ class ContactView extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.circular(6.0),
           ),
           child: TextButton(
@@ -75,11 +74,18 @@ class ContactView extends StatelessWidget {
                                   Text(sroom.user.displayName,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.black)),
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodyText1
+                                              .color)),
                                   Text(
                                     sroom.user.id,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.black),
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1
+                                            .color),
                                   )
                                 ]),
                           ),
@@ -88,9 +94,11 @@ class ContactView extends StatelessWidget {
                     ),
                   ),
                   if (sroom.room.encrypted)
-                    Icon(Icons.verified_user, color: Colors.black),
+                    Icon(Icons.verified_user,
+                        color: Theme.of(context).textTheme.bodyText1.color),
                   if (!sroom.room.encrypted)
-                    Icon(Icons.no_encryption, color: Colors.black)
+                    Icon(Icons.no_encryption,
+                        color: Theme.of(context).textTheme.bodyText1.color)
                 ]),
           ),
         ),
