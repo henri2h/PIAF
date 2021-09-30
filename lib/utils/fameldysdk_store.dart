@@ -1,45 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:localstorage/localstorage.dart';
-import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:core';
-import 'package:random_string/random_string.dart';
-
-import 'database/shared.dart';
-
-Future<Database> getDatabase(Client client) async {
-  while (_generateDatabaseLock) {
-    await Future.delayed(Duration(milliseconds: 50));
-  }
-  _generateDatabaseLock = true;
-  try {
-    if (_db != null) return _db;
-    final store = Store();
-    var password = await store.getItem("dbpass");
-    var newPassword = false;
-    if (password == null || password.isEmpty) {
-      newPassword = true;
-      password = randomString(255);
-    }
-
-    _db = await constructDb(
-      logStatements: false,
-      filename: 'moor.sqlite',
-      password: password,
-    );
-    if (newPassword) {
-      await store.setItem("dbpass", password);
-    }
-    return _db;
-  } finally {
-    _generateDatabaseLock = false;
-  }
-}
-
-Database _db;
-bool _generateDatabaseLock = false;
 
 class Store {
   LocalStorage storage;

@@ -25,7 +25,9 @@ dependencies:
     sdk: flutter
 
 
-  matrix: ^0.2.1
+  matrix: ^0.5.5
+  hive: ^2.0.4
+  hive_flutter: ^1.1.0
   flutter_olm: ^1.1.1
   #flutter_openssl_crypto: ^0.0.1
 
@@ -82,6 +84,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  hive_generator: ^1.1.1
+  build_runner: ^2.1.2
 
 
 

@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/global/smatrix/Notifications.dart';
@@ -15,7 +16,6 @@ class SClient extends Client {
   static const String SMatrixRoomPrefix = "smatrix_";
   static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
 
-  StreamSubscription onEventUpdate;
   StreamSubscription onRoomUpdateSub; // event subscription
 
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
@@ -47,13 +47,17 @@ class SClient extends Client {
 
   Notifications notifications = Notifications();
 
-  SClient(String clientName,
-      {bool enableE2eeRecovery,
-      Set verificationMethods,
-      Future<Database> Function(Client client) databaseBuilder})
-      : super(clientName,
-            verificationMethods: verificationMethods,
-            databaseBuilder: databaseBuilder);
+  SClient(String clientName, {bool enableE2eeRecovery, Set verificationMethods})
+      : super(
+          clientName,
+          verificationMethods: verificationMethods,
+          databaseBuilder: (Client client) async {
+            await Hive.initFlutter();
+            final db = FamedlySdkHiveDatabase(client.clientName);
+            await db.open();
+            return db;
+          },
+        );
 
   Future<List<User>> getFollowers() async {
     return (await getSUsers())
@@ -86,8 +90,8 @@ class SClient extends Client {
     notifications.loadNotifications(this);
 
     // for smatrixrooms
-    onRoomUpdateSub ??= this.onRoomUpdate.stream.listen((RoomUpdate rUp) async {
-      if (srooms.containsKey(rUp.id)) {
+    onRoomUpdateSub ??= this.onEvent.stream.listen((EventUpdate rUp) async {
+      if (srooms.containsKey(rUp.roomID)) {
         // we use a timer to prevent calling
         timerCallbackRoomUpdate?.cancel();
         timerCallbackRoomUpdate =
@@ -319,7 +323,6 @@ class SClient extends Client {
 
   @override
   Future<void> dispose({bool closeDatabase = true}) async {
-    onEventUpdate?.cancel();
     onTimelineUpdate?.close();
     onRoomUpdateSub?.cancel();
     await super.dispose(closeDatabase: closeDatabase);
