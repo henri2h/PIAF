@@ -7,7 +7,6 @@ import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
 import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/utils/fameldysdk_store.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
 class Matrix extends StatefulWidget {
@@ -62,9 +61,7 @@ class MatrixState extends State<Matrix> {
 
     String clientName = "minestrix";
     sclient = SClient(clientName,
-        enableE2eeRecovery: true,
-        verificationMethods: verificationMethods,
-        databaseBuilder: getDatabase);
+        enableE2eeRecovery: true, verificationMethods: verificationMethods);
 
     onKeyVerificationRequestSub ??= sclient.onKeyVerificationRequest.stream
         .listen((KeyVerification request) async {
@@ -156,7 +153,7 @@ class MatrixState extends State<Matrix> {
       sclient.init();
 
       final firstLoginState = await initLoginState;
-      if (firstLoginState == LoginState.logged) {
+      if (firstLoginState == LoginState.loggedIn) {
         await sclient.initSMatrix();
       } else {
         log.warning("Not logged in");

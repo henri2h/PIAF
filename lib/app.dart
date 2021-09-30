@@ -48,7 +48,7 @@ class _MinestrixState extends State<Minestrix> {
                     ),
                   );
                 }
-                if (snapshot.data == LoginState.logged) {
+                if (snapshot.data == LoginState.loggedIn) {
                   return StreamBuilder<String>(
                       stream: Matrix.of(context).sclient.onSRoomsUpdate.stream,
                       builder: (BuildContext context, snapshot) {
