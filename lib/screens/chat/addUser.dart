@@ -38,8 +38,7 @@ class _FollowUserState extends State<FollowUser> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                var ur =
-                    await sclient.searchUserDirectory(pattern);
+                var ur = await sclient.searchUserDirectory(pattern);
                 List<User> following = List<User>.empty();
                 await sclient.following.forEach((key, SMatrixRoom sroom) {
                   following.add(sroom.user);

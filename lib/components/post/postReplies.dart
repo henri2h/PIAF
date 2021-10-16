@@ -83,7 +83,9 @@ class _RepliesVueState extends State<RepliesVue> {
                                     children: [
                                       Row(
                                         children: [
-                                          Text(revent.sender.asUser.displayName,
+                                          Text(
+                                              revent.sender.asUser.displayName
+                                                  .toString(),
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w700)),
                                           Text(
