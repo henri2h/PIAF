@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/global/smatrix/Notifications.dart';
@@ -52,9 +51,9 @@ class SClient extends Client {
           clientName,
           verificationMethods: verificationMethods,
           databaseBuilder: (Client client) async {
-            await Hive.initFlutter();
             final db = FamedlySdkHiveDatabase(client.clientName);
             await db.open();
+            print("[ db ] :  loaded");
             return db;
           },
         );

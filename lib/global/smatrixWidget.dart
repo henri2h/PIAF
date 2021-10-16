@@ -59,9 +59,16 @@ class MatrixState extends State<Matrix> {
       verificationMethods.add(KeyVerificationMethod.emoji);
     }
 
+    print("[ widget ] : init");
     String clientName = "minestrix";
+
     sclient = SClient(clientName,
         enableE2eeRecovery: true, verificationMethods: verificationMethods);
+
+    print("logged: " + sclient.isLogged().toString());
+    print("[ widget ] : store");
+    _initWithStore();
+    print("[ widget ] : register");
 
     onKeyVerificationRequestSub ??= sclient.onKeyVerificationRequest.stream
         .listen((KeyVerification request) async {
@@ -142,9 +149,9 @@ class MatrixState extends State<Matrix> {
         }
       }
     });
+    print("[ widget ] : done");
 
     log.info("Matrix state initialisated");
-    _initWithStore();
   }
 
   void _initWithStore() async {
