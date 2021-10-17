@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class PostEditor extends StatefulWidget {
   PostEditor({Key key, this.sroom}) : super(key: key);
@@ -49,7 +49,8 @@ class _PostEditorState extends State<PostEditor>
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  MinesTrixUserImage(
+                  MatrixUserImage(
+                      client: sclient,
                       url: sclient.userRoom.user.avatarUrl,
                       width: 48,
                       thumnail: true,

@@ -1,12 +1,12 @@
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/matrix/mMessageDisplay.dart';
 import 'package:minestrix/components/post/postHeader.dart';
 import 'package:minestrix/components/post/postReactions.dart';
 import 'package:minestrix/components/post/postReplies.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_messeage.dart';
 
 class Post extends StatefulWidget {
   final Event event;
@@ -28,7 +28,7 @@ class PostContent extends StatelessWidget {
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            MessageDisplay(event: event),
+            MessageDisplay(client: Matrix.of(context).sclient, event: event),
           ]),
     );
   }

@@ -1,7 +1,8 @@
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/helpers/NavigationHelper.dart';
+import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class AccountCard extends StatelessWidget {
   AccountCard({Key key, this.user}) : super(key: key);
@@ -23,7 +24,8 @@ class AccountCard extends StatelessWidget {
           padding: const EdgeInsets.all(4),
           child: Column(
             children: [
-              MinesTrixUserImage(
+              MatrixUserImage(
+                client: Matrix.of(context).sclient,
                 url: user.avatarUrl,
                 width: 100,
                 height: 100,

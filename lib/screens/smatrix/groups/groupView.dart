@@ -3,13 +3,13 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixContactView.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserSelection.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class GroupView extends StatefulWidget {
   GroupView({Key key, this.sroom}) : super(key: key);
@@ -67,7 +67,8 @@ class _GroupViewState extends State<GroupView> {
                       children: [
                         if (sroom.room.avatar != null)
                           Center(
-                              child: MinesTrixUserImage(
+                              child: MatrixUserImage(
+                                  client: sclient,
                                   url: sroom.room.avatar,
                                   unconstraigned: true,
                                   rounded: false,
@@ -86,8 +87,10 @@ class _GroupViewState extends State<GroupView> {
                                       .getParticipants()
                                       .where((User u) =>
                                           u.membership == Membership.join))
-                                    MinesTrixUserImage(
-                                        url: user.avatarUrl, thumnail: true)
+                                    MatrixUserImage(
+                                        client: sclient,
+                                        url: user.avatarUrl,
+                                        thumnail: true)
                                 ])),
                           ],
                         ),

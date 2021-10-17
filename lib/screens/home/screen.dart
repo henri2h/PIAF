@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/notificationView.dart';
 import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chat/chatsVue.dart';
 import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
 import 'package:minestrix/screens/smatrix/feedView.dart';
 import 'package:minestrix/screens/home/navbar/widget.dart';
 import 'package:minestrix/screens/home/right_bar/widget.dart';
 import 'package:minestrix/screens/smatrix/userFeedView.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key, this.title}) : super(key: key);
@@ -193,7 +193,8 @@ class NavigationBarState extends State<NavigationBar> {
         widget.changePage(FeedView());
         break;
       case 1:
-        widget.changePage(ChatsVue(), chatVue: true);
+        widget.changePage(MatrixChatsPage(client: Matrix.of(context).sclient),
+            chatVue: true);
         break;
       case 2:
         widget.changePage(UserFeedView(userId: userId));
@@ -219,8 +220,11 @@ class NavigationBarState extends State<NavigationBar> {
                 future: sclient.getProfileFromUserId(sclient.userID),
                 builder: (BuildContext context, AsyncSnapshot<Profile> p) {
                   if (p.data?.avatarUrl == null) return Icon(Icons.person);
-                  return MinesTrixUserImage(
-                      url: p.data.avatarUrl, fit: true, thumnail: true);
+                  return MatrixUserImage(
+                      client: sclient,
+                      url: p.data.avatarUrl,
+                      fit: true,
+                      thumnail: true);
                 }),
             label: "My account"),
       ],
