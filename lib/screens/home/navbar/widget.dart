@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chat/chatsVue.dart';
 import 'package:minestrix/screens/settings.dart';
 import 'package:minestrix/screens/smatrix/feedView.dart';
 import 'package:minestrix/screens/smatrix/friends/researchView.dart';
 import 'package:minestrix/screens/smatrix/userFeedView.dart';
+import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({Key key, this.changePage}) : super(key: key);
@@ -41,7 +41,9 @@ class NavBar extends StatelessWidget {
                 name: "Chats",
                 icon: Icons.chat,
                 onPressed: () {
-                  changePage(ChatsVue(), chatVue: true);
+                  changePage(
+                      MatrixChatsPage(client: Matrix.of(context).sclient),
+                      chatVue: true);
                 }),
             NavBarButton(
                 name: "Research",

@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class FriendsVue extends StatelessWidget {
   @override
@@ -50,7 +50,7 @@ class FriendsVue extends StatelessWidget {
               return ListTile(
                 leading: profile.avatarUrl == null
                     ? Icon(Icons.person)
-                    : MinesTrixUserImage(url: profile.avatarUrl),
+                    : MatrixUserImage(client: sclient, url: profile.avatarUrl),
                 title: Text(profile.displayName),
                 subtitle: Text(profile.userId),
               );
@@ -77,7 +77,8 @@ class FriendsVue extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                MinesTrixUserImage(url: sm.user.avatarUrl),
+                                MatrixUserImage(
+                                    client: sclient, url: sm.user.avatarUrl),
                                 SizedBox(width: 10),
                                 Text(sm.user.displayName),
                               ],

@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class RepliesVue extends StatefulWidget {
@@ -62,7 +62,8 @@ class _RepliesVueState extends State<RepliesVue> {
                             Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
-                                child: MinesTrixUserImage(
+                                child: MatrixUserImage(
+                                    client: sclient,
                                     url: revent.sender.avatarUrl,
                                     width: 16,
                                     thumnail: true,
@@ -145,7 +146,8 @@ class ReplyBox extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          MinesTrixUserImage(url: sclient.userRoom.user.avatarUrl),
+          MatrixUserImage(
+              client: sclient, url: sclient.userRoom.user.avatarUrl),
           SizedBox(width: 10),
           Expanded(
               child: TextField(

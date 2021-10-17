@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class FriendRequestList extends StatelessWidget {
   @override
@@ -26,7 +26,8 @@ class FriendRequestList extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          MinesTrixUserImage(url: sm.user.avatarUrl),
+                          MatrixUserImage(
+                              client: sclient, url: sm.user.avatarUrl),
                           SizedBox(width: 10),
                           Text(sm.user.displayName),
                         ],

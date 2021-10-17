@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class FollowUser extends StatefulWidget {
   FollowUser(BuildContext context, {Key key}) : super(key: key);
@@ -57,7 +57,8 @@ class _FollowUserState extends State<FollowUser> {
                 return ListTile(
                   leading: profile.avatarUrl == null
                       ? Icon(Icons.person)
-                      : MinesTrixUserImage(url: profile.avatarUrl),
+                      : MatrixUserImage(
+                          client: sclient, url: profile.avatarUrl),
                   title: Text(profile.displayName),
                   subtitle: Text(profile.userId),
                 );
@@ -73,7 +74,8 @@ class _FollowUserState extends State<FollowUser> {
           for (Profile p in profiles)
             ListTile(
                 title: Text(p.displayName),
-                leading: MinesTrixUserImage(url: p.avatarUrl, thumnail: true),
+                leading: MatrixUserImage(
+                    client: sclient, url: p.avatarUrl, thumnail: true),
                 subtitle: Text(p.userId)),
         ]));
   }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chat/chatsVue.dart';
 import 'package:minestrix/screens/debugVue.dart';
 import 'package:minestrix/screens/smatrix/friends/friendsVue.dart';
 import 'package:minestrix/screens/settings.dart';
 import 'package:minestrix/screens/smatrix/userFeedView.dart';
+import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class LeftBar extends StatelessWidget {
   const LeftBar({Key key}) : super(key: key);
@@ -41,7 +41,10 @@ class LeftBar extends StatelessWidget {
             name: "Chats",
             icon: Icons.message,
             onPressed: () {
-              changePage(context, ChatsVue(), "Chats view");
+              changePage(
+                  context,
+                  MatrixChatsPage(client: Matrix.of(context).sclient),
+                  "Chats view");
             },
           ),
           LeftBarButton(

@@ -4,15 +4,15 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserImage.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/chat/chatVue.dart';
-import 'package:minestrix/screens/chat/chatsVue.dart';
 import 'package:minestrix/screens/settings.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/view/matrix_chat_page.dart';
+import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class UserFeedView extends StatefulWidget {
   const UserFeedView({Key key, @required this.userId}) : super(key: key);
@@ -202,7 +202,9 @@ class _UserFeedViewState extends State<UserFeedView> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          ChatView(roomId: roomId)));
+                                          MatrixChatPage(
+                                              roomId: roomId,
+                                              client: sclient)));
                             } else {
                               Navigator.push(
                                   context,
@@ -211,7 +213,8 @@ class _UserFeedViewState extends State<UserFeedView> {
                                           Scaffold(
                                               appBar: AppBar(
                                                   title: Text("Start chat")),
-                                              body: ChatsVue())));
+                                              body: MatrixChatsPage(
+                                                  client: sclient))));
                             }
                           }),
                     ),
@@ -337,7 +340,8 @@ class UserInfo extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            MinesTrixUserImage(
+            MatrixUserImage(
+              client: Matrix.of(context).sclient,
               url: avatarUrl,
               width: 250,
               height: 250,

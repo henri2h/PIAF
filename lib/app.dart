@@ -110,20 +110,22 @@ class _MinestrixState extends State<Minestrix> {
                                           ),
                                         if (snap.data.status !=
                                             SyncStatus.processing)
-                                          Column(
-                                            children: [
-                                              CircularProgressIndicator(),
-                                              Text("Sync status"),
-                                              Text("Status : " +
-                                                  snap.data.status.toString()),
-                                              Text("Progress : " +
-                                                  snap.data.progress
-                                                      .toString()),
-                                              Text("Error : " +
-                                                  snap.data.error.toString()),
-                                              Text(snap.connectionState.index
-                                                  .toString()),
-                                            ],
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              children: [
+                                                Text("Status : " +
+                                                    snap.data.status
+                                                        .toString()),
+                                                Text("Progress : " +
+                                                    snap.data.progress
+                                                        .toString()),
+                                                Text("Error : " +
+                                                    snap.data.error.toString()),
+                                                Text(snap.connectionState.index
+                                                    .toString()),
+                                              ],
+                                            ),
                                           ),
                                       ],
                                     );

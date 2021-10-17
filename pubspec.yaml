@@ -78,9 +78,12 @@ dependencies:
   flushbar: ^1.10.4
   #dialogs
   adaptive_dialog: ^0.10.0+5
-  logging: ^1.0.1
+  
 
   package_info_plus: ^1.0.0
+  
+  minestrix_chat: 
+    git: https://gitlab.com/minestrix/minestrix-chat.git
   
 dev_dependencies:
   flutter_test:
