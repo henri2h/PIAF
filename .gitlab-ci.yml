@@ -4,6 +4,7 @@ stages:
   - analyze
   - build
   - test
+  - deploy
 
 build_linux:
   stage: build
@@ -54,6 +55,23 @@ build_web:
 
   tags:
     - shared
+
+deploy_web:
+  image: "debian:buster"
+  stage: deploy
+  
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'which rsync || ( apt-get update -y && apt-get install rsync -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
+  script:
+    - rsync -az build/web/ $USER@$HOST:app --delete
+  only:
+    - master
 
 analyze:
   stage: analyze
