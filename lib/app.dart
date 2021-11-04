@@ -49,7 +49,7 @@ class _MinestrixState extends State<Minestrix> {
                               children: [
                                 CircularProgressIndicator(),
                                 SizedBox(width: 8),
-                                H2Title("Logging in...."),
+                                H2Title("Signing in...."),
                               ],
                             ),
                           ),
@@ -73,68 +73,65 @@ class _MinestrixState extends State<Minestrix> {
                                     CircularProgressIndicator(),
                                     SizedBox(width: 10),
                                     Text("Loading rooms"),
-                                    StreamBuilder<SyncStatusUpdate>(
-                                      stream: sclient.onSyncStatus.stream,
-                                      builder: (context, snap) {
-                                        if (!snap.hasData) return Container();
+                                  ],
+                                ),
+                                StreamBuilder<SyncStatusUpdate>(
+                                  stream: sclient.onSyncStatus.stream,
+                                  builder: (context, snap) {
+                                    if (!snap.hasData) return Container();
 
-                                        return Column(
-                                          children: [
-                                            if (snap.data.status ==
-                                                SyncStatus.processing)
-                                              Padding(
+                                    print("Sync progress : " +
+                                        snap.data.progress.toString());
+
+                                    return Column(
+                                      children: [
+                                        if (snap.data.status ==
+                                            SyncStatus.processing)
+                                          Padding(
+                                            padding: const EdgeInsets.all(20),
+                                            child: Card(
+                                              child: Padding(
                                                 padding:
                                                     const EdgeInsets.all(20),
-                                                child: Card(
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            20),
-                                                    child: Column(
-                                                      children: [
-                                                        Text(
-                                                            "Running first sync",
-                                                            style: TextStyle(
-                                                                fontSize: 20,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
-                                                        SizedBox(height: 10),
-                                                        LinearProgressIndicator(
-                                                            value: snap
-                                                                .data.progress),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            if (snap.data.status !=
-                                                SyncStatus.processing)
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
                                                 child: Column(
                                                   children: [
-                                                    Text("Status : " +
-                                                        snap.data.status
-                                                            .toString()),
-                                                    Text("Progress : " +
-                                                        snap.data.progress
-                                                            .toString()),
-                                                    Text("Error : " +
-                                                        snap.data.error
-                                                            .toString()),
-                                                    Text(snap
-                                                        .connectionState.index
-                                                        .toString()),
+                                                    Text("Running first sync",
+                                                        style: TextStyle(
+                                                            fontSize: 20,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                    SizedBox(height: 10),
+                                                    LinearProgressIndicator(
+                                                        value:
+                                                            snap.data.progress),
                                                   ],
                                                 ),
                                               ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ],
+                                            ),
+                                          ),
+                                        if (snap.data.status !=
+                                            SyncStatus.processing)
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              children: [
+                                                Text("Status : " +
+                                                    snap.data.status
+                                                        .toString()),
+                                                Text("Progress : " +
+                                                    snap.data.progress
+                                                        .toString()),
+                                                Text("Error : " +
+                                                    snap.data.error.toString()),
+                                                Text(snap.connectionState.index
+                                                    .toString()),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ],
                             ),

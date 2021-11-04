@@ -13,9 +13,6 @@ import 'package:minestrix/global/smatrix/minestrix_types.dart';
 class SClient extends Client {
   final log = Logger("SClient");
 
-  static const String SMatrixRoomPrefix = "smatrix_";
-  static const String SMatrixUserRoomPrefix = SMatrixRoomPrefix + "@";
-
   StreamSubscription onRoomUpdateSub; // event subscription
 
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
@@ -128,41 +125,6 @@ class SClient extends Client {
     onTimelineUpdate.add("up");
   }
 
-  Future<bool> trySettingRoomState(Room room) async {
-    try {
-      Event e = room.getState("org.matrix.msc1840");
-
-      if (e == null || e.content["type"] != "fr.henri2h.minestrix") {
-        Map<String, dynamic> content = new Map<String, dynamic>();
-        content["type"] = "fr.henri2h.minestrix";
-        await this
-            .setRoomStateWithKey(room.id, "org.matrix.msc1840", "", content);
-        return true;
-      }
-    } catch (e) {
-      log.severe("could not set user thread room as minestrix room", e);
-      return false;
-    }
-    return true; // no update needed
-  }
-
-// setup the user room
-  Future<bool> setupSRoom(SMatrixRoom sroom) async {
-    try {
-      // migration
-      // TODO : remove this if statement in a future release
-      if (sroom.room.name.startsWith(SMatrixUserRoomPrefix)) {
-        log.warning("Update sroom");
-        String roomName = sroom.room.name.replaceFirst("smatrix_", "");
-        await sroom.room.setName(roomName + " timeline");
-      }
-      await trySettingRoomState(sroom.room);
-      return true;
-    } catch (e) {
-      log.severe("Error setup sroom", e);
-      return false;
-    }
-  }
 
   bool sroomsLoaded = false;
   Future<void> loadSRooms() async {
@@ -204,7 +166,6 @@ class SClient extends Client {
               userRoom = rs; // we have found our user smatrix room
               // this means that the client has been initialisated
               // we can load the friendsVue
-              await setupSRoom(userRoom);
             }
           }
         }
