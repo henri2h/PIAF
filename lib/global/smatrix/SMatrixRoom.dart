@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/global/smatrix.dart';
