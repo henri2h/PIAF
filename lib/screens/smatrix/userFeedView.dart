@@ -35,7 +35,9 @@ class _UserFeedViewState extends State<UserFeedView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      H1Title(isUserPage ? "My account" : "User feed"),
+                      Expanded(
+                          child:
+                              H1Title(isUserPage ? "My account" : "User feed")),
                       if (isUserPage)
                         Padding(
                           padding: const EdgeInsets.symmetric(
