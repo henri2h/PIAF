@@ -1,4 +1,5 @@
 import 'package:emoji_picker/emoji_picker.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/post/postHeader.dart';
@@ -6,6 +7,8 @@ import 'package:minestrix/components/post/postReactions.dart';
 import 'package:minestrix/components/post/postReplies.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix_chat/partials/matrix_images.dart';
+import 'package:minestrix_chat/partials/matrix_messeage.dart';
 
 class Post extends StatefulWidget {
   final Event event;
@@ -23,11 +26,38 @@ class PostContent extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    switch (event.type) {
+      case EventTypes.Message:
+      case EventTypes.Encrypted:
+        switch (event.messageType) {
+          case MessageTypes.Text:
+          case MessageTypes.Emote:
+            return MarkdownBody(
+              data: event.body,
+            );
+
+          case MessageTypes.Image:
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MarkdownBody(data: event.body),
+                const SizedBox(height: 10),
+                MImage(event: event),
+              ],
+            );
+          case MessageTypes.Video:
+            return Text(event.body);
+
+          default:
+            return Text("other message type : " + event.messageType);
+        }
+        break;
+    }
     return Container(
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Post(event: event),
+            MessageDisplay(client: Matrix.of(context).sclient, event: event),
           ]),
     );
   }
@@ -55,7 +85,6 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     SClient sclient = Matrix.of(context).sclient;
 
     Timeline t = sclient.srooms[e.roomId].timeline;
-
     return StreamBuilder<Object>(
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
@@ -85,6 +114,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                             onPressed: () async {
                               await pickEmoji(e);
                             },
+                            style: TextButton.styleFrom(primary: Colors.black),
                             child: reactions.isNotEmpty
                                 ? PostReactions(event: e, reactions: reactions)
                                 : ReactionItemWidget(
