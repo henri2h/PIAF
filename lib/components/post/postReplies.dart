@@ -67,6 +67,7 @@ class _RepliesVueState extends State<RepliesVue> {
                                     url: revent.sender.avatarUrl,
                                     width: 16,
                                     thumnail: true,
+                                    rounded: true,
                                     height: 16)),
                             SizedBox(width: 10),
                             Expanded(
@@ -147,7 +148,11 @@ class ReplyBox extends StatelessWidget {
       child: Row(
         children: [
           MatrixUserImage(
-              client: sclient, url: sclient.userRoom.user.avatarUrl),
+              client: sclient,
+              url: sclient.userRoom.user.avatarUrl,
+              width: 32,
+              thumnail: true,
+              height: 32),
           SizedBox(width: 10),
           Expanded(
               child: TextField(

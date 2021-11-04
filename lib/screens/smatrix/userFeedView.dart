@@ -59,6 +59,7 @@ class _UserFeedViewState extends State<UserFeedView> {
                         ),
                     ],
                   ),
+
                   UserInfo(
                       user: sroom.user,
                       avatar: sroom.room.avatar?.getDownloadLink(sclient)),

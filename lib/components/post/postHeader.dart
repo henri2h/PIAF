@@ -48,63 +48,65 @@ class PostHeader extends StatelessWidget {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
+                              Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  TextButton(
-                                    style: TextButton.styleFrom(
-                                        primary: Theme.of(context)
-                                            .textTheme
-                                            .bodyText1
-                                            .color),
-                                    onPressed: () {
-                                      NavigationHelper.navigateToUserFeed(
-                                          context, event.sender);
-                                    },
-                                    child: Text(event.sender.displayName,
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold)),
+                                  Flexible(
+                                    child: TextButton(
+                                      style: TextButton.styleFrom(
+                                          primary: Theme.of(context)
+                                              .textTheme
+                                              .bodyText1
+                                              .color),
+                                      onPressed: () {
+                                        NavigationHelper.navigateToUserFeed(
+                                            context, event.sender);
+                                      },
+                                      child: Text(event.sender.displayName,
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
                                   ),
                                   if (event.sender.id != p.data.userId)
+                                    Text("to",
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .bodyText1
+                                                .color)),
+                                  if (event.sender.id != p.data.userId)
                                     Flexible(
-                                      child: Row(children: [
-                                        Text(" to ",
+                                      child: TextButton(
+                                        style: TextButton.styleFrom(
+                                            primary: Theme.of(context)
+                                                .textTheme
+                                                .bodyText1
+                                                .color),
+                                        onPressed: () {
+                                          NavigationHelper.navigateToUserFeed(
+                                              context, u);
+                                        },
+                                        child: Text(p.data.displayName,
+                                            overflow: TextOverflow.clip,
                                             style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyText1
-                                                    .color)),
-                                        Flexible(
-                                          child: TextButton(
-                                            style: TextButton.styleFrom(
-                                                primary: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyText1
-                                                    .color),
-                                            onPressed: () {
-                                              NavigationHelper
-                                                  .navigateToUserFeed(
-                                                      context, u);
-                                            },
-                                            child: Text(p.data.displayName,
-                                                overflow: TextOverflow.clip,
-                                                style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight:
-                                                        FontWeight.w400)),
-                                          ),
-                                        ),
-                                      ]),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400)),
+                                      ),
                                     ),
                                 ],
                               ),
-                              Text(timeago.format(event.originServerTs),
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .caption
-                                          .color)),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Text(
+                                    timeago.format(event.originServerTs),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .caption
+                                            .color)),
+                              ),
                             ],
                           );
                         }
@@ -120,21 +122,23 @@ class PostHeader extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        TextButton(
-                          onPressed: () {
-                            NavigationHelper.navigateToUserFeed(
-                                context, event.sender);
-                          },
-                          child: Text(event.sender.displayName,
-                              style: TextStyle(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyText1
-                                      .color,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold)),
+                        Flexible(
+                          child: TextButton(
+                            onPressed: () {
+                              NavigationHelper.navigateToUserFeed(
+                                  context, event.sender);
+                            },
+                            child: Text(event.sender.displayName,
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyText1
+                                        .color,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                        Text(" to ",
+                        Text("to",
                             style: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme
@@ -201,7 +205,7 @@ class PostHeader extends StatelessWidget {
                                 ),
                                 value: "delete")
                         ],
-                    child: Icon(Icons.more_horiz),
+                    icon: Icon(Icons.more_horiz),
                     onSelected: (String action) async {
                       switch (action) {
                         case "delete":

@@ -45,7 +45,7 @@ dependencies:
   
   # Post formating
   flutter_markdown:
-  emoji_picker:
+  emoji_picker_flutter: ^1.0.7
 
   image_picker:
   file_picker_cross:

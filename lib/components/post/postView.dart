@@ -1,4 +1,4 @@
-import 'package:emoji_picker/emoji_picker.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
@@ -69,14 +69,18 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   Future<void> pickEmoji(Event e) async {
     Emoji emoji = await showModalBottomSheet(
         context: context,
-        builder: (context) => Column(children: [
-              EmojiPicker(
-                onEmojiSelected: (emoji, category) {
+        builder: (context) => SizedBox(
+              height: 140,
+              child: EmojiPicker(
+                onEmojiSelected: (Category category, Emoji emoji) {
                   Navigator.of(context).pop<Emoji>(emoji);
                 },
+                config: Config(
+                  columns: 25,
+                ),
               ),
-            ]));
-    await e.room.sendReaction(e.eventId, emoji.emoji);
+            ));
+    if (emoji != null) await e.room.sendReaction(e.eventId, emoji.emoji);
   }
 
   @override
@@ -91,70 +95,89 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
           Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.reply);
           Set<Event> reactions =
               e.aggregatedEvents(t, RelationshipTypes.reaction);
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                // post content
+          return Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // post content
 
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PostHeader(event: e),
-                    Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 10),
-                        child: PostContent(e)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                      child: Row(
-                        children: [
-                          TextButton(
-                            onPressed: () async {
-                              await pickEmoji(e);
-                            },
-                            style: TextButton.styleFrom(primary: Colors.black),
-                            child: reactions.isNotEmpty
-                                ? PostReactions(event: e, reactions: reactions)
-                                : ReactionItemWidget(
-                                    Row(children: [
-                                      Icon(Icons.emoji_emotions, size: 16),
-                                      SizedBox(width: 10),
-                                      Text("0")
-                                    ]),
-                                  ),
-                          ),
-                          SizedBox(width: 10),
-                          TextButton(
-                              onPressed: replyButtonClick,
-                              style:
-                                  TextButton.styleFrom(primary: Colors.black),
-                              child: ReactionItemWidget(
-                                Row(children: [
-                                  Icon(Icons.reply, size: 16),
-                                  SizedBox(width: 10),
-                                  Text("")
-                                ]),
-                              )),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-                Container(
-                  //color: Color(0xfff6f6f6),
-                  child: Column(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (replies.isNotEmpty || showReplyBox)
-                        RepliesVue(
-                            event: e,
-                            replies: replies,
-                            showEditBox: showReplyBox),
+                      PostHeader(event: e),
+                      Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 10),
+                          child: PostContent(e)),
+                      Divider(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            if (reactions.isNotEmpty)
+                              Expanded(
+                                child: MaterialButton(
+                                    onPressed: () async {
+                                      await pickEmoji(e);
+                                    },
+                                    child: PostReactions(
+                                        event: e, reactions: reactions)),
+                              ),
+                            if (reactions.isEmpty)
+                              Expanded(
+                                child: MaterialButton(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.emoji_emotions),
+                                      SizedBox(width: 10),
+                                      Text("React")
+                                    ],
+                                  ),
+                                  onPressed: () async {
+                                    await pickEmoji(e);
+                                  },
+                                ),
+                              ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: MaterialButton(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.reply),
+                                    SizedBox(width: 10),
+                                    Text("Comment")
+                                  ],
+                                ),
+                                onPressed: replyButtonClick,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
-                ),
-              ],
+                  Container(
+                    //color: Color(0xfff6f6f6),
+                    child: Column(
+                      children: [
+                        if (replies.isNotEmpty || showReplyBox)
+                          RepliesVue(
+                              event: e,
+                              replies: replies,
+                              showEditBox: showReplyBox),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         });
