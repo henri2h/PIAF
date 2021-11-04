@@ -26,34 +26,6 @@ class _MinesTrixAccountCreationState extends State<MinesTrixAccountCreation> {
         children: [
           H1Title("Ready to take part in the adventure ?"),
           SizedBox(height: 40),
-          StreamBuilder<SyncStatusUpdate>(
-            stream: sclient.onSyncStatus.stream,
-            builder: (context, snap) {
-              return Column(
-                children: [
-                  Text("Sync status"),
-                  Text("Status : " + snap.data.status.toString()),
-                  Text("Progress : " + snap.data.progress.toString()),
-                  Text(snap.data.error.toString()),
-                  Text(snap.connectionState.index.toString()),
-                ],
-              );
-            },
-          ),
-          StreamBuilder<bool>(
-            stream: sclient.onFirstSync.stream,
-            builder: (context, snap) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Text("First sync"),
-                    Text("first sync : " + snap.data.toString()),
-                  ],
-                ),
-              );
-            },
-          ),
           Padding(
               padding: const EdgeInsets.all(20.0),
               child: running
@@ -66,7 +38,7 @@ class _MinesTrixAccountCreationState extends State<MinesTrixAccountCreation> {
 
                         await sclient.createSMatrixUserProfile();
                       },
-                      label: "Go",
+                      label: "Create my account",
                       icon: Icons.send)),
           if (running) LinearProgressIndicator(),
         ],
