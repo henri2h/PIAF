@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/global/smatrix/Notifications.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
+import 'package:minestrix/global/smatrix/minestrix_types.dart';
 
 class SClient extends Client {
   final log = Logger("SClient");
@@ -167,7 +168,6 @@ class SClient extends Client {
   Future<void> loadSRooms() async {
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
-
     srooms.clear(); // clear rooms
 
     sInvites.clear(); // clear invites
@@ -180,8 +180,8 @@ class SClient extends Client {
         log.info("Friendship requests sent : " + r.name);
       }
 
-      SMatrixRoom rs = SMatrixRoom();
-      if (await rs.init(r, this)) {
+      SMatrixRoom rs = await SMatrixRoom.loadMinesTrixRoom(r, this);
+      if (rs != null) {
         // if class is correctly initialisated, we can add it
         // if we are here, it means that we have a valid smatrix room
 
@@ -222,37 +222,24 @@ class SClient extends Client {
     if (userRoom == null) log.severe("❌ User room not found");
   }
 
-  Future<SMatrixRoom> createSMatrixRoom(String name, String desc) async {
+  Future<String> createSMatrixRoom(String name, String desc) async {
     String roomID = await createRoom(
         name: name,
         topic: desc,
         visibility: Visibility.private,
-        creationContent: {"type": "fr.henri2h.minestrix"});
-    SMatrixRoom sroom = SMatrixRoom();
+        creationContent: {"type": MinestrixTypes.account});
 
-    Room r = getRoomById(roomID);
-    await trySettingRoomState(r);
+    // launch sync
+    await loadSRooms();
+    await loadNewTimeline();
 
-    bool result = await sroom.init(r, this);
-
-    await setupSRoom(sroom); // add the room type
-
-    if (result) {
-      // launch sync
-      await loadSRooms();
-      await loadNewTimeline();
-
-      return sroom;
-    } else
-      return null;
+    return roomID;
   }
 
   Future createSMatrixUserProfile() async {
     log.info("Create smatrix room");
     String name = userID + " timeline";
-    SMatrixRoom sroom = await createSMatrixRoom(name, "A Mines'Trix profile");
-
-    if (sroom != null) userRoom = sroom;
+    await createSMatrixRoom(name, "A Mines'Trix profile");
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t) {

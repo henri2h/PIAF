@@ -40,6 +40,12 @@ class _MinesTrixAccountCreationState extends State<MinesTrixAccountCreation> {
                       label: "Create my account",
                       icon: Icons.send)),
           if (running) LinearProgressIndicator(),
+          MinesTrixButton(
+              onPressed: () async {
+                await sclient.loadSRooms();
+              },
+              label: "Refresh",
+              icon: Icons.receipt_long_sharp),
         ],
       ),
     )));

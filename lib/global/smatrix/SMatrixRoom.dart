@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/global/smatrix/minestrix_types.dart';
 
 class SMatrixRoom {
   final log = Logger("SMatrixRoom");
@@ -8,9 +11,12 @@ class SMatrixRoom {
   // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
   // initialize the class, return false, if it could not generate the classes
   // i.e, it is not a valid class
+
+  // final variable
   User user;
   Room room;
   SRoomType roomType = SRoomType.UserRoom; // by default
+
   Timeline timeline;
   bool _validSRoom = false;
   bool get validSRoom => _validSRoom;
@@ -19,65 +25,76 @@ class SMatrixRoom {
     if (roomType == SRoomType.UserRoom)
       return user.displayName;
     else {
-      return room.name.replaceFirst("#", "").replaceFirst("smatrix_", "");
+      return room.name;
     }
   }
 
-  Future<bool> init(Room r, SClient sclient) async {
+  Future<void> loadRoomCreator(SClient sclient) async {
+    Event state = room.getState("m.room.create");
+
+    if (state != null) {
+      // get creator id from cache and if not in cache, from server
+      String creatorID = state.content["creator"];
+
+      // find local on local users
+      List<User> users = room.getParticipants();
+      user = findUser(users, creatorID);
+
+      try {
+        if (user == null) {
+          users = await room.requestParticipants();
+          user = findUser(users, creatorID);
+        }
+      } catch (e) {
+        log.severe("Could not request participants", e);
+        print("Creator userID : " + creatorID);
+      }
+    }
+  }
+
+  static Future<SMatrixRoom> loadMinesTrixRoom(Room r, SClient sclient) async {
     try {
-      roomType = await getSRoomType(r);
-      if (roomType != null) {
-        room = r;
+      SMatrixRoom sr = SMatrixRoom();
+      sr.roomType = await getSRoomType(r);
 
-        if (roomType == SRoomType.UserRoom) {
-          String userId = SClient.getUserIdFromRoomName(room.name);
-          // find local on local users
-          List<User> users = room.getParticipants();
-          user = findUser(users, userId);
+      if (sr.roomType != null) {
+        sr.room = r;
 
-          // or in the server ones
+        await sr.loadRoomCreator(sclient);
 
-          try {
-            if (user == null) {
-              users = await room.requestParticipants();
-              user = findUser(users, userId);
-            }
-          } catch (e) {
-            log.severe("Could not request participants", e);
-          }
+        print(sr.name + " : " + sr.user.displayName);
 
-          if (user != null) {
-            /* if (room.powerLevels != null)
-            print(room.powerLevels[user.id]); // throw an error....
-          else
-            print("error reading power levels");
-          print(room.ownPowerLevel);*/
-            _validSRoom = true;
-            return true;
+        if (sr.roomType == SRoomType.UserRoom) {
+          String userId = SClient.getUserIdFromRoomName(sr.room.name);
+
+          if (sr.user != null) {
+            sr._validSRoom = true;
+            return sr;
           }
 
           if (r.membership == Membership.invite) {
             // in the case we can't request participants
-            if (user == null) {
+            if (sr.user == null) {
               Profile p = await sclient.getProfileFromUserId(userId);
-              user = User(userId,
+              sr.user = User(userId,
                   membership: "m.join",
                   avatarUrl: p.avatarUrl.toString(),
                   displayName: p.displayName,
                   room: r);
             }
-            return true; // we cannot yet access to the room participants
+            return sr; // we cannot yet access to the room participants
           }
 
           print("issue, not a smatrix room : " + r.name);
-        } else if (roomType == SRoomType.Group) {
-          return true;
+        } else if (sr.roomType == SRoomType.Group) {
+          return sr;
         }
       }
     } catch (e) {
-      log.severe("Could not init smatrix client", e);
+      print("Error in loading room " + e.toString());
+      //log.severe("Could not init smatrix client", e);
     }
-    return false;
+    return null;
   }
 
   static User findUser(List<User> users, String userId) {
@@ -91,28 +108,17 @@ class SMatrixRoom {
   }
 
   static Future<SRoomType> getSRoomType(Room room) async {
-    // check if is a use room, in which case, it's user must be admin
-    if (room.name.startsWith("@") ||
-        room.name.startsWith(SClient.SMatrixUserRoomPrefix) ||
-        room.name.startsWith("#")) {
-      await room
-          .postLoad(); // we need to find a better solution, to speed up the loading process...
-      Event state = room.getState("org.matrix.msc1840");
-      if (state != null) {
-        // fall back
-        if (room.name.startsWith("@") ||
-            room.name.startsWith(SClient.SMatrixRoomPrefix + "@")) {
-          // now, it is a user
-          return SRoomType.UserRoom;
-        } else if (room.name.startsWith("#") ||
-            room.name.startsWith(SClient.SMatrixRoomPrefix + "#")) {
-          // now, it is a group
-          return SRoomType.Group;
-        }
-      }
+    Event state = room.getState("m.room.create");
+
+    if (state != null && state.content["type"] != null) {
+      // check if it is a group or account room if not, throw null
+      if (state.content["type"] == MinestrixTypes.account)
+        return SRoomType.UserRoom;
+      else if (state.content["type"] == MinestrixTypes.group)
+        return SRoomType.Group;
     }
 
-    return null; // we don't support other room types yet
+    return null;
   }
 }
 
