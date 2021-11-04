@@ -15,18 +15,19 @@ class PostReactions extends StatelessWidget {
       keys.update(key, (value) => value + 1, ifAbsent: () => 1);
     }
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (MapEntry<String, int> key in keys.entries)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: ReactionItemWidget(
-              Row(children: [
-                Text(key.key),
-                SizedBox(width: 10),
-                Text(key.value.toString())
-              ]),
-            ),
+            child: Row(children: [
+              Text(key.key),
+              SizedBox(width: 2),
+              Text(key.value.toString())
+            ]),
           ),
+        SizedBox(width: 10),
+        Text("React")
       ],
     );
   }
