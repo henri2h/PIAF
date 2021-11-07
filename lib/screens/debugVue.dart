@@ -67,20 +67,36 @@ class _DebugViewState extends State<DebugView> {
           children: [
             H1Title("Debug"),
             if (sclient != null && sclient.rooms != null)
-              Text("srooms length : " + sclient.srooms.length.toString()),
+              Text("MinesTRIX rooms length : " +
+                  sclient.srooms.length.toString()),
             if (srooms.length != 0)
               for (var i = 0; i < srooms.length; i++)
                 ListTile(
                     title: Text(srooms[i].room.name),
-                    subtitle: Text(srooms[i].room.id),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.person, size: 16),
+                              SizedBox(width: 10),
+                              Text(srooms[i].user.displayName),
+                            ],
+                          ),
+                          Text(srooms[i].room.id),
+                        ],
+                      ),
+                    ),
                     leading: (timelineLength.length > i)
                         ? Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(timelineLength[i].toString()),
                           )
                         : null,
-                    trailing: TextButton(
-                        child: Text("Load"),
+                    trailing: IconButton(
+                        icon: Icon(Icons.refresh),
                         onPressed: () async {
                           await loadElements(context, srooms[i]);
                         })),
