@@ -127,7 +127,7 @@ class SettingsView extends StatelessWidget {
                         ),
                     ],
                   )
-                : Text("Encrytpion disabled ❌"),
+                : Text("Encryption disabled ❌"),
             H2Title("Debug"),
             ListTile(
               title: Text("Go to debug page"),
