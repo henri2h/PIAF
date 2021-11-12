@@ -27,7 +27,7 @@ class PostReactions extends StatelessWidget {
             ]),
           ),
         SizedBox(width: 10),
-        Text("React")
+        Flexible(child: Text("React"))
       ],
     );
   }

@@ -51,22 +51,20 @@ class PostHeader extends StatelessWidget {
                               Wrap(
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  Flexible(
-                                    child: TextButton(
-                                      style: TextButton.styleFrom(
-                                          primary: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1
-                                              .color),
-                                      onPressed: () {
-                                        NavigationHelper.navigateToUserFeed(
-                                            context, event.sender);
-                                      },
-                                      child: Text(event.sender.displayName,
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold)),
-                                    ),
+                                  TextButton(
+                                    style: TextButton.styleFrom(
+                                        primary: Theme.of(context)
+                                            .textTheme
+                                            .bodyText1
+                                            .color),
+                                    onPressed: () {
+                                      NavigationHelper.navigateToUserFeed(
+                                          context, event.sender);
+                                    },
+                                    child: Text(event.sender.displayName,
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold)),
                                   ),
                                   if (event.sender.id != p.data.userId)
                                     Text("to",
@@ -76,23 +74,21 @@ class PostHeader extends StatelessWidget {
                                                 .bodyText1
                                                 .color)),
                                   if (event.sender.id != p.data.userId)
-                                    Flexible(
-                                      child: TextButton(
-                                        style: TextButton.styleFrom(
-                                            primary: Theme.of(context)
-                                                .textTheme
-                                                .bodyText1
-                                                .color),
-                                        onPressed: () {
-                                          NavigationHelper.navigateToUserFeed(
-                                              context, u);
-                                        },
-                                        child: Text(p.data.displayName,
-                                            overflow: TextOverflow.clip,
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400)),
-                                      ),
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                          primary: Theme.of(context)
+                                              .textTheme
+                                              .bodyText1
+                                              .color),
+                                      onPressed: () {
+                                        NavigationHelper.navigateToUserFeed(
+                                            context, u);
+                                      },
+                                      child: Text(p.data.displayName,
+                                          overflow: TextOverflow.clip,
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w400)),
                                     ),
                                 ],
                               ),

@@ -137,7 +137,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                     children: [
                                       Icon(Icons.emoji_emotions),
                                       SizedBox(width: 10),
-                                      Text("React")
+                                      Flexible(child: Text("React"))
                                     ],
                                   ),
                                   onPressed: () async {
@@ -153,7 +153,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                   children: [
                                     Icon(Icons.reply),
                                     SizedBox(width: 10),
-                                    Text("Comment")
+                                    Flexible(child: Text("Comment"))
                                   ],
                                 ),
                                 onPressed: replyButtonClick,
