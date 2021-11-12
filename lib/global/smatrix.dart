@@ -17,9 +17,6 @@ class SClient extends Client {
 
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
-  // This stream is used to notify the user that a new post has been added to the timeline
-  StreamController<String> onNewPostInTimeline = StreamController.broadcast();
-
   StreamController<String> onSRoomsUpdate = StreamController.broadcast();
 
   Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>();
@@ -125,7 +122,6 @@ class SClient extends Client {
     onTimelineUpdate.add("up");
   }
 
-
   bool sroomsLoaded = false;
   Future<void> loadSRooms() async {
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
@@ -178,6 +174,7 @@ class SClient extends Client {
     }
 
     onSRoomsUpdate.add("update");
+    print("[smatrix] : sroom update");
     sroomsLoaded = true;
 
     if (userRoom == null) log.severe("❌ User room not found");
