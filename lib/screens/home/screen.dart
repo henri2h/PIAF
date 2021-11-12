@@ -106,7 +106,8 @@ class _HomePageState extends State<HomeScreen> {
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
         body: Container(child: widgetView ?? Text("hello")),
-        bottomNavigationBar: NavigationBar(changePage: changePage));
+        bottomNavigationBar: NavigationBar(changePage: changePage),
+        endDrawer: NotificationView());
   }
 
   Widget buildFloattingButton() {
