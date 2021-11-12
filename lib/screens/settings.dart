@@ -3,6 +3,7 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/Managers/ThemeManager.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/screens/account/accountsDetails.dart';
 import 'package:minestrix/screens/debugVue.dart';
 
 import 'package:provider/provider.dart';
@@ -127,7 +128,23 @@ class SettingsView extends StatelessWidget {
                         ),
                     ],
                   )
-                : Text("Encryption disabled ❌"),
+                : Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("Encryption disabled ❌"),
+                  ),
+            ListTile(
+              title: Text("Accounts"),
+              trailing: Icon(Icons.arrow_forward),
+              leading: Icon(Icons.people),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => Scaffold(
+                            appBar: AppBar(title: Text("My accounts")),
+                            body: AccountsDetails())));
+              },
+            ),
             H2Title("Debug"),
             ListTile(
               title: Text("Go to debug page"),
