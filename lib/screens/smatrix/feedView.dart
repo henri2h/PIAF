@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postEditor.dart';
@@ -11,8 +12,17 @@ import 'package:minestrix/screens/home/right_bar/widget.dart';
 import 'package:minestrix/screens/smatrix/friends/researchView.dart';
 import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
 
-class FeedView extends StatelessWidget {
+class FeedView extends StatefulWidget {
   const FeedView({Key key}) : super(key: key);
+
+  @override
+  _FeedViewState createState() => _FeedViewState();
+}
+
+class _FeedViewState extends State<FeedView> {
+  List<Event> timeline;
+
+  ScrollController _controller = new ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +30,7 @@ class FeedView extends StatelessWidget {
 
     return LayoutBuilder(builder: (context, constraints) {
       return StreamBuilder(
-        stream: sclient.onNewPostInTimeline.stream,
+        stream: sclient.onTimelineUpdate.stream,
         builder: (context, _) {
           if (sclient.stimeline.length == 0)
             return ListView(
@@ -46,6 +56,23 @@ class FeedView extends StatelessWidget {
                 )
               ],
             );
+
+          /*
+            In order to prevent the application to redraw the feed each time we recieve
+            a new post, we make here a copy of the feed and refresh the feed only if the
+            user press the reload button.
+
+            TODO : display a notification that a new post is available
+          */
+
+          if (timeline == null)
+            timeline = new List<Event>.from(sclient.stimeline); // deep copy
+          else {
+            // a new post may be available
+
+            print(sclient.stimeline.length);
+            print(timeline.length);
+          }
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -72,8 +99,9 @@ class FeedView extends StatelessWidget {
                 child: Container(
                   constraints: BoxConstraints(maxWidth: 700),
                   child: ListView.builder(
+                      controller: _controller,
                       cacheExtent: 8000,
-                      itemCount: sclient.stimeline.length + 1,
+                      itemCount: timeline.length + 1,
                       itemBuilder: (BuildContext context, int i) {
                         if (i == 0)
                           return Column(
@@ -131,11 +159,12 @@ class FeedView extends StatelessWidget {
                               PostWriterModal(sroom: sclient.userRoom),
                             ],
                           );
-                        if (sclient.stimeline.length > 0)
+                        if (timeline.length >
+                            0) // may be a redundant check... we never know
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 2, horizontal: 6),
-                            child: Post(event: sclient.stimeline[i - 1]),
+                            child: Post(event: timeline[i - 1]),
                           );
                         else
                           return Text("Empty");
