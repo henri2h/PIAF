@@ -1,3 +1,4 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
@@ -7,7 +8,7 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
-import 'package:minestrix/pages/settingsPage.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -27,7 +28,8 @@ class UserFeedPage extends StatefulWidget {
 class _UserFeedPageState extends State<UserFeedPage> {
   bool isUserPage = false;
 
-  Widget buildPage(MinestrixClient sclient, MinestrixRoom sroom, List<Event> sevents) {
+  Widget buildPage(
+      MinestrixClient sclient, MinestrixRoom sroom, List<Event> sevents) {
     return LayoutBuilder(
       builder: (context, constraints) => StreamBuilder(
           stream: sroom.room!.onUpdate.stream,
@@ -48,12 +50,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
                               IconButton(
                                   icon: Icon(Icons.settings),
                                   onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (_) => Scaffold(
-                                                appBar: AppBar(
-                                                    title: Text("Settings")),
-                                                body: SettingsPage())));
+                                    context.navigateTo(SettingsRoute());
                                   }),
                             ],
                           ),
@@ -142,7 +139,8 @@ class _UserFeedPageState extends State<UserFeedPage> {
         .firstWhereOrNull((User u) => (u.id == widget.userId));
 
     if (sroom != null) {
-      List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
+      List<Event> sevents =
+          sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
       return buildPage(sclient, sroom, sevents);
     } else {
       return FutureBuilder<Profile>(

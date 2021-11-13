@@ -50,9 +50,8 @@ class MatrixState extends State<Matrix> {
   }
 
   void initMatrix() {
-    final Set<KeyVerificationMethod> verificationMethods = <KeyVerificationMethod>{
-      KeyVerificationMethod.numbers
-    };
+    final Set<KeyVerificationMethod> verificationMethods =
+        <KeyVerificationMethod>{KeyVerificationMethod.numbers};
 
     if (PlatformInfos.isMobile) {
       // emojis don't show in web somehow

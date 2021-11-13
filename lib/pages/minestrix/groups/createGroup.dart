@@ -87,8 +87,8 @@ class _CreateGroupState extends State<CreateGroup> {
                 child: Text('Create group'),
                 onPressed: () async {
                   if (tName.text != "") {
-                    await sclient!.createMinestrixGroup(
-                        "#" + tName.text, tDesc.text);
+                    await sclient!
+                        .createMinestrixGroup("#" + tName.text, tDesc.text);
                     setState(() {
                       errorText = "success";
                     });

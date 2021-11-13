@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/login/loginInput.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
-import 'package:minestrix/pages/home/homePage.dart';
+import 'package:minestrix/pages/minestrix/homeWraperPage.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -370,16 +370,5 @@ class LoginCardState extends State<LoginCard> {
         ),
       ],
     );
-  }
-
-  void changePage(BuildContext context) {
-    print(_usernameController.text);
-    print(_passwordController.text);
-    if (2 == 3)
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(),
-          ));
   }
 }

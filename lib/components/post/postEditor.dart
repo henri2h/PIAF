@@ -9,14 +9,14 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
-class PostEditor extends StatefulWidget {
-  PostEditor({Key? key, this.sroom}) : super(key: key);
+class PostEditorPage extends StatefulWidget {
+  PostEditorPage({Key? key, this.sroom}) : super(key: key);
   final MinestrixRoom? sroom;
   @override
-  _PostEditorState createState() => _PostEditorState();
+  _PostEditorPageState createState() => _PostEditorPageState();
 }
 
-class _PostEditorState extends State<PostEditor>
+class _PostEditorPageState extends State<PostEditorPage>
     with SingleTickerProviderStateMixin {
   String postContent = "";
   FilePickerCross? file;

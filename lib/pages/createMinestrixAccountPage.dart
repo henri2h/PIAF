@@ -10,7 +10,8 @@ class createMinestrixAccountPage extends StatefulWidget {
       _createMinestrixAccountPageState();
 }
 
-class _createMinestrixAccountPageState extends State<createMinestrixAccountPage> {
+class _createMinestrixAccountPageState
+    extends State<createMinestrixAccountPage> {
   bool running = false;
 
   @override

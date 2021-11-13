@@ -24,7 +24,8 @@ class _GroupPageState extends State<GroupPage> {
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
     MinestrixRoom sroom = widget.sroom!;
-    List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
+    List<Event> sevents =
+        sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
     List<User> participants = sroom.room!.getParticipants();
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) => Row(

@@ -43,7 +43,9 @@ class MinestrixClient extends Client {
 
   MinestrixNotifications notifications = MinestrixNotifications();
 
-  MinestrixClient(String clientName, {bool? enableE2eeRecovery, Set<KeyVerificationMethod>? verificationMethods})
+  MinestrixClient(String clientName,
+      {bool? enableE2eeRecovery,
+      Set<KeyVerificationMethod>? verificationMethods})
       : super(
           clientName,
           verificationMethods: verificationMethods,
@@ -246,8 +248,9 @@ class MinestrixClient extends Client {
     List<MinestrixRoom> sr = sInvites.values.toList();
     for (MinestrixRoom r in sr) {
       // check if the user is already in the list and accept invitation
-      bool exists = (followers.firstWhereOrNull((element) => r.user!.id == element.id) !=
-          null);
+      bool exists =
+          (followers.firstWhereOrNull((element) => r.user!.id == element.id) !=
+              null);
       if (exists) {
         await r.room!.join();
         sInvites.remove(r.room!.id);
@@ -257,8 +260,8 @@ class MinestrixClient extends Client {
     List<User> users = await getSUsers();
     // iterate through rooms and add every user from thoose rooms not in our friend list
     for (MinestrixRoom r in sfriends.values) {
-      bool exists = (users.firstWhereOrNull((User u) => r.user!.id == u.id) !=
-          null);
+      bool exists =
+          (users.firstWhereOrNull((User u) => r.user!.id == u.id) != null);
       if (!exists) {
         await userRoom!.room!.invite(r.user!.id);
       }
@@ -300,7 +303,7 @@ class MinestrixClient extends Client {
     return "ERROR !";
   }
 
-  Future<String> createMinestrixGroup(String name, String desc) async{
+  Future<String> createMinestrixGroup(String name, String desc) async {
     String roomID = await createRoom(
         name: name,
         topic: desc,

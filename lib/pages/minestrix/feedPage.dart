@@ -132,7 +132,7 @@ class _FeedPageState extends State<FeedPage> {
                                                       appBar: AppBar(
                                                           title:
                                                               Text("New post")),
-                                                      body: PostEditor()));
+                                                      body: PostEditorPage()));
                                             }),
                                         IconButton(
                                             icon: Icon(Icons.search),

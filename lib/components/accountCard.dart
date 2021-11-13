@@ -1,6 +1,7 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
@@ -19,7 +20,8 @@ class AccountCard extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         onPressed: () {
-          NavigationHelper.navigateToUserFeed(context, user);
+          if (user?.id != null)
+            context.pushRoute(UserFeedRoute(userId: user?.id));
         },
         child: Column(
           children: [
@@ -30,7 +32,8 @@ class AccountCard extends StatelessWidget {
               height: 110,
               thumnail: true,
               defaultIcon: Icon(Icons.person,
-                  color: Theme.of(context).textTheme.bodyText1!.color, size: 70),
+                  color: Theme.of(context).textTheme.bodyText1!.color,
+                  size: 70),
             ),
             SizedBox(
               width: 100,

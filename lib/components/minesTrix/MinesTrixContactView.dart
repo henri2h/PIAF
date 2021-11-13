@@ -1,6 +1,7 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
@@ -35,7 +36,7 @@ class MinesTrixContactView extends StatelessWidget {
             padding: EdgeInsets.all(26.0),
           ),
           onPressed: () {
-            NavigationHelper.navigateToUserFeed(context, user);
+            context.pushRoute(UserFeedRoute(userId: user.id));
           },
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

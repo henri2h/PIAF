@@ -50,7 +50,8 @@ class MinestrixRoom {
     }
   }
 
-  static Future<MinestrixRoom?> loadMinesTrixRoom(Room r, MinestrixClient sclient) async {
+  static Future<MinestrixRoom?> loadMinesTrixRoom(
+      Room r, MinestrixClient sclient) async {
     try {
       MinestrixRoom sr = MinestrixRoom();
       sr.roomType = await getSRoomType(r);

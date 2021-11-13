@@ -1,7 +1,8 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -39,13 +40,10 @@ class PostHeader extends StatelessWidget {
                       builder:
                           (BuildContext context, AsyncSnapshot<Profile> p) {
                         if (p.hasData) {
-                          
-                          User user = User(
-                            p.data!.userId,
-                            displayName: p.data!.displayName,
-                            avatarUrl: p.data!.avatarUrl.toString(),
-                            room: event!.room
-                          );
+                          User user = User(p.data!.userId,
+                              displayName: p.data!.displayName,
+                              avatarUrl: p.data!.avatarUrl.toString(),
+                              room: event!.room);
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,8 +58,8 @@ class PostHeader extends StatelessWidget {
                                             .bodyText1!
                                             .color),
                                     onPressed: () {
-                                      NavigationHelper.navigateToUserFeed(
-                                          context, event!.sender);
+                                      context.pushRoute(UserFeedRoute(
+                                          userId: event!.senderId));
                                     },
                                     child: Text(event!.sender.displayName!,
                                         style: TextStyle(
@@ -83,8 +81,8 @@ class PostHeader extends StatelessWidget {
                                               .bodyText1!
                                               .color),
                                       onPressed: () {
-                                        NavigationHelper.navigateToUserFeed(
-                                            context, user);
+                                        context.pushRoute(
+                                            UserFeedRoute(userId: user.id));
                                       },
                                       child: Text(p.data!.displayName!,
                                           overflow: TextOverflow.clip,
@@ -123,8 +121,8 @@ class PostHeader extends StatelessWidget {
                         Flexible(
                           child: TextButton(
                             onPressed: () {
-                              NavigationHelper.navigateToUserFeed(
-                                  context, event!.sender);
+                              context.pushRoute(
+                                  UserFeedRoute(userId: event!.senderId));
                             },
                             child: Text(event!.sender.displayName!,
                                 style: TextStyle(
@@ -145,8 +143,10 @@ class PostHeader extends StatelessWidget {
                         Flexible(
                           child: TextButton(
                             onPressed: () {
-                              NavigationHelper.navigateToGroup(
-                                  context, event!.roomId);
+                              MinestrixRoom? sroom =
+                                  sclient.srooms[event!.roomId];
+                              if (sroom != null)
+                                context.pushRoute(GroupRoute(sroom: sroom));
                             },
                             child: Text(sroom.name!,
                                 style: TextStyle(

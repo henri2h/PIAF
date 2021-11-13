@@ -1,16 +1,18 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/minestrix/feedPage.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
 import 'package:minestrix/pages/minestrix/userFeedPage.dart';
 import 'package:minestrix/pages/settingsPage.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
-class NavBar extends StatelessWidget {
-  const NavBar({Key? key, this.changePage}) : super(key: key);
-
-  final Function? changePage;
+class NavBarDesktop extends StatelessWidget {
+  const NavBarDesktop({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,33 +31,32 @@ class NavBar extends StatelessWidget {
                 name: "Feed",
                 icon: Icons.home,
                 onPressed: () {
-                  changePage!(FeedPage());
+                  context.pushRoute(FeedRoute());
                 }),
             NavBarButton(
                 name: "My account",
                 icon: Icons.person,
                 onPressed: () {
-                  changePage!(UserFeedPage(userId: sclient.userID));
+                  context.pushRoute(UserFeedRoute(userId: sclient.userID));
                 }),
             NavBarButton(
                 name: "Chats",
                 icon: Icons.chat,
                 onPressed: () {
-                  changePage!(
-                      MatrixChatsPage(client: Matrix.of(context).sclient!),
-                      chatVue: true);
+                  context.pushRoute(
+                      MatrixChatsRoute(client: Matrix.of(context).sclient!));
                 }),
             NavBarButton(
                 name: "Research",
                 icon: Icons.search,
                 onPressed: () {
-                  changePage!(ResearchPage());
+                  context.pushRoute(ResearchRoute());
                 }),
             NavBarButton(
                 name: "Settings",
                 icon: Icons.settings,
                 onPressed: () {
-                  changePage!(SettingsPage());
+                  context.pushRoute(SettingsRoute());
                 }),
           ],
         ),
@@ -103,6 +104,64 @@ class NavBarButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class NavBarMobile extends StatefulWidget {
+  NavBarMobile({Key? key}) : super(key: key);
+  @override
+  NavBarMobileState createState() => NavBarMobileState();
+}
+
+class NavBarMobileState extends State<NavBarMobile> {
+  int _selectedIndex = 0;
+  String? userId;
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        context.pushRoute(FeedRoute());
+        break;
+      case 1:
+        context
+            .pushRoute(MatrixChatsRoute(client: Matrix.of(context).sclient!));
+        break;
+      case 2:
+        context.pushRoute(UserFeedRoute(userId: userId));
+        break;
+      default:
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    MinestrixClient sclient = Matrix.of(context).sclient!;
+    userId = sclient.userID;
+
+    return BottomNavigationBar(
+      onTap: _onItemTapped,
+      currentIndex: _selectedIndex,
+      items: [
+        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Feed'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.message_outlined), label: "Messages"),
+        BottomNavigationBarItem(
+            icon: FutureBuilder(
+                future: sclient.getProfileFromUserId(sclient.userID!),
+                builder: (BuildContext context, AsyncSnapshot<Profile> p) {
+                  if (p.data?.avatarUrl == null) return Icon(Icons.person);
+                  return MatrixUserImage(
+                      client: sclient,
+                      url: p.data!.avatarUrl,
+                      fit: true,
+                      thumnail: true);
+                }),
+            label: "My account"),
+      ],
     );
   }
 }

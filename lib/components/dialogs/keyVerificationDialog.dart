@@ -32,7 +32,9 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
       }
       setState(() => null);
     };
-    widget.request!.client.getProfileFromUserId(widget.request!.userId).then((p) {
+    widget.request!.client
+        .getProfileFromUserId(widget.request!.userId)
+        .then((p) {
       profile = p;
       setState(() => null);
     });
@@ -263,7 +265,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         ));
         break;
     }
-    
+
     final otherName = profile?.displayName ?? widget.request!.userId;
     var bottom;
     if (widget.request!.deviceId != null) {
@@ -278,7 +280,8 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         alignment: Alignment.center,
         padding: EdgeInsets.all(16.0),
         child: Text('$deviceName (${widget.request!.deviceId})',
-            style: TextStyle(color: Theme.of(context).textTheme.caption!.color)),
+            style:
+                TextStyle(color: Theme.of(context).textTheme.caption!.color)),
       );
     }
     final userNameTitle = Row(
