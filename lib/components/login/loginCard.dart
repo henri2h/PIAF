@@ -82,13 +82,15 @@ class LoginCardState extends State<LoginCard> {
   }
 
   Future<void> _requestSupportedTypes(MinestrixClient client) async {
-    List<LoginFlow> lg = await (client.getLoginFlows() as FutureOr<List<LoginFlow>>);
+    List<LoginFlow> lg =
+        await (client.getLoginFlows() as FutureOr<List<LoginFlow>>);
     for (LoginFlow item in lg) {
       print(item.type.toString());
     }
     setState(() {
-      ssoLogin = lg.firstWhereOrNull((LoginFlow elem) => elem.type == "m.login.sso") !=
-          null;
+      ssoLogin =
+          lg.firstWhereOrNull((LoginFlow elem) => elem.type == "m.login.sso") !=
+              null;
 
       passwordLogin = lg.firstWhereOrNull(
               (LoginFlow elem) => elem.type == "m.login.password") !=
@@ -129,13 +131,12 @@ class LoginCardState extends State<LoginCard> {
       try {
         client!.homeserver = Uri.https(userid.domain!, "");
         DiscoveryInformation infos = await client.getWellknown();
-        if (infos?.mHomeserver?.baseUrl != null) {
-          updateDomain(infos.mHomeserver.baseUrl.toString());
 
-          client.homeserver = Uri.parse(infos.mHomeserver.baseUrl.toString());
-          await _requestSupportedTypes(client);
-          return;
-        }
+        updateDomain(infos.mHomeserver.baseUrl.toString());
+
+        client.homeserver = Uri.parse(infos.mHomeserver.baseUrl.toString());
+        await _requestSupportedTypes(client);
+        return;
       } catch (e) {
         // try a catch back for home server not suporting well known ... sigh
         try {

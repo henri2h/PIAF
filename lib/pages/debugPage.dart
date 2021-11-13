@@ -16,7 +16,7 @@ class _DebugPageState extends State<DebugPage> {
       progressing = true;
     });
 
-    Timeline? t = sroom?.timeline;
+    Timeline? t = sroom.timeline;
     if (t != null) {
       await t.requestHistory();
       await sclient!.loadNewTimeline();

@@ -267,7 +267,7 @@ class MinestrixClient extends Client {
 
   @override
   Future<void> dispose({bool closeDatabase = true}) async {
-    onTimelineUpdate?.close();
+    onTimelineUpdate.close();
     onRoomUpdateSub?.cancel();
     await super.dispose(closeDatabase: closeDatabase);
   }
