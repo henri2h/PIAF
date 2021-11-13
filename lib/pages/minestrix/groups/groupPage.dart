@@ -35,28 +35,50 @@ class _GroupPageState extends State<GroupPage> {
               flex: 2,
               child: StreamBuilder(
                   stream: sclient.onSync.stream,
-                  builder: (context, _) => ListView.builder(
-                      itemCount: participants.length + 1,
-                      itemBuilder: (BuildContext context, int i) {
-                        if (i < participants.length)
-                          return MinesTrixContactView(user: participants[i]);
+                  builder: (context, _) => FutureBuilder<List<User>>(
+                      future: sroom.room!.requestParticipants(),
+                      builder: (context, snap) {
+                        if (snap.hasData == false)
+                          return CircularProgressIndicator();
 
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: MinesTrixButton(
-                              label: "Add users",
-                              icon: Icons.person_add,
-                              onPressed: () async {
-                                List<Profile> profiles =
-                                    await (Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                  builder: (_) => MinesTrixUserSelection(),
-                                )) as Future<List<Profile>>);
+                        participants = snap.data!;
+                        return Column(
+                          children: [
+                            for (User p in participants.where(
+                                (User u) => u.membership == Membership.join))
+                              MinesTrixContactView(user: p),
+                            if (participants.indexWhere((User u) =>
+                                    u.membership == Membership.invite) !=
+                                -1)
+                              Column(
+                                children: [
+                                  H2Title("Invited"),
+                                  for (User p in participants.where((User u) =>
+                                      u.membership == Membership.invite))
+                                    MinesTrixContactView(user: p),
+                                ],
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: MinesTrixButton(
+                                  label: "Add users",
+                                  icon: Icons.person_add,
+                                  onPressed: () async {
+                                    List<Profile>? profiles =
+                                        await Navigator.of(context).push(
+                                            MaterialPageRoute<List<Profile>>(
+                                      builder: (_) => MinesTrixUserSelection(),
+                                    ));
 
-                                profiles.forEach((Profile p) {
-                                  print(p.displayName);
-                                });
-                              }),
+                                    profiles?.forEach((Profile p) async {
+                                      await sroom.room!.invite(p.userId);
+                                    });
+                                    participants =
+                                        await sroom.room!.requestParticipants();
+                                    setState(() {});
+                                  }),
+                            )
+                          ],
                         );
                       })),
             ),

@@ -7,16 +7,19 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class MinesTrixUserSelection extends StatefulWidget {
-  MinesTrixUserSelection({Key? key, this.participants}) : super(key: key);
-  final List<User?>?
+  MinesTrixUserSelection(
+      {Key? key, this.participants, this.ignoreUserFollowingUser = false})
+      : super(key: key);
+  final List<User>?
       participants; // list of the users who won't appear in the searchbox
+  final bool ignoreUserFollowingUser;
   @override
   _MinesTrixUserSelectionState createState() => _MinesTrixUserSelectionState();
 }
 
 class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
   List<Profile> profiles = [];
-  List<User?>? participants;
+  List<User>? participants;
 
   @override
   Widget build(BuildContext context) {
@@ -42,25 +45,30 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                var ur = await sclient!.searchUserDirectory(pattern);
+                var ur = await sclient!.searchUserDirectory(pattern, limit: 20);
                 if (participants == null) participants = widget.participants;
 
-                // by default we remove the users followed by the user
-                if (participants == null) {
-                  participants = List<User?>.empty();
+                if (participants == null) participants = List<User>.empty();
 
+                if (widget.ignoreUserFollowingUser) {
+                  // add the user following the user in the ignore list
                   sclient.following.forEach((key, MinestrixRoom sroom) {
-                    participants!.add(sroom.user);
+                    participants!.add(sroom.user!);
                   });
                 }
 
-                return ur.results
-                    .where((element) =>
-                        widget.participants!.firstWhere(
-                            (friend) => friend!.id == element.userId,
-                            orElse: () => null) ==
-                        null)
-                    .toList(); // exclude current participants (we cannot add them twice)
+                // calculate the difference between the particiants and the search results
+                ur.results.removeWhere((user) =>
+                    participants
+                        ?.indexWhere((friend) => friend.id == user.userId) !=
+                    -1);
+
+                ur.results.removeWhere((user) =>
+                    profiles
+                        .indexWhere((friend) => friend.userId == user.userId) !=
+                    -1);
+                return ur
+                    .results; // exclude current participants (we cannot add them twice)
               },
               itemBuilder: (context, dynamic suggestion) {
                 Profile profile = suggestion;
