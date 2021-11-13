@@ -6,13 +6,13 @@ import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
-class FollowUser extends StatefulWidget {
-  FollowUser(BuildContext context, {Key key}) : super(key: key);
+class AddUserPage extends StatefulWidget {
+  AddUserPage(BuildContext context, {Key key}) : super(key: key);
   @override
-  _FollowUserState createState() => _FollowUserState();
+  _AddUserPageState createState() => _AddUserPageState();
 }
 
-class _FollowUserState extends State<FollowUser> {
+class _AddUserPageState extends State<AddUserPage> {
   List<Profile> profiles = [];
 
   @override

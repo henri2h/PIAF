@@ -4,13 +4,13 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
-class MinesTrixAccountCreation extends StatefulWidget {
+class createMinestrixAccountPage extends StatefulWidget {
   @override
-  _MinesTrixAccountCreationState createState() =>
-      _MinesTrixAccountCreationState();
+  _createMinestrixAccountPageState createState() =>
+      _createMinestrixAccountPageState();
 }
 
-class _MinesTrixAccountCreationState extends State<MinesTrixAccountCreation> {
+class _createMinestrixAccountPageState extends State<createMinestrixAccountPage> {
   bool running = false;
 
   @override

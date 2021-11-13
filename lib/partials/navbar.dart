@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/settings.dart';
-import 'package:minestrix/screens/smatrix/feedView.dart';
-import 'package:minestrix/screens/smatrix/friends/researchView.dart';
-import 'package:minestrix/screens/smatrix/userFeedView.dart';
+import 'package:minestrix/pages/minestrix/feedPage.dart';
+import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
+import 'package:minestrix/pages/minestrix/userFeedPage.dart';
+import 'package:minestrix/pages/settingsPage.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class NavBar extends StatelessWidget {
@@ -29,13 +29,13 @@ class NavBar extends StatelessWidget {
                 name: "Feed",
                 icon: Icons.home,
                 onPressed: () {
-                  changePage(FeedView());
+                  changePage(FeedPage());
                 }),
             NavBarButton(
                 name: "My account",
                 icon: Icons.person,
                 onPressed: () {
-                  changePage(UserFeedView(userId: sclient.userID));
+                  changePage(UserFeedPage(userId: sclient.userID));
                 }),
             NavBarButton(
                 name: "Chats",
@@ -49,13 +49,13 @@ class NavBar extends StatelessWidget {
                 name: "Research",
                 icon: Icons.search,
                 onPressed: () {
-                  changePage(ResearchView());
+                  changePage(ResearchPage());
                 }),
             NavBarButton(
                 name: "Settings",
                 icon: Icons.settings,
                 onPressed: () {
-                  changePage(SettingsView());
+                  changePage(SettingsPage());
                 }),
           ],
         ),

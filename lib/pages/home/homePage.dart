@@ -3,17 +3,17 @@ import 'package:minestrix/components/notificationView.dart';
 import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
-import 'package:minestrix/screens/smatrix/feedView.dart';
-import 'package:minestrix/screens/home/navbar/widget.dart';
-import 'package:minestrix/screens/home/right_bar/widget.dart';
-import 'package:minestrix/screens/smatrix/userFeedView.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/pages/minestrix/feedPage.dart';
+import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
+import 'package:minestrix/pages/minestrix/userFeedPage.dart';
+import 'package:minestrix/partials/home/rightbar.dart';
+import 'package:minestrix/partials/navbar.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
-class HomeScreen extends StatefulWidget {
-  HomeScreen({Key key, this.title}) : super(key: key);
+class HomePage extends StatefulWidget {
+  HomePage({Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -30,7 +30,7 @@ class HomeScreen extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomeScreen> {
+class _HomePageState extends State<HomePage> {
   Widget widgetView = null;
 
   @override
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomeScreen> {
 
   Widget buildWideContainer(BuildContext context) {
     bool feedView = false;
-    if (widgetView == null) widgetView = FeedView();
+    if (widgetView == null) widgetView = FeedPage();
     return Scaffold(
         floatingActionButton: buildFloattingButton(),
         body: Container(
@@ -102,7 +102,7 @@ class _HomePageState extends State<HomeScreen> {
   }
 
   Widget buildMobileContainer(BuildContext context) {
-    Widget widgetFeedView = FeedView();
+    Widget widgetFeedView = FeedPage();
     if (widgetView == null) widgetView = widgetFeedView;
     return Scaffold(
         body: Container(child: widgetView ?? Text("hello")),
@@ -191,14 +191,14 @@ class NavigationBarState extends State<NavigationBar> {
 
     switch (index) {
       case 0:
-        widget.changePage(FeedView());
+        widget.changePage(FeedPage());
         break;
       case 1:
         widget.changePage(MatrixChatsPage(client: Matrix.of(context).sclient),
             chatVue: true);
         break;
       case 2:
-        widget.changePage(UserFeedView(userId: userId));
+        widget.changePage(UserFeedPage(userId: userId));
         break;
       default:
     }

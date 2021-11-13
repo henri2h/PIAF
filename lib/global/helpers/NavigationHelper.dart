@@ -4,8 +4,8 @@ import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/smatrix/groups/groupView.dart';
-import 'package:minestrix/screens/smatrix/userFeedView.dart';
+import 'package:minestrix/pages/minestrix/groups/groupPage.dart';
+import 'package:minestrix/pages/minestrix/userFeedPage.dart';
 
 class NavigationHelper {
   static void navigateToUserFeed(BuildContext context, User user) {
@@ -13,7 +13,7 @@ class NavigationHelper {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => Scaffold(
             appBar: AppBar(title: Text(user.displayName + " timeline")),
-            body: UserFeedView(userId: user.id)),
+            body: UserFeedPage(userId: user.id)),
       ));
   }
 
@@ -33,7 +33,7 @@ class NavigationHelper {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => Scaffold(
           appBar: AppBar(title: Text(sroom.name + " timeline")),
-          body: GroupView(sroom: sroom)),
+          body: GroupPage(sroom: sroom)),
     ));
   }
 }

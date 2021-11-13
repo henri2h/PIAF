@@ -7,12 +7,12 @@ import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
-class ResearchView extends StatefulWidget {
+class ResearchPage extends StatefulWidget {
   @override
-  _ResearchViewState createState() => _ResearchViewState();
+  _ResearchPageState createState() => _ResearchPageState();
 }
 
-class _ResearchViewState extends State<ResearchView> {
+class _ResearchPageState extends State<ResearchPage> {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;

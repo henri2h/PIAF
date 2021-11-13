@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/debugVue.dart';
-import 'package:minestrix/screens/smatrix/friends/friendsVue.dart';
-import 'package:minestrix/screens/settings.dart';
-import 'package:minestrix/screens/smatrix/userFeedView.dart';
+import 'package:minestrix/pages/debugPage.dart';
+import 'package:minestrix/pages/minestrix/friends/friendsVue.dart';
+import 'package:minestrix/pages/minestrix/userFeedPage.dart';
+import 'package:minestrix/pages/settingsPage.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class LeftBar extends StatelessWidget {
@@ -28,14 +28,14 @@ class LeftBar extends StatelessWidget {
               name: "My account",
               icon: Icons.person,
               onPressed: () {
-                changePage(context, UserFeedView(userId: sclient.userID),
+                changePage(context, UserFeedPage(userId: sclient.userID),
                     "Friends vue");
               }),
           LeftBarButton(
               name: "Friends",
               icon: Icons.people,
               onPressed: () {
-                changePage(context, FriendsVue(), "Friends vue");
+                changePage(context, FriendsPage(), "Friends vue");
               }),
           LeftBarButton(
             name: "Chats",
@@ -51,13 +51,13 @@ class LeftBar extends StatelessWidget {
               name: "Settings",
               icon: Icons.settings,
               onPressed: () {
-                changePage(context, SettingsView(), "Settings");
+                changePage(context, SettingsPage(), "Settings");
               }),
           LeftBarButton(
             name: "Debug",
             icon: Icons.bug_report,
             onPressed: () {
-              changePage(context, DebugView(), "Well... Debug time !!");
+              changePage(context, DebugPage(), "Well... Debug time !!");
             },
           ),
         ]);

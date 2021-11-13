@@ -10,47 +10,40 @@ class AccountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(6.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           primary: Theme.of(context).cardColor,
+          padding: EdgeInsets.all(0),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         onPressed: () {
           NavigationHelper.navigateToUserFeed(context, user);
         },
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Column(
-            children: [
-              MatrixUserImage(
-                client: Matrix.of(context).sclient,
-                url: user.avatarUrl,
-                width: 100,
-                height: 100,
-                thumnail: true,
-                defaultIcon: Icon(Icons.person,
-                    color: Theme.of(context).textTheme.bodyText1.color,
-                    size: 70),
+        child: Column(
+          children: [
+            MatrixUserImage(
+              client: Matrix.of(context).sclient,
+              url: user.avatarUrl,
+              width: 110,
+              height: 110,
+              thumnail: true,
+              defaultIcon: Icon(Icons.person,
+                  color: Theme.of(context).textTheme.bodyText1.color, size: 70),
+            ),
+            SizedBox(
+              width: 100,
+              height: 40,
+              child: Center(
+                child: Text(user.displayName,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        color: Theme.of(context).textTheme.bodyText1.color)),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 3),
-                child: SizedBox(
-                  width: 140,
-                  height: 50,
-                  child: Center(
-                    child: Text(user.displayName,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color:
-                                Theme.of(context).textTheme.bodyText1.color)),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

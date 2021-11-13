@@ -11,15 +11,15 @@ import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
-class GroupView extends StatefulWidget {
-  GroupView({Key key, this.sroom}) : super(key: key);
+class GroupPage extends StatefulWidget {
+  GroupPage({Key key, this.sroom}) : super(key: key);
   final SMatrixRoom sroom;
 
   @override
-  _GroupViewState createState() => _GroupViewState();
+  _GroupPageState createState() => _GroupPageState();
 }
 
-class _GroupViewState extends State<GroupView> {
+class _GroupPageState extends State<GroupPage> {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;

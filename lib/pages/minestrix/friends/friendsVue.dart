@@ -8,7 +8,7 @@ import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
-class FriendsVue extends StatelessWidget {
+class FriendsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SClient sclient = Matrix.of(context).sclient;

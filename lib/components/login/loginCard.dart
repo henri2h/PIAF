@@ -8,7 +8,7 @@ import 'package:minestrix/components/login/loginInput.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/home/screen.dart';
+import 'package:minestrix/pages/home/homePage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -379,7 +379,7 @@ class LoginCardState extends State<LoginCard> {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomeScreen(),
+            builder: (context) => HomePage(),
           ));
   }
 }

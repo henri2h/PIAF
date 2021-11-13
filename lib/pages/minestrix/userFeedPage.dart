@@ -9,21 +9,21 @@ import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/settings.dart';
+import 'package:minestrix/pages/settingsPage.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
-class UserFeedView extends StatefulWidget {
-  const UserFeedView({Key key, @required this.userId}) : super(key: key);
+class UserFeedPage extends StatefulWidget {
+  const UserFeedPage({Key key, @required this.userId}) : super(key: key);
 
   final String userId;
 
   @override
-  _UserFeedViewState createState() => _UserFeedViewState();
+  _UserFeedPageState createState() => _UserFeedPageState();
 }
 
-class _UserFeedViewState extends State<UserFeedView> {
+class _UserFeedPageState extends State<UserFeedPage> {
   bool isUserPage = false;
 
   Widget buildPage(SClient sclient, SMatrixRoom sroom, List<Event> sevents) {
@@ -52,7 +52,7 @@ class _UserFeedViewState extends State<UserFeedView> {
                                             builder: (_) => Scaffold(
                                                 appBar: AppBar(
                                                     title: Text("Settings")),
-                                                body: SettingsView())));
+                                                body: SettingsPage())));
                                   }),
                             ],
                           ),
@@ -80,8 +80,18 @@ class _UserFeedViewState extends State<UserFeedView> {
                           flex: 4,
                           child: Padding(
                               padding: const EdgeInsets.all(15),
-                              child: FriendsView(
-                                  sroom: sroom, userID: widget.userId)),
+                              child: Column(
+                                children: [
+                                  FriendsView(
+                                      sroom: sroom, userID: widget.userId),
+                                  MaterialButton(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text("See friends"),
+                                      ),
+                                      onPressed: () {})
+                                ],
+                              )),
                         ),
                       Flexible(
                         flex: 9,
@@ -111,8 +121,6 @@ class _UserFeedViewState extends State<UserFeedView> {
                           ],
                         ),
                       ),
-                      if (constraints.maxWidth > 900)
-                        Flexible(flex: 2, child: Container())
                     ],
                   ),
                 ],
@@ -264,10 +272,13 @@ class FriendsView extends StatelessWidget {
           child: H2Title("Friends"),
         ),
         Wrap(alignment: WrapAlignment.spaceBetween, children: [
-          for (User user in sroom.room.getParticipants().where((User u) =>
-              u.membership == Membership.join &&
-              u.id != sclient.userID &&
-              u.id != userID))
+          for (User user in sroom.room
+              .getParticipants()
+              .where((User u) =>
+                  u.membership == Membership.join &&
+                  u.id != sclient.userID &&
+                  u.id != userID)
+              .take(8))
             AccountCard(user: user),
         ]),
       ],

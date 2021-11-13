@@ -8,18 +8,18 @@ import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/components/quickLinksList.dart';
 import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/screens/home/right_bar/widget.dart';
-import 'package:minestrix/screens/smatrix/friends/researchView.dart';
-import 'package:minestrix/screens/smatrix/groups/createGroup.dart';
+import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
+import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
+import 'package:minestrix/partials/home/rightbar.dart';
 
-class FeedView extends StatefulWidget {
-  const FeedView({Key key}) : super(key: key);
+class FeedPage extends StatefulWidget {
+  const FeedPage({Key key}) : super(key: key);
 
   @override
-  _FeedViewState createState() => _FeedViewState();
+  _FeedPageState createState() => _FeedPageState();
 }
 
-class _FeedViewState extends State<FeedView> {
+class _FeedPageState extends State<FeedPage> {
   List<Event> timeline;
 
   ScrollController _controller = new ScrollController();
@@ -143,7 +143,7 @@ class _FeedViewState extends State<FeedView> {
                                                       appBar: AppBar(
                                                           title: Text(
                                                               "Search a user")),
-                                                      body: ResearchView()));
+                                                      body: ResearchPage()));
                                             }),
                                         IconButton(
                                             icon: Icon(Icons.notifications),

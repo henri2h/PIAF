@@ -5,12 +5,12 @@ import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 
-class DebugView extends StatefulWidget {
+class DebugPage extends StatefulWidget {
   @override
-  _DebugViewState createState() => _DebugViewState();
+  _DebugPageState createState() => _DebugPageState();
 }
 
-class _DebugViewState extends State<DebugView> {
+class _DebugPageState extends State<DebugPage> {
   Future<void> loadElements(BuildContext context, SMatrixRoom sroom) async {
     setState(() {
       progressing = true;

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 
-class AccountsDetails extends StatefulWidget {
-  const AccountsDetails({Key key}) : super(key: key);
+class AccountsDetailsPage extends StatefulWidget {
+  const AccountsDetailsPage({Key key}) : super(key: key);
 
   @override
-  _AccountsDetailsState createState() => _AccountsDetailsState();
+  _AccountsDetailsPageState createState() => _AccountsDetailsPageState();
 }
 
-class _AccountsDetailsState extends State<AccountsDetails> {
+class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -24,7 +24,7 @@ class _AccountsDetailsState extends State<AccountsDetails> {
                   MaterialPageRoute(
                       builder: (_) => Scaffold(
                           appBar: AppBar(title: Text("My accounts")),
-                          body: AccountsDetails())));
+                          body: AccountsDetailsPage())));
             }),
         Padding(
           padding: const EdgeInsets.all(30.0),

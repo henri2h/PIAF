@@ -36,6 +36,9 @@ dependencies:
   flutter_redux: ^0.8.2
   provider: ^5.0.0
   
+  # navigator
+  auto_route: ^3.1.1
+
   # web navigator for SSO
   webview_flutter: ^2.0.2
   url_launcher: ^6.0.3
@@ -84,11 +87,12 @@ dependencies:
   
   minestrix_chat: 
     git: https://gitlab.com/minestrix/minestrix-chat.git
-  
+      
 dev_dependencies:
   flutter_test:
     sdk: flutter
   hive_generator: ^1.1.1
+  auto_route_generator: ^3.1.0
   build_runner: ^2.1.2
 
 

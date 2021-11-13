@@ -1,12 +1,7 @@
-import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/Managers/ThemeManager.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/screens/createMinesTrixAccount.dart';
-import 'package:minestrix/screens/home/screen.dart';
-import 'package:minestrix/screens/login.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:provider/provider.dart';
 
@@ -18,11 +13,22 @@ class Minestrix extends StatefulWidget {
 class _MinestrixState extends State<Minestrix> {
   @override
   Widget build(BuildContext context) {
+    final _appRouter = AppRouter();
     return Matrix(
       child: Builder(
         builder: (context) => Consumer<ThemeNotifier>(
-          builder: (context, theme, _) => MaterialApp(
-            title: 'MinesTrix client',
+          builder: (context, theme, _) => MaterialApp.router(
+            routerDelegate: _appRouter.delegate(),
+            routeInformationParser: _appRouter.defaultRouteParser(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+/* title: 'MinesTrix client',
             debugShowCheckedModeBanner: false,
 
             // theme :
@@ -147,9 +153,4 @@ class _MinestrixState extends State<Minestrix> {
                 return LoginScreen();
               },
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+          */

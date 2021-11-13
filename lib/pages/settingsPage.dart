@@ -3,12 +3,12 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/global/Managers/ThemeManager.dart';
 import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/screens/account/accountsDetails.dart';
-import 'package:minestrix/screens/debugVue.dart';
+import 'package:minestrix/pages/account/accountsDetailsPage.dart';
+import 'package:minestrix/pages/debugPage.dart';
 
 import 'package:provider/provider.dart';
 
-class SettingsView extends StatelessWidget {
+class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SClient sclient = Matrix.of(context).sclient;
@@ -142,7 +142,7 @@ class SettingsView extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (_) => Scaffold(
                             appBar: AppBar(title: Text("My accounts")),
-                            body: AccountsDetails())));
+                            body: AccountsDetailsPage())));
               },
             ),
             H2Title("Debug"),
@@ -156,7 +156,7 @@ class SettingsView extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (_) => Scaffold(
                             appBar: AppBar(title: Text("Debug time !!")),
-                            body: DebugView())));
+                            body: DebugPage())));
               },
             ),
           ],
