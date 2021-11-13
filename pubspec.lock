@@ -7,7 +7,11 @@ packages:
       name: _fe_analyzer_shared
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "30.0.0"
+=======
+    version: "28.0.0"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   adaptive_dialog:
     dependency: "direct main"
     description:
@@ -21,7 +25,11 @@ packages:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "2.7.0"
+=======
+    version: "2.5.0"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   animations:
     dependency: transitive
     description:
@@ -29,6 +37,7 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+<<<<<<< HEAD
   another_flushbar:
     dependency: "direct main"
     description:
@@ -36,6 +45,8 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.10.25"
+=======
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   args:
     dependency: transitive
     description:
@@ -50,6 +61,7 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.8.1"
+<<<<<<< HEAD
   auto_route:
     dependency: "direct main"
     description:
@@ -64,6 +76,8 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.0"
+=======
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   base58check:
     dependency: transitive
     description:
@@ -112,7 +126,11 @@ packages:
       name: build_runner
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "2.1.5"
+=======
+    version: "2.1.4"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   build_runner_core:
     dependency: transitive
     description:
@@ -140,7 +158,11 @@ packages:
       name: cached_network_image
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "3.1.0+1"
+=======
+    version: "3.1.0"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   cached_network_image_platform_interface:
     dependency: transitive
     description:
@@ -198,6 +220,16 @@ packages:
     source: hosted
     version: "1.1.0"
   code_builder:
+<<<<<<< HEAD
+=======
+    dependency: transitive
+    description:
+      name: code_builder
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.1.0"
+  collection:
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
     dependency: transitive
     description:
       name: code_builder
@@ -260,6 +292,16 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.0"
+<<<<<<< HEAD
+=======
+  device_info:
+    dependency: transitive
+    description:
+      name: device_info
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.2+6"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   disk_space:
     dependency: transitive
     description:
@@ -267,12 +309,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.1"
+<<<<<<< HEAD
+  emoji_picker_flutter:
+    dependency: "direct main"
+=======
+  emoji_picker:
+    dependency: transitive
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
+    description:
+      name: emoji_picker_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+<<<<<<< HEAD
+=======
+    version: "0.0.2"
   emoji_picker_flutter:
     dependency: "direct main"
     description:
       name: emoji_picker_flutter
       url: "https://pub.dartlang.org"
     source: hosted
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
     version: "1.0.7"
   fake_async:
     dependency: transitive
@@ -353,6 +410,16 @@ packages:
     version: "0.0.2+1"
   fixnum:
     dependency: transitive
+<<<<<<< HEAD
+=======
+    description:
+      name: fixnum
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
+  flushbar:
+    dependency: "direct main"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
     description:
       name: fixnum
       url: "https://pub.dartlang.org"
@@ -376,7 +443,11 @@ packages:
       name: flutter_cache_manager
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "3.1.3"
+=======
+    version: "3.1.2"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   flutter_keyboard_visibility:
     dependency: transitive
     description:
@@ -404,7 +475,18 @@ packages:
       name: flutter_markdown
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "0.6.8"
+=======
+    version: "0.6.7"
+  flutter_olm:
+    dependency: "direct main"
+    description:
+      name: flutter_olm
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.2"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -526,7 +608,11 @@ packages:
       name: image_picker
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "0.8.4+4"
+=======
+    version: "0.8.4+2"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   image_picker_for_web:
     dependency: transitive
     description:
@@ -596,14 +682,22 @@ packages:
       name: matrix
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "0.7.0-nullsafety.5"
+=======
+    version: "0.5.5"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   matrix_api_lite:
     dependency: transitive
     description:
       name: matrix_api_lite
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "0.5.1"
+=======
+    version: "0.4.4"
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
   meta:
     dependency: transitive
     description:
@@ -621,9 +715,17 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
+<<<<<<< HEAD
       path: minestrix-chat
       relative: true
     source: path
+=======
+      path: "."
+      ref: HEAD
+      resolved-ref: f1bdc620bf7565decc96e6b45335099e860321ef
+      url: "https://gitlab.com/minestrix/minestrix-chat.git"
+    source: git
+>>>>>>> 83fec688de51c6874772063ef0eb6628d80d7e5c
     version: "0.0.1"
   moor:
     dependency: "direct main"
