@@ -14,7 +14,7 @@ class _RightBarState extends State<RightBar>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final sclient = Matrix.of(context).sclient;
+    final sclient = Matrix.of(context).sclient!;
     return StreamBuilder(
         stream: sclient.onSync.stream,
         builder: (context, _) => ListView.builder(
@@ -26,13 +26,13 @@ class _RightBarState extends State<RightBar>
 
 class ContactView extends StatelessWidget {
   const ContactView({
-    Key key,
-    @required this.sroom,
+    Key? key,
+    required this.sroom,
   }) : super(key: key);
   final MinestrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient client = Matrix.of(context).sclient;
+    final MinestrixClient? client = Matrix.of(context).sclient;
     if (sroom != null)
       return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -53,12 +53,12 @@ class ContactView extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           backgroundImage:
-                              sroom.user == null || sroom.user.avatarUrl == null
+                              sroom.user == null || sroom.user!.avatarUrl == null
                                   ? null
                                   : NetworkImage(
-                                      sroom.user.avatarUrl
+                                      sroom.user!.avatarUrl!
                                           .getThumbnail(
-                                            client,
+                                            client!,
                                             width: 64,
                                             height: 64,
                                           )
@@ -71,20 +71,20 @@ class ContactView extends StatelessWidget {
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text(sroom.user.displayName,
+                                  Text(sroom.user!.displayName!,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Theme.of(context)
                                               .textTheme
-                                              .bodyText1
+                                              .bodyText1!
                                               .color)),
                                   Text(
-                                    sroom.user.id,
+                                    sroom.user!.id,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         color: Theme.of(context)
                                             .textTheme
-                                            .bodyText1
+                                            .bodyText1!
                                             .color),
                                   )
                                 ]),
@@ -93,12 +93,12 @@ class ContactView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (sroom.room.encrypted)
+                  if (sroom.room!.encrypted)
                     Icon(Icons.verified_user,
-                        color: Theme.of(context).textTheme.bodyText1.color),
-                  if (!sroom.room.encrypted)
+                        color: Theme.of(context).textTheme.bodyText1!.color),
+                  if (!sroom.room!.encrypted)
                     Icon(Icons.no_encryption,
-                        color: Theme.of(context).textTheme.bodyText1.color)
+                        color: Theme.of(context).textTheme.bodyText1!.color)
                 ]),
           ),
         ),

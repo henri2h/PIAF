@@ -8,7 +8,7 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class LeftBar extends StatelessWidget {
-  const LeftBar({Key key}) : super(key: key);
+  const LeftBar({Key? key}) : super(key: key);
   void changePage(context, Widget widgetIn, String pageTitle) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -19,7 +19,7 @@ class LeftBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
     return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -28,7 +28,7 @@ class LeftBar extends StatelessWidget {
               name: "My account",
               icon: Icons.person,
               onPressed: () {
-                changePage(context, UserFeedPage(userId: sclient.userID),
+                changePage(context, UserFeedPage(userId: sclient!.userID),
                     "Friends vue");
               }),
           LeftBarButton(
@@ -43,7 +43,7 @@ class LeftBar extends StatelessWidget {
             onPressed: () {
               changePage(
                   context,
-                  MatrixChatsPage(client: Matrix.of(context).sclient),
+                  MatrixChatsPage(client: Matrix.of(context).sclient!),
                   "Chats view");
             },
           ),
@@ -65,11 +65,11 @@ class LeftBar extends StatelessWidget {
 }
 
 class LeftBarButton extends StatelessWidget {
-  const LeftBarButton({Key key, this.name, this.icon, this.onPressed})
+  const LeftBarButton({Key? key, this.name, this.icon, this.onPressed})
       : super(key: key);
-  final String name;
-  final IconData icon;
-  final Function onPressed;
+  final String? name;
+  final IconData? icon;
+  final Function? onPressed;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -78,7 +78,7 @@ class LeftBarButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
             elevation: 0,
             textStyle: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-        onPressed: onPressed,
+        onPressed: onPressed as void Function()?,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 20),
           child: Row(
@@ -86,7 +86,7 @@ class LeftBarButton extends StatelessWidget {
             children: [
               Icon(icon),
               SizedBox(width: 5),
-              Text(name,
+              Text(name!,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400)),
             ],
           ),

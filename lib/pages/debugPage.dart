@@ -16,10 +16,10 @@ class _DebugPageState extends State<DebugPage> {
       progressing = true;
     });
 
-    Timeline t = sroom?.timeline;
+    Timeline? t = sroom?.timeline;
     if (t != null) {
       await t.requestHistory();
-      await sclient.loadNewTimeline();
+      await sclient!.loadNewTimeline();
       getTimelineLength();
     } else {
       print("error [debugVue] : timeline is null");
@@ -32,7 +32,7 @@ class _DebugPageState extends State<DebugPage> {
   void getTimelineLength() {
     timelineLength.clear();
     for (var i = 0; i < srooms.length; i++) {
-      Timeline t = srooms[i].timeline;
+      Timeline t = srooms[i].timeline!;
 
       timelineLength.add(t.events.length);
     }
@@ -45,7 +45,7 @@ class _DebugPageState extends State<DebugPage> {
 
   List<int> timelineLength = [];
   List<MinestrixRoom> srooms = [];
-  MinestrixClient sclient;
+  MinestrixClient? sclient;
   bool init = false;
 
   bool progressing = false;
@@ -53,7 +53,7 @@ class _DebugPageState extends State<DebugPage> {
   Widget build(BuildContext context) {
     sclient = Matrix.of(context).sclient;
 
-    srooms = sclient.srooms.values.toList();
+    srooms = sclient!.srooms.values.toList();
     if (init == false) {
       init = true;
       getTimelineLength();
@@ -66,13 +66,13 @@ class _DebugPageState extends State<DebugPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             H1Title("Debug"),
-            if (sclient != null && sclient.rooms != null)
+            if (sclient != null && sclient!.rooms != null)
               Text("MinesTRIX rooms length : " +
-                  sclient.srooms.length.toString()),
+                  sclient!.srooms.length.toString()),
             if (srooms.length != 0)
               for (var i = 0; i < srooms.length; i++)
                 ListTile(
-                    title: Text(srooms[i].room.name),
+                    title: Text(srooms[i].room!.name),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 2.0),
                       child: Column(
@@ -82,10 +82,10 @@ class _DebugPageState extends State<DebugPage> {
                             children: [
                               Icon(Icons.person, size: 16),
                               SizedBox(width: 10),
-                              Text(srooms[i].user.displayName),
+                              Text(srooms[i].user!.displayName!),
                             ],
                           ),
-                          Text(srooms[i].room.id),
+                          Text(srooms[i].room!.id),
                         ],
                       ),
                     ),

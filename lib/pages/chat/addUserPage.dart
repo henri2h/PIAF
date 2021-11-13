@@ -7,7 +7,7 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class AddUserPage extends StatefulWidget {
-  AddUserPage(BuildContext context, {Key key}) : super(key: key);
+  AddUserPage(BuildContext context, {Key? key}) : super(key: key);
   @override
   _AddUserPageState createState() => _AddUserPageState();
 }
@@ -17,7 +17,7 @@ class _AddUserPageState extends State<AddUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
     return Scaffold(
         appBar: AppBar(
           title: Text("Add users"),
@@ -38,32 +38,32 @@ class _AddUserPageState extends State<AddUserPage> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                var ur = await sclient.searchUserDirectory(pattern);
-                List<User> following = List<User>.empty();
-                await sclient.following.forEach((key, MinestrixRoom sroom) {
+                var ur = await sclient!.searchUserDirectory(pattern);
+                List<User?> following = List<User?>.empty();
+                sclient.following.forEach((key, MinestrixRoom sroom) {
                   following.add(sroom.user);
                 });
 
                 return ur.results
                     .where((element) =>
                         following.firstWhere(
-                            (friend) => friend.id == element.userId,
+                            (friend) => friend!.id == element.userId,
                             orElse: () => null) ==
                         null)
                     .toList(); // exclude the users we are currently following
               },
-              itemBuilder: (context, suggestion) {
+              itemBuilder: (context, dynamic suggestion) {
                 Profile profile = suggestion;
                 return ListTile(
                   leading: profile.avatarUrl == null
                       ? Icon(Icons.person)
                       : MatrixUserImage(
                           client: sclient, url: profile.avatarUrl),
-                  title: Text(profile.displayName),
+                  title: Text(profile.displayName!),
                   subtitle: Text(profile.userId),
                 );
               },
-              onSuggestionSelected: (suggestion) async {
+              onSuggestionSelected: (dynamic suggestion) async {
                 Profile p = suggestion;
                 setState(() {
                   profiles.add(p);
@@ -73,7 +73,7 @@ class _AddUserPageState extends State<AddUserPage> {
           ),
           for (Profile p in profiles)
             ListTile(
-                title: Text(p.displayName),
+                title: Text(p.displayName!),
                 leading: MatrixUserImage(
                     client: sclient, url: p.avatarUrl, thumnail: true),
                 subtitle: Text(p.userId)),

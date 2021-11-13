@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
     final TextEditingController _passphraseController = TextEditingController();
 
     bool isDarkMode = context.read<ThemeNotifier>().isDarkMode();
@@ -21,10 +21,10 @@ class SettingsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             H1Title("Settings"),
-            Text("Logged in as " + sclient.userID),
+            Text("Logged in as " + sclient.userID!),
             Text("Homeserver : " + sclient.homeserver.toString()),
-            Text("Device name : " + sclient.deviceName),
-            Text("Device ID : " + sclient.deviceID),
+            Text("Device name : " + sclient.deviceName!),
+            Text("Device ID : " + sclient.deviceID!),
             SizedBox(height: 10),
             SwitchListTile(
                 value: isDarkMode,
@@ -64,9 +64,9 @@ class SettingsPage extends StatelessWidget {
                     children: [
                       Text("Encryption enabled ✅"),
                       Text("Encryption.enabled : " +
-                          sclient.encryption.enabled.toString()),
+                          sclient.encryption!.enabled.toString()),
                       Text("Cross signing enabled : " +
-                          sclient.encryption.crossSigning.enabled.toString()),
+                          sclient.encryption!.crossSigning.enabled.toString()),
                       Text("Is unknown session : " +
                           sclient.isUnknownSession.toString()),
                       if (sclient.isUnknownSession == false)
@@ -114,7 +114,7 @@ class SettingsPage extends StatelessWidget {
                                                 child: Text("Get keys"),
                                                 onPressed: () async {
                                                   await sclient
-                                                      .encryption.crossSigning
+                                                      .encryption!.crossSigning
                                                       .selfSign(
                                                           passphrase:
                                                               _passphraseController

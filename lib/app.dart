@@ -1,6 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:minestrix/router.gr.dart';
+import 'package:minestrix/routerAuthGuards.dart';
 import 'package:minestrix/utils/Managers/ThemeManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:provider/provider.dart';
@@ -18,8 +20,21 @@ class _MinestrixState extends State<Minestrix> {
       child: Builder(
         builder: (context) => Consumer<ThemeNotifier>(
           builder: (context, theme, _) => MaterialApp.router(
-            routerDelegate: _appRouter.delegate(),
+            routerDelegate: AutoRouterDelegate.declarative(
+              _appRouter,
+              routes: (_) => [
+                // if the user is logged in, they may proceed to the main App
+                if (true)
+                  HomeRoute()
+                // if they are not logged in, bring them to the Login page
+                else
+                  LoginRoute(),
+              ],
+            ),
             routeInformationParser: _appRouter.defaultRouteParser(),
+
+            // theme :
+            theme: theme.getTheme(),
           ),
         ),
       ),
@@ -27,12 +42,9 @@ class _MinestrixState extends State<Minestrix> {
   }
 }
 
-
 /* title: 'MinesTrix client',
             debugShowCheckedModeBanner: false,
 
-            // theme :
-            theme: theme.getTheme(),
 
             home: StreamBuilder<LoginState>(
               stream: Matrix.of(context).sclient.onLoginStateChanged.stream,

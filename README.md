@@ -17,7 +17,7 @@ MinesTrix goal is to create an alternative social media focused on privacy. We b
 That's why MinesTrix supports E2EE (not by default yet) to protect your posts and is decentralized to be able to choose where your data are stored.
 
 
-We choosed MATRIX because it's the best protocol for supporting decentralised, E2EE communication and because it's Open Source !!
+We choosed MATRIX because it's the best protocol for supporting decentralized, E2EE communication and because it's Open Source !!
 
 ## ✨ Features
 
@@ -84,6 +84,16 @@ Find our documentation in our [separate repo](https://gitlab.com/minestrix/mines
 ## 🏗 Building
 
 WIP 🙃
+
+```bash
+flutter packages pub run build_runner watch
+```
+
+### Linux
+
+```bash
+flutter build linux
+```
 
 ### Installing OLM
 

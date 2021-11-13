@@ -13,9 +13,9 @@ class RepliesVue extends StatefulWidget {
   final String regex = "(>(.*)\n)*\n";
   final bool showEditBox;
   RepliesVue(
-      {Key key,
-      @required this.event,
-      @required this.replies,
+      {Key? key,
+      required this.event,
+      required this.replies,
       this.showEditBox = false})
       : super(key: key);
 
@@ -24,14 +24,14 @@ class RepliesVue extends StatefulWidget {
 }
 
 class _RepliesVueState extends State<RepliesVue> {
-  bool showEditBox = null;
+  bool? showEditBox = null;
 
   @override
   Widget build(BuildContext context) {
     if (showEditBox == null) showEditBox = widget.showEditBox;
 
     // get replies
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
     int max = min(widget.replies.length, 2);
 
     return Container(
@@ -116,7 +116,7 @@ class _RepliesVueState extends State<RepliesVue> {
                     child: RepliesVue(
                         event: revent,
                         replies: revent.aggregatedEvents(
-                            sclient.srooms[revent.roomId].timeline,
+                            sclient!.srooms[revent.roomId!]!.timeline!,
                             RelationshipTypes.reply)),
                   )
                 ],
@@ -134,22 +134,22 @@ class _RepliesVueState extends State<RepliesVue> {
 
 class ReplyBox extends StatelessWidget {
   final Event event;
-  final Function onMessageSend;
+  final Function? onMessageSend;
 
-  const ReplyBox({Key key, @required this.event, this.onMessageSend})
+  const ReplyBox({Key? key, required this.event, this.onMessageSend})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     TextEditingController tc = TextEditingController();
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           MatrixUserImage(
               client: sclient,
-              url: sclient.userRoom.user.avatarUrl,
+              url: sclient.userRoom!.user!.avatarUrl,
               width: 32,
               thumnail: true,
               height: 32),
@@ -175,7 +175,7 @@ class ReplyBox extends StatelessWidget {
                 tc.clear();
 
                 // send event
-                onMessageSend();
+                onMessageSend!();
               })
         ],
       ),

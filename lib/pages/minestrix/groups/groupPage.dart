@@ -12,8 +12,8 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class GroupPage extends StatefulWidget {
-  GroupPage({Key key, this.sroom}) : super(key: key);
-  final MinestrixRoom sroom;
+  GroupPage({Key? key, this.sroom}) : super(key: key);
+  final MinestrixRoom? sroom;
 
   @override
   _GroupPageState createState() => _GroupPageState();
@@ -22,10 +22,10 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage> {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
-    MinestrixRoom sroom = widget.sroom;
-    List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
-    List<User> participants = sroom.room.getParticipants();
+    MinestrixClient sclient = Matrix.of(context).sclient!;
+    MinestrixRoom sroom = widget.sroom!;
+    List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
+    List<User> participants = sroom.room!.getParticipants();
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) => Row(
         children: [
@@ -47,10 +47,10 @@ class _GroupPageState extends State<GroupPage> {
                               icon: Icons.person_add,
                               onPressed: () async {
                                 List<Profile> profiles =
-                                    await Navigator.of(context)
+                                    await (Navigator.of(context)
                                         .push(MaterialPageRoute(
                                   builder: (_) => MinesTrixUserSelection(),
-                                ));
+                                )) as Future<List<Profile>>);
 
                                 profiles.forEach((Profile p) {
                                   print(p.displayName);
@@ -62,14 +62,14 @@ class _GroupPageState extends State<GroupPage> {
           Flexible(
             flex: 8,
             child: StreamBuilder(
-                stream: sroom.room.onUpdate.stream,
+                stream: sroom.room!.onUpdate.stream,
                 builder: (context, _) => ListView(
                       children: [
-                        if (sroom.room.avatar != null)
+                        if (sroom.room!.avatar != null)
                           Center(
                               child: MatrixUserImage(
                                   client: sclient,
-                                  url: sroom.room.avatar,
+                                  url: sroom.room!.avatar,
                                   unconstraigned: true,
                                   rounded: false,
                                   maxHeight: 500)),
@@ -83,7 +83,7 @@ class _GroupPageState extends State<GroupPage> {
                             Padding(
                                 padding: const EdgeInsets.all(15),
                                 child: Row(children: [
-                                  for (User user in sroom.room
+                                  for (User user in sroom.room!
                                       .getParticipants()
                                       .where((User u) =>
                                           u.membership == Membership.join))

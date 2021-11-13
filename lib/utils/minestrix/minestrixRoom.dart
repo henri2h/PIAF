@@ -11,46 +11,46 @@ class MinestrixRoom {
   // i.e, it is not a valid class
 
   // final variable
-  User user;
-  Room room;
-  SRoomType roomType = SRoomType.UserRoom; // by default
+  User? user;
+  Room? room;
+  SRoomType? roomType = SRoomType.UserRoom; // by default
 
-  Timeline timeline;
+  Timeline? timeline;
   bool _validSRoom = false;
   bool get validSRoom => _validSRoom;
 
-  String get name {
+  String? get name {
     if (roomType == SRoomType.UserRoom)
-      return user.displayName;
+      return user!.displayName;
     else {
-      return room.name;
+      return room!.name;
     }
   }
 
   Future<void> loadRoomCreator(MinestrixClient sclient) async {
-    Event state = room.getState("m.room.create");
+    Event? state = room!.getState("m.room.create");
 
     if (state != null) {
       // get creator id from cache and if not in cache, from server
-      String creatorID = state.content["creator"];
+      String? creatorID = state.content["creator"];
 
       // find local on local users
-      List<User> users = room.getParticipants();
+      List<User> users = room!.getParticipants();
       user = findUser(users, creatorID);
 
       try {
         if (user == null) {
-          users = await room.requestParticipants();
+          users = await room!.requestParticipants();
           user = findUser(users, creatorID);
         }
       } catch (e) {
         log.severe("Could not request participants", e);
-        print("Creator userID : " + creatorID);
+        print("Creator userID : " + creatorID!);
       }
     }
   }
 
-  static Future<MinestrixRoom> loadMinesTrixRoom(Room r, MinestrixClient sclient) async {
+  static Future<MinestrixRoom?> loadMinesTrixRoom(Room r, MinestrixClient sclient) async {
     try {
       MinestrixRoom sr = MinestrixRoom();
       sr.roomType = await getSRoomType(r);
@@ -60,10 +60,10 @@ class MinestrixRoom {
 
         await sr.loadRoomCreator(sclient);
 
-        print(sr.name + " : " + sr.user.displayName);
+        print(sr.name! + " : " + sr.user!.displayName!);
 
         if (sr.roomType == SRoomType.UserRoom) {
-          String userId = MinestrixClient.getUserIdFromRoomName(sr.room.name);
+          String userId = MinestrixClient.getUserIdFromRoomName(sr.room!.name);
 
           if (sr.user != null) {
             sr._validSRoom = true;
@@ -95,7 +95,7 @@ class MinestrixRoom {
     return null;
   }
 
-  static User findUser(List<User> users, String userId) {
+  static User? findUser(List<User> users, String? userId) {
     try {
       return users.firstWhere((User u) => userId == u.id);
     } catch (_) {
@@ -105,8 +105,8 @@ class MinestrixRoom {
     return null;
   }
 
-  static Future<SRoomType> getSRoomType(Room room) async {
-    Event state = room.getState("m.room.create");
+  static Future<SRoomType?> getSRoomType(Room room) async {
+    Event? state = room.getState("m.room.create");
 
     if (state != null && state.content["type"] != null) {
       // check if it is a group or account room if not, throw null

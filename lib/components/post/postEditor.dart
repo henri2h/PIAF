@@ -10,8 +10,8 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class PostEditor extends StatefulWidget {
-  PostEditor({Key key, this.sroom}) : super(key: key);
-  final MinestrixRoom sroom;
+  PostEditor({Key? key, this.sroom}) : super(key: key);
+  final MinestrixRoom? sroom;
   @override
   _PostEditorState createState() => _PostEditorState();
 }
@@ -19,24 +19,24 @@ class PostEditor extends StatefulWidget {
 class _PostEditorState extends State<PostEditor>
     with SingleTickerProviderStateMixin {
   String postContent = "";
-  FilePickerCross file;
+  FilePickerCross? file;
 
-  MinestrixRoom sroom;
+  MinestrixRoom? sroom;
 
   Future<void> sendPost(MinestrixClient sclient, String postContent,
-      {Event inReplyTo}) async {
+      {Event? inReplyTo}) async {
     if (file != null) {
       MatrixFile f =
-          MatrixImageFile(bytes: file.toUint8List(), name: postContent);
-      await sroom.room.sendFileEvent(f);
+          MatrixImageFile(bytes: file!.toUint8List(), name: postContent);
+      await sroom!.room!.sendFileEvent(f);
     } else {
-      await sroom.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
+      await sroom!.room!.sendTextEvent(postContent, inReplyTo: inReplyTo);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
 
     sroom = widget.sroom;
     if (sroom == null) sroom = sclient.userRoom;
@@ -51,7 +51,7 @@ class _PostEditorState extends State<PostEditor>
                 children: [
                   MatrixUserImage(
                       client: sclient,
-                      url: sclient.userRoom.user.avatarUrl,
+                      url: sclient.userRoom!.user!.avatarUrl,
                       width: 48,
                       thumnail: true,
                       height: 48),
@@ -62,7 +62,7 @@ class _PostEditorState extends State<PostEditor>
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Post on " + sroom.name),
+              child: Text("Post on " + sroom!.name!),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -109,7 +109,7 @@ class _PostEditorState extends State<PostEditor>
               padding: const EdgeInsets.all(8.0),
               child: Text("Post preview", style: TextStyle(fontSize: 20)),
             ),
-            if (file != null) Image.memory(file.toUint8List()),
+            if (file != null) Image.memory(file!.toUint8List()),
             if (file != null)
               IconButton(
                   icon: Icon(Icons.delete),

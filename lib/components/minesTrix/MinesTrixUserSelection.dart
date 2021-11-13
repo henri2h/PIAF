@@ -7,8 +7,8 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class MinesTrixUserSelection extends StatefulWidget {
-  MinesTrixUserSelection({Key key, this.participants}) : super(key: key);
-  final List<User>
+  MinesTrixUserSelection({Key? key, this.participants}) : super(key: key);
+  final List<User?>?
       participants; // list of the users who won't appear in the searchbox
   @override
   _MinesTrixUserSelectionState createState() => _MinesTrixUserSelectionState();
@@ -16,11 +16,11 @@ class MinesTrixUserSelection extends StatefulWidget {
 
 class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
   List<Profile> profiles = [];
-  List<User> participants;
+  List<User?>? participants;
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
 
     return Scaffold(
         appBar: AppBar(
@@ -42,38 +42,38 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                var ur = await sclient.searchUserDirectory(pattern);
+                var ur = await sclient!.searchUserDirectory(pattern);
                 if (participants == null) participants = widget.participants;
 
                 // by default we remove the users followed by the user
                 if (participants == null) {
-                  participants = List<User>.empty();
+                  participants = List<User?>.empty();
 
-                  await sclient.following.forEach((key, MinestrixRoom sroom) {
-                    participants.add(sroom.user);
+                  sclient.following.forEach((key, MinestrixRoom sroom) {
+                    participants!.add(sroom.user);
                   });
                 }
 
                 return ur.results
                     .where((element) =>
-                        widget.participants.firstWhere(
-                            (friend) => friend.id == element.userId,
+                        widget.participants!.firstWhere(
+                            (friend) => friend!.id == element.userId,
                             orElse: () => null) ==
                         null)
                     .toList(); // exclude current participants (we cannot add them twice)
               },
-              itemBuilder: (context, suggestion) {
+              itemBuilder: (context, dynamic suggestion) {
                 Profile profile = suggestion;
                 return ListTile(
                   leading: profile.avatarUrl == null
                       ? Icon(Icons.person)
                       : MatrixUserImage(
                           client: sclient, url: profile.avatarUrl),
-                  title: Text(profile.displayName),
+                  title: Text(profile.displayName!),
                   subtitle: Text(profile.userId),
                 );
               },
-              onSuggestionSelected: (suggestion) async {
+              onSuggestionSelected: (dynamic suggestion) async {
                 Profile p = suggestion;
                 setState(() {
                   profiles.add(p);
@@ -83,7 +83,7 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
           ),
           for (Profile p in profiles)
             ListTile(
-                title: Text(p.displayName),
+                title: Text(p.displayName!),
                 leading: MatrixUserImage(
                     client: sclient, url: p.avatarUrl, thumnail: true),
                 subtitle: Text(p.userId)),

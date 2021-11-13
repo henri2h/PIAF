@@ -5,8 +5,8 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class AccountCard extends StatelessWidget {
-  AccountCard({Key key, this.user}) : super(key: key);
-  final User user;
+  AccountCard({Key? key, this.user}) : super(key: key);
+  final User? user;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -25,22 +25,22 @@ class AccountCard extends StatelessWidget {
           children: [
             MatrixUserImage(
               client: Matrix.of(context).sclient,
-              url: user.avatarUrl,
+              url: user!.avatarUrl,
               width: 110,
               height: 110,
               thumnail: true,
               defaultIcon: Icon(Icons.person,
-                  color: Theme.of(context).textTheme.bodyText1.color, size: 70),
+                  color: Theme.of(context).textTheme.bodyText1!.color, size: 70),
             ),
             SizedBox(
               width: 100,
               height: 40,
               child: Center(
-                child: Text(user.displayName,
+                child: Text(user!.displayName!,
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: Theme.of(context).textTheme.bodyText1.color)),
+                        color: Theme.of(context).textTheme.bodyText1!.color)),
               ),
             ),
           ],

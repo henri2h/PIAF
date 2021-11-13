@@ -15,7 +15,7 @@ class _createMinestrixAccountPageState extends State<createMinestrixAccountPage>
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
 
     return SafeArea(
         child: Scaffold(
@@ -35,14 +35,14 @@ class _createMinestrixAccountPageState extends State<createMinestrixAccountPage>
                           running = true;
                         });
 
-                        await sclient.createSMatrixUserProfile();
+                        await sclient!.createSMatrixUserProfile();
                       },
                       label: "Create my account",
                       icon: Icons.send)),
           if (running) LinearProgressIndicator(),
           MinesTrixButton(
               onPressed: () async {
-                await sclient.loadSRooms();
+                await sclient!.loadSRooms();
               },
               label: "Refresh",
               icon: Icons.receipt_long_sharp),

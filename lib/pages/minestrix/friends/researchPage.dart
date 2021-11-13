@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/utils/helpers/NavigationHelper.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
@@ -15,7 +14,7 @@ class ResearchPage extends StatefulWidget {
 class _ResearchPageState extends State<ResearchPage> {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
     return ListView(children: [
       H1Title("Search"),
       Padding(
@@ -26,23 +25,24 @@ class _ResearchPageState extends State<ResearchPage> {
               autofocus: false,
               decoration: InputDecoration(border: OutlineInputBorder())),
           suggestionsCallback: (pattern) async {
-            var ur = await sclient.searchUserDirectory(pattern);
+            var ur = await sclient!.searchUserDirectory(pattern);
             return ur.results.toList();
           },
-          itemBuilder: (context, suggestion) {
+          itemBuilder: (context, dynamic suggestion) {
             Profile profile = suggestion;
             return ListTile(
               leading: profile.avatarUrl == null
                   ? Icon(Icons.person)
                   : MatrixUserImage(client: sclient, url: profile.avatarUrl),
-              title: Text(profile.displayName),
+              title: Text(profile.displayName!),
               subtitle: Text(profile.userId),
             );
           },
-          onSuggestionSelected: (suggestion) async {
+          onSuggestionSelected: (dynamic suggestion) async {
             Profile p = suggestion;
-            User u = User(p.userId, displayName: p.displayName);
-            NavigationHelper.navigateToUserFeed(context, u);
+            //User u = User(p.userId, displayName: p.displayName);
+            //NavigationHelper.navigateToUserFeed(context, u);
+            // TODO : enable navigation to feed on suggestion selected
           },
         ),
       ),

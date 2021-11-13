@@ -12,7 +12,7 @@ import 'package:minestrix_chat/partials/matrix_messeage.dart';
 
 class Post extends StatefulWidget {
   final Event event;
-  Post({Key key, @required this.event}) : super(key: key);
+  Post({Key? key, required this.event}) : super(key: key);
 
   @override
   _PostState createState() => _PostState();
@@ -22,7 +22,7 @@ class PostContent extends StatelessWidget {
   final Event event;
   const PostContent(
     this.event, {
-    Key key,
+    Key? key,
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   bool showReplyBox = false;
 
   Future<void> pickEmoji(Event e) async {
-    Emoji emoji = await showModalBottomSheet(
+    Emoji? emoji = await showModalBottomSheet(
         context: context,
         builder: (context) => SizedBox(
               height: 140,
@@ -86,13 +86,13 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Event e = widget.event;
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
 
-    Timeline t = sclient.srooms[e.roomId].timeline;
+    Timeline? t = sclient.srooms[e.roomId!]!.timeline;
     return StreamBuilder<Object>(
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
-          Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.reply);
+          Set<Event> replies = e.aggregatedEvents(t!, RelationshipTypes.reply);
           Set<Event> reactions =
               e.aggregatedEvents(t, RelationshipTypes.reaction);
           return Card(

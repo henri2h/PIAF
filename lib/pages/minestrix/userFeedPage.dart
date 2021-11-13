@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/accountCard.dart';
@@ -15,9 +16,9 @@ import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class UserFeedPage extends StatefulWidget {
-  const UserFeedPage({Key key, @required this.userId}) : super(key: key);
+  const UserFeedPage({Key? key, required this.userId}) : super(key: key);
 
-  final String userId;
+  final String? userId;
 
   @override
   _UserFeedPageState createState() => _UserFeedPageState();
@@ -29,7 +30,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
   Widget buildPage(MinestrixClient sclient, MinestrixRoom sroom, List<Event> sevents) {
     return LayoutBuilder(
       builder: (context, constraints) => StreamBuilder(
-          stream: sroom.room.onUpdate.stream,
+          stream: sroom.room!.onUpdate.stream,
           builder: (context, _) => ListView(
                 children: [
                   Row(
@@ -62,7 +63,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
 
                   UserInfo(
                       user: sroom.user,
-                      avatar: sroom.room.avatar?.getDownloadLink(sclient)),
+                      avatar: sroom.room!.avatar?.getDownloadLink(sclient)),
 
                   if (constraints.maxWidth <= 900)
                     Padding(
@@ -130,22 +131,22 @@ class _UserFeedPageState extends State<UserFeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
-    String roomId = sclient.userIdToRoomId[widget.userId];
-    MinestrixRoom sroom = sclient.srooms[roomId];
+    MinestrixClient sclient = Matrix.of(context).sclient!;
+    String? roomId = sclient.userIdToRoomId[widget.userId!];
+    MinestrixRoom? sroom = sclient.srooms[roomId!];
 
     if (widget.userId == sclient.userID) isUserPage = true;
 
-    User user_in = sclient.userRoom.room
+    User? user_in = sclient.userRoom!.room!
         .getParticipants()
-        .firstWhere((User u) => (u.id == widget.userId), orElse: () => null);
+        .firstWhereOrNull((User u) => (u.id == widget.userId));
 
     if (sroom != null) {
-      List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
+      List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
       return buildPage(sclient, sroom, sevents);
     } else {
       return FutureBuilder<Profile>(
-          future: sclient.getProfileFromUserId(widget.userId),
+          future: sclient.getProfileFromUserId(widget.userId!),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData == false) {
               return Padding(
@@ -156,7 +157,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
               );
             }
             Profile p = snapshot.data;
-            p.userId = widget.userId; // fix a nasty bug :(
+            p.userId = widget.userId!; // fix a nasty bug :(
 
             return Container(
                 child: ListView(children: [
@@ -206,8 +207,8 @@ class _UserFeedPageState extends State<UserFeedPage> {
                           icon: Icons.message,
                           label: "Send message",
                           onPressed: () {
-                            String roomId =
-                                sclient.getDirectChatFromUserId(widget.userId);
+                            String? roomId =
+                                sclient.getDirectChatFromUserId(widget.userId!);
                             if (roomId != null) {
                               Navigator.push(
                                   context,
@@ -256,15 +257,15 @@ class _UserFeedPageState extends State<UserFeedPage> {
 }
 
 class FriendsView extends StatelessWidget {
-  const FriendsView({Key key, @required this.sroom, @required this.userID})
+  const FriendsView({Key? key, required this.sroom, required this.userID})
       : super(key: key);
 
   final MinestrixRoom sroom;
-  final String userID;
+  final String? userID;
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
     return Column(
       children: [
         Padding(
@@ -272,11 +273,11 @@ class FriendsView extends StatelessWidget {
           child: H2Title("Friends"),
         ),
         Wrap(alignment: WrapAlignment.spaceBetween, children: [
-          for (User user in sroom.room
+          for (User user in sroom.room!
               .getParticipants()
               .where((User u) =>
                   u.membership == Membership.join &&
-                  u.id != sclient.userID &&
+                  u.id != sclient!.userID &&
                   u.id != userID)
               .take(8))
             AccountCard(user: user),
@@ -287,23 +288,23 @@ class FriendsView extends StatelessWidget {
 }
 
 class UserInfo extends StatelessWidget {
-  const UserInfo({Key key, this.user, this.profile, this.avatar})
+  const UserInfo({Key? key, this.user, this.profile, this.avatar})
       : super(key: key);
 
-  final Profile profile;
-  final User user;
-  final Uri avatar;
+  final Profile? profile;
+  final User? user;
+  final Uri? avatar;
 
   @override
   Widget build(BuildContext context) {
-    String userId = user?.id;
-    String displayName = user?.displayName;
-    Uri avatarUrl = user?.avatarUrl;
+    String? userId = user?.id;
+    String? displayName = user?.displayName;
+    Uri? avatarUrl = user?.avatarUrl;
 
     if (profile != null) {
-      userId = profile.userId;
-      displayName = profile.displayName;
-      avatarUrl = profile.avatarUrl;
+      userId = profile!.userId;
+      displayName = profile!.displayName;
+      avatarUrl = profile!.avatarUrl;
     }
 
     return LayoutBuilder(
@@ -318,7 +319,7 @@ class UserInfo extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 180),
                 child: CachedNetworkImage(imageUrl: avatar.toString()),
               ),
-            buildUserProfileDisplay(context, avatarUrl, displayName, userId),
+            buildUserProfileDisplay(context, avatarUrl, displayName!, userId!),
           ],
         );
 
@@ -337,13 +338,13 @@ class UserInfo extends StatelessWidget {
                 alignment:
                     avatar != null ? Alignment.centerLeft : Alignment.center,
                 child: buildUserProfileDisplay(
-                    context, avatarUrl, displayName, userId)),
+                    context, avatarUrl, displayName!, userId!)),
           ));
     });
   }
 
   Widget buildUserProfileDisplay(
-      BuildContext context, Uri avatarUrl, String displayName, String userId) {
+      BuildContext context, Uri? avatarUrl, String displayName, String userId) {
     return Card(
       elevation: 15,
       child: Container(
@@ -369,7 +370,7 @@ class UserInfo extends StatelessWidget {
             Text(userId,
                 style: TextStyle(
                     fontSize: 20,
-                    color: Theme.of(context).textTheme.caption.color)),
+                    color: Theme.of(context).textTheme.caption!.color)),
           ],
         ),
       ),

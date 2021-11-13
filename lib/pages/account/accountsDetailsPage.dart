@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
-  const AccountsDetailsPage({Key key}) : super(key: key);
+  const AccountsDetailsPage({Key? key}) : super(key: key);
 
   @override
   _AccountsDetailsPageState createState() => _AccountsDetailsPageState();

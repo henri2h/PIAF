@@ -8,31 +8,31 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 class NavigationHelper {
-  static void navigateToUserFeed(BuildContext context, User user) {
+  static void navigateToUserFeed(BuildContext context, User? user) {
     if (user != null)
       Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => Scaffold(
-            appBar: AppBar(title: Text(user.displayName + " timeline")),
+            appBar: AppBar(title: Text(user.displayName! + " timeline")),
             body: UserFeedPage(userId: user.id)),
       ));
   }
 
-  static void navigateToWritePost(BuildContext context, MinestrixRoom sroom) {
+  static void navigateToWritePost(BuildContext context, MinestrixRoom? sroom) {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => Scaffold(
-              appBar: AppBar(title: Text("Write post on " + sroom.name)),
+              appBar: AppBar(title: Text("Write post on " + sroom!.name!)),
               body: PostEditor(sroom: sroom),
             )));
   }
 
-  static void navigateToGroup(BuildContext context, String roomID) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
-    MinestrixRoom sroom =
-        sclient.srooms[roomID]; // do not use MinestrixClient.sgroups as it's slower
+  static void navigateToGroup(BuildContext context, String? roomID) {
+    MinestrixClient sclient = Matrix.of(context).sclient!;
+    MinestrixRoom? sroom =
+        sclient.srooms[roomID!]; // do not use MinestrixClient.sgroups as it's slower
 
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => Scaffold(
-          appBar: AppBar(title: Text(sroom.name + " timeline")),
+          appBar: AppBar(title: Text(sroom!.name! + " timeline")),
           body: GroupPage(sroom: sroom)),
     ));
   }

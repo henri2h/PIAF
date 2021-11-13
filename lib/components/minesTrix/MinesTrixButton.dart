@@ -3,12 +3,12 @@ import 'package:minestrix/components/minesTrix/MinesTrixTheme.dart';
 
 class MinesTrixButton extends StatelessWidget {
   MinesTrixButton(
-      {Key key,
-      @required this.onPressed,
-      @required this.label,
-      @required this.icon})
+      {Key? key,
+      required this.onPressed,
+      required this.label,
+      required this.icon})
       : super(key: key);
-  final Function onPressed;
+  final Function? onPressed;
   final IconData icon;
   final String label;
 
@@ -43,6 +43,6 @@ class MinesTrixButton extends StatelessWidget {
             ),
           ),
         ),
-        onPressed: onPressed);
+        onPressed: onPressed as void Function()?);
   }
 }

@@ -8,7 +8,7 @@ import 'package:minestrix_chat/partials/matrix_user_image.dart';
 class FriendRequestList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
 
     if (sclient.sInvites.length == 0) return Container();
     return StreamBuilder(
@@ -27,9 +27,9 @@ class FriendRequestList extends StatelessWidget {
                       Row(
                         children: [
                           MatrixUserImage(
-                              client: sclient, url: sm.user.avatarUrl),
+                              client: sclient, url: sm.user!.avatarUrl),
                           SizedBox(width: 10),
-                          Text(sm.user.displayName),
+                          Text(sm.user!.displayName!),
                         ],
                       ),
                       Row(
@@ -37,12 +37,12 @@ class FriendRequestList extends StatelessWidget {
                           IconButton(
                               icon: Icon(Icons.check, color: Colors.green),
                               onPressed: () async {
-                                await sm.room.join();
+                                await sm.room!.join();
                               }),
                           IconButton(
                               icon: Icon(Icons.delete, color: Colors.red),
                               onPressed: () async {
-                                await sm.room.leave();
+                                await sm.room!.leave();
                               }),
                         ],
                       ),

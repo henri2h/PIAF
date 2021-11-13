@@ -1,12 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/login/loginCard.dart';
-import 'package:minestrix/components/login/loginTitle.dart';
+import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key key, this.title}) : super(key: key);
-  final String title;
+  LoginPage({Key? key, this.title, this.onLogin}) : super(key: key);
+  final String? title;
+  final Function(bool isLoggedIn)? onLogin;
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -33,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    LoginTitle(),
+                    MinestrixTitle(),
                   ],
                 ),
               ),
@@ -81,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            LoginTitle(),
+            MinestrixTitle(),
             Expanded(
                 child: Container(
                     decoration: BoxDecoration(

@@ -13,24 +13,24 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class FeedPage extends StatefulWidget {
-  const FeedPage({Key key}) : super(key: key);
+  const FeedPage({Key? key}) : super(key: key);
 
   @override
   _FeedPageState createState() => _FeedPageState();
 }
 
 class _FeedPageState extends State<FeedPage> {
-  List<Event> timeline;
+  List<Event>? timeline;
 
   ScrollController _controller = new ScrollController();
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
 
     return LayoutBuilder(builder: (context, constraints) {
       return StreamBuilder(
-        stream: sclient.onTimelineUpdate.stream,
+        stream: sclient!.onTimelineUpdate.stream,
         builder: (context, _) {
           if (sclient.stimeline.length == 0)
             return ListView(
@@ -71,7 +71,7 @@ class _FeedPageState extends State<FeedPage> {
             // a new post may be available
 
             print(sclient.stimeline.length);
-            print(timeline.length);
+            print(timeline!.length);
           }
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -101,7 +101,7 @@ class _FeedPageState extends State<FeedPage> {
                   child: ListView.builder(
                       controller: _controller,
                       cacheExtent: 8000,
-                      itemCount: timeline.length + 1,
+                      itemCount: timeline!.length + 1,
                       itemBuilder: (BuildContext context, int i) {
                         if (i == 0)
                           return Column(
@@ -159,12 +159,12 @@ class _FeedPageState extends State<FeedPage> {
                               PostWriterModal(sroom: sclient.userRoom),
                             ],
                           );
-                        if (timeline.length >
+                        if (timeline!.length >
                             0) // may be a redundant check... we never know
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 2, horizontal: 6),
-                            child: Post(event: timeline[i - 1]),
+                            child: Post(event: timeline![i - 1]),
                           );
                         else
                           return Text("Empty");

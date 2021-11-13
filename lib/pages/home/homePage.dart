@@ -13,7 +13,7 @@ import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key, this.title}) : super(key: key);
+  HomePage({Key? key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -24,14 +24,14 @@ class HomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
+  final String? title;
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  Widget widgetView = null;
+  Widget? widgetView = null;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(flex: 10, child: widgetView),
+                      Flexible(flex: 10, child: widgetView!),
                       if (feedView)
                         Flexible(
                             flex: 2,
@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
 
   bool isNavBarExtended = false;
 
-  void changePage(Widget widgetIn, {bool chatVue}) {
+  void changePage(Widget widgetIn, {bool? chatVue}) {
     if (mounted && changing == false) {
       changing = true;
       if (chatVue != null)
@@ -175,7 +175,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class NavigationBar extends StatefulWidget {
-  NavigationBar({Key key, @required this.changePage}) : super(key: key);
+  NavigationBar({Key? key, required this.changePage}) : super(key: key);
   final Function changePage;
   @override
   NavigationBarState createState() => NavigationBarState();
@@ -183,7 +183,7 @@ class NavigationBar extends StatefulWidget {
 
 class NavigationBarState extends State<NavigationBar> {
   int _selectedIndex = 0;
-  String userId;
+  String? userId;
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -194,7 +194,7 @@ class NavigationBarState extends State<NavigationBar> {
         widget.changePage(FeedPage());
         break;
       case 1:
-        widget.changePage(MatrixChatsPage(client: Matrix.of(context).sclient),
+        widget.changePage(MatrixChatsPage(client: Matrix.of(context).sclient!),
             chatVue: true);
         break;
       case 2:
@@ -206,7 +206,7 @@ class NavigationBarState extends State<NavigationBar> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
     userId = sclient.userID;
 
     return BottomNavigationBar(
@@ -218,12 +218,12 @@ class NavigationBarState extends State<NavigationBar> {
             icon: Icon(Icons.message_outlined), label: "Messages"),
         BottomNavigationBarItem(
             icon: FutureBuilder(
-                future: sclient.getProfileFromUserId(sclient.userID),
+                future: sclient.getProfileFromUserId(sclient.userID!),
                 builder: (BuildContext context, AsyncSnapshot<Profile> p) {
                   if (p.data?.avatarUrl == null) return Icon(Icons.person);
                   return MatrixUserImage(
                       client: sclient,
-                      url: p.data.avatarUrl,
+                      url: p.data!.avatarUrl,
                       fit: true,
                       thumnail: true);
                 }),

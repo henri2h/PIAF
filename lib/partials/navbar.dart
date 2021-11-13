@@ -8,13 +8,13 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class NavBar extends StatelessWidget {
-  const NavBar({Key key, this.changePage}) : super(key: key);
+  const NavBar({Key? key, this.changePage}) : super(key: key);
 
-  final Function changePage;
+  final Function? changePage;
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -29,33 +29,33 @@ class NavBar extends StatelessWidget {
                 name: "Feed",
                 icon: Icons.home,
                 onPressed: () {
-                  changePage(FeedPage());
+                  changePage!(FeedPage());
                 }),
             NavBarButton(
                 name: "My account",
                 icon: Icons.person,
                 onPressed: () {
-                  changePage(UserFeedPage(userId: sclient.userID));
+                  changePage!(UserFeedPage(userId: sclient.userID));
                 }),
             NavBarButton(
                 name: "Chats",
                 icon: Icons.chat,
                 onPressed: () {
-                  changePage(
-                      MatrixChatsPage(client: Matrix.of(context).sclient),
+                  changePage!(
+                      MatrixChatsPage(client: Matrix.of(context).sclient!),
                       chatVue: true);
                 }),
             NavBarButton(
                 name: "Research",
                 icon: Icons.search,
                 onPressed: () {
-                  changePage(ResearchPage());
+                  changePage!(ResearchPage());
                 }),
             NavBarButton(
                 name: "Settings",
                 icon: Icons.settings,
                 onPressed: () {
-                  changePage(SettingsPage());
+                  changePage!(SettingsPage());
                 }),
           ],
         ),
@@ -80,17 +80,17 @@ class NavBar extends StatelessWidget {
 }
 
 class NavBarButton extends StatelessWidget {
-  const NavBarButton({Key key, this.name, this.icon, @required this.onPressed})
+  const NavBarButton({Key? key, this.name, this.icon, required this.onPressed})
       : super(key: key);
-  final String name;
-  final IconData icon;
+  final String? name;
+  final IconData? icon;
   final Function onPressed;
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: onPressed,
+      onPressed: onPressed as void Function()?,
       style: TextButton.styleFrom(
-          primary: Theme.of(context).textTheme.bodyText1.color),
+          primary: Theme.of(context).textTheme.bodyText1!.color),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -98,7 +98,7 @@ class NavBarButton extends StatelessWidget {
           children: [
             Icon(icon),
             SizedBox(width: 5),
-            Text(name,
+            Text(name!,
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.w400)),
           ],
         ),

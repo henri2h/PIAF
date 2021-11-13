@@ -7,7 +7,7 @@ import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
 class NotificationView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient!;
     MinestrixNotifications n = sclient.notifications;
 
     return Drawer(

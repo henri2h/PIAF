@@ -25,10 +25,10 @@ class ThemeNotifier with ChangeNotifier {
     dividerColor: Colors.white54,
   );*/
 
-  ThemeData _themeData;
+  ThemeData? _themeData;
   bool _darkMode = false;
   bool isDarkMode() => _darkMode;
-  ThemeData getTheme() => _themeData;
+  ThemeData? getTheme() => _themeData;
 
   ThemeNotifier() {
     StorageManager.readData('themeMode').then((value) {

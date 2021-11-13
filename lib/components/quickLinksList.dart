@@ -16,7 +16,7 @@ class _QuickLinksBarState extends State<QuickLinksBar>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient sclient = Matrix.of(context).sclient;
+    final MinestrixClient sclient = Matrix.of(context).sclient!;
 
     List<MinestrixRoom> srooms = sclient.sgroups.values.toList();
     return StreamBuilder(
@@ -32,13 +32,13 @@ class _QuickLinksBarState extends State<QuickLinksBar>
 
 class SRoomView extends StatelessWidget {
   const SRoomView({
-    Key key,
-    @required this.sroom,
+    Key? key,
+    required this.sroom,
   }) : super(key: key);
   final MinestrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient client = Matrix.of(context).sclient;
+    final MinestrixClient? client = Matrix.of(context).sclient;
     if (sroom != null)
       return Container(
         decoration: BoxDecoration(
@@ -51,7 +51,7 @@ class SRoomView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10.0)),
           ),
           onPressed: () {
-            NavigationHelper.navigateToGroup(context, sroom.room.id);
+            NavigationHelper.navigateToGroup(context, sroom.room!.id);
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -62,13 +62,13 @@ class SRoomView extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        sroom.room.avatar == null
+                        sroom.room!.avatar == null
                             ? Icon(Icons.group, color: Colors.black)
                             : CircleAvatar(
                                 backgroundImage: NetworkImage(
-                                  sroom.room.avatar
+                                  sroom.room!.avatar!
                                       .getThumbnail(
-                                        client,
+                                        client!,
                                         width: 64,
                                         height: 64,
                                       )
@@ -81,12 +81,12 @@ class SRoomView extends StatelessWidget {
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text(sroom.name,
+                                  Text(sroom.name!,
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black)),
                                   Text(
-                                    sroom.room.topic,
+                                    sroom.room!.topic,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(color: Colors.black),
                                   )
@@ -96,9 +96,9 @@ class SRoomView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (sroom.room.encrypted)
+                  if (sroom.room!.encrypted)
                     Icon(Icons.verified_user, color: Colors.black),
-                  if (!sroom.room.encrypted)
+                  if (!sroom.room!.encrypted)
                     Icon(Icons.no_encryption, color: Colors.black)
                 ]),
           ),

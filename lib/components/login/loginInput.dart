@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class LoginInput extends StatelessWidget {
   const LoginInput(
-      {Key key,
+      {Key? key,
       this.name,
       this.icon,
       this.tController,
@@ -10,12 +10,12 @@ class LoginInput extends StatelessWidget {
       this.obscureText = false,
       this.onChanged})
       : super(key: key);
-  final String name;
-  final IconData icon;
-  final TextEditingController tController;
-  final String errorText;
+  final String? name;
+  final IconData? icon;
+  final TextEditingController? tController;
+  final String? errorText;
   final bool obscureText;
-  final Function onChanged;
+  final Function? onChanged;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -24,7 +24,7 @@ class LoginInput extends StatelessWidget {
         keyboardType: TextInputType.emailAddress,
         controller: tController,
         obscureText: obscureText,
-        onChanged: onChanged,
+        onChanged: onChanged as void Function(String)?,
         autocorrect: false,
         decoration: InputDecoration(
           errorText: errorText,

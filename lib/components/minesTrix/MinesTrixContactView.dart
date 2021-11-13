@@ -6,8 +6,8 @@ import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class MinesTrixContactView extends StatelessWidget {
   const MinesTrixContactView({
-    Key key,
-    @required this.user,
+    Key? key,
+    required this.user,
   }) : super(key: key);
   final User user;
   @override
@@ -56,7 +56,7 @@ class MinesTrixContactView extends StatelessWidget {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(user.displayName,
+                                Text(user.displayName!,
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black)),

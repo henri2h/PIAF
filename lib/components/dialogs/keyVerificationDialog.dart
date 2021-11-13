@@ -12,7 +12,7 @@ class KeyVerificationDialog extends StatefulWidget {
       ? showCupertinoDialog(context: context, builder: (context) => this)
       : showDialog(context: context, builder: (context) => this);
 
-  final KeyVerification request;
+  final KeyVerification? request;
 
   KeyVerificationDialog({this.request});
 
@@ -21,18 +21,18 @@ class KeyVerificationDialog extends StatefulWidget {
 }
 
 class _KeyVerificationPageState extends State<KeyVerificationDialog> {
-  void Function() originalOnUpdate;
+  void Function()? originalOnUpdate;
 
   @override
   void initState() {
-    originalOnUpdate = widget.request.onUpdate;
-    widget.request.onUpdate = () {
+    originalOnUpdate = widget.request!.onUpdate;
+    widget.request!.onUpdate = () {
       if (originalOnUpdate != null) {
-        originalOnUpdate();
+        originalOnUpdate!();
       }
       setState(() => null);
     };
-    widget.request.client.getProfileFromUserId(widget.request.userId).then((p) {
+    widget.request!.client.getProfileFromUserId(widget.request!.userId).then((p) {
       profile = p;
       setState(() => null);
     });
@@ -41,26 +41,26 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
 
   @override
   void dispose() {
-    widget.request.onUpdate =
+    widget.request!.onUpdate =
         originalOnUpdate; // don't want to get updates anymore
     if (![KeyVerificationState.error, KeyVerificationState.done]
-        .contains(widget.request.state)) {
-      widget.request.cancel('m.user');
+        .contains(widget.request!.state)) {
+      widget.request!.cancel('m.user');
     }
     super.dispose();
   }
 
-  Profile profile;
+  Profile? profile;
 
   @override
   Widget build(BuildContext context) {
-    Widget body;
+    Widget? body;
     final buttons = <Widget>[];
-    switch (widget.request.state) {
+    switch (widget.request!.state) {
       case KeyVerificationState.askSSSS:
         // prompt the user for their ssss passphrase / key
         final textEditingController = TextEditingController();
-        String input;
+        String? input;
         final checkInput = () async {
           if (input == null) {
             return;
@@ -71,11 +71,11 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
             await Future.delayed(Duration(milliseconds: 100));
             var valid = false;
             try {
-              await widget.request.openSSSS(recoveryKey: input);
+              await widget.request!.openSSSS(recoveryKey: input);
               valid = true;
             } catch (_) {
               try {
-                await widget.request.openSSSS(passphrase: input);
+                await widget.request!.openSSSS(passphrase: input);
                 valid = true;
               } catch (_) {
                 valid = false;
@@ -127,7 +127,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         ));
         buttons.add(AdaptiveFlatButton(
           child: Text("skip"),
-          onPressed: () => widget.request.openSSSS(skip: true),
+          onPressed: () => widget.request!.openSSSS(skip: true),
         ));
         break;
       case KeyVerificationState.askAccept:
@@ -138,12 +138,12 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         );
         buttons.add(AdaptiveFlatButton(
           child: Text("accept"),
-          onPressed: () => widget.request.acceptVerification(),
+          onPressed: () => widget.request!.acceptVerification(),
         ));
         buttons.add(AdaptiveFlatButton(
           child: Text("reject"),
           onPressed: () {
-            widget.request.rejectVerification().then((_) {
+            widget.request!.rejectVerification().then((_) {
               Navigator.of(context).pop();
             });
           },
@@ -169,16 +169,16 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         // maybe add a button to switch between the two and only determine default
         // view for if "emoji" is a present sasType or not?
         String compareText;
-        if (widget.request.sasTypes.contains('emoji')) {
+        if (widget.request!.sasTypes.contains('emoji')) {
           compareText = "compareEmojiMatch";
           compareWidget = TextSpan(
-            children: widget.request.sasEmojis
+            children: widget.request!.sasEmojis
                 .map((e) => WidgetSpan(child: _Emoji(e)))
                 .toList(),
           );
         } else {
           compareText = "compareNumbersMatch";
-          final numbers = widget.request.sasNumbers;
+          final numbers = widget.request!.sasNumbers;
           final numbstr = '${numbers[0]}-${numbers[1]}-${numbers[2]}';
           compareWidget =
               TextSpan(text: numbstr, style: TextStyle(fontSize: 40));
@@ -202,16 +202,16 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         );
         buttons.add(AdaptiveFlatButton(
           child: Text("theyMatch"),
-          onPressed: () => widget.request.acceptSas(),
+          onPressed: () => widget.request!.acceptSas(),
         ));
         buttons.add(AdaptiveFlatButton(
           textColor: Colors.red,
           child: Text("theyDontMatch"),
-          onPressed: () => widget.request.rejectSas(),
+          onPressed: () => widget.request!.rejectSas(),
         ));
         break;
       case KeyVerificationState.waitingSas:
-        var acceptText = widget.request.sasTypes.contains('emoji')
+        var acceptText = widget.request!.sasTypes.contains('emoji')
             ? "waitingPartnerEmoji"
             : "waitingPartnerNumbers";
         body = Column(
@@ -251,7 +251,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
             Icon(Icons.cancel, color: Colors.red, size: 200.0),
             SizedBox(height: 10),
             Text(
-              'Error ${widget.request.canceledCode}: ${widget.request.canceledReason}',
+              'Error ${widget.request!.canceledCode}: ${widget.request!.canceledReason}',
               textAlign: TextAlign.center,
             ),
           ],
@@ -263,22 +263,22 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
         ));
         break;
     }
-    body ??= Text('ERROR: Unknown state ' + widget.request.state.toString());
-    final otherName = profile?.displayName ?? widget.request.userId;
+    body ??= Text('ERROR: Unknown state ' + widget.request!.state.toString());
+    final otherName = profile?.displayName ?? widget.request!.userId;
     var bottom;
-    if (widget.request.deviceId != null) {
+    if (widget.request!.deviceId != null) {
       final deviceName = widget
-              .request
+              .request!
               .client
-              .userDeviceKeys[widget.request.userId]
-              ?.deviceKeys[widget.request.deviceId]
+              .userDeviceKeys[widget.request!.userId]
+              ?.deviceKeys[widget.request!.deviceId!]
               ?.deviceDisplayName ??
           '';
       bottom = Container(
         alignment: Alignment.center,
         padding: EdgeInsets.all(16.0),
-        child: Text('$deviceName (${widget.request.deviceId})',
-            style: TextStyle(color: Theme.of(context).textTheme.caption.color)),
+        child: Text('$deviceName (${widget.request!.deviceId})',
+            style: TextStyle(color: Theme.of(context).textTheme.caption!.color)),
       );
     }
     final userNameTitle = Row(
@@ -291,9 +291,9 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        if (otherName != widget.request.userId)
+        if (otherName != widget.request!.userId)
           Text(
-            ' - ' + widget.request.userId,
+            ' - ' + widget.request!.userId,
             maxLines: 1,
             style: TextStyle(
               fontStyle: FontStyle.italic,

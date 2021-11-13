@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
@@ -13,7 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class LoginCard extends StatefulWidget {
-  LoginCard({Key key}) : super(key: key);
+  LoginCard({Key? key}) : super(key: key);
   @override
   LoginCardState createState() => LoginCardState();
 }
@@ -23,9 +24,9 @@ class LoginCardState extends State<LoginCard> {
       _passwordController = TextEditingController(),
       _hostNameController = TextEditingController();
 
-  MinestrixClient client;
+  MinestrixClient? client;
 
-  String _errorText;
+  String? _errorText;
   bool _isLoading = false;
   String password = "";
   String domain = "";
@@ -57,7 +58,7 @@ class LoginCardState extends State<LoginCard> {
         ]);
   }
 
-  void _loginAction(MinestrixClient client, {String token}) async {
+  void _loginAction(MinestrixClient client, {String? token}) async {
     if (mounted)
       setState(() {
         _isLoading = true;
@@ -81,18 +82,16 @@ class LoginCardState extends State<LoginCard> {
   }
 
   Future<void> _requestSupportedTypes(MinestrixClient client) async {
-    List<LoginFlow> lg = await client.getLoginFlows();
+    List<LoginFlow> lg = await (client.getLoginFlows() as FutureOr<List<LoginFlow>>);
     for (LoginFlow item in lg) {
       print(item.type.toString());
     }
     setState(() {
-      ssoLogin = lg.firstWhere((LoginFlow elem) => elem.type == "m.login.sso",
-              orElse: () => null) !=
+      ssoLogin = lg.firstWhereOrNull((LoginFlow elem) => elem.type == "m.login.sso") !=
           null;
 
-      passwordLogin = lg.firstWhere(
-              (LoginFlow elem) => elem.type == "m.login.password",
-              orElse: () => null) !=
+      passwordLogin = lg.firstWhereOrNull(
+              (LoginFlow elem) => elem.type == "m.login.password") !=
           null;
     });
   }
@@ -117,7 +116,7 @@ class LoginCardState extends State<LoginCard> {
     });
   }
 
-  void _verifyDomain(MinestrixClient client, String userid) async {
+  Future<void> _verifyDomain(MinestrixClient? client, String userid) async {
     verificationTrial++;
     int localVerificationNumber =
         verificationTrial; // check if we use the result of the verification for the last input of the user
@@ -128,7 +127,7 @@ class LoginCardState extends State<LoginCard> {
       });
 
       try {
-        client.homeserver = Uri.https(userid.domain, "");
+        client!.homeserver = Uri.https(userid.domain!, "");
         DiscoveryInformation infos = await client.getWellknown();
         if (infos?.mHomeserver?.baseUrl != null) {
           updateDomain(infos.mHomeserver.baseUrl.toString());
@@ -140,7 +139,7 @@ class LoginCardState extends State<LoginCard> {
       } catch (e) {
         // try a catch back for home server not suporting well known ... sigh
         try {
-          client.homeserver = Uri.https(userid.domain, "");
+          client!.homeserver = Uri.https(userid.domain!, "");
           await _requestSupportedTypes(client);
 
           if (verificationTrial == localVerificationNumber)
@@ -149,7 +148,7 @@ class LoginCardState extends State<LoginCard> {
         } catch (e) {
           try {
             // fallback, try to connect with the matrix.xxxx subdomain
-            client.homeserver = Uri.https("matrix." + userid.domain, "");
+            client!.homeserver = Uri.https("matrix." + userid.domain!, "");
             await _requestSupportedTypes(client);
 
             if (verificationTrial == localVerificationNumber)
@@ -177,7 +176,7 @@ class LoginCardState extends State<LoginCard> {
       });
   }
 
-  Timer verifyDomainCallback;
+  Timer? verifyDomainCallback;
 // according to the matrix specification https://matrix.org/docs/spec/appendices#id9
   RegExp userRegex = RegExp(
       r"@((([a-z]|\.|_|-|=|\/|[0-9])+):(((.+)\.(.+))|\[((([0-9]|[a-f]|[A-F])+):){2,7}:?([0-9]|[a-f]|[A-F])+\]))(:([0-9]+))?");
@@ -223,7 +222,7 @@ class LoginCardState extends State<LoginCard> {
               tController: _passwordController,
               obscureText: true),
         ),
-      if (_errorText != null) Text(_errorText),
+      if (_errorText != null) Text(_errorText!),
       if (_isLoading)
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -240,7 +239,7 @@ class LoginCardState extends State<LoginCard> {
                   label: Text('Login'),
                   onPressed: _isLoading || !canTryLogIn
                       ? null
-                      : () => _loginAction(client)),
+                      : () => _loginAction(client!)),
             ),
           if (ssoLogin)
             Padding(
@@ -259,7 +258,7 @@ class LoginCardState extends State<LoginCard> {
                           TextEditingController ssoResponse =
                               TextEditingController();
 
-                          String nav = await Navigator.push(
+                          String nav = await (Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => !kIsWeb &&
@@ -329,10 +328,10 @@ class LoginCardState extends State<LoginCard> {
                                             ],
                                           ),
                                         )),
-                              ));
+                              )) as FutureOr<String>);
 
                           Uri tokenUrl = Uri.parse(nav);
-                          _loginAction(client,
+                          _loginAction(client!,
                               token: tokenUrl.queryParameters["loginToken"]);
                         }),
             )

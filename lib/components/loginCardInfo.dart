@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class LoginCardInfo extends StatelessWidget {
   const LoginCardInfo({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

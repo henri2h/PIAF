@@ -9,12 +9,12 @@ import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
-  final Event event;
-  const PostHeader({Key key, this.event}) : super(key: key);
+  final Event? event;
+  const PostHeader({Key? key, this.event}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient sclient = Matrix.of(context).sclient;
-    MinestrixRoom sroom = sclient.srooms[event.roomId];
+    final MinestrixClient sclient = Matrix.of(context).sclient!;
+    MinestrixRoom sroom = sclient.srooms[event!.roomId!]!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -25,7 +25,7 @@ class PostHeader extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: MatrixUserImage(
                     client: sclient,
-                    url: event.sender.avatarUrl,
+                    url: event!.sender.avatarUrl,
                     width: 48,
                     height: 48,
                     thumnail: true,
@@ -35,14 +35,16 @@ class PostHeader extends StatelessWidget {
               if (sroom.roomType == SRoomType.UserRoom)
                 Flexible(
                   child: FutureBuilder<Profile>(
-                      future: sclient.getUserFromRoom(event.room),
+                      future: sclient.getUserFromRoom(event!.room),
                       builder:
                           (BuildContext context, AsyncSnapshot<Profile> p) {
                         if (p.hasData) {
-                          User u = User(
-                            p.data.userId,
-                            displayName: p.data.displayName,
-                            avatarUrl: p.data.avatarUrl.toString(),
+                          
+                          User user = User(
+                            p.data!.userId,
+                            displayName: p.data!.displayName,
+                            avatarUrl: p.data!.avatarUrl.toString(),
+                            room: event!.room
                           );
 
                           return Column(
@@ -55,36 +57,36 @@ class PostHeader extends StatelessWidget {
                                     style: TextButton.styleFrom(
                                         primary: Theme.of(context)
                                             .textTheme
-                                            .bodyText1
+                                            .bodyText1!
                                             .color),
                                     onPressed: () {
                                       NavigationHelper.navigateToUserFeed(
-                                          context, event.sender);
+                                          context, event!.sender);
                                     },
-                                    child: Text(event.sender.displayName,
+                                    child: Text(event!.sender.displayName!,
                                         style: TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold)),
                                   ),
-                                  if (event.sender.id != p.data.userId)
+                                  if (event!.sender.id != p.data!.userId)
                                     Text("to",
                                         style: TextStyle(
                                             color: Theme.of(context)
                                                 .textTheme
-                                                .bodyText1
+                                                .bodyText1!
                                                 .color)),
-                                  if (event.sender.id != p.data.userId)
+                                  if (event!.sender.id != p.data!.userId)
                                     TextButton(
                                       style: TextButton.styleFrom(
                                           primary: Theme.of(context)
                                               .textTheme
-                                              .bodyText1
+                                              .bodyText1!
                                               .color),
                                       onPressed: () {
                                         NavigationHelper.navigateToUserFeed(
-                                            context, u);
+                                            context, user);
                                       },
-                                      child: Text(p.data.displayName,
+                                      child: Text(p.data!.displayName!,
                                           overflow: TextOverflow.clip,
                                           style: TextStyle(
                                               fontSize: 16,
@@ -95,18 +97,18 @@ class PostHeader extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: Text(
-                                    timeago.format(event.originServerTs),
+                                    timeago.format(event!.originServerTs),
                                     style: TextStyle(
                                         fontWeight: FontWeight.normal,
                                         color: Theme.of(context)
                                             .textTheme
-                                            .caption
+                                            .caption!
                                             .color)),
                               ),
                             ],
                           );
                         }
-                        return Text(event.sender.displayName,
+                        return Text(event!.sender.displayName!,
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold));
                       }),
@@ -122,13 +124,13 @@ class PostHeader extends StatelessWidget {
                           child: TextButton(
                             onPressed: () {
                               NavigationHelper.navigateToUserFeed(
-                                  context, event.sender);
+                                  context, event!.sender);
                             },
-                            child: Text(event.sender.displayName,
+                            child: Text(event!.sender.displayName!,
                                 style: TextStyle(
                                     color: Theme.of(context)
                                         .textTheme
-                                        .bodyText1
+                                        .bodyText1!
                                         .color,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold)),
@@ -138,19 +140,19 @@ class PostHeader extends StatelessWidget {
                             style: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme
-                                    .bodyText1
+                                    .bodyText1!
                                     .color)),
                         Flexible(
                           child: TextButton(
                             onPressed: () {
                               NavigationHelper.navigateToGroup(
-                                  context, event.roomId);
+                                  context, event!.roomId);
                             },
-                            child: Text(sroom.name,
+                            child: Text(sroom.name!,
                                 style: TextStyle(
                                     color: Theme.of(context)
                                         .textTheme
-                                        .bodyText1
+                                        .bodyText1!
                                         .color,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400)),
@@ -158,16 +160,16 @@ class PostHeader extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Text(timeago.format(event.originServerTs),
+                    Text(timeago.format(event!.originServerTs),
                         style: TextStyle(
                             fontWeight: FontWeight.normal,
-                            color: Theme.of(context).textTheme.caption.color)),
+                            color: Theme.of(context).textTheme.caption!.color)),
                   ],
                 )),
             ],
           ),
         ),
-        if (event.canRedact)
+        if (event!.canRedact)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -179,7 +181,7 @@ class PostHeader extends StatelessWidget {
                 ),*/
                 PopupMenuButton<String>(
                     itemBuilder: (_) => [
-                          if (event.canRedact)
+                          if (event!.canRedact)
                             PopupMenuItem(
                                 child: Row(
                                   children: [
@@ -189,7 +191,7 @@ class PostHeader extends StatelessWidget {
                                   ],
                                 ),
                                 value: "edit"),
-                          if (event.canRedact)
+                          if (event!.canRedact)
                             PopupMenuItem(
                                 child: Row(
                                   children: [
@@ -205,7 +207,7 @@ class PostHeader extends StatelessWidget {
                     onSelected: (String action) async {
                       switch (action) {
                         case "delete":
-                          await event.redactEvent();
+                          await event!.redactEvent();
                           break;
                         default:
                       }

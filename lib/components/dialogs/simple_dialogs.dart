@@ -1,5 +1,5 @@
+import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:matrix/matrix.dart';
-import 'package:flushbar/flushbar_helper.dart';
 import 'package:flutter/material.dart';
 
 class SimpleDialogs {
@@ -8,7 +8,7 @@ class SimpleDialogs {
   const SimpleDialogs(this.context);
 
   Future<dynamic> tryRequestWithLoadingDialog(Future<dynamic> request,
-      {Function(MatrixException) onAdditionalAuth}) async {
+      {Function(MatrixException)? onAdditionalAuth}) async {
     final futureResult = tryRequestWithErrorToast(
       request,
       onAdditionalAuth: onAdditionalAuth,
@@ -29,7 +29,7 @@ class SimpleDialogs {
   }
 
   Future<dynamic> tryRequestWithErrorToast(Future<dynamic> request,
-      {Function(MatrixException) onAdditionalAuth}) async {
+      {Function(MatrixException)? onAdditionalAuth}) async {
     try {
       return await request;
     } on MatrixException catch (exception) {

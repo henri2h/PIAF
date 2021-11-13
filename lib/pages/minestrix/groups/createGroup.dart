@@ -9,10 +9,10 @@ class CreateGroup extends StatefulWidget {
 }
 
 class _CreateGroupState extends State<CreateGroup> {
-  String errorText = null;
+  String? errorText = null;
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixClient? sclient = Matrix.of(context).sclient;
 
     TextEditingController tName = TextEditingController();
     TextEditingController tDesc = TextEditingController();
@@ -87,7 +87,7 @@ class _CreateGroupState extends State<CreateGroup> {
                 child: Text('Create group'),
                 onPressed: () async {
                   if (tName.text != "") {
-                    await sclient.createMinestrixGroup(
+                    await sclient!.createMinestrixGroup(
                         "#" + tName.text, tDesc.text);
                     setState(() {
                       errorText = "success";

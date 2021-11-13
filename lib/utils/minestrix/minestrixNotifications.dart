@@ -39,8 +39,8 @@ class Notification {
   String body = "";
 
   NotificationType type = NotificationType.Text;
-  DateTime timestamp;
-  Profile p;
+  DateTime? timestamp;
+  Profile? p;
 }
 
 enum NotificationType { Text, FriendRequest }
