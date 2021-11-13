@@ -8,6 +8,9 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
+import 'package:minestrix/components/quickLinksList.dart';
+import 'package:minestrix/partials/users/userFriendsCard.dart';
+import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
@@ -65,8 +68,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
                   if (constraints.maxWidth <= 900)
                     Padding(
                         padding: const EdgeInsets.all(15),
-                        child:
-                            FriendsView(sroom: sroom, userID: widget.userId)),
+                        child: UserFriendsCard(sroom: sroom)),
 
                   // feed
 
@@ -80,14 +82,20 @@ class _UserFeedPageState extends State<UserFeedPage> {
                               padding: const EdgeInsets.all(15),
                               child: Column(
                                 children: [
-                                  FriendsView(
-                                      sroom: sroom, userID: widget.userId),
+                                  UserFriendsCard(sroom: sroom),
                                   MaterialButton(
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
-                                        child: Text("See friends"),
+                                        child: Text("See all friends"),
                                       ),
-                                      onPressed: () {})
+                                      onPressed: () {
+                                        if (isUserPage) {
+                                          context.navigateTo(FriendsRoute());
+                                        } else {
+                                          context.navigateTo(
+                                              UserFriendsRoute(sroom: sroom));
+                                        }
+                                      })
                                 ],
                               )),
                         ),
@@ -178,9 +186,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
                             label: "Add to friends",
                             onPressed: () async {
                               await sclient.addFriend(p.userId);
-                              setState(() {
-                                print("friend request sent");
-                              });
+                              setState(() {});
                             }),
                       ),
                     if (user_in != null &&
@@ -251,127 +257,5 @@ class _UserFeedPageState extends State<UserFeedPage> {
             ]));
           });
     }
-  }
-}
-
-class FriendsView extends StatelessWidget {
-  const FriendsView({Key? key, required this.sroom, required this.userID})
-      : super(key: key);
-
-  final MinestrixRoom sroom;
-  final String? userID;
-
-  @override
-  Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: H2Title("Friends"),
-        ),
-        Wrap(alignment: WrapAlignment.spaceBetween, children: [
-          for (User user in sroom.room!
-              .getParticipants()
-              .where((User u) =>
-                  u.membership == Membership.join &&
-                  u.id != sclient!.userID &&
-                  u.id != userID)
-              .take(8))
-            AccountCard(user: user),
-        ]),
-      ],
-    );
-  }
-}
-
-class UserInfo extends StatelessWidget {
-  const UserInfo({Key? key, this.user, this.profile, this.avatar})
-      : super(key: key);
-
-  final Profile? profile;
-  final User? user;
-  final Uri? avatar;
-
-  @override
-  Widget build(BuildContext context) {
-    String? userId = user?.id;
-    String? displayName = user?.displayName;
-    Uri? avatarUrl = user?.avatarUrl;
-
-    if (profile != null) {
-      userId = profile!.userId;
-      displayName = profile!.displayName;
-      avatarUrl = profile!.avatarUrl;
-    }
-
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      // small screens
-      if (constraints.maxWidth < 800)
-        return Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            if (avatar != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 180),
-                child: CachedNetworkImage(imageUrl: avatar.toString()),
-              ),
-            buildUserProfileDisplay(context, avatarUrl, displayName!, userId!),
-          ],
-        );
-
-      // big screens
-      return Container(
-          decoration: avatar != null
-              ? BoxDecoration(
-                  image: DecorationImage(
-                      image: CachedNetworkImageProvider(avatar.toString()),
-                      fit: BoxFit.cover),
-                )
-              : null,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 60.0, horizontal: 20),
-            child: Align(
-                alignment:
-                    avatar != null ? Alignment.centerLeft : Alignment.center,
-                child: buildUserProfileDisplay(
-                    context, avatarUrl, displayName!, userId!)),
-          ));
-    });
-  }
-
-  Widget buildUserProfileDisplay(
-      BuildContext context, Uri? avatarUrl, String displayName, String userId) {
-    return Card(
-      elevation: 15,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(40.0),
-        ),
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            MatrixUserImage(
-              client: Matrix.of(context).sclient,
-              url: avatarUrl,
-              width: 250,
-              height: 250,
-              thumnail: true,
-              rounded: false,
-              defaultIcon: Icon(Icons.person, size: 120),
-            ),
-            SizedBox(height: 10),
-            Text(displayName,
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            Text(userId,
-                style: TextStyle(
-                    fontSize: 20,
-                    color: Theme.of(context).textTheme.caption!.color)),
-          ],
-        ),
-      ),
-    );
   }
 }

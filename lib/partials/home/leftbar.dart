@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/pages/debugPage.dart';
 import 'package:minestrix/pages/minestrix/friends/friendsVue.dart';
-import 'package:minestrix/pages/minestrix/userFeedPage.dart';
+import 'package:minestrix/pages/minestrix/user/userFeedPage.dart';
 import 'package:minestrix/pages/settingsPage.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';

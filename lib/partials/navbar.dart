@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/minestrix/feedPage.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
-import 'package:minestrix/pages/minestrix/userFeedPage.dart';
+import 'package:minestrix/pages/minestrix/user/userFeedPage.dart';
 import 'package:minestrix/pages/settingsPage.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
