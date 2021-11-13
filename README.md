@@ -4,13 +4,9 @@
 
 ![](readmeassets/feedVue.png)
 
-![](readmeassets/friendsVue.png) | ![](readmeassets/chatsVue.png)| ![](readmeassets/userVue.png)
-:-------------------------:|:-------------------------:|:-------------------------:
-Friends page | Chats | User page
-
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
-![](https://img.shields.io/badge/Version-ALPHA_0.0.8-teal)
+![](https://img.shields.io/badge/Version-ALPHA_0.1.4-teal)
 ![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
 ## 🤔 Why
 
