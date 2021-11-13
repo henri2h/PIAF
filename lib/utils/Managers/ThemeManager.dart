@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/Managers/StorageManager.dart';
+import 'package:minestrix/utils/Managers/StorageManager.dart';
 
 class ThemeNotifier with ChangeNotifier {
   final darkTheme = ThemeData.dark();

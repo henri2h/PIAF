@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/helpers/NavigationHelper.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class PostWriterModal extends StatelessWidget {
   PostWriterModal({Key key, @required this.sroom}) : super(key: key);
-  final SMatrixRoom sroom;
+  final MinestrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     return Card(
         child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),

@@ -1,7 +1,7 @@
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/helpers/NavigationHelper.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class AccountCard extends StatelessWidget {

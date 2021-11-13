@@ -1,9 +1,9 @@
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class MinesTrixUserSelection extends StatefulWidget {
@@ -20,7 +20,7 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
 
     return Scaffold(
         appBar: AppBar(
@@ -49,7 +49,7 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                 if (participants == null) {
                   participants = List<User>.empty();
 
-                  await sclient.following.forEach((key, SMatrixRoom sroom) {
+                  await sclient.following.forEach((key, MinestrixRoom sroom) {
                     participants.add(sroom.user);
                   });
                 }

@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -31,7 +31,7 @@ class _RepliesVueState extends State<RepliesVue> {
     if (showEditBox == null) showEditBox = widget.showEditBox;
 
     // get replies
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     int max = min(widget.replies.length, 2);
 
     return Container(
@@ -142,7 +142,7 @@ class ReplyBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextEditingController tc = TextEditingController();
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/Managers/ThemeManager.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/global/smatrix.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
 import 'package:minestrix/pages/debugPage.dart';
+import 'package:minestrix/utils/Managers/ThemeManager.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     final TextEditingController _passphraseController = TextEditingController();
 
     bool isDarkMode = context.read<ThemeNotifier>().isDarkMode();

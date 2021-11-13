@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/notificationView.dart';
 import 'package:minestrix/components/post/postEditor.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/minestrix/feedPage.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/pages/minestrix/userFeedPage.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
 import 'package:minestrix/partials/navbar.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
@@ -206,7 +206,7 @@ class NavigationBarState extends State<NavigationBar> {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     userId = sclient.userID;
 
     return BottomNavigationBar(

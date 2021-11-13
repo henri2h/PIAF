@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/components/post/postHeader.dart';
 import 'package:minestrix/components/post/postReactions.dart';
 import 'package:minestrix/components/post/postReplies.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
 import 'package:minestrix_chat/partials/matrix_messeage.dart';
 
@@ -86,7 +86,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Event e = widget.event;
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
 
     Timeline t = sclient.srooms[e.roomId].timeline;
     return StreamBuilder<Object>(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class CreateGroup extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class _CreateGroupState extends State<CreateGroup> {
   String errorText = null;
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
 
     TextEditingController tName = TextEditingController();
     TextEditingController tDesc = TextEditingController();
@@ -87,7 +87,7 @@ class _CreateGroupState extends State<CreateGroup> {
                 child: Text('Create group'),
                 onPressed: () async {
                   if (tName.text != "") {
-                    await sclient.createSMatrixRoom(
+                    await sclient.createMinestrixGroup(
                         "#" + tName.text, tDesc.text);
                     setState(() {
                       errorText = "success";

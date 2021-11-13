@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/helpers/NavigationHelper.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class ResearchPage extends StatefulWidget {
@@ -15,7 +15,7 @@ class ResearchPage extends StatefulWidget {
 class _ResearchPageState extends State<ResearchPage> {
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     return ListView(children: [
       H1Title("Search"),
       Padding(

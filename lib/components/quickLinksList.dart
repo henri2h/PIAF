@@ -1,9 +1,11 @@
-import 'package:matrix/matrix.dart';
+
+
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/helpers/NavigationHelper.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/global/smatrix.dart';
+import 'package:matrix/src/utils/uri_extension.dart';
+import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 class QuickLinksBar extends StatefulWidget {
   @override
@@ -14,9 +16,9 @@ class _QuickLinksBarState extends State<QuickLinksBar>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final sclient = Matrix.of(context).sclient;
+    final MinestrixClient sclient = Matrix.of(context).sclient;
 
-    List<SMatrixRoom> srooms = sclient.sgroups.values.toList();
+    List<MinestrixRoom> srooms = sclient.sgroups.values.toList();
     return StreamBuilder(
         stream: sclient.onSync.stream,
         builder: (context, _) => ListView.builder(
@@ -33,10 +35,10 @@ class SRoomView extends StatelessWidget {
     Key key,
     @required this.sroom,
   }) : super(key: key);
-  final SMatrixRoom sroom;
+  final MinestrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    final SClient client = Matrix.of(context).sclient;
+    final MinestrixClient client = Matrix.of(context).sclient;
     if (sroom != null)
       return Container(
         decoration: BoxDecoration(

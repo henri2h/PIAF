@@ -6,11 +6,11 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/global/smatrix/Notifications.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrix/minestrix_types.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
+import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
 
-class SClient extends Client {
+class MinestrixClient extends Client {
   final log = Logger("SClient");
 
   StreamSubscription onRoomUpdateSub; // event subscription
@@ -19,29 +19,29 @@ class SClient extends Client {
 
   StreamController<String> onSRoomsUpdate = StreamController.broadcast();
 
-  Map<String, SMatrixRoom> srooms = Map<String, SMatrixRoom>();
+  Map<String, MinestrixRoom> srooms = Map<String, MinestrixRoom>();
 
   // room sub types
-  Map<String, SMatrixRoom> get sgroups => Map.from(srooms)
+  Map<String, MinestrixRoom> get sgroups => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.Group);
 
-  Map<String, SMatrixRoom> get sfriends => Map.from(srooms)
+  Map<String, MinestrixRoom> get sfriends => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
 
-  Map<String, SMatrixRoom> get following => Map.from(srooms)
+  Map<String, MinestrixRoom> get following => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
 
-  Map<String, SMatrixRoom> sInvites =
-      Map<String, SMatrixRoom>(); // friends requests
+  Map<String, MinestrixRoom> sInvites =
+      Map<String, MinestrixRoom>(); // friends requests
 
   Map<String, String> userIdToRoomId = Map<String, String>();
   List<Event> stimeline = [];
 
   bool _firstSync = true;
 
-  Notifications notifications = Notifications();
+  MinestrixNotifications notifications = MinestrixNotifications();
 
-  SClient(String clientName, {bool enableE2eeRecovery, Set verificationMethods})
+  MinestrixClient(String clientName, {bool enableE2eeRecovery, Set verificationMethods})
       : super(
           clientName,
           verificationMethods: verificationMethods,
@@ -70,7 +70,7 @@ class SClient extends Client {
     return [];
   }
 
-  SMatrixRoom userRoom;
+  MinestrixRoom userRoom;
   bool get userRoomCreated => userRoom != null;
 
   Timer timerCallbackRoomUpdate;
@@ -83,7 +83,7 @@ class SClient extends Client {
     await loadNewTimeline();
     notifications.loadNotifications(this);
 
-    // for smatrixrooms
+    // for MinestrixRooms
     onRoomUpdateSub ??= this.onEvent.stream.listen((EventUpdate rUp) async {
       if (srooms.containsKey(rUp.roomID)) {
         // we use a timer to prevent calling
@@ -108,7 +108,7 @@ class SClient extends Client {
       try {
         int n = srooms.values.length;
         int counter = 0;
-        for (SMatrixRoom sr in srooms.values) {
+        for (MinestrixRoom sr in srooms.values) {
           await sr.timeline.requestHistory();
 
           log.info("First sync progress : " + (counter / n * 100).toString());
@@ -138,7 +138,7 @@ class SClient extends Client {
         log.info("Friendship requests sent : " + r.name);
       }
 
-      SMatrixRoom rs = await SMatrixRoom.loadMinesTrixRoom(r, this);
+      MinestrixRoom rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
       if (rs != null) {
         // if class is correctly initialisated, we can add it
         // if we are here, it means that we have a valid smatrix room
@@ -180,7 +180,7 @@ class SClient extends Client {
     if (userRoom == null) log.severe("❌ User room not found");
   }
 
-  Future<String> createSMatrixRoom(String name, String desc) async {
+  Future<String> createMinestrixAccount(String name, String desc) async {
     String roomID = await createRoom(
         name: name,
         topic: desc,
@@ -197,7 +197,7 @@ class SClient extends Client {
   Future createSMatrixUserProfile() async {
     log.info("Create smatrix room");
     String name = userID + " timeline";
-    await createSMatrixRoom(name, "A Mines'Trix profile");
+    await createMinestrixAccount(name, "A Mines'Trix profile");
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t) {
@@ -221,7 +221,7 @@ class SClient extends Client {
     // init
     stimeline.clear();
 
-    for (SMatrixRoom sroom in srooms.values) {
+    for (MinestrixRoom sroom in srooms.values) {
       Timeline t = sroom.timeline;
       final filteredEvents = getSRoomFilteredEvents(t);
       stimeline.addAll(filteredEvents);
@@ -241,8 +241,8 @@ class SClient extends Client {
     */
   Future<void> autoFollowFollowers() async {
     List<User> followers = await getFollowers();
-    List<SMatrixRoom> sr = sInvites.values.toList();
-    for (SMatrixRoom r in sr) {
+    List<MinestrixRoom> sr = sInvites.values.toList();
+    for (MinestrixRoom r in sr) {
       // check if the user is already in the list and accept invitation
       bool exists = (followers.firstWhere((element) => r.user.id == element.id,
               orElse: () => null) !=
@@ -255,7 +255,7 @@ class SClient extends Client {
 
     List<User> users = await getSUsers();
     // iterate through rooms and add every user from thoose rooms not in our friend list
-    for (SMatrixRoom r in sfriends.values) {
+    for (MinestrixRoom r in sfriends.values) {
       bool exists = (users.firstWhere((User u) => r.user.id == u.id,
               orElse: () => null) !=
           null);
@@ -298,5 +298,19 @@ class SClient extends Client {
       return p.displayName;
     }
     return "ERROR !";
+  }
+
+  Future<String> createMinestrixGroup(String name, String desc) async{
+    String roomID = await createRoom(
+        name: name,
+        topic: desc,
+        visibility: Visibility.private,
+        creationContent: {"type": MinestrixTypes.group});
+
+    // launch sync
+    await loadSRooms();
+    await loadNewTimeline();
+
+    return roomID;
   }
 }

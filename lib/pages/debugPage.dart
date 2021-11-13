@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 class DebugPage extends StatefulWidget {
   @override
@@ -11,7 +11,7 @@ class DebugPage extends StatefulWidget {
 }
 
 class _DebugPageState extends State<DebugPage> {
-  Future<void> loadElements(BuildContext context, SMatrixRoom sroom) async {
+  Future<void> loadElements(BuildContext context, MinestrixRoom sroom) async {
     setState(() {
       progressing = true;
     });
@@ -44,8 +44,8 @@ class _DebugPageState extends State<DebugPage> {
   }
 
   List<int> timelineLength = [];
-  List<SMatrixRoom> srooms = [];
-  SClient sclient;
+  List<MinestrixRoom> srooms = [];
+  MinestrixClient sclient;
   bool init = false;
 
   bool progressing = false;
@@ -107,7 +107,7 @@ class _DebugPageState extends State<DebugPage> {
                 child: TextButton(
                     child: Text("Load all more"),
                     onPressed: () async {
-                      for (SMatrixRoom room in srooms) {
+                      for (MinestrixRoom room in srooms) {
                         await loadElements(context, room);
                       }
                     }),

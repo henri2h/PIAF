@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/friendsRequestList.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/Notifications.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
 
 class NotificationView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
-    Notifications n = sclient.notifications;
+    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixNotifications n = sclient.notifications;
 
     return Drawer(
       // Add a ListView to the drawer. This ensures the user can scroll

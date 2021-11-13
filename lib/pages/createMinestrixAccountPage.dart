@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class createMinestrixAccountPage extends StatefulWidget {
   @override
@@ -15,7 +15,7 @@ class _createMinestrixAccountPageState extends State<createMinestrixAccountPage>
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
 
     return SafeArea(
         child: Scaffold(

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/pages/debugPage.dart';
 import 'package:minestrix/pages/minestrix/friends/friendsVue.dart';
 import 'package:minestrix/pages/minestrix/userFeedPage.dart';
 import 'package:minestrix/pages/settingsPage.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class LeftBar extends StatelessWidget {
@@ -19,7 +19,7 @@ class LeftBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[

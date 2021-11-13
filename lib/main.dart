@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logging/logging.dart';
 import 'package:minestrix/app.dart';
-import 'package:minestrix/global/Managers/ThemeManager.dart';
+import 'package:minestrix/utils/Managers/ThemeManager.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';

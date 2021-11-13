@@ -1,10 +1,10 @@
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/global/helpers/NavigationHelper.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -13,8 +13,8 @@ class PostHeader extends StatelessWidget {
   const PostHeader({Key key, this.event}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final SClient sclient = Matrix.of(context).sclient;
-    SMatrixRoom sroom = sclient.srooms[event.roomId];
+    final MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixRoom sroom = sclient.srooms[event.roomId];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

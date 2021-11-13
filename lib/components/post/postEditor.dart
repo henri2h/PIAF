@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class PostEditor extends StatefulWidget {
   PostEditor({Key key, this.sroom}) : super(key: key);
-  final SMatrixRoom sroom;
+  final MinestrixRoom sroom;
   @override
   _PostEditorState createState() => _PostEditorState();
 }
@@ -21,9 +21,9 @@ class _PostEditorState extends State<PostEditor>
   String postContent = "";
   FilePickerCross file;
 
-  SMatrixRoom sroom;
+  MinestrixRoom sroom;
 
-  Future<void> sendPost(SClient sclient, String postContent,
+  Future<void> sendPost(MinestrixClient sclient, String postContent,
       {Event inReplyTo}) async {
     if (file != null) {
       MatrixFile f =
@@ -36,7 +36,7 @@ class _PostEditorState extends State<PostEditor>
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
 
     sroom = widget.sroom;
     if (sroom == null) sroom = sclient.userRoom;

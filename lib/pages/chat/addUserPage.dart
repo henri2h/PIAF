@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class AddUserPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class _AddUserPageState extends State<AddUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     return Scaffold(
         appBar: AppBar(
           title: Text("Add users"),
@@ -40,7 +40,7 @@ class _AddUserPageState extends State<AddUserPage> {
               suggestionsCallback: (pattern) async {
                 var ur = await sclient.searchUserDirectory(pattern);
                 List<User> following = List<User>.empty();
-                await sclient.following.forEach((key, SMatrixRoom sroom) {
+                await sclient.following.forEach((key, MinestrixRoom sroom) {
                   following.add(sroom.user);
                 });
 

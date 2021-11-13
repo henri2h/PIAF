@@ -6,11 +6,11 @@ import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/components/quickLinksList.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({Key key}) : super(key: key);
@@ -26,7 +26,7 @@ class _FeedPageState extends State<FeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
 
     return LayoutBuilder(builder: (context, constraints) {
       return StreamBuilder(

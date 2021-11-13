@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
-import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
 class Matrix extends StatefulWidget {
@@ -29,7 +29,7 @@ class Matrix extends StatefulWidget {
 class MatrixState extends State<Matrix> {
   final log = Logger("MatrixState");
 
-  SClient sclient;
+  MinestrixClient sclient;
   @override
   BuildContext context;
 
@@ -62,7 +62,7 @@ class MatrixState extends State<Matrix> {
     print("[ widget ] : init");
     String clientName = "minestrix";
 
-    sclient = SClient(clientName,
+    sclient = MinestrixClient(clientName,
         enableE2eeRecovery: true, verificationMethods: verificationMethods);
 
     print("logged: " + sclient.isLogged().toString());

@@ -1,9 +1,9 @@
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/helpers/NavigationHelper.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/utils/helpers/NavigationHelper.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 class RightBar extends StatefulWidget {
   @override
@@ -29,10 +29,10 @@ class ContactView extends StatelessWidget {
     Key key,
     @required this.sroom,
   }) : super(key: key);
-  final SMatrixRoom sroom;
+  final MinestrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    final SClient client = Matrix.of(context).sclient;
+    final MinestrixClient client = Matrix.of(context).sclient;
     if (sroom != null)
       return Padding(
         padding: const EdgeInsets.all(8.0),

@@ -1,9 +1,9 @@
 import 'package:logging/logging.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/minestrix_types.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 
-class SMatrixRoom {
+class MinestrixRoom {
   final log = Logger("SMatrixRoom");
 
   // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
@@ -27,7 +27,7 @@ class SMatrixRoom {
     }
   }
 
-  Future<void> loadRoomCreator(SClient sclient) async {
+  Future<void> loadRoomCreator(MinestrixClient sclient) async {
     Event state = room.getState("m.room.create");
 
     if (state != null) {
@@ -50,9 +50,9 @@ class SMatrixRoom {
     }
   }
 
-  static Future<SMatrixRoom> loadMinesTrixRoom(Room r, SClient sclient) async {
+  static Future<MinestrixRoom> loadMinesTrixRoom(Room r, MinestrixClient sclient) async {
     try {
-      SMatrixRoom sr = SMatrixRoom();
+      MinestrixRoom sr = MinestrixRoom();
       sr.roomType = await getSRoomType(r);
 
       if (sr.roomType != null) {
@@ -63,7 +63,7 @@ class SMatrixRoom {
         print(sr.name + " : " + sr.user.displayName);
 
         if (sr.roomType == SRoomType.UserRoom) {
-          String userId = SClient.getUserIdFromRoomName(sr.room.name);
+          String userId = MinestrixClient.getUserIdFromRoomName(sr.room.name);
 
           if (sr.user != null) {
             sr._validSRoom = true;

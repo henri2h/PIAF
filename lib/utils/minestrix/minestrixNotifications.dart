@@ -1,23 +1,23 @@
 import 'dart:async';
 
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
-class Notifications {
+class MinestrixNotifications {
   List<Notification> notifications = List.empty(growable: true);
 
-  Notifications() {}
+  MinestrixNotifications() {}
 
   StreamController<String> onNotifications = StreamController.broadcast();
 
   /// This method should fetch all the user events and build the notification feed
   // TODO : add a way to check if the user has been mentionned or not.
   // May be we set the event as read or not.
-  void loadNotifications(SClient sclient) {
+  void loadNotifications(MinestrixClient MinestrixClient) {
     notifications.clear();
 
     // load friend requests
-    sclient.sInvites.forEach((key, value) {
+    MinestrixClient.sInvites.forEach((key, value) {
       Notification n = Notification();
       n.body = "Friend request";
       n.type = NotificationType.FriendRequest;

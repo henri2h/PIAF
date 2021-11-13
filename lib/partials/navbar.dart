@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/pages/minestrix/feedPage.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
 import 'package:minestrix/pages/minestrix/userFeedPage.dart';
 import 'package:minestrix/pages/settingsPage.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class NavBar extends StatelessWidget {
@@ -14,7 +14,7 @@ class NavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

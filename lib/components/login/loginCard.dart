@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/login/loginInput.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/pages/home/homePage.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -23,7 +23,7 @@ class LoginCardState extends State<LoginCard> {
       _passwordController = TextEditingController(),
       _hostNameController = TextEditingController();
 
-  SClient client;
+  MinestrixClient client;
 
   String _errorText;
   bool _isLoading = false;
@@ -57,7 +57,7 @@ class LoginCardState extends State<LoginCard> {
         ]);
   }
 
-  void _loginAction(SClient client, {String token}) async {
+  void _loginAction(MinestrixClient client, {String token}) async {
     if (mounted)
       setState(() {
         _isLoading = true;
@@ -80,7 +80,7 @@ class LoginCardState extends State<LoginCard> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  Future<void> _requestSupportedTypes(SClient client) async {
+  Future<void> _requestSupportedTypes(MinestrixClient client) async {
     List<LoginFlow> lg = await client.getLoginFlows();
     for (LoginFlow item in lg) {
       print(item.type.toString());
@@ -117,7 +117,7 @@ class LoginCardState extends State<LoginCard> {
     });
   }
 
-  void _verifyDomain(SClient client, String userid) async {
+  void _verifyDomain(MinestrixClient client, String userid) async {
     verificationTrial++;
     int localVerificationNumber =
         verificationTrial; // check if we use the result of the verification for the last input of the user

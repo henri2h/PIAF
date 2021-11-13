@@ -6,10 +6,10 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
 import 'package:minestrix/pages/settingsPage.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
@@ -26,7 +26,7 @@ class UserFeedPage extends StatefulWidget {
 class _UserFeedPageState extends State<UserFeedPage> {
   bool isUserPage = false;
 
-  Widget buildPage(SClient sclient, SMatrixRoom sroom, List<Event> sevents) {
+  Widget buildPage(MinestrixClient sclient, MinestrixRoom sroom, List<Event> sevents) {
     return LayoutBuilder(
       builder: (context, constraints) => StreamBuilder(
           stream: sroom.room.onUpdate.stream,
@@ -130,9 +130,9 @@ class _UserFeedPageState extends State<UserFeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     String roomId = sclient.userIdToRoomId[widget.userId];
-    SMatrixRoom sroom = sclient.srooms[roomId];
+    MinestrixRoom sroom = sclient.srooms[roomId];
 
     if (widget.userId == sclient.userID) isUserPage = true;
 
@@ -259,12 +259,12 @@ class FriendsView extends StatelessWidget {
   const FriendsView({Key key, @required this.sroom, @required this.userID})
       : super(key: key);
 
-  final SMatrixRoom sroom;
+  final MinestrixRoom sroom;
   final String userID;
 
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
     return Column(
       children: [
         Padding(

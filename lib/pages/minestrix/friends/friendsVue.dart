@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
-import 'package:minestrix/global/smatrix.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class FriendsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final SClient sclient = Matrix.of(context).sclient;
+    final MinestrixClient sclient = Matrix.of(context).sclient;
     List<User> users = sclient.userRoom.room
         .getParticipants()
         .where((User u) => u.membership == Membership.join)
@@ -33,7 +33,7 @@ class FriendsPage extends StatelessWidget {
               var ur = await sclient.searchUserDirectory(pattern);
 
               List<User> following = List<User>.empty();
-              await sclient.following.forEach((key, SMatrixRoom sroom) {
+              await sclient.following.forEach((key, MinestrixRoom sroom) {
                 following.add(sroom.user);
               });
 
@@ -71,7 +71,7 @@ class FriendsPage extends StatelessWidget {
                         padding: const EdgeInsets.all(8.0),
                         child: H2Title("Friend requests"),
                       ),
-                      for (SMatrixRoom sm in sclient.sInvites.values)
+                      for (MinestrixRoom sm in sclient.sInvites.values)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [

@@ -6,14 +6,14 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserSelection.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class GroupPage extends StatefulWidget {
   GroupPage({Key key, this.sroom}) : super(key: key);
-  final SMatrixRoom sroom;
+  final MinestrixRoom sroom;
 
   @override
   _GroupPageState createState() => _GroupPageState();
@@ -22,8 +22,8 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage> {
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
-    SMatrixRoom sroom = widget.sroom;
+    MinestrixClient sclient = Matrix.of(context).sclient;
+    MinestrixRoom sroom = widget.sroom;
     List<Event> sevents = sclient.getSRoomFilteredEvents(sroom.timeline);
     List<User> participants = sroom.room.getParticipants();
     return LayoutBuilder(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:minestrix/global/Managers/ThemeManager.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/Managers/ThemeManager.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:provider/provider.dart';
 
 class Minestrix extends StatefulWidget {

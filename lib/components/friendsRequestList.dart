@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/global/smatrix.dart';
-import 'package:minestrix/global/smatrix/SMatrixRoom.dart';
-import 'package:minestrix/global/smatrixWidget.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class FriendRequestList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SClient sclient = Matrix.of(context).sclient;
+    MinestrixClient sclient = Matrix.of(context).sclient;
 
     if (sclient.sInvites.length == 0) return Container();
     return StreamBuilder(
@@ -20,7 +20,7 @@ class FriendRequestList extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: H2Title("Friend requests"),
                 ),
-                for (SMatrixRoom sm in sclient.sInvites.values)
+                for (MinestrixRoom sm in sclient.sInvites.values)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
