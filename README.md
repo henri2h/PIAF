@@ -2,10 +2,11 @@
 
 **A privacy focused social media based on MATRIX**
 
+![](readmeassets/feedVue.png)
 
-![](readmeassets/feedVue.png)  |  ![](readmeassets/friendsVue.png)|  ![](readmeassets/chatsVue.png)|  ![](readmeassets/userVue.png)
-:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
-Feed vue        |  Friends vue | Chats vue | User vue
+![](readmeassets/friendsVue.png) | ![](readmeassets/chatsVue.png)| ![](readmeassets/userVue.png)
+:-------------------------:|:-------------------------:|:-------------------------:
+Friends page | Chats | User page
 
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
