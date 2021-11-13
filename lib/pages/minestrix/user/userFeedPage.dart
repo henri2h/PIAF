@@ -1,21 +1,17 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
-import 'package:minestrix/components/quickLinksList.dart';
 import 'package:minestrix/partials/users/userFriendsCard.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
@@ -138,13 +134,15 @@ class _UserFeedPageState extends State<UserFeedPage> {
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
     String? roomId = sclient.userIdToRoomId[widget.userId!];
-    MinestrixRoom? sroom = sclient.srooms[roomId!];
+
+    MinestrixRoom? sroom;
+    if (roomId != null) sroom = sclient.srooms[roomId];
 
     if (widget.userId == sclient.userID) isUserPage = true;
 
-    User? user_in = sclient.userRoom!.room!
-        .getParticipants()
-        .firstWhereOrNull((User u) => (u.id == widget.userId));
+    User? user_in = sclient.userRoom!.room!.getParticipants().firstWhereOrNull(
+        (User u) =>
+            (u.id == widget.userId)); // check if the user is following us
 
     if (sroom != null) {
       List<Event> sevents =
