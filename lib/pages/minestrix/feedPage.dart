@@ -1,6 +1,7 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postEditor.dart';
@@ -101,6 +102,7 @@ class _FeedPageState extends State<FeedPage> {
                 child: Container(
                   constraints: BoxConstraints(maxWidth: 700),
                   child: ListView.builder(
+                      shrinkWrap: true,
                       controller: _controller,
                       cacheExtent: 8000,
                       itemCount: timeline!.length + 1,
@@ -159,6 +161,25 @@ class _FeedPageState extends State<FeedPage> {
                                 ],
                               ),
                               PostWriterModal(sroom: sclient.userRoom),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: FutureBuilder<List<Profile>>(
+                                      future: sclient.friendsSuggestions
+                                          .getSuggestions(),
+                                      builder: (context, snap) {
+                                        if (snap.hasData == false)
+                                          return Text("Loading");
+                                        return Row(
+                                          children: [
+                                            for (Profile p in snap.data!)
+                                              AccountCard(profile: p),
+                                          ],
+                                        );
+                                      }),
+                                ),
+                              )
                             ],
                           );
                         if (timeline!.length >

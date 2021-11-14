@@ -8,6 +8,7 @@ import 'package:collection/collection.dart' show IterableExtension;
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
@@ -41,8 +42,8 @@ class MinestrixClient extends Client {
 
   bool _firstSync = true;
 
-  MinestrixNotifications notifications = MinestrixNotifications();
-
+  late MinestrixNotifications notifications;
+  late MinestrixFriendsSugestion friendsSuggestions;
   MinestrixClient(String clientName,
       {bool? enableE2eeRecovery,
       Set<KeyVerificationMethod>? verificationMethods})
@@ -55,7 +56,10 @@ class MinestrixClient extends Client {
             print("[ db ] :  loaded");
             return db;
           },
-        );
+        ) {
+    notifications = MinestrixNotifications();
+    friendsSuggestions = MinestrixFriendsSugestion(this);
+  }
 
   Future<List<User>> getFollowers() async {
     return (await getSUsers())

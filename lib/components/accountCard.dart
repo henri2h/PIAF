@@ -6,10 +6,29 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class AccountCard extends StatelessWidget {
-  AccountCard({Key? key, this.user}) : super(key: key);
+  AccountCard({Key? key, this.user, this.profile})
+      : assert(user != null || profile != null),
+        super(key: key);
+
   final User? user;
+  final Profile? profile;
+
   @override
   Widget build(BuildContext context) {
+    late String userId;
+    String? displayName;
+    Uri? avatarUrl;
+
+    if (user != null) {
+      userId = user!.id;
+      avatarUrl = user!.avatarUrl;
+      displayName = user!.displayName;
+    } else {
+      userId = profile!.userId;
+      avatarUrl = profile!.avatarUrl;
+      displayName = profile!.displayName;
+    }
+
     return Padding(
       padding: const EdgeInsets.all(6.0),
       child: ElevatedButton(
@@ -20,14 +39,13 @@ class AccountCard extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         onPressed: () {
-          if (user?.id != null)
-            context.pushRoute(UserFeedRoute(userId: user?.id));
+          context.pushRoute(UserFeedRoute(userId: userId));
         },
         child: Column(
           children: [
             MatrixUserImage(
               client: Matrix.of(context).sclient,
-              url: user!.avatarUrl,
+              url: avatarUrl,
               width: 110,
               height: 110,
               thumnail: true,
@@ -39,7 +57,7 @@ class AccountCard extends StatelessWidget {
               width: 100,
               height: 40,
               child: Center(
-                child: Text(user!.displayName!,
+                child: Text(displayName ?? 'null',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
