@@ -4,6 +4,14 @@ A new Flutter project.
 ## Unreleased
 
 ### Feature
+* display encryption information for each account [3d83432]
+* allow kicking and baning user from a group [17440f2]
+* Display user friends [8c0e9b4]
+* removed old screenshots [6203c1e]
+* update readme [b891484]
+* new screenshot [be31377]
+* Implemented auto_router navigation [478e633]
+* update changelog [67cc401]
 * added auto_router [8321845]
 * paving the way for timeline refresh [dd812ec]
 * initial display of multi account [47afee0]
@@ -21,6 +29,12 @@ A new Flutter project.
 * setup dark mode [2f44e65]
 
 ### Fixes
+* navigation to user [e880456]
+* route navigation on account creation [138dae4]
+* blank screen on refresh [82a4f46]
+* friends column overflow [b8beb37]
+* display user [0fff2d4]
+* allow inviting user to group [a97e318]
 * null safety [7d7536b]
 * removed unused stream  controller [53282fe]
 * prevent overflow [eed4dea]
