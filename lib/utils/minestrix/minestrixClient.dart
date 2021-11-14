@@ -56,6 +56,7 @@ class MinestrixClient extends Client {
             print("[ db ] :  loaded");
             return db;
           },
+          supportedLoginTypes: {AuthenticationTypes.password, AuthenticationTypes.sso}
         ) {
     notifications = MinestrixNotifications();
     friendsSuggestions = MinestrixFriendsSugestion(this);

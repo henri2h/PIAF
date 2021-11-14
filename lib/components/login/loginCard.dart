@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
@@ -80,20 +79,14 @@ class LoginCardState extends State<LoginCard> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  Future<void> _requestSupportedTypes(MinestrixClient client) async {
-    List<LoginFlow> lg =
-        await (client.getLoginFlows() as FutureOr<List<LoginFlow>>);
-    for (LoginFlow item in lg) {
-      print(item.type.toString());
+  void _requestSupportedTypes(MinestrixClient client) {
+    for (String item in client.supportedLoginTypes) {
+      print(item.toString());
     }
     setState(() {
-      ssoLogin =
-          lg.firstWhereOrNull((LoginFlow elem) => elem.type == "m.login.sso") !=
-              null;
-
-      passwordLogin = lg.firstWhereOrNull(
-              (LoginFlow elem) => elem.type == "m.login.password") !=
-          null;
+      ssoLogin = client.supportedLoginTypes.contains(AuthenticationTypes.sso);
+      passwordLogin =
+          client.supportedLoginTypes.contains(AuthenticationTypes.password);
     });
   }
 
@@ -105,7 +98,7 @@ class LoginCardState extends State<LoginCard> {
     }
   }
 
-  void updateDomain(String url) {
+  void updateDomain(String url, {canTryLogIn: true}) {
     setState(() {
       // change if hostname hasn't be set by user
 
@@ -113,67 +106,46 @@ class LoginCardState extends State<LoginCard> {
       domain = url;
 
       checkingUserId = false;
-      canTryLogIn = true;
+
+      this.canTryLogIn = canTryLogIn;
     });
   }
 
-  Future<void> _verifyDomain(MinestrixClient? client, String userid) async {
+  Future<void> _verifyDomain(MinestrixClient client, String serverUrl) async {
     verificationTrial++;
     int localVerificationNumber =
         verificationTrial; // check if we use the result of the verification for the last input of the user
 
-    if (userid.isValidMatrixId) {
-      setState(() {
-        checkingUserId = true;
-      });
+    setState(() {
+      checkingUserId = true;
+    });
 
-      try {
-        client!.homeserver = Uri.https(userid.domain!, "");
-        DiscoveryInformation infos = await client.getWellknown();
+    try {
+      print("Input server url : " + serverUrl);
+      DiscoveryInformation? infos = await client.checkHomeserver(serverUrl);
 
-        updateDomain(infos.mHomeserver.baseUrl.toString());
+      // check  if info is not null and
+      // if we are the last try (prevent an old request to modify the results)
+      if (localVerificationNumber == verificationTrial) {
+        updateDomain(client.homeserver.toString());
+        print("Returned matrix server url : " + client.homeserver.toString());
 
-        client.homeserver = Uri.parse(infos.mHomeserver.baseUrl.toString());
-        await _requestSupportedTypes(client);
+        _requestSupportedTypes(client);
         return;
-      } catch (e) {
-        // try a catch back for home server not suporting well known ... sigh
-        try {
-          client!.homeserver = Uri.https(userid.domain!, "");
-          await _requestSupportedTypes(client);
-
-          if (verificationTrial == localVerificationNumber)
-            updateDomain(client.homeserver.toString());
-          return;
-        } catch (e) {
-          try {
-            // fallback, try to connect with the matrix.xxxx subdomain
-            client!.homeserver = Uri.https("matrix." + userid.domain!, "");
-            await _requestSupportedTypes(client);
-
-            if (verificationTrial == localVerificationNumber)
-              updateDomain(client.homeserver.toString());
-
-            return;
-          } catch (e) {
-            print("error : " + userid);
-            print(e);
-            setState(() {
-              passwordLogin = false;
-              ssoLogin = false;
-            });
-          }
-        }
       }
+    } catch (e) {
+      print("error : " + serverUrl);
+      print(e);
     }
 
-    if (localVerificationNumber == verificationTrial)
-      // if we are here, we had an issue somewhere...
-      setState(() {
-        domain = "";
-        canTryLogIn = false;
-        checkingUserId = false;
-      });
+    // if we are here, we had an issue somewhere...
+    setState(() {
+      checkingUserId = false;
+      passwordLogin = false;
+      ssoLogin = false;
+    });
+
+    updateDomain("", canTryLogIn: false);
   }
 
   Timer? verifyDomainCallback;
@@ -202,7 +174,16 @@ class LoginCardState extends State<LoginCard> {
                   verifyDomainCallback?.cancel();
                   verifyDomainCallback =
                       new Timer(const Duration(milliseconds: 500), () async {
-                    await _verifyDomain(client, userid);
+                    if (userid.isValidMatrixId) {
+                      print("before " + canTryLogIn.toString());
+                      // check to log in using .wellknown informations
+                      await _verifyDomain(client!, "https://" + userid.domain!);
+                      print("after " + canTryLogIn.toString());
+                      if (canTryLogIn == false)
+                        // if this hasn't worked, try to use the potential matrix.xxx subdomain
+                        await _verifyDomain(
+                            client!, "https://matrix." + userid.domain!);
+                    }
                   });
                 },
                 tController: _usernameController),
