@@ -88,10 +88,12 @@ class AppRouter extends _i14.RootStackRouter {
               key: args.key, roomId: args.roomId, client: args.client));
     },
     UserFeedRoute.name: (routeData) {
-      final args = routeData.argsAs<UserFeedRouteArgs>();
+      final args = routeData.argsAs<UserFeedRouteArgs>(
+          orElse: () => const UserFeedRouteArgs());
       return _i14.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i10.UserFeedPage(key: args.key, userId: args.userId));
+          child: _i10.UserFeedPage(
+              key: args.key, userId: args.userId, sroom: args.sroom));
     },
     UserFriendsRoute.name: (routeData) {
       final args = routeData.argsAs<UserFriendsRouteArgs>();
@@ -312,24 +314,26 @@ class MatrixChatRouteArgs {
 
 /// generated route for [_i10.UserFeedPage]
 class UserFeedRoute extends _i14.PageRouteInfo<UserFeedRouteArgs> {
-  UserFeedRoute({_i15.Key? key, required String? userId})
+  UserFeedRoute({_i15.Key? key, String? userId, _i16.MinestrixRoom? sroom})
       : super(name,
             path: 'user/feed/:userId',
-            args: UserFeedRouteArgs(key: key, userId: userId));
+            args: UserFeedRouteArgs(key: key, userId: userId, sroom: sroom));
 
   static const String name = 'UserFeedRoute';
 }
 
 class UserFeedRouteArgs {
-  const UserFeedRouteArgs({this.key, required this.userId});
+  const UserFeedRouteArgs({this.key, this.userId, this.sroom});
 
   final _i15.Key? key;
 
   final String? userId;
 
+  final _i16.MinestrixRoom? sroom;
+
   @override
   String toString() {
-    return 'UserFeedRouteArgs{key: $key, userId: $userId}';
+    return 'UserFeedRouteArgs{key: $key, userId: $userId, sroom: $sroom}';
   }
 }
 

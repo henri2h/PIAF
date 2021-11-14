@@ -43,7 +43,7 @@ class ContactView extends StatelessWidget {
         ),
         child: TextButton(
           onPressed: () {
-            context.pushRoute(UserFeedRoute(userId: sroom.room?.id));
+            context.pushRoute(UserFeedRoute(sroom: sroom));
           },
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
