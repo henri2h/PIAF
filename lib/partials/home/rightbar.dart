@@ -53,18 +53,17 @@ class ContactView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       CircleAvatar(
-                        backgroundImage:
-                            sroom.user.avatarUrl == null
-                                ? null
-                                : NetworkImage(
-                                    sroom.user.avatarUrl!
-                                        .getThumbnail(
-                                          client!,
-                                          width: 64,
-                                          height: 64,
-                                        )
-                                        .toString(),
-                                  ),
+                        backgroundImage: sroom.user.avatarUrl == null
+                            ? null
+                            : NetworkImage(
+                                sroom.user.avatarUrl!
+                                    .getThumbnail(
+                                      client!,
+                                      width: 64,
+                                      height: 64,
+                                    )
+                                    .toString(),
+                              ),
                       ),
                       Flexible(
                         child: Padding(

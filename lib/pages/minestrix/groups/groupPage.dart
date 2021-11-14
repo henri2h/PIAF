@@ -106,7 +106,8 @@ class _GroupPageState extends State<GroupPage> {
                             Padding(
                                 padding: const EdgeInsets.all(15),
                                 child: Row(children: [
-                                  for (User user in sroom.room.getParticipants()
+                                  for (User user in sroom.room
+                                      .getParticipants()
                                       .where((User u) =>
                                           u.membership == Membership.join))
                                     MatrixUserImage(

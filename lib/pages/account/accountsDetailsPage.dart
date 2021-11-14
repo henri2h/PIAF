@@ -28,18 +28,17 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
             sroom.roomType == SRoomType.UserRoom))
           ListTile(
               leading: CircleAvatar(
-                backgroundImage:
-                    sroom.user.avatarUrl == null
-                        ? null
-                        : NetworkImage(
-                            sroom.user.avatarUrl!
-                                .getThumbnail(
-                                  sclient,
-                                  width: 64,
-                                  height: 64,
-                                )
-                                .toString(),
-                          ),
+                backgroundImage: sroom.user.avatarUrl == null
+                    ? null
+                    : NetworkImage(
+                        sroom.user.avatarUrl!
+                            .getThumbnail(
+                              sclient,
+                              width: 64,
+                              height: 64,
+                            )
+                            .toString(),
+                      ),
               ),
               title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

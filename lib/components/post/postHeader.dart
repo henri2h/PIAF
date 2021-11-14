@@ -35,80 +35,78 @@ class PostHeader extends StatelessWidget {
               SizedBox(width: 10),
               if (sroom.roomType == SRoomType.UserRoom)
                 Flexible(
-                  child: Builder(
-                      builder: (BuildContext context) {
-                        User? p = sclient.srooms[event!.room]?.user;
-                        if (p != null) {
-                          User user = User(p.id,
-                              displayName: p.displayName,
-                              avatarUrl: p.avatarUrl.toString(),
-                              room: event!.room);
+                  child: Builder(builder: (BuildContext context) {
+                    User? p = sclient.srooms[event!.room]?.user;
+                    if (p != null) {
+                      User user = User(p.id,
+                          displayName: p.displayName,
+                          avatarUrl: p.avatarUrl.toString(),
+                          room: event!.room);
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Wrap(
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  TextButton(
-                                    style: TextButton.styleFrom(
-                                        primary: Theme.of(context)
-                                            .textTheme
-                                            .bodyText1!
-                                            .color),
-                                    onPressed: () {
-                                      context.pushRoute(UserFeedRoute(
-                                          userId: event!.senderId));
-                                    },
-                                    child: Text(event!.sender.displayName!,
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold)),
-                                  ),
-                                  if (event!.sender.id != p.id)
-                                    Text("to",
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .textTheme
-                                                .bodyText1!
-                                                .color)),
-                                  if (event!.sender.id != p.id)
-                                    TextButton(
-                                      style: TextButton.styleFrom(
-                                          primary: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1!
-                                              .color),
-                                      onPressed: () {
-                                        context.pushRoute(
-                                            UserFeedRoute(userId: user.id));
-                                      },
-                                      child: Text(p.displayName!,
-                                          overflow: TextOverflow.clip,
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w400)),
-                                    ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Text(
-                                    timeago.format(event!.originServerTs),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                    primary: Theme.of(context)
+                                        .textTheme
+                                        .bodyText1!
+                                        .color),
+                                onPressed: () {
+                                  context.pushRoute(
+                                      UserFeedRoute(userId: event!.senderId));
+                                },
+                                child: Text(event!.sender.displayName!,
                                     style: TextStyle(
-                                        fontWeight: FontWeight.normal,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                              if (event!.sender.id != p.id)
+                                Text("to",
+                                    style: TextStyle(
                                         color: Theme.of(context)
                                             .textTheme
-                                            .caption!
+                                            .bodyText1!
                                             .color)),
-                              ),
+                              if (event!.sender.id != p.id)
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                      primary: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1!
+                                          .color),
+                                  onPressed: () {
+                                    context.pushRoute(
+                                        UserFeedRoute(userId: user.id));
+                                  },
+                                  child: Text(p.displayName!,
+                                      overflow: TextOverflow.clip,
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400)),
+                                ),
                             ],
-                          );
-                        }
-                        return Text(event!.sender.displayName!,
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold));
-                      }),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Text(timeago.format(event!.originServerTs),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .caption!
+                                        .color)),
+                          ),
+                        ],
+                      );
+                    }
+                    return Text(event!.sender.displayName!,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold));
+                  }),
                 ),
               if (sroom.roomType == SRoomType.Group)
                 Flexible(

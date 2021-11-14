@@ -12,7 +12,8 @@ class FriendsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MinestrixClient sclient = Matrix.of(context).sclient!;
-    List<User> users = sclient.userRoom!.room.getParticipants()
+    List<User> users = sclient.userRoom!.room
+        .getParticipants()
         .where((User u) => u.membership == Membership.join)
         .toList();
     /*List<User> friendRequest =
