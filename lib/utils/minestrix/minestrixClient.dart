@@ -47,17 +47,16 @@ class MinestrixClient extends Client {
   MinestrixClient(String clientName,
       {bool? enableE2eeRecovery,
       Set<KeyVerificationMethod>? verificationMethods})
-      : super(
-          clientName,
-          verificationMethods: verificationMethods,
-          databaseBuilder: (Client client) async {
-            final db = FamedlySdkHiveDatabase(client.clientName);
-            await db.open();
-            print("[ db ] :  loaded");
-            return db;
-          },
-          supportedLoginTypes: {AuthenticationTypes.password, AuthenticationTypes.sso}
-        ) {
+      : super(clientName, verificationMethods: verificationMethods,
+            databaseBuilder: (Client client) async {
+          final db = FamedlySdkHiveDatabase(client.clientName);
+          await db.open();
+          print("[ db ] :  loaded");
+          return db;
+        }, supportedLoginTypes: {
+          AuthenticationTypes.password,
+          AuthenticationTypes.sso
+        }) {
     notifications = MinestrixNotifications();
     friendsSuggestions = MinestrixFriendsSugestion(this);
   }
