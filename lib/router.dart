@@ -4,6 +4,7 @@
 import 'package:auto_route/annotations.dart';
 import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
+import 'package:minestrix/pages/createMinestrixAccountPage.dart';
 import 'package:minestrix/pages/minestrix/feedPage.dart';
 import 'package:minestrix/pages/minestrix/friends/friendsVue.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
@@ -36,6 +37,7 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
       RedirectRoute(path: '*', redirectTo: '')
     ]),
     AutoRoute(path: '/login', page: LoginPage),
+    AutoRoute(path: 'create', page: CreateMinestrixAccountPage)
   ],
 )
 class $AppRouter {}

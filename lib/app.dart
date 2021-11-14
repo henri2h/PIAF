@@ -5,6 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/Managers/ThemeManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:provider/provider.dart';
 
 class Minestrix extends StatefulWidget {
@@ -22,27 +23,38 @@ class _MinestrixState extends State<Minestrix> {
           builder: (context, theme, _) => StreamBuilder<LoginState?>(
               stream: Matrix.of(context).sclient?.onLoginStateChanged.stream,
               builder: (context, AsyncSnapshot<LoginState?> state) {
-                return MaterialApp.router(
-                  routerDelegate: AutoRouterDelegate.declarative(
-                    _appRouter,
-                    routes: (_) {
-                      return [
-                        if (state.hasData == false)
-                          MatrixLoadingRoute()
-                        else if (state.data == LoginState.loggedIn)
-                          HomeWraperRoute()
-                        // if they are not logged in, bring them to the Login page
-                        else
-                          LoginRoute()
-                      ];
-                    },
-                  ),
+                MinestrixClient sclient = Matrix.of(context).sclient!;
 
-                  routeInformationParser: _appRouter.defaultRouteParser(),
-                  debugShowCheckedModeBanner: false,
-                  // theme :
-                  theme: theme.getTheme(),
-                );
+                return StreamBuilder<String>(
+                    stream: sclient.onSRoomsUpdate.stream,
+                    builder: (context, sroomSnap) {
+                      return MaterialApp.router(
+                        routerDelegate: AutoRouterDelegate.declarative(
+                          _appRouter,
+                          routes: (_) {
+                            return [
+                              if (state.hasData == false ||
+                                  (state.data == LoginState.loggedIn &&
+                                      sroomSnap.hasData == false))
+                                MatrixLoadingRoute()
+                              else if (state.data == LoginState.loggedIn &&
+                                  sclient.userRoomCreated)
+                                HomeWraperRoute()
+                              else if (state.data == LoginState.loggedIn)
+                                CreateMinestrixAccountRoute()
+                              // if they are not logged in, bring them to the Login page
+                              else
+                                LoginRoute()
+                            ];
+                          },
+                        ),
+
+                        routeInformationParser: _appRouter.defaultRouteParser(),
+                        debugShowCheckedModeBanner: false,
+                        // theme :
+                        theme: theme.getTheme(),
+                      );
+                    });
               }),
         ),
       ),

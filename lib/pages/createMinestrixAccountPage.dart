@@ -4,14 +4,14 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
-class createMinestrixAccountPage extends StatefulWidget {
+class CreateMinestrixAccountPage extends StatefulWidget {
   @override
-  _createMinestrixAccountPageState createState() =>
-      _createMinestrixAccountPageState();
+  _CreateMinestrixAccountPageState createState() =>
+      _CreateMinestrixAccountPageState();
 }
 
-class _createMinestrixAccountPageState
-    extends State<createMinestrixAccountPage> {
+class _CreateMinestrixAccountPageState
+    extends State<CreateMinestrixAccountPage> {
   bool running = false;
 
   @override
@@ -41,12 +41,6 @@ class _createMinestrixAccountPageState
                       label: "Create my account",
                       icon: Icons.send)),
           if (running) LinearProgressIndicator(),
-          MinesTrixButton(
-              onPressed: () async {
-                await sclient!.loadSRooms();
-              },
-              label: "Refresh",
-              icon: Icons.receipt_long_sharp),
         ],
       ),
     )));
