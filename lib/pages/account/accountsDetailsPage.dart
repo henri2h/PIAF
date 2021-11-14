@@ -75,15 +75,26 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     children: [
                       Icon(Icons.people),
                       SizedBox(width: 10),
-                      Text(sroom.room.summary.mJoinedMemberCount.toString()),
+                      Text(sroom.room.summary.mJoinedMemberCount.toString() +
+                          " followers"),
                     ],
                   ),
                   if (sroom.room.encrypted)
-                    Icon(Icons.verified_user,
-                        color: Theme.of(context).textTheme.bodyText1!.color),
+                    Row(
+                      children: [
+                        Icon(Icons.verified_user),
+                        SizedBox(width: 10),
+                        Text("Encrypted")
+                      ],
+                    ),
                   if (!sroom.room.encrypted)
-                    Icon(Icons.no_encryption,
-                        color: Theme.of(context).textTheme.bodyText1!.color),
+                    Row(
+                      children: [
+                        Icon(Icons.no_encryption),
+                        SizedBox(width: 10),
+                        Text("Not encrypted")
+                      ],
+                    ),
                 ],
               ),
               trailing: PopupMenuButton<String>(
