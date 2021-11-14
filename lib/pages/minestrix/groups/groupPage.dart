@@ -42,7 +42,7 @@ class _GroupPageState extends State<GroupPage> {
                           return CircularProgressIndicator();
 
                         participants = snap.data!;
-                        return Column(
+                        return ListView(
                           children: [
                             for (User p in participants.where(
                                 (User u) => u.membership == Membership.join))
