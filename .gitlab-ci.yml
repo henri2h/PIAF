@@ -13,7 +13,7 @@ build_linux:
     - flutter config --enable-linux-desktop
     - flutter clean
     - flutter pub get
-    - flutter packages pub run build_runner
+    - flutter packages pub run build_runner build
     - flutter build linux --release
   artifacts:
     when: on_success
@@ -28,7 +28,7 @@ build_android:
   script:
     - flutter clean
     - flutter pub get
-    - flutter packages pub run build_runner
+    - flutter packages pub run build_runner build
     - flutter build apk --release
   artifacts:
     when: on_success
@@ -49,7 +49,7 @@ build_web:
     - flutter config --enable-web
     - flutter clean
     - flutter pub get
-    - flutter packages pub run build_runner
+    - flutter packages pub run build_runner build
     - flutter build web --release
 
   artifacts:
