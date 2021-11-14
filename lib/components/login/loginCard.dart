@@ -56,7 +56,8 @@ class LoginCardState extends State<LoginCard> {
         ]);
   }
 
-  void _loginAction(MinestrixClient client, {String? token}) async {
+  void _loginAction(MinestrixClient client,
+      {String? token, required ssoLogin}) async {
     if (mounted)
       setState(() {
         _isLoading = true;
@@ -220,7 +221,7 @@ class LoginCardState extends State<LoginCard> {
                   label: Text('Login'),
                   onPressed: _isLoading || !canTryLogIn
                       ? null
-                      : () => _loginAction(client!)),
+                      : () => _loginAction(client!, ssoLogin: false)),
             ),
           if (ssoLogin)
             Padding(
@@ -313,7 +314,8 @@ class LoginCardState extends State<LoginCard> {
 
                           Uri tokenUrl = Uri.parse(nav);
                           _loginAction(client!,
-                              token: tokenUrl.queryParameters["loginToken"]);
+                              token: tokenUrl.queryParameters["loginToken"],
+                              ssoLogin: true);
                         }),
             )
         ],
