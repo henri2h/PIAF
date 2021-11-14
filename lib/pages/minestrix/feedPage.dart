@@ -1,3 +1,4 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
@@ -9,6 +10,7 @@ import 'package:minestrix/components/quickLinksList.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
@@ -42,7 +44,7 @@ class _FeedPageState extends State<FeedPage> {
                       label: "Write your first post",
                       icon: Icons.post_add,
                       onPressed: () {
-                        // changePage(PostEditor());
+                        context.pushRoute(PostEditorRoute());
                       }),
                 ),
                 Padding(
@@ -51,7 +53,7 @@ class _FeedPageState extends State<FeedPage> {
                       label: "Add some friends",
                       icon: Icons.person_add,
                       onPressed: () {
-                        // changePage(FriendsVue());
+                        context.pushRoute(FriendsRoute());
                       }),
                 )
               ],
