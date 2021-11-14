@@ -3,6 +3,7 @@
 // @CustomAutoRouter
 import 'package:auto_route/annotations.dart';
 import 'package:minestrix/components/post/postEditor.dart';
+import 'package:minestrix/pages/account/accountsDetailsPage.dart';
 import 'package:minestrix/pages/minestrix/feedPage.dart';
 import 'package:minestrix/pages/minestrix/friends/friendsVue.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
@@ -30,6 +31,7 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
       AutoRoute(path: 'user/feed/:userId', page: UserFeedPage),
       AutoRoute(path: 'user/friends/', page: UserFriendsPage),
       AutoRoute(path: 'search', page: ResearchPage),
+      AutoRoute(path: 'accounts', page: AccountsDetailsPage),
       AutoRoute(path: 'settings', page: SettingsPage),
       RedirectRoute(path: '*', redirectTo: '')
     ]),
