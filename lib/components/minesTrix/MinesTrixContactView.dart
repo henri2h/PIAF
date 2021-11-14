@@ -15,64 +15,87 @@ class MinesTrixContactView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Container(
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(6.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 5,
-                blurRadius: 7,
-                offset: Offset(0, 3), // changes position of shadow
-              ),
-            ]),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            primary: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6.0)),
-            padding: EdgeInsets.all(26.0),
-          ),
+      child: Card(
+        child: MaterialButton(
           onPressed: () {
             context.pushRoute(UserFeedRoute(userId: user.id));
           },
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Flexible(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      MatrixUserImage(
-                          client: Matrix.of(context).sclient,
-                          url: user.avatarUrl,
-                          width: 48,
-                          thumnail: true,
-                          height: 48),
-                      Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(user.displayName!,
-                                    style: TextStyle(
+          child: Padding(
+            padding: const EdgeInsets.all(3),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Flexible(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        MatrixUserImage(
+                            client: Matrix.of(context).sclient,
+                            url: user.avatarUrl,
+                            width: 48,
+                            thumnail: true,
+                            height: 48),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(user.displayName!,
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black)),
-                                Text(
-                                  user.id,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.black),
-                                )
-                              ]),
+                                      )),
+                                  Text(
+                                    user.id,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ]),
+                          ),
                         ),
-                      ),
-                    ],
+                        if (user.canKick || user.canBan)
+                          PopupMenuButton<String>(
+                              itemBuilder: (_) => [
+                                    if (user.canKick)
+                                      PopupMenuItem(
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.person_remove),
+                                              SizedBox(width: 10),
+                                              Text("Kick"),
+                                            ],
+                                          ),
+                                          value: "kick"),
+                                    if (user.canBan)
+                                      PopupMenuItem(
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.delete_forever,
+                                                  color: Colors.red),
+                                              SizedBox(width: 10),
+                                              Text("Ban",
+                                                  style: TextStyle(
+                                                      color: Colors.red)),
+                                            ],
+                                          ),
+                                          value: "ban")
+                                  ],
+                              icon: Icon(Icons.more_horiz),
+                              onSelected: (String action) async {
+                                switch (action) {
+                                  case "kick":
+                                    await user.kick();
+                                    break;
+                                  case "ban":
+                                    await user.ban();
+                                    break;
+                                  default:
+                                }
+                              })
+                      ],
+                    ),
                   ),
-                ),
-              ]),
+                ]),
+          ),
         ),
       ),
     );
