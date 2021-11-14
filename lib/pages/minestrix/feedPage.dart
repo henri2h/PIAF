@@ -100,7 +100,7 @@ class _FeedPageState extends State<FeedPage> {
               Flexible(
                 flex: 12,
                 child: Container(
-                  constraints: BoxConstraints(maxWidth: 700),
+                  constraints: BoxConstraints(maxWidth: 760),
                   child: ListView.builder(
                       shrinkWrap: true,
                       controller: _controller,
