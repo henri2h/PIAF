@@ -1,7 +1,9 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
@@ -38,10 +40,8 @@ class _ResearchPageState extends State<ResearchPage> {
               subtitle: Text(profile.userId),
             );
           },
-          onSuggestionSelected: (dynamic suggestion) async {
-            //User u = User(p.userId, displayName: p.displayName);
-            //NavigationHelper.navigateToUserFeed(context, u);
-            // TODO : enable navigation to feed on suggestion selected
+          onSuggestionSelected: (Profile p) async {
+            context.pushRoute(UserFeedRoute(userId: p.userId));
           },
         ),
       ),
