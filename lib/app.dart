@@ -13,15 +13,15 @@ class Minestrix extends StatefulWidget {
 }
 
 class _MinestrixState extends State<Minestrix> {
+  final _appRouter = AppRouter();
   @override
   Widget build(BuildContext context) {
-    final _appRouter = AppRouter();
     return Matrix(
       child: Builder(
         builder: (context) => Consumer<ThemeNotifier>(
-          builder: (context, theme, _) => StreamBuilder(
+          builder: (context, theme, _) => StreamBuilder<LoginState?>(
               stream: Matrix.of(context).sclient?.onLoginStateChanged.stream,
-              builder: (context, AsyncSnapshot<LoginState> state) {
+              builder: (context, AsyncSnapshot<LoginState?> state) {
                 return MaterialApp.router(
                   routerDelegate: AutoRouterDelegate.declarative(
                     _appRouter,
@@ -37,6 +37,7 @@ class _MinestrixState extends State<Minestrix> {
                       ];
                     },
                   ),
+
                   routeInformationParser: _appRouter.defaultRouteParser(),
                   debugShowCheckedModeBanner: false,
                   // theme :
