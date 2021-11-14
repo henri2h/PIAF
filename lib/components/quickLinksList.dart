@@ -61,11 +61,11 @@ class SRoomView extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      sroom.room!.avatar == null
+                      sroom.room.avatar == null
                           ? Icon(Icons.group, color: Colors.black)
                           : CircleAvatar(
                               backgroundImage: NetworkImage(
-                                sroom.room!.avatar!
+                                sroom.room.avatar!
                                     .getThumbnail(
                                       client!,
                                       width: 64,
@@ -85,7 +85,7 @@ class SRoomView extends StatelessWidget {
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black)),
                                 Text(
-                                  sroom.room!.topic,
+                                  sroom.room.topic,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(color: Colors.black),
                                 )
@@ -95,9 +95,9 @@ class SRoomView extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (sroom.room!.encrypted)
+                if (sroom.room.encrypted)
                   Icon(Icons.verified_user, color: Colors.black),
-                if (!sroom.room!.encrypted)
+                if (!sroom.room.encrypted)
                   Icon(Icons.no_encryption, color: Colors.black)
               ]),
         ),

@@ -34,7 +34,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
       MinestrixClient sclient, MinestrixRoom sroom, List<Event> sevents) {
     return LayoutBuilder(
       builder: (context, constraints) => StreamBuilder(
-          stream: sroom.room!.onUpdate.stream,
+          stream: sroom.room.onUpdate.stream,
           builder: (context, _) => ListView(
                 children: [
                   Row(
@@ -62,7 +62,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
 
                   UserInfo(
                       user: sroom.user,
-                      avatar: sroom.room!.avatar?.getDownloadLink(sclient)),
+                      avatar: sroom.room.avatar?.getDownloadLink(sclient)),
 
                   if (constraints.maxWidth <= 900)
                     Padding(
@@ -147,7 +147,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
     // check if the userId given is the same one as the user
     if (widget.userId == sclient.userID) isUserPage = true;
 
-    User? user_in = sclient.userRoom!.room!.getParticipants().firstWhereOrNull(
+    User? user_in = sclient.userRoom!.room.getParticipants().firstWhereOrNull(
         (User u) =>
             (u.id == widget.userId)); // check if the user is following us
 

@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/login/loginInput.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
-import 'package:minestrix/pages/minestrix/homeWraperPage.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:url_launcher/url_launcher.dart';

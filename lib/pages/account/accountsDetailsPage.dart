@@ -24,15 +24,15 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
       children: [
         H1Title("Accounts"),
         for (MinestrixRoom sroom in sclient.srooms.values.where((sroom) =>
-            sroom.user?.id == sclient.userID &&
+            sroom.user.id == sclient.userID &&
             sroom.roomType == SRoomType.UserRoom))
           ListTile(
               leading: CircleAvatar(
                 backgroundImage:
-                    sroom.user == null || sroom.user!.avatarUrl == null
+                    sroom.user.avatarUrl == null
                         ? null
                         : NetworkImage(
-                            sroom.user!.avatarUrl!
+                            sroom.user.avatarUrl!
                                 .getThumbnail(
                                   sclient,
                                   width: 64,
@@ -44,7 +44,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
               title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(sroom.user!.displayName!,
+                    Text(sroom.user.displayName!,
                         style: TextStyle(fontWeight: FontWeight.bold))
                   ]),
               subtitle: Column(

@@ -39,7 +39,6 @@ class _ResearchPageState extends State<ResearchPage> {
             );
           },
           onSuggestionSelected: (dynamic suggestion) async {
-            Profile p = suggestion;
             //User u = User(p.userId, displayName: p.displayName);
             //NavigationHelper.navigateToUserFeed(context, u);
             // TODO : enable navigation to feed on suggestion selected

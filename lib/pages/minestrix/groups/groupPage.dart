@@ -26,7 +26,7 @@ class _GroupPageState extends State<GroupPage> {
     MinestrixRoom sroom = widget.sroom!;
     List<Event> sevents =
         sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
-    List<User> participants = sroom.room!.getParticipants();
+    List<User> participants = sroom.room.getParticipants();
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) => Row(
         children: [
@@ -36,7 +36,7 @@ class _GroupPageState extends State<GroupPage> {
               child: StreamBuilder(
                   stream: sclient.onSync.stream,
                   builder: (context, _) => FutureBuilder<List<User>>(
-                      future: sroom.room!.requestParticipants(),
+                      future: sroom.room.requestParticipants(),
                       builder: (context, snap) {
                         if (snap.hasData == false)
                           return CircularProgressIndicator();
@@ -71,10 +71,10 @@ class _GroupPageState extends State<GroupPage> {
                                     ));
 
                                     profiles?.forEach((Profile p) async {
-                                      await sroom.room!.invite(p.userId);
+                                      await sroom.room.invite(p.userId);
                                     });
                                     participants =
-                                        await sroom.room!.requestParticipants();
+                                        await sroom.room.requestParticipants();
                                     setState(() {});
                                   }),
                             )
@@ -85,14 +85,14 @@ class _GroupPageState extends State<GroupPage> {
           Flexible(
             flex: 8,
             child: StreamBuilder(
-                stream: sroom.room!.onUpdate.stream,
+                stream: sroom.room.onUpdate.stream,
                 builder: (context, _) => ListView(
                       children: [
-                        if (sroom.room!.avatar != null)
+                        if (sroom.room.avatar != null)
                           Center(
                               child: MatrixUserImage(
                                   client: sclient,
-                                  url: sroom.room!.avatar,
+                                  url: sroom.room.avatar,
                                   unconstraigned: true,
                                   rounded: false,
                                   maxHeight: 500)),
@@ -106,8 +106,7 @@ class _GroupPageState extends State<GroupPage> {
                             Padding(
                                 padding: const EdgeInsets.all(15),
                                 child: Row(children: [
-                                  for (User user in sroom.room!
-                                      .getParticipants()
+                                  for (User user in sroom.room.getParticipants()
                                       .where((User u) =>
                                           u.membership == Membership.join))
                                     MatrixUserImage(

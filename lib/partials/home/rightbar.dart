@@ -54,10 +54,10 @@ class ContactView extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         backgroundImage:
-                            sroom.user == null || sroom.user!.avatarUrl == null
+                            sroom.user.avatarUrl == null
                                 ? null
                                 : NetworkImage(
-                                    sroom.user!.avatarUrl!
+                                    sroom.user.avatarUrl!
                                         .getThumbnail(
                                           client!,
                                           width: 64,
@@ -72,7 +72,7 @@ class ContactView extends StatelessWidget {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(sroom.user!.displayName!,
+                                Text(sroom.user.displayName!,
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Theme.of(context)
@@ -80,7 +80,7 @@ class ContactView extends StatelessWidget {
                                             .bodyText1!
                                             .color)),
                                 Text(
-                                  sroom.user!.id,
+                                  sroom.user.id,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       color: Theme.of(context)
@@ -94,10 +94,10 @@ class ContactView extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (sroom.room!.encrypted)
+                if (sroom.room.encrypted)
                   Icon(Icons.verified_user,
                       color: Theme.of(context).textTheme.bodyText1!.color),
-                if (!sroom.room!.encrypted)
+                if (!sroom.room.encrypted)
                   Icon(Icons.no_encryption,
                       color: Theme.of(context).textTheme.bodyText1!.color)
               ]),

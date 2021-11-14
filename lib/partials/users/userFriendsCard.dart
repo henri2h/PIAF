@@ -21,12 +21,12 @@ class UserFriendsCard extends StatelessWidget {
           child: H2Title("Friends"),
         ),
         Wrap(alignment: WrapAlignment.spaceBetween, children: [
-          for (User user in sroom.room!
+          for (User user in sroom.room
               .getParticipants()
               .where((User u) =>
                   u.membership == Membership.join &&
                   u.id != sclient!.userID &&
-                  u.id != sroom.user?.id)
+                  u.id != sroom.user.id)
               .take(8))
             AccountCard(user: user),
         ]),

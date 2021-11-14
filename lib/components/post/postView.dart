@@ -50,8 +50,7 @@ class PostContent extends StatelessWidget {
 
           default:
             return Text("other message type : " + event.messageType);
-        }
-        break;
+        }        
     }
     return Container(
       child: Column(

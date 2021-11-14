@@ -121,9 +121,9 @@ class MatrixState extends State<Matrix> {
         // This method works only for already recognised SRooms
         bool isSRoom = sclient!.srooms.containsKey(eventUpdate.roomID);
         if (isSRoom) {
-          Profile profile = await sclient!.getUserFromRoom(room);
+          User? profile = await sclient!.srooms[room.id]?.user;
           Flushbar(
-            title: "New post from " + profile.displayName!,
+            title: "New post from " + (profile?.displayName ?? 'null'),
             message: event.body,
             duration: Duration(seconds: 3),
             flushbarPosition: FlushbarPosition.TOP,

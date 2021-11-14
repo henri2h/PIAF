@@ -12,8 +12,7 @@ class FriendsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MinestrixClient sclient = Matrix.of(context).sclient!;
-    List<User> users = sclient.userRoom!.room!
-        .getParticipants()
+    List<User> users = sclient.userRoom!.room.getParticipants()
         .where((User u) => u.membership == Membership.join)
         .toList();
     /*List<User> friendRequest =
@@ -78,9 +77,9 @@ class FriendsPage extends StatelessWidget {
                             Row(
                               children: [
                                 MatrixUserImage(
-                                    client: sclient, url: sm.user!.avatarUrl),
+                                    client: sclient, url: sm.user.avatarUrl),
                                 SizedBox(width: 10),
-                                Text(sm.user!.displayName!),
+                                Text(sm.user.displayName!),
                               ],
                             ),
                             Row(
@@ -89,12 +88,12 @@ class FriendsPage extends StatelessWidget {
                                     icon:
                                         Icon(Icons.check, color: Colors.green),
                                     onPressed: () async {
-                                      await sm.room!.join();
+                                      await sm.room.join();
                                     }),
                                 IconButton(
                                     icon: Icon(Icons.delete, color: Colors.red),
                                     onPressed: () async {
-                                      await sm.room!.leave();
+                                      await sm.room.leave();
                                     }),
                               ],
                             ),

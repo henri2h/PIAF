@@ -4,15 +4,15 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 
 class MinestrixRoom {
-  final log = Logger("SMatrixRoom");
+  static final log = Logger("MinestrixRoom");
 
   // would have liked to extends Room type, but couldn't manage to get Down Casting to work properly...
   // initialize the class, return false, if it could not generate the classes
   // i.e, it is not a valid class
 
   // final variable
-  User? user;
-  Room? room;
+  late User user;
+  late Room room;
   SRoomType? roomType = SRoomType.UserRoom; // by default
 
   Timeline? timeline;
@@ -21,32 +21,46 @@ class MinestrixRoom {
 
   String? get name {
     if (roomType == SRoomType.UserRoom)
-      return user!.displayName;
+      return user.displayName;
     else {
-      return room!.name;
+      return room.name;
     }
   }
 
   Future<void> loadRoomCreator(MinestrixClient sclient) async {
-    Event? state = room!.getState("m.room.create");
+    Event? state = room.getState("m.room.create");
 
     if (state != null) {
       // get creator id from cache and if not in cache, from server
       String? creatorID = state.content["creator"];
 
-      // find local on local users
-      List<User> users = room!.getParticipants();
-      user = findUser(users, creatorID);
+      assert(creatorID != null);
 
-      try {
-        if (user == null) {
-          users = await room!.requestParticipants();
-          user = findUser(users, creatorID);
-        }
-      } catch (e) {
-        log.severe("Could not request participants", e);
-        print("Creator userID : " + creatorID!);
+      // find local on local users
+      List<User> users = room.getParticipants();
+      User? u = findUser(users, creatorID);
+
+      if (u == null) {
+        users = await room.requestParticipants();
+        u = findUser(users, creatorID);
       }
+
+      // TODO : check if needed
+      if (u == null) {
+        if (room.membership == Membership.invite) {
+          // in the case we can't request participants
+
+          Profile p = await sclient.getProfileFromUserId(creatorID!);
+          u = User(creatorID,
+              membership: "m.join",
+              avatarUrl: p.avatarUrl.toString(),
+              displayName: p.displayName,
+              room: room);
+        }
+      }
+
+      assert(u != null);
+      user = u!; // save the discovered user
     }
   }
 
@@ -54,44 +68,23 @@ class MinestrixRoom {
       Room r, MinestrixClient sclient) async {
     try {
       MinestrixRoom sr = MinestrixRoom();
+
+      // initialise room
+      sr.room = r;
       sr.roomType = await getSRoomType(r);
+      if (sr.roomType == null) return null;
 
-      if (sr.roomType != null) {
-        sr.room = r;
+      await sr.loadRoomCreator(sclient);
 
-        await sr.loadRoomCreator(sclient);
-
-        print(sr.name! + " : " + sr.user!.displayName!);
-
-        if (sr.roomType == SRoomType.UserRoom) {
-          String userId = MinestrixClient.getUserIdFromRoomName(sr.room!.name);
-
-          if (sr.user != null) {
-            sr._validSRoom = true;
-            return sr;
-          }
-
-          if (r.membership == Membership.invite) {
-            // in the case we can't request participants
-            if (sr.user == null) {
-              Profile p = await sclient.getProfileFromUserId(userId);
-              sr.user = User(userId,
-                  membership: "m.join",
-                  avatarUrl: p.avatarUrl.toString(),
-                  displayName: p.displayName,
-                  room: r);
-            }
-            return sr; // we cannot yet access to the room participants
-          }
-
-          print("issue, not a smatrix room : " + r.name);
-        } else if (sr.roomType == SRoomType.Group) {
-          return sr;
-        }
+      if (sr.roomType == SRoomType.UserRoom) {
+        sr._validSRoom = true;
+        return sr;
+      } else if (sr.roomType == SRoomType.Group) {
+        sr._validSRoom = true;
+        return sr;
       }
     } catch (e) {
-      print("Error in loading room " + e.toString());
-      //log.severe("Could not init smatrix client", e);
+      log.severe("Could not load room", e);
     }
     return null;
   }
@@ -99,9 +92,9 @@ class MinestrixRoom {
   static User? findUser(List<User> users, String? userId) {
     try {
       return users.firstWhere((User u) => userId == u.id);
-    } catch (_) {
+    } catch (e) {
       // return null if no element
-
+      log.severe("Could not find user : " + (userId ?? 'null'), e);
     }
     return null;
   }

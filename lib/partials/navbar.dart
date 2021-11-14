@@ -1,15 +1,10 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/minestrix/feedPage.dart';
-import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
-import 'package:minestrix/pages/minestrix/user/userFeedPage.dart';
-import 'package:minestrix/pages/settingsPage.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
-import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class NavBarDesktop extends StatelessWidget {
   const NavBarDesktop({Key? key}) : super(key: key);

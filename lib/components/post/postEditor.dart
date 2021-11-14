@@ -28,9 +28,9 @@ class _PostEditorPageState extends State<PostEditorPage>
     if (file != null) {
       MatrixFile f =
           MatrixImageFile(bytes: file!.toUint8List(), name: postContent);
-      await sroom!.room!.sendFileEvent(f);
+      await sroom!.room.sendFileEvent(f);
     } else {
-      await sroom!.room!.sendTextEvent(postContent, inReplyTo: inReplyTo);
+      await sroom!.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
     }
   }
 
@@ -51,7 +51,7 @@ class _PostEditorPageState extends State<PostEditorPage>
                 children: [
                   MatrixUserImage(
                       client: sclient,
-                      url: sclient.userRoom!.user!.avatarUrl,
+                      url: sclient.userRoom!.user.avatarUrl,
                       width: 48,
                       thumnail: true,
                       height: 48),

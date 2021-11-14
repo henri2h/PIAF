@@ -66,13 +66,13 @@ class _DebugPageState extends State<DebugPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             H1Title("Debug"),
-            if (sclient != null && sclient!.rooms != null)
+            if (sclient != null)
               Text("MinesTRIX rooms length : " +
                   sclient!.srooms.length.toString()),
             if (srooms.length != 0)
               for (var i = 0; i < srooms.length; i++)
                 ListTile(
-                    title: Text(srooms[i].room!.name),
+                    title: Text(srooms[i].room.name),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 2.0),
                       child: Column(
@@ -82,10 +82,10 @@ class _DebugPageState extends State<DebugPage> {
                             children: [
                               Icon(Icons.person, size: 16),
                               SizedBox(width: 10),
-                              Text(srooms[i].user!.displayName!),
+                              Text(srooms[i].user.displayName!),
                             ],
                           ),
-                          Text(srooms[i].room!.id),
+                          Text(srooms[i].room.id),
                         ],
                       ),
                     ),

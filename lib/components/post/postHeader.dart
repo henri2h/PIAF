@@ -35,14 +35,13 @@ class PostHeader extends StatelessWidget {
               SizedBox(width: 10),
               if (sroom.roomType == SRoomType.UserRoom)
                 Flexible(
-                  child: FutureBuilder<Profile>(
-                      future: sclient.getUserFromRoom(event!.room),
-                      builder:
-                          (BuildContext context, AsyncSnapshot<Profile> p) {
-                        if (p.hasData) {
-                          User user = User(p.data!.userId,
-                              displayName: p.data!.displayName,
-                              avatarUrl: p.data!.avatarUrl.toString(),
+                  child: Builder(
+                      builder: (BuildContext context) {
+                        User? p = sclient.srooms[event!.room]?.user;
+                        if (p != null) {
+                          User user = User(p.id,
+                              displayName: p.displayName,
+                              avatarUrl: p.avatarUrl.toString(),
                               room: event!.room);
 
                           return Column(
@@ -66,14 +65,14 @@ class PostHeader extends StatelessWidget {
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold)),
                                   ),
-                                  if (event!.sender.id != p.data!.userId)
+                                  if (event!.sender.id != p.id)
                                     Text("to",
                                         style: TextStyle(
                                             color: Theme.of(context)
                                                 .textTheme
                                                 .bodyText1!
                                                 .color)),
-                                  if (event!.sender.id != p.data!.userId)
+                                  if (event!.sender.id != p.id)
                                     TextButton(
                                       style: TextButton.styleFrom(
                                           primary: Theme.of(context)
@@ -84,7 +83,7 @@ class PostHeader extends StatelessWidget {
                                         context.pushRoute(
                                             UserFeedRoute(userId: user.id));
                                       },
-                                      child: Text(p.data!.displayName!,
+                                      child: Text(p.displayName!,
                                           overflow: TextOverflow.clip,
                                           style: TextStyle(
                                               fontSize: 16,

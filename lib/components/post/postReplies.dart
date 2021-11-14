@@ -149,7 +149,7 @@ class ReplyBox extends StatelessWidget {
         children: [
           MatrixUserImage(
               client: sclient,
-              url: sclient.userRoom!.user!.avatarUrl,
+              url: sclient.userRoom!.user.avatarUrl,
               width: 32,
               thumnail: true,
               height: 32),

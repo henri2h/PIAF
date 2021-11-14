@@ -64,11 +64,11 @@ class MinestrixClient extends Client {
   }
 
   Future<List<User>> getSUsers() async {
-    if (userRoom != null && userRoom!.room != null) {
-      if (userRoom!.room!.participantListComplete) {
-        return userRoom!.room!.getParticipants();
+    if (userRoom != null) {
+      if (userRoom!.room.participantListComplete) {
+        return userRoom!.room.getParticipants();
       } else {
-        return await userRoom!.room!.requestParticipants();
+        return await userRoom!.room.requestParticipants();
       }
     }
     return [];
@@ -148,21 +148,21 @@ class MinestrixClient extends Client {
         // if we are here, it means that we have a valid smatrix room
 
         if (r.membership == Membership.join) {
-          rs.timeline = await rs.room!.getTimeline();
-          srooms[rs.room!.id] = rs;
+          rs.timeline = await rs.room.getTimeline();
+          srooms[rs.room.id] = rs;
 
           // by default
-          if (rs.room!.pushRuleState == PushRuleState.notify)
-            await rs.room!.setPushRuleState(PushRuleState.mentionsOnly);
-          if (!rs.room!.tags.containsKey("m.lowpriority")) {
-            await rs.room!.addTag("m.lowpriority");
+          if (rs.room.pushRuleState == PushRuleState.notify)
+            await rs.room.setPushRuleState(PushRuleState.mentionsOnly);
+          if (!rs.room.tags.containsKey("m.lowpriority")) {
+            await rs.room.addTag("m.lowpriority");
           }
 
           // check if this room is a user thread
           if (rs.roomType == SRoomType.UserRoom) {
-            userIdToRoomId[rs.user!.id] = rs.room!.id;
+            userIdToRoomId[rs.user.id] = rs.room.id;
 
-            if (userID == rs.user!.id) {
+            if (userID == rs.user.id) {
               userRoom = rs; // we have found our user smatrix room
               // this means that the client has been initialisated
               // we can load the friendsVue
@@ -170,15 +170,15 @@ class MinestrixClient extends Client {
           }
         }
         if (r.membership == Membership.invite) {
-          print("Invite : " + r.name);
+          log.info("Invite : " + r.name);
 
-          sInvites[rs.room!.id] = rs;
+          sInvites[rs.room.id] = rs;
         }
       }
     }
 
     onSRoomsUpdate.add("update");
-    print("[smatrix] : sroom update");
+    log.info("Minestrix room update");
     sroomsLoaded = true;
 
     if (userRoom == null) log.severe("❌ User room not found");
@@ -199,7 +199,7 @@ class MinestrixClient extends Client {
   }
 
   Future createSMatrixUserProfile() async {
-    log.info("Create smatrix room");
+    log.info("Create Minestrix room room");
     String name = userID! + " timeline";
     await createMinestrixAccount(name, "A Mines'Trix profile");
   }
@@ -249,11 +249,11 @@ class MinestrixClient extends Client {
     for (MinestrixRoom r in sr) {
       // check if the user is already in the list and accept invitation
       bool exists =
-          (followers.firstWhereOrNull((element) => r.user!.id == element.id) !=
+          (followers.firstWhereOrNull((element) => r.user.id == element.id) !=
               null);
       if (exists) {
-        await r.room!.join();
-        sInvites.remove(r.room!.id);
+        await r.room.join();
+        sInvites.remove(r.room.id);
       }
     }
 
@@ -261,9 +261,9 @@ class MinestrixClient extends Client {
     // iterate through rooms and add every user from thoose rooms not in our friend list
     for (MinestrixRoom r in sfriends.values) {
       bool exists =
-          (users.firstWhereOrNull((User u) => r.user!.id == u.id) != null);
+          (users.firstWhereOrNull((User u) => r.user.id == u.id) != null);
       if (!exists) {
-        await userRoom!.room!.invite(r.user!.id);
+        await userRoom!.room.invite(r.user.id);
       }
     }
   }
@@ -275,32 +275,12 @@ class MinestrixClient extends Client {
     await super.dispose(closeDatabase: closeDatabase);
   }
 
-  static String getUserIdFromRoomName(String name) {
-    name = name.split(" ")[0];
-    return name.replaceFirst("smatrix_", "");
-  }
-
-  Future<Profile> getUserFromRoom(Room room) async {
-    String userId = getUserIdFromRoomName(room.name);
-    Profile p = await getProfileFromUserId(userId);
-    p.userId = userId;
-    return p;
-  }
-
   Future<bool> addFriend(String userId) async {
-    if (userRoom != null && userRoom!.room != null) {
-      await userRoom!.room!.invite(userId);
+    if (userRoom != null) {
+      await userRoom!.room.invite(userId);
       return true;
     }
     return false; // we haven't been able to add this user to our friend list
-  }
-
-  Future<String?> getRoomDisplayName(Room room) async {
-    if (room.name.startsWith("@")) {
-      Profile p = await getUserFromRoom(room);
-      return p.displayName;
-    }
-    return "ERROR !";
   }
 
   Future<String> createMinestrixGroup(String name, String desc) async {
