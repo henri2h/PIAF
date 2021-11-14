@@ -30,7 +30,7 @@ class AccountCard extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(6.0),
+      padding: const EdgeInsets.all(5.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           primary: Theme.of(context).cardColor,
@@ -46,22 +46,29 @@ class AccountCard extends StatelessWidget {
             MatrixUserImage(
               client: Matrix.of(context).sclient,
               url: avatarUrl,
-              width: 110,
-              height: 110,
+              width: 100,
+              height: 100,
               thumnail: true,
               defaultIcon: Icon(Icons.person,
                   color: Theme.of(context).textTheme.bodyText1!.color,
                   size: 70),
             ),
-            SizedBox(
-              width: 100,
-              height: 40,
-              child: Center(
-                child: Text(displayName ?? 'null',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: Theme.of(context).textTheme.bodyText1!.color)),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: SizedBox(
+                width: 100,
+                height: 35,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(displayName ?? 'null',
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.normal,
+                            color:
+                                Theme.of(context).textTheme.bodyText1!.color)),
+                  ),
+                ),
               ),
             ),
           ],
