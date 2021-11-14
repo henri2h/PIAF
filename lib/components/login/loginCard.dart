@@ -57,7 +57,7 @@ class LoginCardState extends State<LoginCard> {
   }
 
   void _loginAction(MinestrixClient client,
-      {String? token, required ssoLogin}) async {
+      {String? token, required useSsoLogin}) async {
     if (mounted)
       setState(() {
         _isLoading = true;
@@ -66,7 +66,7 @@ class LoginCardState extends State<LoginCard> {
     try {
       await client.checkHomeserver(_hostNameController.text);
       await client.login(
-          ssoLogin ? LoginType.mLoginToken : LoginType.mLoginPassword,
+          useSsoLogin ? LoginType.mLoginToken : LoginType.mLoginPassword,
           identifier:
               AuthenticationUserIdentifier(user: _usernameController.text),
           password: _passwordController.text,
@@ -221,7 +221,7 @@ class LoginCardState extends State<LoginCard> {
                   label: Text('Login'),
                   onPressed: _isLoading || !canTryLogIn
                       ? null
-                      : () => _loginAction(client!, ssoLogin: false)),
+                      : () => _loginAction(client!, useSsoLogin: false)),
             ),
           if (ssoLogin)
             Padding(
@@ -315,7 +315,7 @@ class LoginCardState extends State<LoginCard> {
                           Uri tokenUrl = Uri.parse(nav);
                           _loginAction(client!,
                               token: tokenUrl.queryParameters["loginToken"],
-                              ssoLogin: true);
+                              useSsoLogin: true);
                         }),
             )
         ],
