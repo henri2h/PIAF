@@ -42,7 +42,7 @@ class NavBarDesktop extends StatelessWidget {
                       MatrixChatsRoute(client: Matrix.of(context).sclient!));
                 }),
             NavBarButton(
-                name: "Research",
+                name: "Search",
                 icon: Icons.search,
                 onPressed: () {
                   context.pushRoute(ResearchRoute());
