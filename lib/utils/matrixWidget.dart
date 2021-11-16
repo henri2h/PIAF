@@ -58,22 +58,22 @@ class MatrixState extends State<Matrix> {
       verificationMethods.add(KeyVerificationMethod.emoji);
     }
 
-    print("[ widget ] : init");
+    log.info("[ widget ] : init");
     String clientName = "minestrix";
 
     sclient = MinestrixClient(clientName,
         enableE2eeRecovery: true, verificationMethods: verificationMethods);
 
-    print("logged: " + sclient!.isLogged().toString());
-    print("[ widget ] : store");
+    log.info("logged: " + sclient!.isLogged().toString());
+    log.info("[ widget ] : store");
     _initWithStore();
     print("[ widget ] : register");
 
     onKeyVerificationRequestSub ??= sclient!.onKeyVerificationRequest.stream
         .listen((KeyVerification request) async {
-      print("KeyVerification");
-      print(request.deviceId);
-      print(request.isDone);
+      log.info("KeyVerification");
+      log.info(request.deviceId);
+      log.info(request.isDone);
 
       var hidPopup = false;
       request.onUpdate = () {
