@@ -18,7 +18,8 @@ class UserFriendsPage extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: H2Title((sroom.user.displayName ?? 'user') + " friends"),
+          child:
+              H2Title((sroom.user.displayName ?? sroom.user.id) + " friends"),
         ),
         Wrap(alignment: WrapAlignment.spaceBetween, children: [
           for (User user in sroom.room.getParticipants().where((User u) =>
