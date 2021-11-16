@@ -4,6 +4,12 @@ A new Flutter project.
 ## Unreleased
 
 ### Feature
+* update dependencies [0bfda50]
+* more log [a60512c]
+* copied Sembast adapter from fluffy chat [17a197c]
+* filter user out of friends [416950b]
+* display when user is invited in friends [3cc74e9]
+* moved to sembast database [2c53902]
 * enhance account view [b04f527]
 * initial proposal for friends suggestions [c07d63e]
 * update minestrix [876d4c1]
@@ -33,6 +39,19 @@ A new Flutter project.
 * setup dark mode [2f44e65]
 
 ### Fixes
+* removed debug code from previous migration [a592bb0]
+* removed unused imports [251c306]
+* dead code [4b58341]
+* nullsafety on title of userFriendsPage [5e308ce]
+* oups, delete too quickly :D [b370041]
+* unused variables + null safety + revert debug on app.dart [2702188]
+* remeber that user.displayName can be null [9fc6e3a]
+* login [4a0472f]
+* navigate user on sarch page [d15e10f]
+* name [97c4c02]
+* account creation on first connection [2b33c2b]
+* password login [e7fe75c]
+* sso login on web [eef924f]
 * indetation [50111b3]
 * login on web [da0ed4b]
 * home page width [d2771bf]

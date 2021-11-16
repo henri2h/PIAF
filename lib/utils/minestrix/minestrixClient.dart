@@ -18,7 +18,7 @@ import 'package:minestrix/utils/platforms_info.dart';
 import 'package:path_provider/path_provider.dart';
 
 class MinestrixClient extends Client {
-  final log = Logger("SClient");
+  final log = Logger("MinestrixClient");
 
   StreamSubscription? onRoomUpdateSub; // event subscription
 
@@ -38,9 +38,10 @@ class MinestrixClient extends Client {
   Map<String, MinestrixRoom> get following => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
 
-  Map<String, MinestrixRoom> get minestrixInvites => Map.from(srooms)
+  Map<String, MinestrixRoom> minestrixInvites = Map<String, MinestrixRoom>();
+  /* => Map.from(srooms)
     ..removeWhere((key, MinestrixRoom room) =>
-        room.room.membership != Membership.invite); // friends requests
+        room.room.membership != Membership.invite); // friends requests*/
 
   Map<String, String> userIdToRoomId = Map<String, String>();
   List<Event> stimeline = [];
@@ -144,6 +145,7 @@ class MinestrixClient extends Client {
 
   bool sroomsLoaded = false;
   Future<void> loadSRooms() async {
+    print("load srooms");
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
     srooms.clear(); // clear rooms
@@ -154,10 +156,6 @@ class MinestrixClient extends Client {
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
-
-      if (r.membership == Membership.invite) {
-        log.info("Friendship requests sent : " + r.name);
-      }
 
       MinestrixRoom? rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
       if (rs != null) {
@@ -184,13 +182,10 @@ class MinestrixClient extends Client {
               // this means that the client has been initialisated
               // we can load the friendsVue
 
-              log.info("found : " + rs.name);
+              print("Found MinesTRIX account : " + rs.name);
             }
           }
-        }
-        if (r.membership == Membership.invite) {
-          log.info("Invite : " + r.name);
-
+        } else if (r.membership == Membership.invite) {
           minestrixInvites[rs.room.id] = rs;
         }
       }
