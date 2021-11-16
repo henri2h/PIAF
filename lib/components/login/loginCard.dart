@@ -124,7 +124,6 @@ class LoginCardState extends State<LoginCard> {
 
     try {
       print("Input server url : " + serverUrl);
-      DiscoveryInformation? infos = await client.checkHomeserver(serverUrl);
 
       // check  if info is not null and
       // if we are the last try (prevent an old request to modify the results)

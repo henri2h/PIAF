@@ -15,7 +15,7 @@ class MatrixLoadingPage extends StatelessWidget {
       body: StreamBuilder<SyncStatusUpdate>(
           stream: sclient.onSyncStatus.stream,
           builder: (context, snap) {
-            if (!snap.hasData) return MinestrixTitle();
+            if (!snap.hasData) return Center(child: MinestrixTitle());
 
             return Column(
               mainAxisSize: MainAxisSize.min,

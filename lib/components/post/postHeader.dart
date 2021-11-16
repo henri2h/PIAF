@@ -148,7 +148,7 @@ class PostHeader extends StatelessWidget {
                               if (sroom != null)
                                 context.pushRoute(GroupRoute(sroom: sroom));
                             },
-                            child: Text(sroom.name!,
+                            child: Text(sroom.name,
                                 style: TextStyle(
                                     color: Theme.of(context)
                                         .textTheme

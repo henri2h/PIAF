@@ -45,7 +45,7 @@ class _MinestrixState extends State<Minestrix> {
                                 if (state.hasData == false ||
                                     (state.data == LoginState.loggedIn &&
                                         sroomSnap.hasData == false))
-                                  HomeWraperRoute() //MatrixLoadingRoute()
+                                  MatrixLoadingRoute()
                                 else if (state.data == LoginState.loggedIn &&
                                     sclient.userRoomCreated)
                                   HomeWraperRoute()
