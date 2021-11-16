@@ -153,7 +153,6 @@ class _EncryptEncoder extends Converter<Map<String, dynamic>, String> {
         break;
       default:
         throw FormatException('invalid $signature');
-        break;
     }
     return encoded;
   }
