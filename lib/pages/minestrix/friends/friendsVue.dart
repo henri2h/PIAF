@@ -76,8 +76,7 @@ class _FriendsPageState extends State<FriendsPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: H2Title("Friend requests : " +
-                          sclient.minestrixInvites.values.length.toString()),
+                      child: H2Title("Friend requests : "),
                     ),
                     for (MinestrixRoom sm in sclient.minestrixInvites.values)
                       Row(
