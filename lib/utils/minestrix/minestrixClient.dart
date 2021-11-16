@@ -9,6 +9,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/Fluffychat/FlutterMatrixSembastDatabase.dart';
 import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
@@ -37,8 +38,9 @@ class MinestrixClient extends Client {
   Map<String, MinestrixRoom> get following => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
 
-  Map<String, MinestrixRoom> sInvites =
-      Map<String, MinestrixRoom>(); // friends requests
+  Map<String, MinestrixRoom> get minestrixInvites => Map.from(srooms)
+    ..removeWhere((key, MinestrixRoom room) =>
+        room.room.membership != Membership.invite); // friends requests
 
   Map<String, String> userIdToRoomId = Map<String, String>();
   List<Event> stimeline = [];
@@ -52,11 +54,8 @@ class MinestrixClient extends Client {
       Set<KeyVerificationMethod>? verificationMethods})
       : super(clientName, verificationMethods: verificationMethods,
             databaseBuilder: (Client client) async {
-          final db = MatrixSembastDatabase(client.clientName);
-          await db.open();
-          print("[ db ] :  loaded");
-          return db;
-        }, legacyDatabaseBuilder: (Client client) async {
+          return await FlutterMatrixSembastDatabase.databaseBuilder(client);
+        }, /*legacyDatabaseBuilder: (Client client) async {
           if (PlatformInfos.isBetaDesktop) {
             Hive.init((await getApplicationSupportDirectory()).path);
           } else {
@@ -66,7 +65,8 @@ class MinestrixClient extends Client {
           await db.open();
           print("[ legacy db ] :  loaded");
           return db;
-        }, supportedLoginTypes: {
+        },*/
+            supportedLoginTypes: {
           AuthenticationTypes.password,
           AuthenticationTypes.sso
         }) {
@@ -148,8 +148,9 @@ class MinestrixClient extends Client {
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
     srooms.clear(); // clear rooms
+    log.info("Loading MinesTRIX rooms");
 
-    sInvites.clear(); // clear invites
+    minestrixInvites.clear(); // clear invites
     userIdToRoomId.clear();
 
     for (var i = 0; i < rooms.length; i++) {
@@ -183,13 +184,15 @@ class MinestrixClient extends Client {
               userRoom = rs; // we have found our user smatrix room
               // this means that the client has been initialisated
               // we can load the friendsVue
+
+              log.info("found : " + rs.name);
             }
           }
         }
         if (r.membership == Membership.invite) {
           log.info("Invite : " + r.name);
 
-          sInvites[rs.room.id] = rs;
+          minestrixInvites[rs.room.id] = rs;
         }
       }
     }
@@ -262,7 +265,7 @@ class MinestrixClient extends Client {
     */
   Future<void> autoFollowFollowers() async {
     List<User> followers = await getFollowers();
-    List<MinestrixRoom> sr = sInvites.values.toList();
+    List<MinestrixRoom> sr = minestrixInvites.values.toList();
     for (MinestrixRoom r in sr) {
       // check if the user is already in the list and accept invitation
       bool exists =
@@ -270,7 +273,7 @@ class MinestrixClient extends Client {
               null);
       if (exists) {
         await r.room.join();
-        sInvites.remove(r.room.id);
+        minestrixInvites.remove(r.room.id);
       }
     }
 

@@ -10,7 +10,7 @@ class FriendRequestList extends StatelessWidget {
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
 
-    if (sclient.sInvites.length == 0) return Container();
+    if (sclient.minestrixInvites.length == 0) return Container();
     return StreamBuilder(
         stream: sclient.onEvent.stream,
         builder: (context, _) => Column(
@@ -20,7 +20,7 @@ class FriendRequestList extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: H2Title("Friend requests"),
                 ),
-                for (MinestrixRoom sm in sclient.sInvites.values)
+                for (MinestrixRoom sm in sclient.minestrixInvites.values)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

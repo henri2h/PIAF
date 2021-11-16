@@ -17,7 +17,7 @@ class MinestrixNotifications {
     notifications.clear();
 
     // load friend requests
-    MinestrixClient.sInvites.forEach((key, value) {
+    MinestrixClient.minestrixInvites.forEach((key, value) {
       Notification n = Notification();
       n.body = "Friend request";
       n.type = NotificationType.FriendRequest;

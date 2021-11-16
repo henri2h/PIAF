@@ -177,10 +177,9 @@ class LoginCardState extends State<LoginCard> {
                   verifyDomainCallback =
                       new Timer(const Duration(milliseconds: 500), () async {
                     if (userid.isValidMatrixId) {
-                      print("before " + canTryLogIn.toString());
                       // check to log in using .wellknown informations
                       await _verifyDomain(client!, "https://" + userid.domain!);
-                      print("after " + canTryLogIn.toString());
+
                       if (canTryLogIn == false)
                         // if this hasn't worked, try to use the potential matrix.xxx subdomain
                         await _verifyDomain(

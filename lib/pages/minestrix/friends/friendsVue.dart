@@ -8,7 +8,14 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
-class FriendsPage extends StatelessWidget {
+class FriendsPage extends StatefulWidget {
+  const FriendsPage({Key? key}) : super(key: key);
+
+  @override
+  _FriendsPageState createState() => _FriendsPageState();
+}
+
+class _FriendsPageState extends State<FriendsPage> {
   @override
   Widget build(BuildContext context) {
     final MinestrixClient sclient = Matrix.of(context).sclient!;
@@ -32,7 +39,7 @@ class FriendsPage extends StatelessWidget {
             suggestionsCallback: (pattern) async {
               var ur = await sclient.searchUserDirectory(pattern);
 
-              List<User?> following = List<User?>.empty();
+              List<User?> following = [];
               sclient.following.forEach((key, MinestrixRoom sroom) {
                 following.add(sroom.user);
               });
@@ -58,6 +65,7 @@ class FriendsPage extends StatelessWidget {
             onSuggestionSelected: (dynamic suggestion) async {
               Profile p = suggestion;
               await sclient.addFriend(p.userId);
+              setState(() {}); // update ui
             },
           ),
         ),
@@ -71,7 +79,7 @@ class FriendsPage extends StatelessWidget {
                         padding: const EdgeInsets.all(8.0),
                         child: H2Title("Friend requests"),
                       ),
-                      for (MinestrixRoom sm in sclient.sInvites.values)
+                      for (MinestrixRoom sm in sclient.minestrixInvites.values)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
