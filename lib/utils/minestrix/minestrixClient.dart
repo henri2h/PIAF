@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
-import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
@@ -14,8 +13,6 @@ import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
-import 'package:minestrix/utils/platforms_info.dart';
-import 'package:path_provider/path_provider.dart';
 
 class MinestrixClient extends Client {
   final log = Logger("SClient");
