@@ -69,60 +69,58 @@ class _FriendsPageState extends State<FriendsPage> {
             },
           ),
         ),
-        Flexible(
-          child: StreamBuilder(
-              stream: sclient.onEvent.stream,
-              builder: (context, _) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: H2Title("Friend requests"),
+        StreamBuilder(
+            stream: sclient.onEvent.stream,
+            builder: (context, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: H2Title("Friend requests : " +
+                          sclient.minestrixInvites.values.length.toString()),
+                    ),
+                    for (MinestrixRoom sm in sclient.minestrixInvites.values)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              MatrixUserImage(
+                                  client: sclient, url: sm.user.avatarUrl),
+                              SizedBox(width: 10),
+                              Text((sm.user.displayName ?? sm.user.id)),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              IconButton(
+                                  icon: Icon(Icons.check, color: Colors.green),
+                                  onPressed: () async {
+                                    await sm.room.join();
+                                  }),
+                              IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () async {
+                                    await sm.room.leave();
+                                  }),
+                            ],
+                          ),
+                        ],
                       ),
-                      for (MinestrixRoom sm in sclient.minestrixInvites.values)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                MatrixUserImage(
-                                    client: sclient, url: sm.user.avatarUrl),
-                                SizedBox(width: 10),
-                                Text((sm.user.displayName ?? sm.user.id)),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                    icon:
-                                        Icon(Icons.check, color: Colors.green),
-                                    onPressed: () async {
-                                      await sm.room.join();
-                                    }),
-                                IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () async {
-                                      await sm.room.leave();
-                                    }),
-                              ],
-                            ),
-                          ],
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: H2Title("Friends"),
-                      ),
-                      Center(
-                        child: Wrap(children: [
-                          for (User user in users.where((User u) =>
-                              u.membership == Membership.join &&
-                              u.id != sclient.userID))
-                            AccountCard(user: user),
-                        ]),
-                      ),
-                    ],
-                  )),
-        ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: H2Title("Friends"),
+                    ),
+                    Center(
+                      child: Wrap(children: [
+                        for (User user in users.where((User u) =>
+                            u.membership == Membership.join &&
+                            u.id != sclient.userID))
+                          AccountCard(user: user),
+                      ]),
+                    ),
+                  ],
+                )),
       ],
     );
   }

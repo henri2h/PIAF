@@ -35,31 +35,32 @@ class MinestrixRoom {
       String? creatorID = state.content["creator"];
 
       assert(creatorID != null);
+      User? u;
 
-      // find local on local users
-      List<User> users = room.getParticipants();
-      User? u = findUser(users, creatorID);
-
-      if (u == null) {
-        users = await room.requestParticipants();
+      if (room.membership != Membership.invite ||
+          room.historyVisibility == HistoryVisibility.worldReadable) {
+        // find local on local users
+        List<User> users = room.getParticipants();
         u = findUser(users, creatorID);
-      }
 
-      // TODO : check if needed
-      if (u == null) {
-        if (room.membership == Membership.invite) {
-          // in the case we can't request participants
-
-          Profile p = await sclient.getProfileFromUserId(creatorID!);
-          u = User(creatorID,
-              membership: "m.join",
-              avatarUrl: p.avatarUrl.toString(),
-              displayName: p.displayName,
-              room: room);
+        if (u == null) {
+          // we have not found the user but maybe we just can't preview the room
+          users = await room.requestParticipants();
+          u = findUser(users, creatorID);
         }
+      } else if (u == null) {
+        // in the case we can't request participants
+
+        Profile p = await sclient.getProfileFromUserId(creatorID!);
+        u = User(creatorID,
+            membership: "m.join",
+            avatarUrl: p.avatarUrl.toString(),
+            displayName: p.displayName,
+            room: room);
       }
 
-      assert(u != null);
+      assert(u !=
+          null); // if we could not find the creator of the room in the members of the room. It could mean that the user creator has left the room. We should not consider it as valid.
       user = u!; // save the discovered user
     }
   }
@@ -84,7 +85,7 @@ class MinestrixRoom {
         return sr;
       }
     } catch (e) {
-      log.severe("Could not load room", e);
+      print("Could not load room : " + e.toString());
     }
     return null;
   }
@@ -94,7 +95,7 @@ class MinestrixRoom {
       return users.firstWhere((User u) => userId == u.id);
     } catch (e) {
       // return null if no element
-      log.severe("Could not find user : " + (userId ?? 'null'), e);
+      print("Could not find user : " + (userId ?? 'null') + " " + e.toString());
     }
     return null;
   }

@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
@@ -13,9 +14,11 @@ import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
+import 'package:minestrix/utils/platforms_info.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MinestrixClient extends Client {
-  final log = Logger("SClient");
+  final log = Logger("MinestrixClient");
 
   StreamSubscription? onRoomUpdateSub; // event subscription
 
@@ -35,9 +38,10 @@ class MinestrixClient extends Client {
   Map<String, MinestrixRoom> get following => Map.from(srooms)
     ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
 
-  Map<String, MinestrixRoom> get minestrixInvites => Map.from(srooms)
+  Map<String, MinestrixRoom> minestrixInvites = Map<String, MinestrixRoom>();
+  /* => Map.from(srooms)
     ..removeWhere((key, MinestrixRoom room) =>
-        room.room.membership != Membership.invite); // friends requests
+        room.room.membership != Membership.invite); // friends requests*/
 
   Map<String, String> userIdToRoomId = Map<String, String>();
   List<Event> stimeline = [];
@@ -52,7 +56,7 @@ class MinestrixClient extends Client {
       : super(clientName, verificationMethods: verificationMethods,
             databaseBuilder: (Client client) async {
           return await FlutterMatrixSembastDatabase.databaseBuilder(client);
-        }, /*legacyDatabaseBuilder: (Client client) async {
+        }, legacyDatabaseBuilder: (Client client) async {
           if (PlatformInfos.isBetaDesktop) {
             Hive.init((await getApplicationSupportDirectory()).path);
           } else {
@@ -62,8 +66,7 @@ class MinestrixClient extends Client {
           await db.open();
           print("[ legacy db ] :  loaded");
           return db;
-        },*/
-            supportedLoginTypes: {
+        }, supportedLoginTypes: {
           AuthenticationTypes.password,
           AuthenticationTypes.sso
         }) {
@@ -142,6 +145,7 @@ class MinestrixClient extends Client {
 
   bool sroomsLoaded = false;
   Future<void> loadSRooms() async {
+    print("load srooms");
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
     srooms.clear(); // clear rooms
@@ -152,10 +156,6 @@ class MinestrixClient extends Client {
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
-
-      if (r.membership == Membership.invite) {
-        log.info("Friendship requests sent : " + r.name);
-      }
 
       MinestrixRoom? rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
       if (rs != null) {
@@ -182,13 +182,10 @@ class MinestrixClient extends Client {
               // this means that the client has been initialisated
               // we can load the friendsVue
 
-              log.info("found : " + rs.name);
+              print("Found MinesTRIX account : " + rs.name);
             }
           }
-        }
-        if (r.membership == Membership.invite) {
-          log.info("Invite : " + r.name);
-
+        } else if (r.membership == Membership.invite) {
           minestrixInvites[rs.room.id] = rs;
         }
       }
