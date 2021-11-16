@@ -41,7 +41,7 @@ class MinesTrixContactView extends StatelessWidget {
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text(user.displayName!,
+                                  Text((user.displayName ?? user.id),
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       )),

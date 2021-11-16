@@ -61,7 +61,7 @@ class AccountCard extends StatelessWidget {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(displayName ?? 'null',
+                    child: Text(displayName ?? userId,
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.normal,
@@ -71,6 +71,8 @@ class AccountCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (user != null && user!.membership == Membership.invite)
+              Text("Invited")
           ],
         ),
       ),

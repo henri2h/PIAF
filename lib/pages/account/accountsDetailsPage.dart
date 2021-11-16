@@ -43,7 +43,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
               title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(sroom.user.displayName!,
+                    Text((sroom.user.displayName ?? sroom.user.id),
                         style: TextStyle(fontWeight: FontWeight.bold))
                   ]),
               subtitle: Column(

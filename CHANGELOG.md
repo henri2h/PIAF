@@ -4,6 +4,10 @@ A new Flutter project.
 ## Unreleased
 
 ### Feature
+* enhance account view [b04f527]
+* initial proposal for friends suggestions [c07d63e]
+* update minestrix [876d4c1]
+* Migrate [User, Room] from MinestrixRoom to null safety [9f3522b]
 * display encryption information for each account [3d83432]
 * allow kicking and baning user from a group [17440f2]
 * Display user friends [8c0e9b4]
@@ -29,6 +33,14 @@ A new Flutter project.
 * setup dark mode [2f44e65]
 
 ### Fixes
+* indetation [50111b3]
+* login on web [da0ed4b]
+* home page width [d2771bf]
+* CI : delete conflicting outputs [e3b4262]
+* build command [29f8d43]
+* CI : generate router file [6921ff0]
+* lint [9bc2084]
+* CI + updated pub [65b46d6]
 * navigation to user [e880456]
 * route navigation on account creation [138dae4]
 * blank screen on refresh [82a4f46]

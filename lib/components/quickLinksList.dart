@@ -80,7 +80,7 @@ class SRoomView extends StatelessWidget {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(sroom.name!,
+                                Text(sroom.name,
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black)),

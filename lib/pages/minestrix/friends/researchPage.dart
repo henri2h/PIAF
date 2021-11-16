@@ -36,7 +36,7 @@ class _ResearchPageState extends State<ResearchPage> {
               leading: profile.avatarUrl == null
                   ? Icon(Icons.person)
                   : MatrixUserImage(client: sclient, url: profile.avatarUrl),
-              title: Text(profile.displayName!),
+              title: Text((profile.displayName ?? profile.userId)),
               subtitle: Text(profile.userId),
             );
           },

@@ -75,6 +75,7 @@ class LoginCardState extends State<LoginCard> {
 
       await client.initSMatrix(); // start synchronsiation
     } catch (error) {
+      print("could not log in");
       if (mounted) setState(() => _errorText = error.toString());
     }
     if (mounted) setState(() => _isLoading = false);
@@ -123,7 +124,7 @@ class LoginCardState extends State<LoginCard> {
 
     try {
       print("Input server url : " + serverUrl);
-      DiscoveryInformation? infos = await client.checkHomeserver(serverUrl);
+      await client.checkHomeserver(serverUrl);
 
       // check  if info is not null and
       // if we are the last try (prevent an old request to modify the results)
@@ -176,10 +177,9 @@ class LoginCardState extends State<LoginCard> {
                   verifyDomainCallback =
                       new Timer(const Duration(milliseconds: 500), () async {
                     if (userid.isValidMatrixId) {
-                      print("before " + canTryLogIn.toString());
                       // check to log in using .wellknown informations
                       await _verifyDomain(client!, "https://" + userid.domain!);
-                      print("after " + canTryLogIn.toString());
+
                       if (canTryLogIn == false)
                         // if this hasn't worked, try to use the potential matrix.xxx subdomain
                         await _verifyDomain(
@@ -217,6 +217,7 @@ class LoginCardState extends State<LoginCard> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.extended(
+                  heroTag: "passwordFAB",
                   icon: const Icon(Icons.login),
                   label: Text('Login'),
                   onPressed: _isLoading || !canTryLogIn
@@ -227,6 +228,7 @@ class LoginCardState extends State<LoginCard> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.extended(
+                  heroTag: "ssoFAB",
                   icon: const Icon(Icons.login),
                   label: Text('SSO Login'),
                   onPressed: _isLoading || !canTryLogIn

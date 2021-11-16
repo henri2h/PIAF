@@ -36,7 +36,8 @@ class UserInfo extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 180),
                 child: CachedNetworkImage(imageUrl: avatar.toString()),
               ),
-            buildUserProfileDisplay(context, avatarUrl, displayName!, userId!),
+            buildUserProfileDisplay(
+                context, avatarUrl, (displayName ?? userId!), userId!),
           ],
         );
 
@@ -55,7 +56,7 @@ class UserInfo extends StatelessWidget {
                 alignment:
                     avatar != null ? Alignment.centerLeft : Alignment.center,
                 child: buildUserProfileDisplay(
-                    context, avatarUrl, displayName!, userId!)),
+                    context, avatarUrl, (displayName ?? userId!), userId!)),
           ));
     });
   }
