@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
@@ -12,6 +13,8 @@ import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
+import 'package:minestrix/utils/platforms_info.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MinestrixClient extends Client {
   final log = Logger("SClient");
@@ -49,9 +52,19 @@ class MinestrixClient extends Client {
       Set<KeyVerificationMethod>? verificationMethods})
       : super(clientName, verificationMethods: verificationMethods,
             databaseBuilder: (Client client) async {
-          final db = FamedlySdkHiveDatabase(client.clientName);
+          final db = MatrixSembastDatabase(client.clientName);
           await db.open();
           print("[ db ] :  loaded");
+          return db;
+        }, legacyDatabaseBuilder: (Client client) async {
+          if (PlatformInfos.isBetaDesktop) {
+            Hive.init((await getApplicationSupportDirectory()).path);
+          } else {
+            await Hive.initFlutter();
+          }
+          final db = FamedlySdkHiveDatabase(client.clientName);
+          await db.open();
+          print("[ legacy db ] :  loaded");
           return db;
         }, supportedLoginTypes: {
           AuthenticationTypes.password,

@@ -138,7 +138,8 @@ class MatrixState extends State<Matrix> {
             margin: EdgeInsets.only(bottom: 8, right: 8, left: margin_left),
             borderRadius: BorderRadius.all(Radius.circular(8)),
             maxWidth: mWidth,
-            title: event.sender.displayName! + "@" + room.name,
+            title:
+                (event.sender.displayName ?? event.sender.id) + "@" + room.name,
             dismissDirection: FlushbarDismissDirection.HORIZONTAL,
             icon: Icon(Icons.info, color: Colors.white),
             message: event.body,

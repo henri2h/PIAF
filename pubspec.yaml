@@ -38,7 +38,7 @@ dependencies:
 
   redux: ^5.0.0
   flutter_redux: ^0.8.2
-  provider: ^5.0.0
+  provider: ^6.0.1
   
   # navigator
   auto_route: ^3.1.1
@@ -63,12 +63,12 @@ dependencies:
 
   # storage
   moor: ^4.0.0
-  sqlite3_flutter_libs: ^0.4.1
+  sqlite3_flutter_libs: ^0.5.1
 
   sqflite: ^2.0.0+3 # Still used to obtain the database location
   sqlite3: ^1.0.0
   localstorage: ^4.0.0+1
-  flutter_secure_storage: ^4.1.0
+  flutter_secure_storage: ^5.0.2
   
   # cache 
   flutter_cache_manager: ^3.0.1
@@ -84,14 +84,14 @@ dependencies:
   # Flushbar
   another_flushbar: ^1.10.25
   #dialogs
-  adaptive_dialog: ^0.10.0+5
+  adaptive_dialog: ^1.2.0
   
 
   package_info_plus: ^1.0.0
   
   minestrix_chat:
-    #path: ./minestrix-chat/
-    git: https://gitlab.com/minestrix/minestrix-chat.git
+    path: ./minestrix-chat/
+    #git: https://gitlab.com/minestrix/minestrix-chat.git
   collection: ^1.15.0-nullsafety.4
       
 dev_dependencies:
