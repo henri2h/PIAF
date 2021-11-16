@@ -19,9 +19,9 @@ class MinestrixRoom {
   bool _validSRoom = false;
   bool get validSRoom => _validSRoom;
 
-  String? get name {
+  String get name {
     if (roomType == SRoomType.UserRoom)
-      return user.displayName;
+      return user.displayName ?? user.id;
     else {
       return room.name;
     }

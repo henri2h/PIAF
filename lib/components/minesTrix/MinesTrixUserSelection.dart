@@ -77,7 +77,7 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                       ? Icon(Icons.person)
                       : MatrixUserImage(
                           client: sclient, url: profile.avatarUrl),
-                  title: Text(profile.displayName!),
+                  title: Text((profile.displayName ?? profile.userId)),
                   subtitle: Text(profile.userId),
                 );
               },
@@ -91,7 +91,7 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
           ),
           for (Profile p in profiles)
             ListTile(
-                title: Text(p.displayName!),
+                title: Text((p.displayName ?? p.userId)),
                 leading: MatrixUserImage(
                     client: sclient, url: p.avatarUrl, thumnail: true),
                 subtitle: Text(p.userId)),

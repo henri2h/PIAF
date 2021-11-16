@@ -82,7 +82,8 @@ class _DebugPageState extends State<DebugPage> {
                             children: [
                               Icon(Icons.person, size: 16),
                               SizedBox(width: 10),
-                              Text(srooms[i].user.displayName!),
+                              Text((srooms[i].user.displayName ??
+                                  srooms[i].user.id)),
                             ],
                           ),
                           Text(srooms[i].room.id),

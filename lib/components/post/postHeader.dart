@@ -59,7 +59,9 @@ class PostHeader extends StatelessWidget {
                                   context.pushRoute(
                                       UserFeedRoute(userId: event!.senderId));
                                 },
-                                child: Text(event!.sender.displayName!,
+                                child: Text(
+                                    (event!.sender.displayName ??
+                                        event!.sender.id),
                                     style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold)),
@@ -82,7 +84,7 @@ class PostHeader extends StatelessWidget {
                                     context.pushRoute(
                                         UserFeedRoute(userId: user.id));
                                   },
-                                  child: Text(p.displayName!,
+                                  child: Text((p.displayName ?? p.id),
                                       overflow: TextOverflow.clip,
                                       style: TextStyle(
                                           fontSize: 16,
@@ -103,7 +105,7 @@ class PostHeader extends StatelessWidget {
                         ],
                       );
                     }
-                    return Text(event!.sender.displayName!,
+                    return Text((event!.sender.displayName ?? event!.sender.id),
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold));
                   }),
@@ -121,7 +123,8 @@ class PostHeader extends StatelessWidget {
                               context.pushRoute(
                                   UserFeedRoute(userId: event!.senderId));
                             },
-                            child: Text(event!.sender.displayName!,
+                            child: Text(
+                                (event!.sender.displayName ?? event!.sender.id),
                                 style: TextStyle(
                                     color: Theme.of(context)
                                         .textTheme

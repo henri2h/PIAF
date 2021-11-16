@@ -51,7 +51,7 @@ class FriendsPage extends StatelessWidget {
                 leading: profile.avatarUrl == null
                     ? Icon(Icons.person)
                     : MatrixUserImage(client: sclient, url: profile.avatarUrl),
-                title: Text(profile.displayName!),
+                title: Text((profile.displayName ?? profile.userId)),
                 subtitle: Text(profile.userId),
               );
             },
@@ -80,7 +80,7 @@ class FriendsPage extends StatelessWidget {
                                 MatrixUserImage(
                                     client: sclient, url: sm.user.avatarUrl),
                                 SizedBox(width: 10),
-                                Text(sm.user.displayName!),
+                                Text((sm.user.displayName ?? sm.user.id)),
                               ],
                             ),
                             Row(

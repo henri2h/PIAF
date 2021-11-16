@@ -29,7 +29,7 @@ class FriendRequestList extends StatelessWidget {
                           MatrixUserImage(
                               client: sclient, url: sm.user.avatarUrl),
                           SizedBox(width: 10),
-                          Text(sm.user.displayName!),
+                          Text((sm.user.displayName ?? sm.user.id)),
                         ],
                       ),
                       Row(

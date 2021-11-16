@@ -62,7 +62,7 @@ class _PostEditorPageState extends State<PostEditorPage>
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Post on " + sroom!.name!),
+              child: Text("Post on " + sroom!.name),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
