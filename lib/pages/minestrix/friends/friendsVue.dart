@@ -106,8 +106,10 @@ class FriendsPage extends StatelessWidget {
                       ),
                       Center(
                         child: Wrap(children: [
-                          for (int i = 0; i < users.length; i++)
-                            AccountCard(user: users[i]),
+                          for (User user in users.where((User u) =>
+                              u.membership == Membership.join &&
+                              u.id != sclient.userID))
+                            AccountCard(user: user),
                         ]),
                       ),
                     ],
