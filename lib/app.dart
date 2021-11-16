@@ -24,19 +24,10 @@ class _MinestrixState extends State<Minestrix> {
               stream: Matrix.of(context).sclient?.onLoginStateChanged.stream,
               builder: (context, AsyncSnapshot<LoginState?> state) {
                 MinestrixClient sclient = Matrix.of(context).sclient!;
-                print("on login changed update");
-
-                bool init = false;
-                late MaterialApp app;
 
                 return StreamBuilder<String>(
                     stream: sclient.onSRoomsUpdate.stream,
-                    builder: (context, sroomSnap) {
-                      print("sroom update");
-                      print("State : " + (state.data.toString()));
-                      if (init == false) {
-                        init = true;
-                        app = MaterialApp.router(
+                    builder: (context, sroomSnap) => MaterialApp.router(
                           routerDelegate: AutoRouterDelegate.declarative(
                             _appRouter,
                             routes: (_) {
@@ -63,10 +54,7 @@ class _MinestrixState extends State<Minestrix> {
                           debugShowCheckedModeBanner: false,
                           // theme :
                           theme: theme.getTheme(),
-                        );
-                      }
-                      return app;
-                    });
+                        ));
               }),
         ),
       ),
