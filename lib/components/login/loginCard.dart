@@ -75,6 +75,7 @@ class LoginCardState extends State<LoginCard> {
 
       await client.initSMatrix(); // start synchronsiation
     } catch (error) {
+      print("could not log in");
       if (mounted) setState(() => _errorText = error.toString());
     }
     if (mounted) setState(() => _isLoading = false);
@@ -217,6 +218,7 @@ class LoginCardState extends State<LoginCard> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.extended(
+                  heroTag: "passwordFAB",
                   icon: const Icon(Icons.login),
                   label: Text('Login'),
                   onPressed: _isLoading || !canTryLogIn
@@ -227,6 +229,7 @@ class LoginCardState extends State<LoginCard> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.extended(
+                  heroTag: "ssoFAB",
                   icon: const Icon(Icons.login),
                   label: Text('SSO Login'),
                   onPressed: _isLoading || !canTryLogIn

@@ -32,7 +32,7 @@ class _HomeWraperPageState extends State<HomeWraperPage> {
       bool isWideScreen = constraints.maxWidth > 900;
 
       return Scaffold(
-        floatingActionButton: buildFloattingButton(),
+        //floatingActionButton: buildFloattingButton(),
         body: Column(
           children: [
             if (isWideScreen) NavBarDesktop(),
