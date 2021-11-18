@@ -1,10 +1,10 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
-import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class RightBar extends StatefulWidget {
   @override
@@ -52,18 +52,14 @@ class ContactView extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        backgroundImage: sroom.user.avatarUrl == null
-                            ? null
-                            : NetworkImage(
-                                sroom.user.avatarUrl!
-                                    .getThumbnail(
-                                      client!,
-                                      width: 64,
-                                      height: 64,
-                                    )
-                                    .toString(),
-                              ),
+                      MatrixUserImage(
+                        client: Matrix.of(context).sclient,
+                        url: sroom.user.avatarUrl,
+                        width: 32,
+                        height: 32,
+                        thumnail: true,
+                        rounded: true,
+                        defaultIcon: Icon(Icons.person, size: 32),
                       ),
                       Flexible(
                         child: Padding(
