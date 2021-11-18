@@ -27,7 +27,7 @@ class UserFriendsCard extends StatelessWidget {
                   u.membership == Membership.join &&
                   u.id != sclient!.userID &&
                   u.id != sroom.user.id)
-              .take(8))
+              .take(9))
             AccountCard(user: user),
         ]),
       ],
