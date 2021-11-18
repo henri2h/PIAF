@@ -10,7 +10,7 @@ import 'package:timeago/timeago.dart' as timeago;
 class RepliesVue extends StatefulWidget {
   final Event event;
   final Set<Event> replies;
-  final String regex = "(>(.*)\n)*\n";
+  final String regex = "(>(.*)\n)*\n"; // TODO : find a better way
   final bool showEditBox;
   RepliesVue(
       {Key? key,
@@ -49,7 +49,8 @@ class _RepliesVueState extends State<RepliesVue> {
                 }),
           for (Event revent in widget.replies.toList().sublist(0, max))
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 2.0, horizontal: 20.0),
               child: Column(
                 children: [
                   Row(
@@ -63,46 +64,40 @@ class _RepliesVueState extends State<RepliesVue> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
                                 child: MatrixUserImage(
-                                    client: sclient,
-                                    url: revent.sender.avatarUrl,
-                                    width: 16,
-                                    thumnail: true,
-                                    rounded: true,
-                                    height: 16)),
+                                  client: sclient,
+                                  url: revent.sender.avatarUrl,
+                                  width: 32,
+                                  height: 32,
+                                  thumnail: true,
+                                  rounded: true,
+                                )),
                             SizedBox(width: 10),
                             Expanded(
-                              child: Card(
-                                elevation: 0.3,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 12),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                              revent.sender.asUser.displayName
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w700)),
-                                          Text(
-                                              " - " +
-                                                  timeago.format(
-                                                      revent.originServerTs),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w400)),
-                                        ],
-                                      ),
-                                      SizedBox(height: 5),
-                                      Text(revent.body.replaceFirst(
-                                          new RegExp(widget.regex), "")),
-                                    ],
-                                  ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                            revent.sender.asUser.displayName
+                                                .toString(),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w700)),
+                                        Text(
+                                            " - " +
+                                                timeago.format(
+                                                    revent.originServerTs),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w400)),
+                                      ],
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(revent.body.replaceFirst(
+                                        new RegExp(widget.regex), "")),
+                                  ],
                                 ),
                               ),
                             ),
@@ -150,9 +145,9 @@ class ReplyBox extends StatelessWidget {
           MatrixUserImage(
               client: sclient,
               url: sclient.userRoom!.user.avatarUrl,
-              width: 32,
+              width: 38,
               thumnail: true,
-              height: 32),
+              height: 38),
           SizedBox(width: 10),
           Expanded(
               child: TextField(

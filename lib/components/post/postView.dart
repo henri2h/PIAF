@@ -163,8 +163,8 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                       )
                     ],
                   ),
+                  if (replies.isNotEmpty || showReplyBox) Divider(),
                   Container(
-                    //color: Color(0xfff6f6f6),
                     child: Column(
                       children: [
                         if (replies.isNotEmpty || showReplyBox)
