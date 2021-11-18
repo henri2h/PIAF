@@ -36,19 +36,39 @@ class PostHeader extends StatelessWidget {
               if (sroom.roomType == SRoomType.UserRoom)
                 Flexible(
                   child: Builder(builder: (BuildContext context) {
-                    User? p = sclient.srooms[event!.room]?.user;
-                    if (p != null) {
-                      User user = User(p.id,
-                          displayName: p.displayName,
-                          avatarUrl: p.avatarUrl.toString(),
-                          room: event!.room);
+                    User feedOwner = sroom.user;
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                  primary: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .color),
+                              onPressed: () {
+                                context.pushRoute(
+                                    UserFeedRoute(userId: event!.senderId));
+                              },
+                              child: Text(
+                                  (event!.sender.displayName ??
+                                      event!.sender.id),
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                            if (event!.sender.id != feedOwner.id)
+                              Text("to",
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyText1!
+                                          .color)),
+                            if (event!.sender.id != feedOwner.id)
                               TextButton(
                                 style: TextButton.styleFrom(
                                     primary: Theme.of(context)
@@ -57,57 +77,29 @@ class PostHeader extends StatelessWidget {
                                         .color),
                                 onPressed: () {
                                   context.pushRoute(
-                                      UserFeedRoute(userId: event!.senderId));
+                                      UserFeedRoute(userId: feedOwner.id));
                                 },
                                 child: Text(
-                                    (event!.sender.displayName ??
-                                        event!.sender.id),
+                                    (feedOwner.displayName ?? feedOwner.id),
+                                    overflow: TextOverflow.clip,
                                     style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold)),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400)),
                               ),
-                              if (event!.sender.id != p.id)
-                                Text("to",
-                                    style: TextStyle(
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodyText1!
-                                            .color)),
-                              if (event!.sender.id != p.id)
-                                TextButton(
-                                  style: TextButton.styleFrom(
-                                      primary: Theme.of(context)
-                                          .textTheme
-                                          .bodyText1!
-                                          .color),
-                                  onPressed: () {
-                                    context.pushRoute(
-                                        UserFeedRoute(userId: user.id));
-                                  },
-                                  child: Text((p.displayName ?? p.id),
-                                      overflow: TextOverflow.clip,
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400)),
-                                ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Text(timeago.format(event!.originServerTs),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .caption!
-                                        .color)),
-                          ),
-                        ],
-                      );
-                    }
-                    return Text((event!.sender.displayName ?? event!.sender.id),
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold));
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(timeago.format(event!.originServerTs),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .caption!
+                                      .color)),
+                        ),
+                      ],
+                    );
                   }),
                 ),
               if (sroom.roomType == SRoomType.Group)
@@ -181,7 +173,7 @@ class PostHeader extends StatelessWidget {
                 ),*/
                 PopupMenuButton<String>(
                     itemBuilder: (_) => [
-                          if (event!.canRedact)
+                          /*if (event!.canRedact)
                             PopupMenuItem(
                                 child: Row(
                                   children: [
@@ -190,7 +182,7 @@ class PostHeader extends StatelessWidget {
                                     Text("Edit post"),
                                   ],
                                 ),
-                                value: "edit"),
+                                value: "edit"),*/ // TODO : implement post editing
                           if (event!.canRedact)
                             PopupMenuItem(
                                 child: Row(
