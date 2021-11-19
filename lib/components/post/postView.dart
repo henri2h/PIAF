@@ -128,20 +128,51 @@ class PostContent extends StatelessWidget {
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   bool showReplyBox = false;
 
-  Future<void> pickEmoji(Event e) async {
-    Emoji? emoji = await showModalBottomSheet(
-        context: context,
-        builder: (context) => SizedBox(
-              height: 140,
-              child: EmojiPicker(
-                onEmojiSelected: (Category category, Emoji emoji) {
-                  Navigator.of(context).pop<Emoji>(emoji);
-                },
-                config: Config(
-                  columns: 25,
+  Future<void> pickEmoji(TapDownDetails detail, Event e) async {
+    print(detail.globalPosition.dx.toString());
+    print(detail.globalPosition.dy.toString());
+    double paddingLeft = detail.globalPosition.dx;
+    double paddingTop =
+        detail.globalPosition.dy + 30; // + 30 in order to be under the button
+
+    const double width = 400;
+    const double height = 180;
+
+    if ((MediaQuery.of(context).size.width - paddingLeft) < width)
+      paddingLeft = 0;
+    if ((MediaQuery.of(context).size.height - paddingTop) < height)
+      paddingTop = MediaQuery.of(context).size.height - height;
+
+    Emoji? emoji = await showDialog<Emoji>(
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(top: paddingTop, left: paddingLeft),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: height,
+                width: width,
+                child: Material(
+                  child: EmojiPicker(
+                    onEmojiSelected: (Category category, Emoji emoji) {
+                      Navigator.of(context).pop<Emoji>(emoji);
+                    },
+                    config: Config(
+                      columns: 10,
+                    ),
+                  ),
                 ),
-              ),
-            ));
+              )
+            ],
+          ),
+        );
+      },
+    );
+
     if (emoji != null) await e.room.sendReaction(e.eventId, emoji.emoji);
   }
 
@@ -182,31 +213,27 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            if (reactions.isNotEmpty)
-                              Expanded(
+                            Expanded(
+                              child: GestureDetector(
                                 child: MaterialButton(
-                                    onPressed: () async {
-                                      await pickEmoji(e);
-                                    },
-                                    child: PostReactions(
-                                        event: e, reactions: reactions)),
+                                    child: reactions.isEmpty
+                                        ? Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.emoji_emotions),
+                                              SizedBox(width: 10),
+                                              Flexible(child: Text("React"))
+                                            ],
+                                          )
+                                        : PostReactions(
+                                            event: e, reactions: reactions),
+                                    onPressed: () {}),
+                                onTapDown: (TapDownDetails detail) async {
+                                  await pickEmoji(detail, e);
+                                },
                               ),
-                            if (reactions.isEmpty)
-                              Expanded(
-                                child: MaterialButton(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.emoji_emotions),
-                                      SizedBox(width: 10),
-                                      Flexible(child: Text("React"))
-                                    ],
-                                  ),
-                                  onPressed: () async {
-                                    await pickEmoji(e);
-                                  },
-                                ),
-                              ),
+                            ),
                             SizedBox(width: 10),
                             Expanded(
                               child: MaterialButton(
