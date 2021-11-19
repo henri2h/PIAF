@@ -1,9 +1,17 @@
-# Change Log for minestrix
-A new Flutter project.
+# Change Log for MinesTRIX
 
-## Unreleased
+A privacy respectful social media based on MATRIX
+
+## v0.1.4 - 2021-11-19 - TWIM Edition
 
 ### Feature
+* Added information about account creation [f09799e]
+* cleaned up settings page [04701c8]
+* changed image provider [eca58e7]
+* engance reply box [4ff9d7c]
+* display 9 friends on page [89d1ab6]
+* enabled back  friend requests [3c257a5]
+* added back legacy database [70b4e70]
 * update dependencies [0bfda50]
 * more log [a60512c]
 * copied Sembast adapter from fluffy chat [17a197c]
@@ -39,6 +47,9 @@ A new Flutter project.
 * setup dark mode [2f44e65]
 
 ### Fixes
+* user name was not clickable [99206e4]
+* remove counter [f80dd88]
+* removed unused code [05c6bff]
 * removed debug code from previous migration [a592bb0]
 * removed unused imports [251c306]
 * dead code [4b58341]
