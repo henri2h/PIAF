@@ -122,7 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 Icon(Icons.error, size: 32),
                                 SizedBox(width: 10),
                                 Flexible(
-                                    child: Text("Session not verified",
+                                    child: Text("Not verified session",
                                         style: TextStyle(fontSize: 18)))
                               ],
                       ),

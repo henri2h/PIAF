@@ -50,6 +50,7 @@ class MinestrixClient extends Client {
 
   late MinestrixNotifications notifications;
   late MinestrixFriendsSugestion friendsSuggestions;
+
   MinestrixClient(String clientName,
       {bool? enableE2eeRecovery,
       Set<KeyVerificationMethod>? verificationMethods})
@@ -163,27 +164,32 @@ class MinestrixClient extends Client {
         // if we are here, it means that we have a valid smatrix room
 
         if (r.membership == Membership.join) {
-          rs.timeline = await rs.room.getTimeline();
-          srooms[rs.room.id] = rs;
+          try {
+            rs.timeline = await rs.room.getTimeline();
+            srooms[rs.room.id] = rs;
 
-          // by default
-          if (rs.room.pushRuleState == PushRuleState.notify)
-            await rs.room.setPushRuleState(PushRuleState.mentionsOnly);
-          if (!rs.room.tags.containsKey("m.lowpriority")) {
-            await rs.room.addTag("m.lowpriority");
-          }
-
-          // check if this room is a user thread
-          if (rs.roomType == SRoomType.UserRoom) {
-            userIdToRoomId[rs.user.id] = rs.room.id;
-
-            if (userID == rs.user.id) {
-              userRoom = rs; // we have found our user smatrix room
-              // this means that the client has been initialisated
-              // we can load the friendsVue
-
-              print("Found MinesTRIX account : " + rs.name);
+            // by default
+            if (rs.room.pushRuleState == PushRuleState.notify)
+              await rs.room.setPushRuleState(PushRuleState.mentionsOnly);
+            if (!rs.room.tags.containsKey("m.lowpriority")) {
+              await rs.room.addTag("m.lowpriority");
             }
+
+            // check if this room is a user thread
+            if (rs.roomType == SRoomType.UserRoom) {
+              userIdToRoomId[rs.user.id] = rs.room.id;
+
+              if (userID == rs.user.id) {
+                userRoom = rs; // we have found our user smatrix room
+                // this means that the client has been initialisated
+                // we can load the friendsVue
+
+                print("Found MinesTRIX account : " + rs.name);
+              }
+            }
+          } catch (e) {
+            print(e.toString());
+            print("Could not load room : " + r.displayname);
           }
         } else if (r.membership == Membership.invite) {
           minestrixInvites[rs.room.id] = rs;
@@ -192,7 +198,7 @@ class MinestrixClient extends Client {
     }
 
     onSRoomsUpdate.add("update");
-    log.info("Minestrix room update");
+    print("Minestrix room update");
     sroomsLoaded = true;
 
     if (userRoom == null) log.severe("❌ User room not found");
@@ -218,7 +224,11 @@ class MinestrixClient extends Client {
     await createMinestrixAccount(name, "A Mines'Trix profile");
   }
 
-  Iterable<Event> getSRoomFilteredEvents(Timeline t) {
+  Iterable<Event> getSRoomFilteredEvents(Timeline t,
+      {List<String> eventTypesFilter: const [
+        EventTypes.Message,
+        EventTypes.Encrypted
+      ]}) {
     List<Event> filteredEvents = t.events
         .where((e) =>
             !{
@@ -226,7 +236,7 @@ class MinestrixClient extends Client {
               RelationshipTypes.reaction,
               RelationshipTypes.reply
             }.contains(e.relationshipType) &&
-            {EventTypes.Message, EventTypes.Encrypted}.contains(e.type) &&
+            eventTypesFilter.contains(e.type) &&
             !e.redacted)
         .toList();
     for (var i = 0; i < filteredEvents.length; i++) {

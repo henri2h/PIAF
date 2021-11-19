@@ -31,7 +31,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
   bool isUserPage = false;
 
   Widget buildPage(
-      MinestrixClient sclient, MinestrixRoom sroom, List<Event> sevents) {
+      MinestrixClient sclient, MinestrixRoom sroom, Iterable<Event> sevents) {
     return LayoutBuilder(
       builder: (context, constraints) => StreamBuilder(
           stream: sroom.room.onUpdate.stream,
@@ -118,11 +118,6 @@ class _UserFeedPageState extends State<UserFeedPage> {
                                     const EdgeInsets.symmetric(vertical: 5),
                                 child: Post(event: e),
                               ),
-                            /* Divider(
-                                  indent: 25,
-                                  endIndent: 25,
-                                  thickness: 0.5,
-                                ),*/
                           ],
                         ),
                       ),
@@ -152,20 +147,32 @@ class _UserFeedPageState extends State<UserFeedPage> {
             (u.id == widget.userId)); // check if the user is following us
 
     if (sroom != null) {
-      List<Event> sevents =
-          sclient.getSRoomFilteredEvents(sroom.timeline!) as List<Event>;
+      Iterable<Event> sevents =
+          sclient.getSRoomFilteredEvents(sroom.timeline!, eventTypesFilter: [
+        EventTypes.Message,
+        EventTypes.Encrypted,
+        EventTypes.RoomCreate,
+        EventTypes.RoomAvatar,
+        EventTypes.RoomMember
+      ]).where((Event e) {
+        if (e.type == EventTypes.RoomMember) {
+          if (e.prevContent != null &&
+              e.content["avatar_url"] != e.prevContent!["avatar_url"] &&
+              e.senderId == sroom!.user.id) {
+            // the room owner has changed it's profile picture
+            return true;
+          }
+          return false;
+        }
+        return true;
+      });
       return buildPage(sclient, sroom, sevents);
     } else {
       return FutureBuilder<Profile>(
           future: sclient.getProfileFromUserId(widget.userId!),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData == false) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("ERROR !",
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              );
+              return CircularProgressIndicator();
             }
             Profile p = snapshot.data;
             p.userId = widget.userId!; // fix a nasty bug :(

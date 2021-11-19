@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/components/post/postHeader.dart';
 import 'package:minestrix/components/post/postReactions.dart';
 import 'package:minestrix/components/post/postReplies.dart';
+import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
@@ -18,12 +19,29 @@ class Post extends StatefulWidget {
   _PostState createState() => _PostState();
 }
 
+enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
+
 class PostContent extends StatelessWidget {
   final Event event;
   const PostContent(
     this.event, {
     Key? key,
   }) : super(key: key);
+
+  PostTypeUpdate getPostTypeUpdate(Event e) {
+    if (e.prevContent?["avatar_url"] != null &&
+        e.prevContent!["avatar_url"] != e.content["avatar_url"])
+      return PostTypeUpdate.ProfilePicture;
+    else if (e.prevContent?["displayname"] != null &&
+        e.prevContent!["displayname"] != e.content["displayname"])
+      return PostTypeUpdate.DisplayName;
+    else if (e.prevContent?["membership"] != e.content["membership"])
+      return PostTypeUpdate
+          .Membership; // by default, if prevContent == null, the owner joined the room or was invited
+
+    return PostTypeUpdate.None;
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (event.type) {
@@ -51,12 +69,57 @@ class PostContent extends StatelessWidget {
           default:
             return Text("other message type : " + event.messageType);
         }
+      case EventTypes.RoomCreate:
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                  "✨ " +
+                      (event.sender.displayName ?? event.senderId) +
+                      " Joined MinesTRIX ✨",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w400)),
+            ),
+            MinestrixTitle()
+          ],
+        );
+    }
+    PostTypeUpdate pUp = getPostTypeUpdate(event);
+    Widget update;
+    switch (pUp) {
+      case PostTypeUpdate.DisplayName:
+        update = Text("Display name update");
+
+        break;
+      case PostTypeUpdate.ProfilePicture:
+        update = Text("Profile picture update");
+
+        break;
+      case PostTypeUpdate.Membership:
+        update = Text("Joined");
+
+        break;
+      default:
+        update = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MessageDisplay(client: Matrix.of(context).sclient, event: event),
+            /*
+           // Debug :
+            Text(event.content.toString()),
+            SizedBox(height: 10),
+            Text(event.prevContent.toString()),
+            Text(event.toJson().toString())
+            */
+          ],
+        );
     }
     return Container(
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            MessageDisplay(client: Matrix.of(context).sclient, event: event),
+            update,
+            Text(event.type),
           ]),
     );
   }
