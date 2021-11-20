@@ -26,12 +26,17 @@ dependencies:
 
 
   # Matrix
-  matrix: ^0.7.0-nullsafety.5
+  matrix: # ^0.7.0-nullsafety.5
+    git:
+      url: https://gitlab.com/famedly/company/frontend/famedlysdk.git
+      ref: krille/idb
+      
   olm: ^2.0.0
 
   # Database
   hive: ^2.0.4
   hive_flutter: ^1.1.0
+
   
   #flutter_openssl_crypto: ^0.0.1
 
@@ -90,6 +95,7 @@ dependencies:
   package_info_plus: ^1.0.0
   
   minestrix_chat:
+    #path: './minestrix-chat'
     git: https://gitlab.com/minestrix/minestrix-chat.git
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
@@ -101,8 +107,6 @@ dev_dependencies:
   hive_generator: ^1.1.1
   auto_route_generator: ^3.1.0
   build_runner: ^2.1.2
-
-
 
 
 # For information on the generic Dart part of this file, see the
