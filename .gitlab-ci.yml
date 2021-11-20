@@ -42,11 +42,9 @@ build_android:
     - shared
 
 build_web:
-  image: cirrusci/flutter:beta # web is on beta...
   stage: build
 
   script:
-    - flutter config --enable-web
     - flutter clean
     - flutter pub get
     - flutter packages pub run build_runner build --delete-conflicting-outputs
