@@ -103,7 +103,7 @@ class PostContent extends StatelessWidget {
         update = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            MessageDisplay(client: Matrix.of(context).sclient, event: event),
+            Text(event.body)
             /*
            // Debug :
             Text(event.content.toString()),
