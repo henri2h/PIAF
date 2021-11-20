@@ -6,7 +6,7 @@
 
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
-![](https://img.shields.io/badge/Version-ALPHA_0.1.4-teal)
+![](https://img.shields.io/badge/Version-ALPHA_0.1.5-teal)
 ![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
 ## 🤔 Why
 
