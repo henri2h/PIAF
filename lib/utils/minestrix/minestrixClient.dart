@@ -9,7 +9,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/Fluffychat/FlutterMatrixSembastDatabase.dart';
+import 'package:minestrix/utils/Fluffychat/FluffyboxDatabase.dart';
 import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
@@ -56,7 +56,7 @@ class MinestrixClient extends Client {
       Set<KeyVerificationMethod>? verificationMethods})
       : super(clientName, verificationMethods: verificationMethods,
             databaseBuilder: (Client client) async {
-          return await FlutterMatrixSembastDatabase.databaseBuilder(client);
+          return await FlutterFluffyBoxDatabase.databaseBuilder(client);
         }, legacyDatabaseBuilder: (Client client) async {
           if (PlatformInfos.isBetaDesktop) {
             Hive.init((await getApplicationSupportDirectory()).path);
