@@ -9,7 +9,6 @@ import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
-import 'package:minestrix_chat/partials/matrix_messeage.dart';
 
 class Post extends StatefulWidget {
   final Event event;
