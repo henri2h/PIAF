@@ -18,7 +18,7 @@ build_linux:
   artifacts:
     when: on_success
     paths:
-      - build/linux/release/bundle/
+      - build/linux/x64/release/bundle/
   tags:
     - shared
 
