@@ -2,7 +2,6 @@ import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
@@ -33,8 +32,6 @@ class ContactView extends StatelessWidget {
   final MinestrixRoom sroom;
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient? client = Matrix.of(context).sclient;
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
