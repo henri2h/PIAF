@@ -10,11 +10,11 @@
 ![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
 ## 🤔 Why
 
-MinesTrix goal is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your post or edit them.
-That's why MinesTrix supports E2EE (not by default yet) to protect your posts and is decentralized to be able to choose where your data are stored.
+The goal of MinesTrix is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your posts or edit them.
+That's why MinesTrix supports E2EE (not by default yet) to protect your posts and is decentralized to be able to choose where your data is stored.
 
 
-We choosed MATRIX because it's the best protocol for supporting decentralized, E2EE communication and because it's Open Source !!
+We chose MATRIX because it's the best protocol for supporting decentralized, E2EE communication and because it's Open Source !!
 
 ## ✨ Features
 
@@ -105,7 +105,7 @@ We use the fameldy library for that [https://gitlab.com/famedly/libraries/dart-o
 From https://pub.dev/packages/flutter_secure_storage :
 
 * libsecret
-*libjsoncpp
+* libjsoncpp
 
 ```bash
 sudo apt install libolm3 libsqlite3-dev libsecret-1-dev libjsoncpp-dev
