@@ -65,9 +65,26 @@ class _UserFeedPageState extends State<UserFeedPage> {
                       avatar: sroom.room.avatar?.getDownloadLink(sclient)),
 
                   if (constraints.maxWidth <= 900)
-                    Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: UserFriendsCard(sroom: sroom)),
+                    Column(
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: UserFriendsCard(sroom: sroom)),
+                        MaterialButton(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("See all friends"),
+                            ),
+                            onPressed: () {
+                              if (isUserPage) {
+                                context.navigateTo(FriendsRoute());
+                              } else {
+                                context
+                                    .navigateTo(UserFriendsRoute(sroom: sroom));
+                              }
+                            })
+                      ],
+                    ),
 
                   // feed
 
