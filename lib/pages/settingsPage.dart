@@ -51,7 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         children: [
                           if (displayNameController != null)
                             SizedBox(
-                              width: 400,
+                              width: 200,
                               child: TextField(
                                 controller: displayNameController,
                                 decoration: const InputDecoration(
