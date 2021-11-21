@@ -144,6 +144,8 @@ class _UserFeedPageState extends State<UserFeedPage> {
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           if (requestingHistory)
                                             Padding(
@@ -161,8 +163,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
                                         setState(() {
                                           requestingHistory = true;
                                         });
-                                        await sroom.room
-                                            .requestHistory(historyCount: 50);
+                                        await sroom.room.requestHistory();
                                         setState(() {
                                           requestingHistory = false;
                                         });
