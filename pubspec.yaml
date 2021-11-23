@@ -26,10 +26,7 @@ dependencies:
 
 
   # Matrix
-  matrix: # ^0.7.0-nullsafety.5
-    git:
-      url: https://gitlab.com/famedly/company/frontend/famedlysdk.git
-      ref: krille/idb
+  matrix:  ^0.7.0-nullsafety.7
       
   olm: ^2.0.0
 
