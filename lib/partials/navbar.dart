@@ -19,7 +19,7 @@ class NavBarDesktop extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Mines'Trix",
+              child: Text("MinesTRIX",
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
             ),
             NavBarButton(

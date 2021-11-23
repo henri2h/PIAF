@@ -9,7 +9,6 @@ import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
-import 'package:minestrix_chat/partials/matrix_messeage.dart';
 
 class Post extends StatefulWidget {
   final Event event;
@@ -103,7 +102,7 @@ class PostContent extends StatelessWidget {
         update = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            MessageDisplay(client: Matrix.of(context).sclient, event: event),
+            Text(event.body)
             /*
            // Debug :
             Text(event.content.toString()),

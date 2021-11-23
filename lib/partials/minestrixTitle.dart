@@ -11,9 +11,9 @@ class MinestrixTitle extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("Mines'Trix",
+            Text("MinesTRIX",
                 style: TextStyle(fontSize: 50, fontWeight: FontWeight.w800)),
-            Text("An alternative social media based on MATRIX",
+            Text("An privacy focused social media based on MATRIX",
                 style: TextStyle(fontSize: 30))
           ]),
     );
