@@ -8,6 +8,7 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PostEditorPage extends StatefulWidget {
   PostEditorPage({Key? key, this.sroom}) : super(key: key);
@@ -31,6 +32,14 @@ class _PostEditorPageState extends State<PostEditorPage>
       await sroom!.room.sendFileEvent(f);
     } else {
       await sroom!.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
+    }
+  }
+
+  Future<void> _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
     }
   }
 
@@ -120,7 +129,20 @@ class _PostEditorPageState extends State<PostEditorPage>
                   }),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: MarkdownBody(data: postContent),
+              child: MarkdownBody(
+                  data: postContent,
+                  styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
+                      .copyWith(
+                          blockquotePadding: const EdgeInsets.only(left: 14),
+                          blockquoteDecoration: const BoxDecoration(
+                              border: Border(
+                                  left: BorderSide(
+                                      color: Colors.white70, width: 4)))),
+                  onTapLink: (text, href, title) async {
+                    if (href != null) {
+                      await _launchURL(href);
+                    }
+                  }),
             )
           ],
         ));
