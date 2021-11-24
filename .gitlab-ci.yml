@@ -35,8 +35,8 @@ build_android:
     paths:
       - build/app/outputs/flutter-apk/app-release.apk
  
-  only:
-    - main # disable android 
+  #only:
+  #  - main # disable android 
 
   tags:
     - shared

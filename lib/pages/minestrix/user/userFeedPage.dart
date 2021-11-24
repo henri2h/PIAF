@@ -29,6 +29,7 @@ class UserFeedPage extends StatefulWidget {
 
 class _UserFeedPageState extends State<UserFeedPage> {
   bool isUserPage = false;
+  bool requestingHistory = false;
 
   Widget buildPage(
       MinestrixClient sclient, MinestrixRoom sroom, Iterable<Event> sevents) {
@@ -65,9 +66,26 @@ class _UserFeedPageState extends State<UserFeedPage> {
                       avatar: sroom.room.avatar?.getDownloadLink(sclient)),
 
                   if (constraints.maxWidth <= 900)
-                    Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: UserFriendsCard(sroom: sroom)),
+                    Column(
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: UserFriendsCard(sroom: sroom)),
+                        MaterialButton(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("See all friends"),
+                            ),
+                            onPressed: () {
+                              if (isUserPage) {
+                                context.navigateTo(FriendsRoute());
+                              } else {
+                                context
+                                    .navigateTo(UserFriendsRoute(sroom: sroom));
+                              }
+                            })
+                      ],
+                    ),
 
                   // feed
 
@@ -117,6 +135,40 @@ class _UserFeedPageState extends State<UserFeedPage> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 5),
                                 child: Post(event: e),
+                              ),
+                            if (sevents.length == 0 ||
+                                sevents.last.type != EventTypes.RoomCreate)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: MaterialButton(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          if (requestingHistory)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 10),
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          Text("Load more posts"),
+                                        ],
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      if (requestingHistory == false) {
+                                        setState(() {
+                                          requestingHistory = true;
+                                        });
+                                        await sroom.room.requestHistory();
+                                        setState(() {
+                                          requestingHistory = false;
+                                        });
+                                      }
+                                    }),
                               ),
                           ],
                         ),
@@ -177,8 +229,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
             Profile p = snapshot.data;
             p.userId = widget.userId!; // fix a nasty bug :(
 
-            return Container(
-                child: ListView(children: [
+            return ListView(children: [
               Container(
                 // alignment: Alignment.bottomCenter,
                 padding: const EdgeInsets.only(left: 40, right: 40, top: 200),
@@ -266,7 +317,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
                   ],
                 ),
               ),
-            ]));
+            ]);
           });
     }
   }

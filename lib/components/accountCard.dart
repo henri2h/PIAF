@@ -49,12 +49,16 @@ class AccountCard extends StatelessWidget {
               width: 100,
               height: 100,
               thumnail: true,
+              rounded: false,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10.0),
+                  topRight: Radius.circular(10)),
               defaultIcon: Icon(Icons.person,
                   color: Theme.of(context).textTheme.bodyText1!.color,
                   size: 70),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.only(bottom: 4.0, top: 2),
               child: SizedBox(
                 width: 100,
                 height: 35,

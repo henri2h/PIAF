@@ -1,4 +1,4 @@
-# Mines'Trix
+# MinesTRIX
 
 **A privacy focused social media based on MATRIX**
 
