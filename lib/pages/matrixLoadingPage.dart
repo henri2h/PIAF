@@ -14,69 +14,103 @@ class MatrixLoadingPage extends StatefulWidget {
 
 class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
   bool running = false;
+  Future<bool> waitForRoomsLoading(MinestrixClient sclient) async {
+    if (sclient.roomsLoading != null) {
+      await sclient.roomsLoading;
+      await sclient.accountDataLoading;
+      if (sclient.prevBatch?.isEmpty ?? true) {
+        await sclient.onFirstSync.stream.first;
+      }
+    } else
+      print("Can't wait for rooms loading");
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
 
     return Scaffold(
-      body: StreamBuilder<SyncStatusUpdate>(
-          stream: sclient.onSyncStatus.stream,
-          builder: (context, snap) {
-            if (!snap.hasData) return Center(child: MinestrixTitle());
+      body: StreamBuilder<String>(
+          stream: sclient.onSRoomsUpdate.stream,
+          builder: (context, _) {
+            return StreamBuilder<SyncStatusUpdate>(
+                stream: sclient.onSyncStatus.stream,
+                builder: (context, snap) {
+                  if (!snap.hasData) return Center(child: MinestrixTitle());
+                  print(snap.data!.status.toString());
 
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                MinestrixTitle(),
-                MaterialButton(
-                    child: Text("Refresh"),
-                    onPressed: () async {
-                      await sclient.loadSRooms();
-                    }),
-                if (snap.data!.status != SyncStatus.finished)
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(children: [
-                          Text("Syncing",
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 20),
-                          if (snap.data!.status == SyncStatus.processing)
-                            LinearProgressIndicator(value: snap.data!.progress),
-                          if (snap.data!.status != SyncStatus.processing)
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [LinearProgressIndicator()],
-                            ),
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      MinestrixTitle(),
+                      FutureBuilder(
+                          future: waitForRoomsLoading(sclient),
+                          builder: (context, snapLoading) {
+                            print("Snap loading : " +
+                                (snapLoading.data?.toString() ?? 'null'));
 
-                          // check if we need to create a user room for the user
-                        ]),
-                      ),
-                    ),
-                  ),
-                if (!sclient.userRoomCreated &&
-                    snap.data!.status == SyncStatus.finished)
-                  Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: running
-                          ? null
-                          : MinesTrixButton(
-                              onPressed: () async {
-                                setState(() {
-                                  running = true;
-                                });
+                            if (!snapLoading.hasData ||
+                                sclient.userRoomCreated ||
+                                !sclient.sroomsLoaded) {
+                              if (snap.data!.status != SyncStatus.finished)
+                                return Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Card(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(children: [
+                                        Text("Syncing",
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold)),
+                                        SizedBox(height: 20),
+                                        if (snap.data!.status ==
+                                            SyncStatus.processing)
+                                          LinearProgressIndicator(
+                                              value: snap.data!.progress),
+                                        if (snap.data!.status !=
+                                            SyncStatus.processing)
+                                          Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              LinearProgressIndicator()
+                                            ],
+                                          ),
 
-                                await sclient.createSMatrixUserProfile();
-                              },
-                              label: "Create my account",
-                              icon: Icons.send)),
-                if (running) LinearProgressIndicator(),
-              ],
-            );
+                                        // check if we need to create a user room for the user
+                                      ]),
+                                    ),
+                                  ),
+                                );
+                              return Container();
+                            }
+
+                            return Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: running
+                                    ? null
+                                    : MinesTrixButton(
+                                        onPressed: () async {
+                                          setState(() {
+                                            running = true;
+                                          });
+
+                                          await sclient
+                                              .createSMatrixUserProfile();
+                                        },
+                                        label: "Create my account",
+                                        icon: Icons.send));
+                          }),
+                      MaterialButton(
+                          child: Text("Load all rooms"),
+                          onPressed: () async {
+                            await sclient.loadSRooms();
+                          }),
+                      if (running) LinearProgressIndicator(),
+                    ],
+                  );
+                });
           }),
     );
   }

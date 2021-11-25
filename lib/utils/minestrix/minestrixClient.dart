@@ -27,6 +27,7 @@ class MinestrixClient extends Client {
   StreamController<String> onSRoomsUpdate = StreamController.broadcast();
 
   Map<String, MinestrixRoom> srooms = Map<String, MinestrixRoom>();
+  Map<String, bool> roomsLoaded = Map<String, bool>();
 
   // room sub types
   Map<String, MinestrixRoom> get sgroups => Map.from(srooms)
@@ -97,111 +98,141 @@ class MinestrixClient extends Client {
 
   Timer? timerCallbackRoomUpdate;
   Timer? timerCallbackEventUpdate;
-  Future<void> initSMatrix() async {
-    // initialisation
 
+  Future<void> updateAll() async {
     await loadSRooms();
     await autoFollowFollowers(); // TODO : Let's see if we keep this in the future
     await loadNewTimeline();
     notifications.loadNotifications(this);
+  }
+
+  Future<void> initSMatrix() async {
+    // initialisation
+    await updateAll();
 
     // for MinestrixRooms
     onRoomUpdateSub ??= this.onEvent.stream.listen((EventUpdate rUp) async {
       if (srooms.containsKey(rUp.roomID)) {
         // we use a timer to prevent calling
-        timerCallbackRoomUpdate?.cancel();
-        timerCallbackRoomUpdate =
-            new Timer(const Duration(milliseconds: 500), () async {
-          log.info("MinesTrix : callback new message");
+        timerCallbackEventUpdate?.cancel();
+        timerCallbackEventUpdate =
+            new Timer(const Duration(milliseconds: 300), () async {
+          print("[ sync ] : New event");
           await loadNewTimeline(); // new message, we only need to rebuild timeline
         });
+      } else {
+        if (roomsLoaded.containsKey(rUp.roomID) == false) {
+          Room? r = getRoomById(rUp.roomID);
+          if (r != null) {
+            print("[ client ] : update rooms list");
+            await checkRoom(r);
+
+            onTimelineUpdate.add("up");
+          }
+        }
+      }
+    });
+    onFirstSync.stream.listen((bool result) async {
+      if (result) {
+        print("[ client ] : on first sync completed");
+        await updateAll();
       }
     });
   }
 
+  Future<void> requestHistoryForSRooms() async {
+    int n = srooms.values.length;
+    int counter = 0;
+    for (MinestrixRoom sr in srooms.values) {
+      await sr.timeline!.requestHistory();
+
+      print("First sync progress : " + (counter / n * 100).toString());
+      counter++;
+    }
+  }
+
+  /// load timeline and request history
   Future<void> loadNewTimeline() async {
+    await requestHistoryForSRooms(); // TODO : don't request more history than necessary
+
     await loadSTimeline();
     sortTimeline();
 
     notifications.loadNotifications(this);
 
-    // On first sync we fetch all the event history
-    if (_firstSync) {
-      try {
-        int n = srooms.values.length;
-        int counter = 0;
-        for (MinestrixRoom sr in srooms.values) {
-          await sr.timeline!.requestHistory();
-
-          log.info("First sync progress : " + (counter / n * 100).toString());
-          counter++;
-        }
-      } catch (e) {
-        log.severe("Initial sync : failed to get history", e);
-      }
-      _firstSync = false;
-    }
     onTimelineUpdate.add("up");
+  }
+
+  /// check if the specified room is a smatrix room or not.
+  /// If yes, then store it in srooms list
+  Future<void> checkRoom(Room r) async {
+    MinestrixRoom? rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
+
+    // write that we have loaded this room in order to not process it twice
+    roomsLoaded[r.id] = false;
+
+    if (rs != null) {
+      // if class is correctly initialisated, we can add it
+      // if we are here, it means that we have a valid smatrix room
+
+      if (r.membership == Membership.join) {
+        try {
+          rs.timeline = await rs.room.getTimeline();
+          srooms[rs.room.id] = rs;
+
+          // by default
+          if (rs.room.pushRuleState == PushRuleState.notify)
+            await rs.room.setPushRuleState(PushRuleState.mentionsOnly);
+          if (!rs.room.tags.containsKey("m.lowpriority")) {
+            await rs.room.addTag("m.lowpriority");
+          }
+
+          // check if this room is a user thread
+          if (rs.roomType == SRoomType.UserRoom) {
+            userIdToRoomId[rs.user.id] = rs.room.id;
+
+            if (userID == rs.user.id) {
+              userRoom = rs; // we have found our user smatrix room
+              // this means that the client has been initialisated
+              // we can load the friendsVue
+
+              print("Found MinesTRIX account : " + rs.name);
+              onTimelineUpdate.add("up");
+            }
+          }
+        } catch (e) {
+          print(e.toString());
+          print("Could not load room : " + r.displayname);
+        }
+      } else if (r.membership == Membership.invite) {
+        minestrixInvites[rs.room.id] = rs;
+      }
+    }
   }
 
   bool sroomsLoaded = false;
   Future<void> loadSRooms() async {
-    print("load srooms");
     // userRoom = null; sometimes an update miss the user room... in order to prevent indesired refresh we suppose that the room won't be removed.
     // if the user room is removed, the user should restart the app
+    await roomsLoading;
+    print("[ client ] : Loading MinesTRIX rooms");
+
     srooms.clear(); // clear rooms
-    log.info("Loading MinesTRIX rooms");
+    roomsLoaded.clear();
 
     minestrixInvites.clear(); // clear invites
     userIdToRoomId.clear();
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
-
-      MinestrixRoom? rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
-      if (rs != null) {
-        // if class is correctly initialisated, we can add it
-        // if we are here, it means that we have a valid smatrix room
-
-        if (r.membership == Membership.join) {
-          try {
-            rs.timeline = await rs.room.getTimeline();
-            srooms[rs.room.id] = rs;
-
-            // by default
-            if (rs.room.pushRuleState == PushRuleState.notify)
-              await rs.room.setPushRuleState(PushRuleState.mentionsOnly);
-            if (!rs.room.tags.containsKey("m.lowpriority")) {
-              await rs.room.addTag("m.lowpriority");
-            }
-
-            // check if this room is a user thread
-            if (rs.roomType == SRoomType.UserRoom) {
-              userIdToRoomId[rs.user.id] = rs.room.id;
-
-              if (userID == rs.user.id) {
-                userRoom = rs; // we have found our user smatrix room
-                // this means that the client has been initialisated
-                // we can load the friendsVue
-
-                print("Found MinesTRIX account : " + rs.name);
-              }
-            }
-          } catch (e) {
-            print(e.toString());
-            print("Could not load room : " + r.displayname);
-          }
-        } else if (r.membership == Membership.invite) {
-          minestrixInvites[rs.room.id] = rs;
-        }
-      }
+      await checkRoom(r);
     }
 
     onSRoomsUpdate.add("update");
     print("Minestrix room update");
     sroomsLoaded = true;
 
-    if (userRoom == null) log.severe("❌ User room not found");
+    if (userRoom == null) print("❌ User room not found");
   }
 
   Future<String> createMinestrixAccount(String name, String desc) async {
@@ -211,17 +242,15 @@ class MinestrixClient extends Client {
         visibility: Visibility.private,
         creationContent: {"type": MinestrixTypes.account});
 
-    // launch sync
-    await loadSRooms();
-    await loadNewTimeline();
-
     return roomID;
   }
 
   Future createSMatrixUserProfile() async {
-    log.info("Create Minestrix room room");
     String name = userID! + " timeline";
     await createMinestrixAccount(name, "A Mines'Trix profile");
+
+    // refresh everything
+    await updateAll();
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t,

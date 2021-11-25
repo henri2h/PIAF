@@ -150,20 +150,17 @@ class MatrixState extends State<Matrix> {
       }
     });
     print("[ widget ] : done");
-
-    log.info("Matrix state initialisated");
   }
 
   void _initWithStore() async {
     var initLoginState = sclient!.onLoginStateChanged.stream.first;
     try {
       sclient!.init();
-
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.loggedIn) {
         await sclient!.initSMatrix();
       } else {
-        log.warning("Not logged in");
+        print("[ widget ] : Not logged in");
       }
     } catch (e) {
       log.severe("error : Could not initWithStore", e);
@@ -179,7 +176,6 @@ class MatrixState extends State<Matrix> {
 
   @override
   Widget build(BuildContext context) {
-    log.info("build");
     return _InheritedMatrix(data: this, child: widget.child!);
   }
 }
