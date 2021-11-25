@@ -73,8 +73,10 @@ class _FeedPageState extends State<FeedPage> {
           else {
             // a new post may be available
 
-            print(sclient.stimeline.length);
-            print(timeline!.length);
+            print("[ feedPage ] Timeline length : " +
+                sclient.stimeline.length.toString());
+            print("[ feedPage ] locale timeline length : " +
+                timeline!.length.toString());
           }
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -84,9 +84,7 @@ class MinestrixRoom {
         sr._validSRoom = true;
         return sr;
       }
-    } catch (e) {
-      print("Could not load room : " + e.toString());
-    }
+    } catch (_) {}
     return null;
   }
 
