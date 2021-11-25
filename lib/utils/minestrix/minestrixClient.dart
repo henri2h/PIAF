@@ -47,8 +47,6 @@ class MinestrixClient extends Client {
   Map<String, String> userIdToRoomId = Map<String, String>();
   List<Event> stimeline = [];
 
-  bool _firstSync = true;
-
   late MinestrixNotifications notifications;
   late MinestrixFriendsSugestion friendsSuggestions;
 
