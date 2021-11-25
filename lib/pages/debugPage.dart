@@ -39,7 +39,7 @@ class _DebugPageState extends State<DebugPage> {
 
     if (this.mounted)
       setState(() {
-        print("State : " + timelineLength.length.toString());
+        print("[ debug ] : State : " + timelineLength.length.toString());
       });
   }
 
@@ -105,7 +105,7 @@ class _DebugPageState extends State<DebugPage> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: TextButton(
+                child: ElevatedButton(
                     child: Text("Load all more"),
                     onPressed: () async {
                       for (MinestrixRoom room in srooms) {
@@ -113,7 +113,42 @@ class _DebugPageState extends State<DebugPage> {
                       }
                     }),
               ),
-            )
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                      child: Text("Load new timeline"),
+                      onPressed: () async {
+                        setState(() {
+                          progressing = true;
+                        });
+                        await sclient!.loadNewTimeline();
+                        getTimelineLength();
+                        setState(() {
+                          progressing = false;
+                        });
+                      }),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                      child: Text("Load srooms"),
+                      onPressed: () async {
+                        setState(() {
+                          progressing = true;
+                        });
+                        await sclient!.loadSRooms();
+                        getTimelineLength();
+                        setState(() {
+                          progressing = false;
+                        });
+                      }),
+                )
+              ],
+            ),
           ],
         ),
       ),
