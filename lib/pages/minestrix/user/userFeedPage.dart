@@ -28,8 +28,40 @@ class UserFeedPage extends StatefulWidget {
 }
 
 class _UserFeedPageState extends State<UserFeedPage> {
+  MinestrixRoom? sroom;
   bool isUserPage = false;
   bool requestingHistory = false;
+
+  bool _updating = false;
+
+  ScrollController _controller = new ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(scrollListener);
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    _controller.removeListener(scrollListener);
+  }
+
+  void scrollListener() async {
+    if (_controller.position.pixels >=
+        _controller.position.maxScrollExtent * 0.8) {
+      if (_updating == false && sroom != null) {
+        setState(() {
+          _updating = true;
+        });
+        print("[ userFeedPage ] : update from scroll");
+        await sroom!.timeline!.requestHistory();
+        setState(() {
+          _updating = false;
+        });
+      }
+    }
+  }
 
   Widget buildPage(
       MinestrixClient sclient, MinestrixRoom sroom, Iterable<Event> sevents) {
@@ -37,6 +69,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
       builder: (context, constraints) => StreamBuilder(
           stream: sroom.room.onUpdate.stream,
           builder: (context, _) => ListView(
+                controller: _controller,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,7 +217,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
 
-    MinestrixRoom? sroom = widget.sroom;
+    sroom = widget.sroom;
 
     if (sroom == null) {
       String? roomId = sclient.userIdToRoomId[widget.userId!];
@@ -200,7 +233,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
 
     if (sroom != null) {
       Iterable<Event> sevents =
-          sclient.getSRoomFilteredEvents(sroom.timeline!, eventTypesFilter: [
+          sclient.getSRoomFilteredEvents(sroom!.timeline!, eventTypesFilter: [
         EventTypes.Message,
         EventTypes.Encrypted,
         EventTypes.RoomCreate,
@@ -218,7 +251,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
         }
         return true;
       });
-      return buildPage(sclient, sroom, sevents);
+      return buildPage(sclient, sroom!, sevents);
     } else {
       return FutureBuilder<Profile>(
           future: sclient.getProfileFromUserId(widget.userId!),
