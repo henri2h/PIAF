@@ -27,7 +27,7 @@ dependencies:
 
   # Matrix
   matrix:  ^0.7.0-nullsafety.7
-      
+  flutter_olm: ^1.1.2
   olm: ^2.0.0
 
   # Database
