@@ -35,7 +35,7 @@ packages:
       name: another_flushbar
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.10.25"
+    version: "1.10.26"
   args:
     dependency: transitive
     description:
@@ -392,7 +392,7 @@ packages:
       name: fluffybox
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.3"
+    version: "0.3.5"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -694,7 +694,7 @@ packages:
       name: matrix
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.7.0-nullsafety.7"
+    version: "0.7.0-nullsafety.9"
   matrix_api_lite:
     dependency: transitive
     description:
@@ -721,7 +721,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "7855fd02c722ba2718a2ee6914a44f5738763c7c"
+      resolved-ref: "007fea2221c7f698528971204e5091dced59380e"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"
@@ -1345,7 +1345,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.0"
+    version: "2.3.1"
   xdg_directories:
     dependency: transitive
     description:
