@@ -721,7 +721,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "007fea2221c7f698528971204e5091dced59380e"
+      resolved-ref: "1722a98de960a4b6c480b482871afea168dc014e"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"
@@ -1324,7 +1324,7 @@ packages:
       name: webview_flutter_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.0"
+    version: "2.3.1"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
