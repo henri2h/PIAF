@@ -447,13 +447,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.8"
-  flutter_olm:
-    dependency: "direct main"
-    description:
-      name: flutter_olm
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.2"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
