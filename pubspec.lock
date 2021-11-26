@@ -721,7 +721,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "6453f7a6f2720fe07aeeaa93bed8363cf2159d95"
+      resolved-ref: "985e42af8ee64fa143e99d92e9f4aa1321fb4dc8"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"
