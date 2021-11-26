@@ -1,8 +1,48 @@
-# Change Log for MinesTRIX
+# Change Log for minestrix
+A new Flutter project.
 
-A privacy respectful social media based on MATRIX
+## v0.1.5 - 2021-11-26
 
-## v0.1.4 - 2021-11-19 - TWIM Edition
+### Chore
+* update dependecies [ef49f2f]
+* update dependencies [5f8b253]
+* update dependencies [3da91bc]
+* update dependencies [c1e4340]
+
+### Feature
+* add back E2EE support in android build [cffe2d9]
+* support for updating timeline when scrolling [5c2149a]
+* improved sync [e0dac37]
+* adding a way to test sync functions [aac852b]
+* moved account creation code into loading page [22a8944]
+* enable launching url from markdown [be5c254]
+* update (added link handling + reply format) [8ab5b8d]
+* update [e707441]
+* allow to request history while loading user private feed [01e6bcf]
+* display "see all friend" button on mobile [ffeb2ec]
+* made account card bottom straight [7c970cf]
+* allow changing displayname [4c13175]
+* migrate to FluffyBox database [a700ff4]
+* update dependencies [ee95678]
+* enhance reaction system [771891b]
+* enhance friend suggestions [14bbca5]
+* update feed view [a426679]
+
+### Fixes
+* revert android olm [f905e9e]
+* typo [c8be623]
+* removed unused field [70978f6]
+* leave default settings. Apparently requesting 50 events doesn't work [9f6573d]
+* made desplayname widget size smaller [770e55f]
+* project name [0ab702d]
+* removed unused dependencies [fd904f7]
+* fallback [e6f190c]
+* lint + dead code [31e27a1]
+
+### Refactor
+* update dependencies [9c929fd]
+
+## v0.1.4 - 2021-11-19
 
 ### Feature
 * Added information about account creation [f09799e]
