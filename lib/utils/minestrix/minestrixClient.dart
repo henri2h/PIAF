@@ -4,6 +4,8 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
@@ -69,7 +71,7 @@ class MinestrixClient extends Client {
         }, supportedLoginTypes: {
           AuthenticationTypes.password,
           AuthenticationTypes.sso
-        }) {
+        }, compute: compute) {
     notifications = MinestrixNotifications();
     friendsSuggestions = MinestrixFriendsSugestion(this);
   }
