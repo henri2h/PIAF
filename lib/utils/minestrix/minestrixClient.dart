@@ -53,7 +53,7 @@ class MinestrixClient extends Client {
   late MinestrixFriendsSugestion friendsSuggestions;
 
   MinestrixClient(String clientName,
-      {bool? enableE2eeRecovery,
+      {bool enableE2eeRecovery = false,
       Set<KeyVerificationMethod>? verificationMethods})
       : super(clientName, verificationMethods: verificationMethods,
             databaseBuilder: (Client client) async {
@@ -71,7 +71,7 @@ class MinestrixClient extends Client {
         }, supportedLoginTypes: {
           AuthenticationTypes.password,
           AuthenticationTypes.sso
-        }, compute: compute) {
+        }, compute: compute, enableE2eeRecovery: enableE2eeRecovery) {
     notifications = MinestrixNotifications();
     friendsSuggestions = MinestrixFriendsSugestion(this);
   }
