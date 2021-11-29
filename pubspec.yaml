@@ -27,7 +27,7 @@ dependencies:
 
   # Matrix
   matrix:  ^0.7.0-nullsafety.7
-  #flutter_olm: ^1.1.2
+  flutter_olm: ^1.1.2
   olm: ^2.0.0
 
   # Database
@@ -92,8 +92,8 @@ dependencies:
   package_info_plus: ^1.0.0
   
   minestrix_chat:
-    #path: './minestrix-chat'
-    git: https://gitlab.com/minestrix/minestrix-chat.git
+    path: './minestrix-chat'
+    #git: https://gitlab.com/minestrix/minestrix-chat.git
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
 
