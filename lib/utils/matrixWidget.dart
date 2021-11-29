@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:logging/logging.dart';
 import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/dialogs/keyVerificationDialog.dart';
@@ -52,8 +51,8 @@ class MatrixState extends State<Matrix> {
     Logs().i("[ widget ] : init");
     String clientName = "minestrix";
 
-    sclient = MinestrixClient(clientName,
-        enableE2eeRecovery: true, verificationMethods: verificationMethods);
+    sclient =
+        MinestrixClient(clientName, verificationMethods: verificationMethods);
 
     await sclient!.init();
 

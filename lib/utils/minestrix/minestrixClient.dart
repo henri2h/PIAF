@@ -53,8 +53,7 @@ class MinestrixClient extends Client {
   late MinestrixFriendsSugestion friendsSuggestions;
 
   MinestrixClient(String clientName,
-      {bool enableE2eeRecovery = false,
-      Set<KeyVerificationMethod>? verificationMethods})
+      {Set<KeyVerificationMethod>? verificationMethods})
       : super(clientName, verificationMethods: verificationMethods,
             databaseBuilder: (Client client) async {
           return await FlutterFluffyBoxDatabase.databaseBuilder(client);
@@ -71,7 +70,7 @@ class MinestrixClient extends Client {
         }, supportedLoginTypes: {
           AuthenticationTypes.password,
           AuthenticationTypes.sso
-        }, compute: compute, enableE2eeRecovery: enableE2eeRecovery) {
+        }, compute: compute) {
     notifications = MinestrixNotifications();
     friendsSuggestions = MinestrixFriendsSugestion(this);
   }
