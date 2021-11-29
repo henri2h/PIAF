@@ -27,8 +27,6 @@ class Matrix extends StatefulWidget {
 }
 
 class MatrixState extends State<Matrix> {
-  final log = Logger("MatrixState");
-
   MinestrixClient? sclient;
   @override
   late BuildContext context;
@@ -36,20 +34,13 @@ class MatrixState extends State<Matrix> {
   StreamSubscription<KeyVerification>? onKeyVerificationRequestSub;
   StreamSubscription<EventUpdate>? onEvent;
 
-  @deprecated
-  Future<void> connect() async {
-    sclient!.onLoginStateChanged.stream.listen((LoginState loginState) {
-      print("LoginState: ${loginState.toString()}");
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     initMatrix();
   }
 
-  void initMatrix() {
+  void initMatrix() async {
     final Set<KeyVerificationMethod> verificationMethods =
         <KeyVerificationMethod>{KeyVerificationMethod.numbers};
 
@@ -58,22 +49,23 @@ class MatrixState extends State<Matrix> {
       verificationMethods.add(KeyVerificationMethod.emoji);
     }
 
-    log.info("[ widget ] : init");
+    Logs().i("[ widget ] : init");
     String clientName = "minestrix";
 
     sclient = MinestrixClient(clientName,
         enableE2eeRecovery: true, verificationMethods: verificationMethods);
 
-    log.info("logged: " + sclient!.isLogged().toString());
-    log.info("[ widget ] : store");
+    await sclient!.init();
+
+    Logs().i("logged: " + sclient!.isLogged().toString());
     _initWithStore();
-    print("[ widget ] : register");
+    Logs().i("[ widget ] : register");
 
     onKeyVerificationRequestSub ??= sclient!.onKeyVerificationRequest.stream
         .listen((KeyVerification request) async {
-      log.info("KeyVerification");
-      log.info(request.deviceId);
-      log.info(request.isDone);
+      Logs().i("KeyVerification");
+      Logs().i(request.deviceId.toString());
+      Logs().i(request.isDone.toString());
 
       var hidPopup = false;
       request.onUpdate = () {
@@ -149,21 +141,20 @@ class MatrixState extends State<Matrix> {
         }
       }
     });
-    print("[ widget ] : done");
+    Logs().i("[ widget ] : done");
   }
 
-  void _initWithStore() async {
+  Future<void> _initWithStore() async {
     var initLoginState = sclient!.onLoginStateChanged.stream.first;
     try {
-      sclient!.init();
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.loggedIn) {
         await sclient!.initSMatrix();
       } else {
-        print("[ widget ] : Not logged in");
+        Logs().i("[ widget ] : Not logged in");
       }
     } catch (e) {
-      log.severe("error : Could not initWithStore", e);
+      Logs().w("error : Could not initWithStore", e);
     }
   }
 
