@@ -13,7 +13,7 @@ class MinestrixTitle extends StatelessWidget {
           children: [
             Text("MinesTRIX",
                 style: TextStyle(fontSize: 50, fontWeight: FontWeight.w800)),
-            Text("An privacy focused social media based on MATRIX",
+            Text("A privacy focused social media based on MATRIX",
                 style: TextStyle(fontSize: 30))
           ]),
     );
