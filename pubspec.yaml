@@ -26,17 +26,12 @@ dependencies:
 
 
   # Matrix
-  matrix:  ^0.7.0-nullsafety.7
+  matrix:  ^0.7.0-nullsafety.9
   flutter_olm: ^1.1.2
-  olm: ^2.0.0
+  flutter_openssl_crypto: ^0.0.1
 
   # Database
-  hive: ^2.0.4
   hive_flutter: ^1.1.0
-
-  
-  #flutter_openssl_crypto: ^0.0.1
-
 
   redux: ^5.0.0
   flutter_redux: ^0.8.2
