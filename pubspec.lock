@@ -733,9 +733,11 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
-      path: minestrix-chat
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "82587055f249b21db7e6f1ac2287ca3d4770cc6b"
+      url: "https://gitlab.com/minestrix/minestrix-chat.git"
+    source: git
     version: "0.0.1"
   nested:
     dependency: transitive
@@ -757,7 +759,7 @@ packages:
       name: octo_image
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0+1"
+    version: "1.0.1"
   olm:
     dependency: transitive
     description:
@@ -1084,7 +1086,7 @@ packages:
       name: source_gen
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.1"
+    version: "1.2.0"
   source_helper:
     dependency: transitive
     description:
