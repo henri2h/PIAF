@@ -54,8 +54,6 @@ class MatrixState extends State<Matrix> {
     sclient =
         MinestrixClient(clientName, verificationMethods: verificationMethods);
 
-    await sclient!.init();
-
     Logs().i("logged: " + sclient!.isLogged().toString());
     _initWithStore();
     Logs().i("[ widget ] : register");
@@ -143,14 +141,17 @@ class MatrixState extends State<Matrix> {
     Logs().i("[ widget ] : done");
   }
 
-  Future<void> _initWithStore() async {
+  void _initWithStore() async {
+    await sclient!
+        .init(waitForFirstSync: false, waitUntilLoadCompletedLoaded: false);
+    Logs().w("Init done");
     var initLoginState = sclient!.onLoginStateChanged.stream.first;
     try {
       final firstLoginState = await initLoginState;
       if (firstLoginState == LoginState.loggedIn) {
         await sclient!.initSMatrix();
       } else {
-        Logs().i("[ widget ] : Not logged in");
+        Logs().w("[ widget ] : Not logged in");
       }
     } catch (e) {
       Logs().w("error : Could not initWithStore", e);
