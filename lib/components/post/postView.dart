@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
@@ -74,12 +75,24 @@ class PostContent extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text(
-                  "✨ " +
-                      (event.sender.displayName ?? event.senderId) +
-                      " Joined MinesTRIX ✨",
+                  "✨ " + event.sender.calcDisplayname() + " Joined MinesTRIX ✨",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w400)),
             ),
             MinestrixTitle()
+          ],
+        );
+
+      case EventTypes.RoomAvatar:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                  event.sender.calcDisplayname() + " Changed page picture",
+                  style: TextStyle()),
+            ),
+            MImageDisplay(event: event),
           ],
         );
     }
@@ -102,7 +115,9 @@ class PostContent extends StatelessWidget {
         update = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(event.body)
+            Text("Default : "),
+            Text(event.content.toString()),
+            Text(event.prevContent.toString())
             /*
            // Debug :
             Text(event.content.toString()),
