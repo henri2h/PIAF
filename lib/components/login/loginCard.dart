@@ -73,7 +73,8 @@ class LoginCardState extends State<LoginCard> {
           token: token,
           initialDeviceDisplayName: client.clientName);
 
-      await client.initSMatrix(); // start synchronsiation
+      await client.roomsLoading;
+      await client.updateAll(); // start synchronsiation
     } catch (error) {
       print("could not log in");
       if (mounted) setState(() => _errorText = error.toString());

@@ -15,6 +15,20 @@ class Minestrix extends StatefulWidget {
 
 class _MinestrixState extends State<Minestrix> {
   final _appRouter = AppRouter();
+  bool _initLock = false;
+  Future<bool> initMatrix(MinestrixClient m) async {
+    Logs().i("[ logged ] : " + m.isLogged().toString());
+    if (m.isLogged() == false && !_initLock) {
+      _initLock = true;
+      await m.init(
+          waitForFirstSync: false, waitUntilLoadCompletedLoaded: false);
+
+      await m.roomsLoading;
+      await m.updateAll(); // load all minestrix rooms and build timeline
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Matrix(
@@ -27,32 +41,36 @@ class _MinestrixState extends State<Minestrix> {
 
                 return StreamBuilder<String>(
                     stream: sclient.onSRoomsUpdate.stream,
-                    builder: (context, sroomSnap) => MaterialApp.router(
-                          routerDelegate: AutoRouterDelegate.declarative(
-                            _appRouter,
-                            routes: (_) {
-                              print("route up");
-                              return [
-                                if (state.hasData == false ||
-                                    (state.data == LoginState.loggedIn &&
-                                        !sclient.userRoomCreated))
-                                  MatrixLoadingRoute()
-                                else if (state.data == LoginState.loggedIn &&
-                                    sclient.userRoomCreated)
-                                  HomeWraperRoute()
-                                // if they are not logged in, bring them to the Login page
-                                else
-                                  LoginRoute()
-                              ];
-                            },
-                          ),
+                    builder: (context, sroomSnap) => FutureBuilder(
+                        future: initMatrix(sclient),
+                        builder: (context, snap) {
+                          return MaterialApp.router(
+                            routerDelegate: AutoRouterDelegate.declarative(
+                              _appRouter,
+                              routes: (_) {
+                                print("route up");
+                                return [
+                                  if (state.hasData == false ||
+                                      (state.data == LoginState.loggedIn &&
+                                          !sclient.userRoomCreated))
+                                    MatrixLoadingRoute()
+                                  else if (state.data == LoginState.loggedIn &&
+                                      sclient.userRoomCreated)
+                                    HomeWraperRoute()
+                                  // if they are not logged in, bring them to the Login page
+                                  else
+                                    LoginRoute()
+                                ];
+                              },
+                            ),
 
-                          routeInformationParser:
-                              _appRouter.defaultRouteParser(),
-                          debugShowCheckedModeBanner: false,
-                          // theme :
-                          theme: theme.getTheme(),
-                        ));
+                            routeInformationParser:
+                                _appRouter.defaultRouteParser(),
+                            debugShowCheckedModeBanner: false,
+                            // theme :
+                            theme: theme.getTheme(),
+                          );
+                        }));
               }),
         ),
       ),

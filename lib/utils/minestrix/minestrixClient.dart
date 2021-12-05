@@ -23,6 +23,7 @@ class MinestrixClient extends Client {
   final log = Logger("MinestrixClient");
 
   StreamSubscription? onRoomUpdateSub; // event subscription
+  StreamSubscription? onFirstSyncSub;
 
   StreamController<String> onTimelineUpdate = StreamController.broadcast();
 
@@ -71,8 +72,38 @@ class MinestrixClient extends Client {
           AuthenticationTypes.password,
           AuthenticationTypes.sso
         }, compute: compute) {
+    // register helpers
     notifications = MinestrixNotifications();
     friendsSuggestions = MinestrixFriendsSugestion(this);
+
+    // register listener
+    onRoomUpdateSub ??= this.onEvent.stream.listen((EventUpdate rUp) async {
+      if (srooms.containsKey(rUp.roomID)) {
+        // we use a timer to prevent calling
+        timerCallbackEventUpdate?.cancel();
+        timerCallbackEventUpdate =
+            new Timer(const Duration(milliseconds: 300), () async {
+          print("[ sync ] : New event");
+          await loadNewTimeline(); // new message, we only need to rebuild timeline
+        });
+      } else {
+        if (roomsLoaded.containsKey(rUp.roomID) == false) {
+          Room? r = getRoomById(rUp.roomID);
+          if (r != null) {
+            print("[ client ] : update rooms list");
+            await checkRoom(r);
+
+            onTimelineUpdate.add("up");
+          }
+        }
+      }
+    });
+    onFirstSyncSub ??= onFirstSync.stream.listen((bool result) async {
+      if (result) {
+        print("[ client ] : on first sync completed");
+        await updateAll();
+      }
+    });
   }
 
   Future<List<User>> getFollowers() async {
@@ -99,44 +130,11 @@ class MinestrixClient extends Client {
   Timer? timerCallbackEventUpdate;
 
   Future<void> updateAll() async {
+    Logs().i("[ Minestrix Client ] : updating all");
     await loadSRooms();
     await autoFollowFollowers(); // TODO : Let's see if we keep this in the future
     await loadNewTimeline();
     notifications.loadNotifications(this);
-  }
-
-  Future<void> initSMatrix() async {
-    // initialisation
-    await updateAll();
-
-    // for MinestrixRooms
-    onRoomUpdateSub ??= this.onEvent.stream.listen((EventUpdate rUp) async {
-      if (srooms.containsKey(rUp.roomID)) {
-        // we use a timer to prevent calling
-        timerCallbackEventUpdate?.cancel();
-        timerCallbackEventUpdate =
-            new Timer(const Duration(milliseconds: 300), () async {
-          print("[ sync ] : New event");
-          await loadNewTimeline(); // new message, we only need to rebuild timeline
-        });
-      } else {
-        if (roomsLoaded.containsKey(rUp.roomID) == false) {
-          Room? r = getRoomById(rUp.roomID);
-          if (r != null) {
-            print("[ client ] : update rooms list");
-            await checkRoom(r);
-
-            onTimelineUpdate.add("up");
-          }
-        }
-      }
-    });
-    onFirstSync.stream.listen((bool result) async {
-      if (result) {
-        print("[ client ] : on first sync completed");
-        await updateAll();
-      }
-    });
   }
 
   Future<void> requestHistoryForSRooms() async {
@@ -324,6 +322,7 @@ class MinestrixClient extends Client {
   Future<void> dispose({bool closeDatabase = true}) async {
     onTimelineUpdate.close();
     onRoomUpdateSub?.cancel();
+    onFirstSyncSub?.cancel();
     await super.dispose(closeDatabase: closeDatabase);
   }
 
