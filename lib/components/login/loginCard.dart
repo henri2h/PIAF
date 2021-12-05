@@ -12,6 +12,9 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'package:minestrix/utils/web/pluginWebLogin_stub.dart'
+    if (dart.library.html) 'package:minestrix/utils/web/pluginWebLogin.dart';
+
 class LoginCard extends StatefulWidget {
   LoginCard({Key? key}) : super(key: key);
   @override
@@ -231,10 +234,12 @@ class LoginCardState extends State<LoginCard> {
                   onPressed: _isLoading || !canTryLogIn
                       ? null
                       : () async {
+                          // redirect to the same previous domain when platform is web
                           String url = domain +
                               "/_matrix/client/r0/login/sso/redirect?redirectUrl=" +
-                              domain +
-                              "/#/"; // we should not reach the redirect url ...
+                              (WebLogin.getUrl() ??
+                                  domain +
+                                      "/#/"); // we should not reach the redirect url ...
 
                           TextEditingController ssoResponse =
                               TextEditingController();

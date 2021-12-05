@@ -12,4 +12,8 @@ class WebLogin {
   static void launchSame(String url) {
     window.location.href = url;
   }
+
+  static String? getUrl() {
+    return window.location.href;
+  }
 }

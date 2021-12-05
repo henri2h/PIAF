@@ -4,4 +4,7 @@ class WebLogin {
   }
 
   static void launchSame(String url) {}
+  static String? getUrl() {
+    return null;
+  }
 }
