@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/login/loginCard.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
@@ -44,6 +45,13 @@ class _LoginPageState extends State<LoginPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    FutureBuilder<PackageInfo>(
+                        future: PackageInfo.fromPlatform(),
+                        builder: (context, snap) {
+                          if (!snap.hasData) return Container();
+                          return Text(
+                              "Version : " + (snap.data?.version ?? 'null'));
+                        }),
                     TextButton(
                       onPressed: () async =>
                           await _launchURL("https://matrix.org"),
