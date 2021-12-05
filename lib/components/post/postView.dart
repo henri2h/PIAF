@@ -92,7 +92,7 @@ class PostContent extends StatelessWidget {
                   event.sender.calcDisplayname() + " Changed page picture",
                   style: TextStyle()),
             ),
-            MImageDisplay(event: event),
+            MImage(event: event),
           ],
         );
     }
