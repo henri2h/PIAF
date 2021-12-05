@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/login/loginInput.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
+import 'package:minestrix/utils/Managers/StorageManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -64,17 +65,12 @@ class LoginCardState extends State<LoginCard> {
         _errorText = null;
       });
     try {
-      await client.checkHomeserver(_hostNameController.text);
-      await client.login(
+      await client.customLoginAction(
           useSsoLogin ? LoginType.mLoginToken : LoginType.mLoginPassword,
-          identifier:
-              AuthenticationUserIdentifier(user: _usernameController.text),
+          homeserver: _hostNameController.text,
+          user: _usernameController.text,
           password: _passwordController.text,
-          token: token,
-          initialDeviceDisplayName: client.clientName);
-
-      await client.roomsLoading;
-      await client.updateAll(); // start synchronsiation
+          token: token);
     } catch (error) {
       print("could not log in");
       if (mounted) setState(() => _errorText = error.toString());
@@ -243,11 +239,21 @@ class LoginCardState extends State<LoginCard> {
                           TextEditingController ssoResponse =
                               TextEditingController();
 
+                          // web login
+                          if (kIsWeb) {
+                            StorageManager.saveData(
+                                "homeserver", _hostNameController.text);
+                            StorageManager.saveData(
+                                "user", _usernameController.text);
+                            await _launchURL(url);
+                            return;
+                          }
+
                           String nav = await (Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => !kIsWeb &&
-                                        (Platform.isAndroid || Platform.isIOS)
+                                builder: (context) => (Platform.isAndroid ||
+                                        Platform.isIOS)
                                     ? WebView(
                                         initialUrl: url,
                                         javascriptMode: JavascriptMode
@@ -286,14 +292,11 @@ class LoginCardState extends State<LoginCard> {
                                               SizedBox(height: 30),
                                               Text("And paste response"),
                                               SizedBox(height: 30),
-                                              if (!kIsWeb &&
-                                                  (Platform.isAndroid ||
-                                                      Platform.isIOS))
-                                                TextButton(
-                                                    onPressed: () async {
-                                                      await _launchURL(url);
-                                                    },
-                                                    child: Text("Copy")),
+                                              TextButton(
+                                                  onPressed: () async {
+                                                    await _launchURL(url);
+                                                  },
+                                                  child: Text("Copy")),
                                               TextField(
                                                   autocorrect: false,
                                                   controller: ssoResponse),
