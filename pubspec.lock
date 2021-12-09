@@ -733,11 +733,9 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "5d05fdfb3a7ab9e4f5a1c7dc1c2e70bc3c053411"
-      url: "https://gitlab.com/minestrix/minestrix-chat.git"
-    source: git
+      path: minestrix-chat
+      relative: true
+    source: path
     version: "0.0.1"
   nested:
     dependency: transitive
