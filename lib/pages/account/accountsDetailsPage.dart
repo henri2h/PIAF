@@ -10,6 +10,7 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/utils/room_profile.dart';
+import 'package:minestrix_chat/partials/stories_circle.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
   const AccountsDetailsPage({Key? key}) : super(key: key);
@@ -47,6 +48,18 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
               return Builder(builder: (context) {
                 Room? r = sclient.getRoomById(s.roomId!);
                 if (r == null) return Icon(Icons.error);
+
+                if (r.getState("m.room.create")?.content["type"] ==
+                    "msczzzz.stories.stories_room")
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        StorieCircle(room: r),
+                        StorieCircle(room: r, dot: true),
+                      ],
+                    ),
+                  );
 
                 return RoomProfileListTile(r);
               });
@@ -170,13 +183,29 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                 context.pushRoute(UserFeedRoute(sroom: sroom));
               }),
         Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: OutlinedButton(
-              child: Padding(
-                padding: const EdgeInsets.all(25.0),
-                child: Text("Create a public account"),
-              ),
-              onPressed: () {}),
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              if (profile != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomFutureButton(
+                      onPressed: () async {
+                        await profile.createStoriesRoom();
+                        setState(() {});
+                      },
+                      text: "Create stories room",
+                      icon: Icon(Icons.photo)),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CustomFutureButton(
+                    onPressed: () async {},
+                    text: "Create a public MinesTRIX room",
+                    icon: Icon(Icons.person_add)),
+              )
+            ],
+          ),
         ),
       ],
     );

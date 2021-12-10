@@ -23,7 +23,7 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
   Widget build(BuildContext context) {
     return ElevatedButton(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(14),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
