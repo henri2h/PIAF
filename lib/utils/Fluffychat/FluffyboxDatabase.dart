@@ -67,7 +67,14 @@ class FlutterFluffyBoxDatabase extends FluffyBoxDatabase {
     } catch (_) {
       Logs().w('Unable to open FluffyBox. Delete database and storage key...');
       const FlutterSecureStorage().delete(key: _cipherStorageKey);
-      await db.clear();
+
+      if (!kIsWeb) {
+        final dir = Directory(await _findDatabasePath(client));
+        dir.deleteSync(recursive: true);
+      } else {
+        await db.clear();
+      }
+
       rethrow;
     }
     Logs().d('FluffyBox is ready');
