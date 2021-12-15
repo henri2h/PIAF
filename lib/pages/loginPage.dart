@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/login/loginCard.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
