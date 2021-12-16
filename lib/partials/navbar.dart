@@ -145,16 +145,19 @@ class NavBarMobileState extends State<NavBarMobile> {
         BottomNavigationBarItem(
             icon: Icon(Icons.message_outlined), label: "Messages"),
         BottomNavigationBarItem(
-            icon: FutureBuilder(
-                future: sclient.getProfileFromUserId(sclient.userID!),
-                builder: (BuildContext context, AsyncSnapshot<Profile> p) {
-                  if (p.data?.avatarUrl == null) return Icon(Icons.person);
-                  return MatrixUserImage(
-                      client: sclient,
-                      url: p.data!.avatarUrl,
-                      fit: true,
-                      thumnail: true);
-                }),
+            icon: SizedBox(
+              height: 30,
+              child: FutureBuilder(
+                  future: sclient.getProfileFromUserId(sclient.userID!),
+                  builder: (BuildContext context, AsyncSnapshot<Profile> p) {
+                    if (p.data?.avatarUrl == null) return Icon(Icons.person);
+                    return MatrixUserImage(
+                        client: sclient,
+                        url: p.data!.avatarUrl,
+                        fit: true,
+                        thumnail: true);
+                  }),
+            ),
             label: "My account"),
       ],
     );
