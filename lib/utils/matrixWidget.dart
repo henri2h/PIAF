@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
