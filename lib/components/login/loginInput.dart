@@ -21,7 +21,7 @@ class LoginInput extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextField(
-        keyboardType: TextInputType.emailAddress,
+        keyboardType: TextInputType.text,
         controller: tController,
         obscureText: obscureText,
         onChanged: onChanged as void Function(String)?,
