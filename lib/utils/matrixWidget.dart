@@ -86,7 +86,7 @@ class MatrixState extends State<Matrix> {
       }*/
     });
 
-    onEvent ??= sclient!.onEvent.stream
+    /*onEvent ??= sclient!.onEvent.stream
         .where((event) =>
             [EventTypes.Message, EventTypes.Encrypted]
                 .contains(event.content['type']) &&
@@ -133,6 +133,7 @@ class MatrixState extends State<Matrix> {
         }
       }
     });
+    */
     Logs().i("[ widget ] : done");
   }
 
