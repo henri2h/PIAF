@@ -4,10 +4,12 @@
 
 ![](readmeassets/feedVue.png)
 
+[Chat with us !](https://matrix.to/#/#minestrix:carnot.cc)
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
 ![](https://img.shields.io/badge/Version-ALPHA_0.1.5-teal)
 ![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
+
 ## 🤔 Why
 
 The goal of MinesTrix is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your posts or edit them.
