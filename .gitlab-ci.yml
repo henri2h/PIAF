@@ -75,6 +75,27 @@ deploy_web:
   only:
     - master
 
+deploy_android_fdroid:
+  image: "debian:buster"
+  stage: deploy
+  
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'which rsync || ( apt-get update -y && apt-get install rsync -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
+  script:
+    - cd build/android/
+    - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*' ../../pubspec.yaml) && mv app-release.apk "${UPDATE_VERSION}.apk"
+    - rsync -az ./ $USER@$HOST:fdroid/repo
+  only:
+    - master
+
+
+
 analyze:
   stage: analyze
 
