@@ -88,7 +88,7 @@ deploy_android_fdroid:
     - chmod 700 ~/.ssh
     - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
   script:
-    - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*' pubspec.yaml) && mv build/app/outputs/flutter-appbundle/app-release.apk "build/app/outputs/flutter-appbundle/${UPDATE_VERSION}.apk"
+    - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*' pubspec.yaml) && mv build/app/outputs/flutter-appbundle/app-release.appbundle "build/app/outputs/flutter-appbundle/${UPDATE_VERSION}.apk"
     - rsync -az build/app/outputs/flutter-appbundle/ $USER@$HOST:fdroid/repo
   only:
     - master
