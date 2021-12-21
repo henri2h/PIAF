@@ -22,7 +22,7 @@ build_linux:
   tags:
     - shared
 
-build_android:
+build_android_bundle:
   stage: build
 
   script:
@@ -34,9 +34,21 @@ build_android:
     when: on_success
     paths:
       - build/app/outputs/bundle/release/app-release.aab
- 
-  #only:
-  #  - main # disable android 
+  tags:
+    - shared
+
+build_android_apk:
+  stage: build
+
+  script:
+    - flutter clean
+    - flutter pub get
+    - flutter packages pub run build_runner build --delete-conflicting-outputs
+    - flutter build apk --release
+  artifacts:
+    when: on_success
+    paths:
+      - build/app/outputs/flutter-apk/app-release.apk
 
   tags:
     - shared
@@ -89,8 +101,8 @@ deploy_android_fdroid:
     - chmod 700 ~/.ssh
     - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
   script:
-    - cd build/app/outputs/bundle/release
-    - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*' ../../../../../pubspec.yaml) && mv app-release.aab "${UPDATE_VERSION}.apk"
+    - cd build/app/outputs/flutter-apk/
+    - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*' ../../../../../pubspec.yaml) && mv app-release.apk "${UPDATE_VERSION}.apk"
     - rsync -raz  ./ $USER@$HOST:fdroid/repo
   only:
     - master
