@@ -618,13 +618,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.0"
-  idb_shim:
-    dependency: transitive
-    description:
-      name: idb_shim
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.1"
   image_picker:
     dependency: "direct main"
     description:
@@ -977,13 +970,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.1+1"
-  sembast_web:
-    dependency: "direct main"
-    description:
-      name: sembast_web
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.1+1"
   share:
     dependency: transitive
     description:
@@ -1130,7 +1116,7 @@ packages:
     source: hosted
     version: "1.8.1"
   sqflite:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: sqflite
       url: "https://pub.dartlang.org"
@@ -1143,13 +1129,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
-  sqlite3:
-    dependency: "direct main"
-    description:
-      name: sqlite3
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.4.0"
   stack_trace:
     dependency: transitive
     description:
