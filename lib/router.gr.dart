@@ -79,14 +79,20 @@ class AppRouter extends _i15.RootStackRouter {
       final args = routeData.argsAs<MatrixChatsRouteArgs>();
       return _i15.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i8.MatrixChatsPage(key: args.key, client: args.client));
+          child: _i8.MatrixChatsPage(
+              key: args.key,
+              client: args.client,
+              enableStories: args.enableStories));
     },
     MatrixChatRoute.name: (routeData) {
       final args = routeData.argsAs<MatrixChatRouteArgs>();
       return _i15.MaterialPageX<dynamic>(
           routeData: routeData,
           child: _i9.MatrixChatPage(
-              key: args.key, roomId: args.roomId, client: args.client));
+              key: args.key,
+              roomId: args.roomId,
+              client: args.client,
+              onBack: args.onBack));
     },
     UserFeedRoute.name: (routeData) {
       final args = routeData.argsAs<UserFeedRouteArgs>(
@@ -270,42 +276,50 @@ class PostEditorRouteArgs {
 
 /// generated route for [_i8.MatrixChatsPage]
 class MatrixChatsRoute extends _i15.PageRouteInfo<MatrixChatsRouteArgs> {
-  MatrixChatsRoute({_i16.Key? key, required _i18.Client client})
+  MatrixChatsRoute(
+      {_i16.Key? key, required _i18.Client client, bool enableStories = false})
       : super(name,
             path: 'chats',
-            args: MatrixChatsRouteArgs(key: key, client: client));
+            args: MatrixChatsRouteArgs(
+                key: key, client: client, enableStories: enableStories));
 
   static const String name = 'MatrixChatsRoute';
 }
 
 class MatrixChatsRouteArgs {
-  const MatrixChatsRouteArgs({this.key, required this.client});
+  const MatrixChatsRouteArgs(
+      {this.key, required this.client, this.enableStories = false});
 
   final _i16.Key? key;
 
   final _i18.Client client;
 
+  final bool enableStories;
+
   @override
   String toString() {
-    return 'MatrixChatsRouteArgs{key: $key, client: $client}';
+    return 'MatrixChatsRouteArgs{key: $key, client: $client, enableStories: $enableStories}';
   }
 }
 
 /// generated route for [_i9.MatrixChatPage]
 class MatrixChatRoute extends _i15.PageRouteInfo<MatrixChatRouteArgs> {
   MatrixChatRoute(
-      {_i16.Key? key, required String roomId, required _i18.Client client})
+      {_i16.Key? key,
+      required String roomId,
+      required _i18.Client client,
+      void Function()? onBack})
       : super(name,
             path: 'chat/:roomId',
-            args:
-                MatrixChatRouteArgs(key: key, roomId: roomId, client: client));
+            args: MatrixChatRouteArgs(
+                key: key, roomId: roomId, client: client, onBack: onBack));
 
   static const String name = 'MatrixChatRoute';
 }
 
 class MatrixChatRouteArgs {
   const MatrixChatRouteArgs(
-      {this.key, required this.roomId, required this.client});
+      {this.key, required this.roomId, required this.client, this.onBack});
 
   final _i16.Key? key;
 
@@ -313,9 +327,11 @@ class MatrixChatRouteArgs {
 
   final _i18.Client client;
 
+  final void Function()? onBack;
+
   @override
   String toString() {
-    return 'MatrixChatRouteArgs{key: $key, roomId: $roomId, client: $client}';
+    return 'MatrixChatRouteArgs{key: $key, roomId: $roomId, client: $client, onBack: $onBack}';
   }
 }
 

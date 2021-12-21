@@ -1,7 +1,6 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';

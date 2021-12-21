@@ -8,9 +8,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' hide Key;
 import 'package:flutter/services.dart';
-
+import 'package:fluffybox/hive.dart' show Hive, HiveAesCipher, HiveCipher;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:matrix/matrix.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -67,7 +66,14 @@ class FlutterFluffyBoxDatabase extends FluffyBoxDatabase {
     } catch (_) {
       Logs().w('Unable to open FluffyBox. Delete database and storage key...');
       const FlutterSecureStorage().delete(key: _cipherStorageKey);
-      await db.clear();
+
+      if (!kIsWeb) {
+        final dir = Directory(await _findDatabasePath(client));
+        dir.deleteSync(recursive: true);
+      } else {
+        await db.clear();
+      }
+
       rethrow;
     }
     Logs().d('FluffyBox is ready');

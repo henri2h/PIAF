@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/Managers/StorageManager.dart';
