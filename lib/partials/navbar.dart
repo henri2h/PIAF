@@ -38,8 +38,9 @@ class NavBarDesktop extends StatelessWidget {
                 name: "Chats",
                 icon: Icons.chat,
                 onPressed: () {
-                  context.pushRoute(
-                      MatrixChatsRoute(client: Matrix.of(context).sclient!));
+                  context.pushRoute(MatrixChatsRoute(
+                      client: Matrix.of(context).sclient!,
+                      enableStories: true));
                 }),
             NavBarButton(
                 name: "Search",
@@ -122,8 +123,8 @@ class NavBarMobileState extends State<NavBarMobile> {
         context.pushRoute(FeedRoute());
         break;
       case 1:
-        context
-            .pushRoute(MatrixChatsRoute(client: Matrix.of(context).sclient!));
+        context.pushRoute(MatrixChatsRoute(
+            client: Matrix.of(context).sclient!, enableStories: true));
         break;
       case 2:
         context.pushRoute(UserFeedRoute(userId: userId));
