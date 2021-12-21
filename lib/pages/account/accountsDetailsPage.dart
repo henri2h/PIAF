@@ -42,11 +42,20 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
         if (profile != null)
           for (SpaceChild s in profile.spaceChildren)
             Builder(builder: (context) {
-              if (s.roomId == false) return Icon(Icons.error);
+              if (s.roomId == null) return Icon(Icons.error);
 
               return Builder(builder: (context) {
                 Room? r = sclient.getRoomById(s.roomId!);
-                if (r == null) return Icon(Icons.error);
+                if (r == null)
+                  return ListTile(
+                      leading: Icon(Icons.error),
+                      title: Text("could not open " + s.roomId!),
+                      trailing: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () async {
+                            await profile.removeSpaceChild(s.roomId!);
+                            setState(() {});
+                          }));
 
                 if (r.getState("m.room.create")?.content["type"] ==
                     "msczzzz.stories.stories_room")
@@ -55,7 +64,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     child: Row(
                       children: [
                         StorieCircle(room: r),
-                        StorieCircle(room: r, dot: true),
+                        Expanded(child: RoomProfileListTile(r))
                       ],
                     ),
                   );
@@ -70,117 +79,25 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                 profile.spaceChildren.indexWhere(
                         (SpaceChild sc) => sc.roomId == sroom.room.id) ==
                     -1)))
-          ListTile(
-              leading: CircleAvatar(
-                backgroundImage: sroom.user.avatarUrl == null
-                    ? null
-                    : NetworkImage(
-                        sroom.user.avatarUrl!
-                            .getThumbnail(
-                              sclient,
-                              width: 64,
-                              height: 64,
-                            )
-                            .toString(),
-                      ),
-              ),
-              title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text((sroom.user.displayName ?? sroom.user.id),
-                        style: TextStyle(fontWeight: FontWeight.bold))
-                  ]),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (sroom.room.topic != "")
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(sroom.room.topic),
-                    ),
-                  if (sroom.room.joinRules == JoinRules.invite)
-                    Row(
-                      children: [
-                        Icon(Icons.person),
-                        SizedBox(width: 10),
-                        Text("Private"),
-                      ],
-                    ),
-                  if (sroom.room.joinRules == JoinRules.public)
-                    Row(
-                      children: [
-                        Icon(Icons.public),
-                        SizedBox(width: 10),
-                        Text("Public"),
-                      ],
-                    ),
-                  Row(
-                    children: [
-                      Icon(Icons.people),
-                      SizedBox(width: 10),
-                      Text(sroom.room.summary.mJoinedMemberCount.toString() +
-                          " followers"),
-                    ],
-                  ),
-                  if (sroom.room.encrypted)
-                    Row(
-                      children: [
-                        Icon(Icons.verified_user),
-                        SizedBox(width: 10),
-                        Text("Encrypted")
-                      ],
-                    ),
-                  if (!sroom.room.encrypted)
-                    Row(
-                      children: [
-                        Icon(Icons.no_encryption),
-                        SizedBox(width: 10),
-                        Text("Not encrypted")
-                      ],
-                    ),
-                  if (profile != null &&
-                      profile.spaceChildren.contains(
-                              (SpaceChild sc) => sc.roomId == sroom.room.id) ==
-                          false)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: CustomFutureButton(
-                          onPressed: () async {
-                            await profile.setSpaceChild(sroom.room.id);
-                          },
-                          text: "Add to profile list",
-                          icon: Icon(Icons.add)),
-                    )
-                ],
-              ),
-              trailing: PopupMenuButton<String>(
-                  itemBuilder: (_) => [
-                        PopupMenuItem(
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_forever, color: Colors.red),
-                                SizedBox(width: 10),
-                                Text("Leave",
-                                    style: TextStyle(color: Colors.red)),
-                              ],
-                            ),
-                            value: "leave")
-                      ],
-                  icon: Icon(Icons.more_horiz),
-                  onSelected: (String action) async {
-                    switch (action) {
-                      case "leave":
-                        await sroom.room.leave();
-                        setState(() {
-                          sclient.srooms.remove(sroom);
-                        });
-                        break;
-                      default:
-                    }
-                  }),
-              onTap: () {
-                context.pushRoute(UserFeedRoute(sroom: sroom));
-              }),
+          Column(
+            children: [
+              RoomProfileListTile(sroom.room),
+              if (profile != null &&
+                  profile.spaceChildren.contains(
+                          (SpaceChild sc) => sc.roomId == sroom.room.id) ==
+                      false)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomFutureButton(
+                      onPressed: () async {
+                        await profile.setSpaceChild(sroom.room.id);
+                        setState(() {});
+                      },
+                      text: "Add to profile list",
+                      icon: Icon(Icons.add)),
+                )
+            ],
+          ),
         Padding(
           padding: const EdgeInsets.all(20),
           child: Row(
