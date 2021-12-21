@@ -8,8 +8,8 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/utils/room_profile.dart';
 import 'package:minestrix_chat/partials/stories_circle.dart';
+import 'package:minestrix_chat/utils/room_profile.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
   const AccountsDetailsPage({Key? key}) : super(key: key);
