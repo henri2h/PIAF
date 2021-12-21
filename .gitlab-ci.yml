@@ -33,7 +33,7 @@ build_android:
   artifacts:
     when: on_success
     paths:
-      - build/app/outputs/flutter-appbundle/app-release.apk
+      - build/app/outputs/bundle/release/app-release.aab
  
   #only:
   #  - main # disable android 
