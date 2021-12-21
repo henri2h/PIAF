@@ -82,7 +82,7 @@ deploy_android_fdroid:
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - 'which rsync || ( apt-get update -y && apt-get install rsync -y )'
-    - 'which pcregrep || (sudo apt-get update -y && sudo apt-get install pcregrep -y )'
+    - 'which pcregrep || ( apt-get update -y && apt-get install pcregrep -y )'
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
