@@ -129,8 +129,8 @@ class _UserFeedState extends State<UserFeed> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (constraints.maxWidth > 900)
-                        Flexible(
-                          flex: 4,
+                        SizedBox(
+                          width: 400,
                           child: Padding(
                               padding: const EdgeInsets.all(15),
                               child: Column(
