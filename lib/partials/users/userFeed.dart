@@ -10,7 +10,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/stories_list.dart';
+import 'package:minestrix_chat/partials/stories/stories_list.dart';
 
 class UserFeed extends StatefulWidget {
   const UserFeed(

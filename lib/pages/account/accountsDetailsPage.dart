@@ -6,7 +6,7 @@ import 'package:minestrix/partials/components/customFutureButton.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/stories_circle.dart';
+import 'package:minestrix_chat/partials/stories/stories_circle.dart';
 import 'package:minestrix_chat/utils/room_profile.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
