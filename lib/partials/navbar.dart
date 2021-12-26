@@ -34,7 +34,7 @@ class NavBarDesktop extends StatelessWidget {
                 icon: Icons.person,
                 onPressed: () async {
                   await context.navigateTo(AppWrapperRoute());
-                  await context.navigateTo(UserFeedRoute());
+                  await context.navigateTo(UserViewRoute());
                 }),
             NavBarButton(
                 name: "Chats",
@@ -48,12 +48,14 @@ class NavBarDesktop extends StatelessWidget {
                 name: "Search",
                 icon: Icons.search,
                 onPressed: () async {
+                  await context.navigateTo(AppWrapperRoute());
                   await context.navigateTo(ResearchRoute());
                 }),
             NavBarButton(
                 name: "Settings",
                 icon: Icons.settings,
                 onPressed: () async {
+                  await context.navigateTo(AppWrapperRoute());
                   await context.navigateTo(SettingsRoute());
                 }),
           ],
@@ -113,7 +115,7 @@ class NavBarMobileState extends State<NavBarMobile> {
         context.pushRoute(ResearchRoute());
         break;
       case 2:
-        context.pushRoute(UserFeedRoute(userId: userId));
+        context.pushRoute(UserViewRoute(userId: userId));
         break;
       default:
     }

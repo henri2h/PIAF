@@ -22,7 +22,7 @@ class ContactView extends StatelessWidget {
         ),
         child: TextButton(
           onPressed: () {
-            context.navigateTo(UserFeedRoute(sroom: sroom));
+            context.navigateTo(UserViewRoute(sroom: sroom));
           },
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,7 +93,7 @@ class MinestrixRoomTile extends StatelessWidget {
           if (sroom.roomType == SRoomType.Group) {
             await context.navigateTo(GroupRoute(sroom: sroom));
           } else {
-            await context.navigateTo(UserFeedRoute(sroom: sroom));
+            await context.navigateTo(UserViewRoute(sroom: sroom));
           }
         },
         child: Padding(

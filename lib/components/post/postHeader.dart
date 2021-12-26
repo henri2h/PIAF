@@ -51,7 +51,7 @@ class PostHeader extends StatelessWidget {
                                       .color),
                               onPressed: () {
                                 context.navigateTo(
-                                    UserFeedRoute(userId: event!.senderId));
+                                    UserViewRoute(userId: event!.senderId));
                               },
                               child: Text(
                                   (event!.sender.displayName ??
@@ -76,7 +76,7 @@ class PostHeader extends StatelessWidget {
                                         .color),
                                 onPressed: () {
                                   context.navigateTo(
-                                      UserFeedRoute(userId: feedOwner.id));
+                                      UserViewRoute(userId: feedOwner.id));
                                 },
                                 child: Text(
                                     (feedOwner.displayName ?? feedOwner.id),
@@ -112,7 +112,7 @@ class PostHeader extends StatelessWidget {
                           child: TextButton(
                             onPressed: () {
                               context.navigateTo(
-                                  UserFeedRoute(userId: event!.senderId));
+                                  UserViewRoute(userId: event!.senderId));
                             },
                             child: Text(
                                 (event!.sender.displayName ?? event!.sender.id),

@@ -1,181 +1,226 @@
-import 'package:collection/collection.dart' show IterableExtension;
+import 'package:auto_route/auto_route.dart';
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
-import 'package:minestrix/partials/users/userFeed.dart';
+import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/components/post/postView.dart';
+import 'package:minestrix/components/post/postWriterModal.dart';
+import 'package:minestrix/partials/users/userFriendsCard.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/view/matrix_chat_page.dart';
-import 'package:minestrix_chat/view/matrix_chats_page.dart';
+import 'package:minestrix_chat/partials/stories/stories_list.dart';
 
 class UserFeedPage extends StatefulWidget {
-  const UserFeedPage({Key? key, this.userId, this.sroom})
-      : assert(sroom != null && userId == null || sroom == null),
-        super(key: key);
+  const UserFeedPage(
+      {Key? key,
+      required this.sroom,
+      required this.sevents,
+      required this.userID,
+      this.isUserPage = false})
+      : super(key: key);
+  final MinestrixRoom sroom;
+  final Iterable<Event> sevents;
+  final String userID;
 
-  final String? userId;
-  final MinestrixRoom? sroom;
+  /// change the way the partial is displayed.
+  final bool isUserPage;
 
   @override
   _UserFeedPageState createState() => _UserFeedPageState();
 }
 
 class _UserFeedPageState extends State<UserFeedPage> {
-  MinestrixRoom? sroom;
-  String? userId;
-
-  bool isUserPage = false;
   bool requestingHistory = false;
+  bool _updating = false;
+
+  ScrollController _controller = new ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(scrollListener);
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    _controller.removeListener(scrollListener);
+  }
+
+  void scrollListener() async {
+    if (_controller.position.pixels >=
+        _controller.position.maxScrollExtent * 0.8) {
+      if (_updating == false) {
+        setState(() {
+          _updating = true;
+        });
+        print("[ userFeedPage ] : update from scroll");
+        await widget.sroom.timeline!.requestHistory();
+        setState(() {
+          _updating = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
+    return LayoutBuilder(
+      builder: (context, constraints) => StreamBuilder(
+          stream: widget.sroom.room.onUpdate.stream,
+          builder: (context, _) => ListView(
+                controller: _controller,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                          child: H1Title(
+                              widget.isUserPage ? "My account" : "User feed")),
+                      if (widget.isUserPage)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 20),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                  icon: Icon(Icons.settings),
+                                  onPressed: () {
+                                    context.navigateTo(SettingsRoute());
+                                  }),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
 
-    sroom = widget.sroom;
+                  UserInfo(
+                      user: widget.sroom.user,
+                      avatar:
+                          widget.sroom.room.avatar?.getDownloadLink(sclient)),
 
-    if (sroom == null) {
-      userId = widget.userId ?? sclient.userID;
+                  if (constraints.maxWidth <= 900)
+                    Column(
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: UserFriendsCard(sroom: widget.sroom)),
+                        MaterialButton(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("See all friends"),
+                            ),
+                            onPressed: () {
+                              if (widget.isUserPage) {
+                                context.navigateTo(FriendsRoute());
+                              } else {
+                                context.navigateTo(
+                                    UserFriendsRoute(sroom: widget.sroom));
+                              }
+                            })
+                      ],
+                    ),
 
-      String? roomId = sclient.userIdToRoomId[userId!];
-      if (roomId != null) sroom = sclient.srooms[roomId];
-    } else {
-      userId = sroom!.user.id;
-    }
+                  // feed
 
-    // check if the userId given is the same one as the user
-    if (userId == sclient.userID) isUserPage = true;
-
-    User? user_in = sclient.userRoom!.room.getParticipants().firstWhereOrNull(
-        (User u) =>
-            (u.id == widget.userId)); // check if the user is following us
-
-    if (sroom != null) {
-      Iterable<Event> sevents =
-          sclient.getSRoomFilteredEvents(sroom!.timeline!, eventTypesFilter: [
-        EventTypes.Message,
-        EventTypes.Encrypted,
-        EventTypes.RoomCreate,
-        EventTypes.RoomAvatar,
-        EventTypes.RoomMember
-      ]).where((Event e) {
-        if (e.type == EventTypes.RoomMember) {
-          if (e.prevContent != null &&
-              e.content["avatar_url"] != e.prevContent!["avatar_url"] &&
-              e.senderId == sroom!.user.id) {
-            // the room owner has changed it's profile picture
-            return true;
-          }
-          return false;
-        }
-        return true;
-      });
-      return UserFeed(
-          sroom: sroom!,
-          sevents: sevents,
-          userID: userId!,
-          isUserPage: isUserPage);
-    } else {
-      return FutureBuilder<Profile>(
-          future: sclient.getProfileFromUserId(userId!),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData == false) {
-              return CircularProgressIndicator();
-            }
-            Profile p = snapshot.data;
-            p.userId = userId!; // fix a nasty bug :(
-
-            return ListView(children: [
-              Container(
-                // alignment: Alignment.bottomCenter,
-                padding: const EdgeInsets.only(left: 40, right: 40, top: 200),
-                child: UserInfo(profile: p),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                child: Row(
-                  children: [
-                    if (user_in == null ||
-                        (user_in.membership != Membership.join &&
-                            user_in.membership != Membership.invite))
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (constraints.maxWidth > 900)
+                        SizedBox(
+                          width: 400,
+                          child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Column(
+                                children: [
+                                  UserFriendsCard(sroom: widget.sroom),
+                                  MaterialButton(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text("See all friends"),
+                                      ),
+                                      onPressed: () {
+                                        if (widget.isUserPage) {
+                                          context.navigateTo(FriendsRoute());
+                                        } else {
+                                          context.navigateTo(UserFriendsRoute(
+                                              sroom: widget.sroom));
+                                        }
+                                      })
+                                ],
+                              )),
+                        ),
                       Flexible(
-                        child: MinesTrixButton(
-                            icon: Icons.person_add,
-                            label: "Add to friends",
-                            onPressed: () async {
-                              await sclient.addFriend(p.userId);
-                              setState(() {});
-                            }),
+                        flex: 9,
+                        fit: FlexFit.loose,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 8.0),
+                                child: H2Title("Posts"),
+                              ),
+                            ),
+                            StoriesList(
+                                client: sclient, restrict: widget.userID),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: PostWriterModal(sroom: sclient.userRoom),
+                            ),
+                            for (Event e in widget.sevents)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 5),
+                                child: Post(event: e),
+                              ),
+                            if (widget.sevents.length == 0 ||
+                                widget.sevents.last.type !=
+                                    EventTypes.RoomCreate)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: MaterialButton(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          if (requestingHistory)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 10),
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          Text("Load more posts"),
+                                        ],
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      if (requestingHistory == false) {
+                                        setState(() {
+                                          requestingHistory = true;
+                                        });
+                                        await widget.sroom.room
+                                            .requestHistory();
+                                        setState(() {
+                                          requestingHistory = false;
+                                        });
+                                      }
+                                    }),
+                              ),
+                          ],
+                        ),
                       ),
-                    if (user_in != null &&
-                        user_in.membership == Membership.invite)
-                      Flexible(
-                          child: MinesTrixButton(
-                        icon: Icons.send,
-                        label: "Friend request sent",
-                        onPressed: null,
-                      )),
-                    if (user_in != null &&
-                        user_in.membership == Membership.join)
-                      Flexible(
-                          child: MinesTrixButton(
-                        icon: Icons.person,
-                        label: "Friend",
-                        onPressed: null,
-                      )),
-                    SizedBox(width: 30),
-                    Flexible(
-                      child: MinesTrixButton(
-                          icon: Icons.message,
-                          label: "Send message",
-                          onPressed: () {
-                            String? roomId =
-                                sclient.getDirectChatFromUserId(userId!);
-                            if (roomId != null) {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          MatrixChatPage(
-                                              roomId: roomId,
-                                              client: sclient)));
-                            } else {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          Scaffold(
-                                              appBar: AppBar(
-                                                  title: Text("Start chat")),
-                                              body: MatrixChatsPage(
-                                                  client: sclient))));
-                            }
-                          }),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 60, vertical: 100),
-                child: Column(
-                  children: [
-                    Text("Your are not in this user friend list",
-                        style: TextStyle(fontSize: 40)),
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text("😧", style: TextStyle(fontSize: 40)),
-                    ),
-                    Text(
-                        "Or he/she may not have a MINESTRIX account (yet), send him a message ;)",
-                        style: TextStyle(fontSize: 20))
-                  ],
-                ),
-              ),
-            ]);
-          });
-    }
+                    ],
+                  ),
+                ],
+              )),
+    );
   }
 }

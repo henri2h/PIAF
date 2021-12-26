@@ -13,6 +13,7 @@ import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
 import 'package:minestrix/pages/minestrix/groups/groupPage.dart';
 import 'package:minestrix/pages/minestrix/homeWraperPage.dart';
 import 'package:minestrix/pages/minestrix/user/userFeedPage.dart';
+import 'package:minestrix/pages/minestrix/user/userViewPage.dart';
 import 'package:minestrix/pages/minestrix/user/userFriendsPage.dart';
 import 'package:minestrix/pages/settingsPage.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
@@ -36,10 +37,11 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
             AutoRoute(path: 'feed', page: FeedPage, initial: true),
             AutoRoute(path: 'group', page: GroupPage),
             AutoRoute(path: 'createPost', page: PostEditorPage),
-            AutoRoute(path: 'user', page: UserFeedPage, children: [
+            AutoRoute(path: 'user', page: UserViewPage, children: [
+              AutoRoute(path: 'feed', page: UserFeedPage),
               AutoRoute(path: 'my_friends', page: FriendsPage),
               AutoRoute(path: 'user_friends', page: UserFriendsPage),
-              RedirectRoute(path: '*', redirectTo: ''),
+              RedirectRoute(path: '*', redirectTo: 'feed')
             ]),
             AutoRoute(path: 'search', page: ResearchPage),
             AutoRoute(path: 'accounts', page: AccountsDetailsPage),

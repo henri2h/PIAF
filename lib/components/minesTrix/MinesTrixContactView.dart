@@ -18,7 +18,7 @@ class MinesTrixContactView extends StatelessWidget {
       child: Card(
         child: MaterialButton(
           onPressed: () {
-            context.pushRoute(UserFeedRoute(userId: user.id));
+            context.pushRoute(UserViewRoute(userId: user.id));
           },
           child: Padding(
             padding: const EdgeInsets.all(3),
