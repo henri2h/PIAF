@@ -52,6 +52,15 @@ class MinestrixClient extends Client {
   late MinestrixNotifications notifications;
   late MinestrixFriendsSugestion friendsSuggestions;
 
+  int get totalNotificationsCount {
+    int count = 0;
+
+    rooms.forEach((room) {
+      count += room.notificationCount;
+    });
+    return count;
+  }
+
   MinestrixClient(String clientName,
       {Set<KeyVerificationMethod>? verificationMethods})
       : super(clientName, verificationMethods: verificationMethods,
