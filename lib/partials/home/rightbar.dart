@@ -1,10 +1,6 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/minestrixRoomTile.dart';
-import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class StreamContactBar extends StatefulWidget {
   @override

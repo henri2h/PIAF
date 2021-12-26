@@ -8,7 +8,6 @@ import 'package:minestrix/components/post/postEditor.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/components/quickLinksList.dart';
-import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
 import 'package:minestrix/router.gr.dart';

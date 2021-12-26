@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/quickLinksList.dart';
-import 'package:minestrix/partials/home/rightbar.dart';
 import 'package:minestrix/partials/minestrixRoomTile.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
