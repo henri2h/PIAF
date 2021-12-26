@@ -46,10 +46,12 @@ class AccountCard extends StatelessWidget {
             MatrixUserImage(
               client: Matrix.of(context).sclient,
               url: avatarUrl,
-              width: 100,
-              height: 100,
+              defaultText: displayName,
+              width: 80,
+              height: 80,
               thumnail: true,
               rounded: false,
+              backgroundColor: Colors.blue,
               borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(10.0),
                   topRight: Radius.circular(10)),
@@ -60,14 +62,14 @@ class AccountCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 4.0, top: 2),
               child: SizedBox(
-                width: 100,
+                width: 80,
                 height: 35,
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(displayName ?? userId,
                         style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.normal,
                             color:
                                 Theme.of(context).textTheme.bodyText1!.color)),

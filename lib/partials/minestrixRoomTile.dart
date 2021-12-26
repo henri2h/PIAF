@@ -109,9 +109,7 @@ class MinestrixRoomTile extends StatelessWidget {
                       MatrixUserImage(
                         url: sroom.avatar,
                         fit: true,
-                        defaultIcon: Text(TextHelper.getRoomInitial(sroom.name),
-                            style: const TextStyle(
-                                fontSize: 18, color: Colors.white)),
+                        defaultText: sroom.name,
                         backgroundColor: Colors.blue,
                         thumnail: true,
                         width: 46,
