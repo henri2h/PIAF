@@ -90,8 +90,12 @@ class MinestrixRoomTile extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        onPressed: () {
-          context.navigateTo(GroupRoute(sroom: sroom));
+        onPressed: () async {
+          if (sroom.roomType == SRoomType.Group) {
+            await context.navigateTo(GroupRoute(sroom: sroom));
+          } else {
+            await context.navigateTo(UserFeedRoute(sroom: sroom));
+          }
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

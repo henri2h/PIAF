@@ -11,7 +11,9 @@ import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class UserFeedPage extends StatefulWidget {
-  const UserFeedPage({Key? key, this.userId, this.sroom}) : super(key: key);
+  const UserFeedPage({Key? key, this.userId, this.sroom})
+      : assert(sroom != null && userId == null || sroom == null),
+        super(key: key);
 
   final String? userId;
   final MinestrixRoom? sroom;
@@ -38,6 +40,8 @@ class _UserFeedPageState extends State<UserFeedPage> {
 
       String? roomId = sclient.userIdToRoomId[userId!];
       if (roomId != null) sroom = sclient.srooms[roomId];
+    } else {
+      userId = sroom!.user.id;
     }
 
     // check if the userId given is the same one as the user
