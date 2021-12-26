@@ -728,7 +728,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "47d31df8ae74876cf1f685cbb3ebb3260f3ea6d9"
+      resolved-ref: "37f94fe57fca1f6ab7acc22b196c395ebe52359b"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"
@@ -836,7 +836,7 @@ packages:
       name: path_provider_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.10"
+    version: "2.0.11"
   path_provider_ios:
     dependency: transitive
     description:
@@ -1373,7 +1373,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.2"
+    version: "2.3.3"
   xdg_directories:
     dependency: transitive
     description:
