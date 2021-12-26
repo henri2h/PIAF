@@ -35,10 +35,10 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
           children: [
             AutoRoute(path: 'feed', page: FeedPage, initial: true),
             AutoRoute(path: 'group', page: GroupPage),
-            AutoRoute(path: 'friends', page: FriendsPage),
             AutoRoute(path: 'createPost', page: PostEditorPage),
             AutoRoute(path: 'user', page: UserFeedPage, children: [
-              AutoRoute(path: 'friends', page: UserFriendsPage),
+              AutoRoute(path: 'my_friends', page: FriendsPage),
+              AutoRoute(path: 'user_friends', page: UserFriendsPage),
               RedirectRoute(path: '*', redirectTo: ''),
             ]),
             AutoRoute(path: 'search', page: ResearchPage),

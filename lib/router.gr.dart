@@ -14,19 +14,19 @@ import 'package:matrix/matrix.dart' as _i18;
 import 'package:minestrix_chat/view/matrix_chat_page.dart' as _i16;
 import 'package:minestrix_chat/view/matrix_chats_page.dart' as _i5;
 
-import 'components/post/postEditor.dart' as _i10;
-import 'pages/account/accountsDetailsPage.dart' as _i13;
+import 'components/post/postEditor.dart' as _i9;
+import 'pages/account/accountsDetailsPage.dart' as _i12;
 import 'pages/appWrapperPage.dart' as _i2;
 import 'pages/loginPage.dart' as _i3;
 import 'pages/matrixLoadingPage.dart' as _i1;
 import 'pages/minestrix/feedPage.dart' as _i7;
-import 'pages/minestrix/friends/friendsVue.dart' as _i9;
-import 'pages/minestrix/friends/researchPage.dart' as _i12;
+import 'pages/minestrix/friends/friendsVue.dart' as _i14;
+import 'pages/minestrix/friends/researchPage.dart' as _i11;
 import 'pages/minestrix/groups/groupPage.dart' as _i8;
 import 'pages/minestrix/homeWraperPage.dart' as _i4;
-import 'pages/minestrix/user/userFeedPage.dart' as _i11;
+import 'pages/minestrix/user/userFeedPage.dart' as _i10;
 import 'pages/minestrix/user/userFriendsPage.dart' as _i15;
-import 'pages/settingsPage.dart' as _i14;
+import 'pages/settingsPage.dart' as _i13;
 import 'utils/minestrix/minestrixRoom.dart' as _i19;
 
 class AppRouter extends _i6.RootStackRouter {
@@ -82,36 +82,36 @@ class AppRouter extends _i6.RootStackRouter {
           routeData: routeData,
           child: _i8.GroupPage(key: args.key, sroom: args.sroom));
     },
-    FriendsRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i9.FriendsPage());
-    },
     PostEditorRoute.name: (routeData) {
       final args = routeData.argsAs<PostEditorRouteArgs>(
           orElse: () => const PostEditorRouteArgs());
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i10.PostEditorPage(key: args.key, sroom: args.sroom));
+          child: _i9.PostEditorPage(key: args.key, sroom: args.sroom));
     },
     UserFeedRoute.name: (routeData) {
       final args = routeData.argsAs<UserFeedRouteArgs>(
           orElse: () => const UserFeedRouteArgs());
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i11.UserFeedPage(
+          child: _i10.UserFeedPage(
               key: args.key, userId: args.userId, sroom: args.sroom));
     },
     ResearchRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: _i12.ResearchPage());
+          routeData: routeData, child: _i11.ResearchPage());
     },
     AccountsDetailsRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i13.AccountsDetailsPage());
+          routeData: routeData, child: const _i12.AccountsDetailsPage());
     },
     SettingsRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i14.SettingsPage());
+          routeData: routeData, child: const _i13.SettingsPage());
+    },
+    FriendsRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i14.FriendsPage());
     },
     UserFriendsRoute.name: (routeData) {
       final args = routeData.argsAs<UserFriendsRouteArgs>();
@@ -148,16 +148,16 @@ class AppRouter extends _i6.RootStackRouter {
                     path: 'feed', parent: MinestrixRouter.name),
                 _i6.RouteConfig(GroupRoute.name,
                     path: 'group', parent: MinestrixRouter.name),
-                _i6.RouteConfig(FriendsRoute.name,
-                    path: 'friends', parent: MinestrixRouter.name),
                 _i6.RouteConfig(PostEditorRoute.name,
                     path: 'createPost', parent: MinestrixRouter.name),
                 _i6.RouteConfig(UserFeedRoute.name,
                     path: 'user',
                     parent: MinestrixRouter.name,
                     children: [
+                      _i6.RouteConfig(FriendsRoute.name,
+                          path: 'my_friends', parent: UserFeedRoute.name),
                       _i6.RouteConfig(UserFriendsRoute.name,
-                          path: 'friends', parent: UserFeedRoute.name),
+                          path: 'user_friends', parent: UserFeedRoute.name),
                       _i6.RouteConfig('*#redirect',
                           path: '*',
                           parent: UserFeedRoute.name,
@@ -340,15 +340,7 @@ class GroupRouteArgs {
 }
 
 /// generated route for
-/// [_i9.FriendsPage]
-class FriendsRoute extends _i6.PageRouteInfo<void> {
-  const FriendsRoute() : super(FriendsRoute.name, path: 'friends');
-
-  static const String name = 'FriendsRoute';
-}
-
-/// generated route for
-/// [_i10.PostEditorPage]
+/// [_i9.PostEditorPage]
 class PostEditorRoute extends _i6.PageRouteInfo<PostEditorRouteArgs> {
   PostEditorRoute({_i17.Key? key, _i19.MinestrixRoom? sroom})
       : super(PostEditorRoute.name,
@@ -372,7 +364,7 @@ class PostEditorRouteArgs {
 }
 
 /// generated route for
-/// [_i11.UserFeedPage]
+/// [_i10.UserFeedPage]
 class UserFeedRoute extends _i6.PageRouteInfo<UserFeedRouteArgs> {
   UserFeedRoute(
       {_i17.Key? key,
@@ -403,7 +395,7 @@ class UserFeedRouteArgs {
 }
 
 /// generated route for
-/// [_i12.ResearchPage]
+/// [_i11.ResearchPage]
 class ResearchRoute extends _i6.PageRouteInfo<void> {
   const ResearchRoute() : super(ResearchRoute.name, path: 'search');
 
@@ -411,7 +403,7 @@ class ResearchRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i13.AccountsDetailsPage]
+/// [_i12.AccountsDetailsPage]
 class AccountsDetailsRoute extends _i6.PageRouteInfo<void> {
   const AccountsDetailsRoute()
       : super(AccountsDetailsRoute.name, path: 'accounts');
@@ -420,7 +412,7 @@ class AccountsDetailsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i14.SettingsPage]
+/// [_i13.SettingsPage]
 class SettingsRoute extends _i6.PageRouteInfo<void> {
   const SettingsRoute() : super(SettingsRoute.name, path: 'settings');
 
@@ -428,11 +420,19 @@ class SettingsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [_i14.FriendsPage]
+class FriendsRoute extends _i6.PageRouteInfo<void> {
+  const FriendsRoute() : super(FriendsRoute.name, path: 'my_friends');
+
+  static const String name = 'FriendsRoute';
+}
+
+/// generated route for
 /// [_i15.UserFriendsPage]
 class UserFriendsRoute extends _i6.PageRouteInfo<UserFriendsRouteArgs> {
   UserFriendsRoute({_i17.Key? key, required _i19.MinestrixRoom sroom})
       : super(UserFriendsRoute.name,
-            path: 'friends',
+            path: 'user_friends',
             args: UserFriendsRouteArgs(key: key, sroom: sroom));
 
   static const String name = 'UserFriendsRoute';
