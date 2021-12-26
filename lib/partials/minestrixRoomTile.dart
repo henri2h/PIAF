@@ -4,7 +4,6 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/helpers/text_helper.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class ContactView extends StatelessWidget {
