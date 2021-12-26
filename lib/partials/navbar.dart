@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
@@ -25,52 +26,39 @@ class NavBarDesktop extends StatelessWidget {
             NavBarButton(
                 name: "Feed",
                 icon: Icons.home,
-                onPressed: () {
-                  context.pushRoute(FeedRoute());
+                onPressed: () async {
+                  await context.navigateTo(AppWrapperRoute());
+                  await context.navigateTo(FeedRoute());
                 }),
             NavBarButton(
                 name: "My account",
                 icon: Icons.person,
-                onPressed: () {
-                  context.pushRoute(UserFeedRoute(userId: sclient.userID));
+                onPressed: () async {
+                  await context.navigateTo(AppWrapperRoute());
+                  await context.navigateTo(UserFeedRoute());
                 }),
             NavBarButton(
                 name: "Chats",
                 icon: Icons.chat,
-                onPressed: () {
-                  context.pushRoute(MatrixChatsRoute(
+                onPressed: () async {
+                  await context.navigateTo(MatrixChatsRoute(
                       client: Matrix.of(context).sclient!,
                       enableStories: true));
                 }),
             NavBarButton(
                 name: "Search",
                 icon: Icons.search,
-                onPressed: () {
-                  context.pushRoute(ResearchRoute());
+                onPressed: () async {
+                  await context.navigateTo(ResearchRoute());
                 }),
             NavBarButton(
                 name: "Settings",
                 icon: Icons.settings,
-                onPressed: () {
-                  context.pushRoute(SettingsRoute());
+                onPressed: () async {
+                  await context.navigateTo(SettingsRoute());
                 }),
           ],
         ),
-        StreamBuilder(
-            stream: sclient.notifications.onNotifications.stream,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              return Column(
-                children: [
-                  IconButton(
-                      icon: sclient.notifications.notifications.length == 0
-                          ? Icon(Icons.notifications_none)
-                          : Icon(Icons.notifications_active),
-                      onPressed: () {
-                        Scaffold.of(context).openEndDrawer();
-                      }),
-                ],
-              );
-            })
       ]),
     );
   }

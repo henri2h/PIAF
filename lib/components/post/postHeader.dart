@@ -50,7 +50,7 @@ class PostHeader extends StatelessWidget {
                                       .bodyText1!
                                       .color),
                               onPressed: () {
-                                context.pushRoute(
+                                context.navigateTo(
                                     UserFeedRoute(userId: event!.senderId));
                               },
                               child: Text(
@@ -75,7 +75,7 @@ class PostHeader extends StatelessWidget {
                                         .bodyText1!
                                         .color),
                                 onPressed: () {
-                                  context.pushRoute(
+                                  context.navigateTo(
                                       UserFeedRoute(userId: feedOwner.id));
                                 },
                                 child: Text(
@@ -111,7 +111,7 @@ class PostHeader extends StatelessWidget {
                         Flexible(
                           child: TextButton(
                             onPressed: () {
-                              context.pushRoute(
+                              context.navigateTo(
                                   UserFeedRoute(userId: event!.senderId));
                             },
                             child: Text(
@@ -137,7 +137,7 @@ class PostHeader extends StatelessWidget {
                               MinestrixRoom? sroom =
                                   sclient.srooms[event!.roomId];
                               if (sroom != null)
-                                context.pushRoute(GroupRoute(sroom: sroom));
+                                context.navigateTo(GroupRoute(sroom: sroom));
                             },
                             child: Text(sroom.name,
                                 style: TextStyle(

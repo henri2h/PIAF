@@ -40,7 +40,7 @@ class ContactView extends StatelessWidget {
         ),
         child: TextButton(
           onPressed: () {
-            context.pushRoute(UserFeedRoute(sroom: sroom));
+            context.navigateTo(UserFeedRoute(sroom: sroom));
           },
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -11,9 +11,7 @@ import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class UserFeedPage extends StatefulWidget {
-  const UserFeedPage({Key? key, this.userId, this.sroom})
-      : assert(userId != null || sroom != null),
-        super(key: key);
+  const UserFeedPage({Key? key, this.userId, this.sroom}) : super(key: key);
 
   final String? userId;
   final MinestrixRoom? sroom;
@@ -24,6 +22,8 @@ class UserFeedPage extends StatefulWidget {
 
 class _UserFeedPageState extends State<UserFeedPage> {
   MinestrixRoom? sroom;
+  String? userId;
+
   bool isUserPage = false;
   bool requestingHistory = false;
 
@@ -34,12 +34,14 @@ class _UserFeedPageState extends State<UserFeedPage> {
     sroom = widget.sroom;
 
     if (sroom == null) {
-      String? roomId = sclient.userIdToRoomId[widget.userId!];
+      userId = widget.userId ?? sclient.userID;
+
+      String? roomId = sclient.userIdToRoomId[userId!];
       if (roomId != null) sroom = sclient.srooms[roomId];
     }
 
     // check if the userId given is the same one as the user
-    if (widget.userId == sclient.userID) isUserPage = true;
+    if (userId == sclient.userID) isUserPage = true;
 
     User? user_in = sclient.userRoom!.room.getParticipants().firstWhereOrNull(
         (User u) =>
@@ -65,16 +67,20 @@ class _UserFeedPageState extends State<UserFeedPage> {
         }
         return true;
       });
-      return UserFeed(sroom: sroom!, sevents: sevents, userID: widget.userId!);
+      return UserFeed(
+          sroom: sroom!,
+          sevents: sevents,
+          userID: userId!,
+          isUserPage: isUserPage);
     } else {
       return FutureBuilder<Profile>(
-          future: sclient.getProfileFromUserId(widget.userId!),
+          future: sclient.getProfileFromUserId(userId!),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData == false) {
               return CircularProgressIndicator();
             }
             Profile p = snapshot.data;
-            p.userId = widget.userId!; // fix a nasty bug :(
+            p.userId = userId!; // fix a nasty bug :(
 
             return ListView(children: [
               Container(
@@ -122,7 +128,7 @@ class _UserFeedPageState extends State<UserFeedPage> {
                           label: "Send message",
                           onPressed: () {
                             String? roomId =
-                                sclient.getDirectChatFromUserId(widget.userId!);
+                                sclient.getDirectChatFromUserId(userId!);
                             if (roomId != null) {
                               Navigator.push(
                                   context,

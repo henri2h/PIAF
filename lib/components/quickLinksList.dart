@@ -50,7 +50,7 @@ class SRoomView extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
         ),
         onPressed: () {
-          context.pushRoute(GroupRoute(sroom: sroom));
+          context.navigateTo(GroupRoute(sroom: sroom));
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

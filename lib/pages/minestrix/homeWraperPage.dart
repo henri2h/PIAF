@@ -33,12 +33,7 @@ class _HomeWraperPageState extends State<HomeWraperPage> {
 
       return Scaffold(
         //floatingActionButton: buildFloattingButton(),
-        body: Column(
-          children: [
-            if (isWideScreen) NavBarDesktop(),
-            Expanded(child: AutoRouter())
-          ],
-        ),
+        body: AutoRouter(),
         bottomNavigationBar: isWideScreen ? null : NavBarMobile(),
         endDrawer: NotificationView(),
       );

@@ -122,6 +122,13 @@ class _FeedPageState extends State<FeedPage> {
                                     child: Row(
                                       children: [
                                         IconButton(
+                                            icon: Icon(Icons.message),
+                                            onPressed: () async {
+                                              await context.navigateTo(
+                                                  MatrixChatsRoute(
+                                                      client: sclient));
+                                            }),
+                                        IconButton(
                                             icon: Icon(Icons.group_add),
                                             onPressed: () {
                                               showDialog(
