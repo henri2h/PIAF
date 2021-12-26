@@ -71,6 +71,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.2.0"
+  auto_size_text:
+    dependency: transitive
+    description:
+      name: auto_size_text
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
   base58check:
     dependency: transitive
     description:
@@ -728,7 +735,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "37f94fe57fca1f6ab7acc22b196c395ebe52359b"
+      resolved-ref: ff72dcc60f790ec75ebcb4641dd495b1ab9e5aec
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"
