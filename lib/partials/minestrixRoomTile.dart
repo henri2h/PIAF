@@ -107,7 +107,7 @@ class MinestrixRoomTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       MatrixUserImage(
-                        url: sroom.room.avatar,
+                        url: sroom.avatar,
                         fit: true,
                         defaultIcon: Text(TextHelper.getRoomInitial(sroom.name),
                             style: const TextStyle(

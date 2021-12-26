@@ -27,6 +27,9 @@ class MinestrixRoom {
     }
   }
 
+  Uri? get avatar =>
+      roomType == SRoomType.UserRoom ? user.avatarUrl : room.avatar;
+
   Future<void> loadRoomCreator(MinestrixClient sclient) async {
     Event? state = room.getState("m.room.create");
 
