@@ -111,8 +111,7 @@ class NavBarMobileState extends State<NavBarMobile> {
         context.pushRoute(FeedRoute());
         break;
       case 1:
-        context.pushRoute(MatrixChatsRoute(
-            client: Matrix.of(context).sclient!, enableStories: true));
+        context.pushRoute(ResearchRoute());
         break;
       case 2:
         context.pushRoute(UserFeedRoute(userId: userId));
@@ -131,8 +130,7 @@ class NavBarMobileState extends State<NavBarMobile> {
       currentIndex: _selectedIndex,
       items: [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Feed'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.message_outlined), label: "Messages"),
+        BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
         BottomNavigationBarItem(
             icon: SizedBox(
               height: 30,

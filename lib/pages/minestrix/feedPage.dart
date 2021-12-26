@@ -122,13 +122,6 @@ class _FeedPageState extends State<FeedPage> {
                                     child: Row(
                                       children: [
                                         IconButton(
-                                            icon: Icon(Icons.message),
-                                            onPressed: () async {
-                                              await context.navigateTo(
-                                                  MatrixChatsRoute(
-                                                      client: sclient));
-                                            }),
-                                        IconButton(
                                             icon: Icon(Icons.group_add),
                                             onPressed: () {
                                               showDialog(
@@ -148,22 +141,36 @@ class _FeedPageState extends State<FeedPage> {
                                                       body: PostEditorPage()));
                                             }),
                                         IconButton(
-                                            icon: Icon(Icons.search),
-                                            onPressed: () {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (_) => Scaffold(
-                                                      appBar: AppBar(
-                                                          title: Text(
-                                                              "Search a user")),
-                                                      body: ResearchPage()));
+                                            icon: Icon(Icons.message),
+                                            onPressed: () async {
+                                              await context.navigateTo(
+                                                  MatrixChatsRoute(
+                                                      client: sclient));
                                             }),
-                                        IconButton(
-                                            icon: Icon(Icons.notifications),
-                                            onPressed: () {
-                                              Scaffold.of(context)
-                                                  .openEndDrawer();
-                                            }),
+                                        StreamBuilder(
+                                            stream: sclient.notifications
+                                                .onNotifications.stream,
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot snapshot) {
+                                              return Column(
+                                                children: [
+                                                  IconButton(
+                                                      icon: sclient
+                                                                  .notifications
+                                                                  .notifications
+                                                                  .length ==
+                                                              0
+                                                          ? Icon(Icons
+                                                              .notifications_none)
+                                                          : Icon(Icons
+                                                              .notifications_active),
+                                                      onPressed: () {
+                                                        Scaffold.of(context)
+                                                            .openEndDrawer();
+                                                      }),
+                                                ],
+                                              );
+                                            })
                                       ],
                                     ),
                                   ),
@@ -218,7 +225,7 @@ class _FeedPageState extends State<FeedPage> {
                               style:
                                   TextStyle(fontSize: 22, letterSpacing: 1.1)),
                         ),
-                        Expanded(child: RightBar()),
+                        Expanded(child: StreamContactBar()),
                       ],
                     ),
                   ),

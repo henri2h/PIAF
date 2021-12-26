@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/components/quickLinksList.dart';
+import 'package:minestrix/partials/home/rightbar.dart';
+import 'package:minestrix/partials/minestrixRoomTile.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class ResearchPage extends StatefulWidget {
@@ -45,6 +49,18 @@ class _ResearchPageState extends State<ResearchPage> {
           },
         ),
       ),
+      StreamBuilder(
+        stream: sclient!.onSync.stream,
+        builder: (context, _) =>
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          H2Title("Contacts"),
+          for (MinestrixRoom r in sclient.sfriends.values)
+            MinestrixRoomTile(sroom: r),
+          H2Title("Groups"),
+          for (MinestrixRoom r in sclient.sgroups.values)
+            MinestrixRoomTile(sroom: r),
+        ]),
+      )
     ]);
   }
 }
