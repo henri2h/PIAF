@@ -11,12 +11,9 @@ import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 class UserViewPage extends StatefulWidget {
-  const UserViewPage({Key? key, this.userId, this.sroom})
-      : assert(sroom != null && userId == null || sroom == null),
-        super(key: key);
+  const UserViewPage({Key? key, this.userId}) : super(key: key);
 
   final String? userId;
-  final MinestrixRoom? sroom;
 
   @override
   _UserViewPageState createState() => _UserViewPageState();
@@ -32,8 +29,6 @@ class _UserViewPageState extends State<UserViewPage> {
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
 
-    sroom = widget.sroom;
-
     if (sroom == null) {
       userId = widget.userId ?? sclient.userID;
 
@@ -48,25 +43,6 @@ class _UserViewPageState extends State<UserViewPage> {
             (u.id == widget.userId)); // check if the user is following us
 
     if (sroom != null) {
-      Iterable<Event> sevents =
-          sclient.getSRoomFilteredEvents(sroom!.timeline!, eventTypesFilter: [
-        EventTypes.Message,
-        EventTypes.Encrypted,
-        EventTypes.RoomCreate,
-        EventTypes.RoomAvatar,
-        EventTypes.RoomMember
-      ]).where((Event e) {
-        if (e.type == EventTypes.RoomMember) {
-          if (e.prevContent != null &&
-              e.content["avatar_url"] != e.prevContent!["avatar_url"] &&
-              e.senderId == sroom!.user.id) {
-            // the room owner has changed it's profile picture
-            return true;
-          }
-          return false;
-        }
-        return true;
-      });
       return UserView(
         userID: userId!,
       );
