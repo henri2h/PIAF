@@ -27,58 +27,30 @@ class MinestrixRoom {
     }
   }
 
+  String get userID => user.id;
+
   Uri? get avatar =>
       roomType == SRoomType.UserRoom ? user.avatarUrl : room.avatar;
 
-  Future<void> loadRoomCreator(MinestrixClient sclient) async {
+  bool get isUserPage => user.id == room.client.userID;
+
+  void loadRoomCreator(MinestrixClient sclient) async {
     Event? state = room.getState("m.room.create");
-
-    if (state != null) {
-      // get creator id from cache and if not in cache, from server
-      String? creatorID = state.content["creator"];
-
-      assert(creatorID != null);
-      User? u;
-
-      if (room.membership != Membership.invite ||
-          room.historyVisibility == HistoryVisibility.worldReadable) {
-        // find local on local users
-        List<User> users = room.getParticipants();
-        u = findUser(users, creatorID);
-
-        if (u == null) {
-          // we have not found the user but maybe we just can't preview the room
-          users = await room.requestParticipants();
-          u = findUser(users, creatorID);
-        }
-      } else if (u == null) {
-        // in the case we can't request participants
-
-        Profile p = await sclient.getProfileFromUserId(creatorID!);
-        u = User(creatorID,
-            membership: "m.join",
-            avatarUrl: p.avatarUrl.toString(),
-            displayName: p.displayName,
-            room: room);
-      }
-
-      assert(u !=
-          null); // if we could not find the creator of the room in the members of the room. It could mean that the user creator has left the room. We should not consider it as valid.
-      user = u!; // save the discovered user
-    }
+    User? u = state?.sender;
+    assert(u != null);
+    user = u!;
   }
 
-  static Future<MinestrixRoom?> loadMinesTrixRoom(
-      Room r, MinestrixClient sclient) async {
+  static MinestrixRoom? loadMinesTrixRoom(Room r, MinestrixClient sclient) {
     try {
       MinestrixRoom sr = MinestrixRoom();
 
       // initialise room
       sr.room = r;
-      sr.roomType = await getSRoomType(r);
+      sr.roomType = getSRoomType(r);
       if (sr.roomType == null) return null;
 
-      await sr.loadRoomCreator(sclient);
+      sr.loadRoomCreator(sclient);
 
       if (sr.roomType == SRoomType.UserRoom) {
         sr._validSRoom = true;
@@ -101,7 +73,7 @@ class MinestrixRoom {
     return null;
   }
 
-  static Future<SRoomType?> getSRoomType(Room room) async {
+  static SRoomType? getSRoomType(Room room) {
     Event? state = room.getState("m.room.create");
 
     if (state != null && state.content["type"] != null) {

@@ -187,7 +187,7 @@ class MinestrixClient extends Client {
   /// check if the specified room is a smatrix room or not.
   /// If yes, then store it in srooms list
   Future<void> checkRoom(Room r) async {
-    MinestrixRoom? rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
+    MinestrixRoom? rs = MinestrixRoom.loadMinesTrixRoom(r, this);
 
     // write that we have loaded this room in order to not process it twice
     roomsLoaded[r.id] = false;
@@ -350,9 +350,19 @@ class MinestrixClient extends Client {
     await super.dispose(closeDatabase: closeDatabase);
   }
 
-  Future<bool> addFriend(String userId) async {
-    if (userRoom != null) {
-      await userRoom!.room.invite(userId);
+  Future<bool> addFriend(String userId,
+      {Room? r, bool waitForInvite = true}) async {
+    if (r == null) {
+      r = userRoom?.room;
+    }
+
+    if (r != null) {
+      await r.invite(userId);
+      if (waitForInvite) {
+        // Wait for room actually appears in sync
+        await onSync.stream.firstWhere(
+            (sync) => sync.rooms?.join?.containsKey(r?.id) ?? false);
+      }
       return true;
     }
     return false; // we haven't been able to add this user to our friend list
