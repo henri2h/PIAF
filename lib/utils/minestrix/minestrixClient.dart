@@ -187,7 +187,7 @@ class MinestrixClient extends Client {
   /// check if the specified room is a smatrix room or not.
   /// If yes, then store it in srooms list
   Future<void> checkRoom(Room r) async {
-    MinestrixRoom? rs = MinestrixRoom.loadMinesTrixRoom(r, this);
+    MinestrixRoom? rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
 
     // write that we have loaded this room in order to not process it twice
     roomsLoaded[r.id] = false;
