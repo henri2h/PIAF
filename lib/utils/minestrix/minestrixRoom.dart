@@ -57,7 +57,7 @@ class MinestrixRoom {
       } else if (u == null) {
         // in the case we can't request participants
 
-        Profile p = await sclient.getProfileFromUserId(creatorID!);
+        Profile p = await sclient.getProfileFromUserId(creatorID);
         u = User(creatorID,
             membership: "m.join",
             avatarUrl: p.avatarUrl.toString(),

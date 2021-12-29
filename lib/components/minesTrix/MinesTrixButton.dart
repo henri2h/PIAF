@@ -1,17 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTheme.dart';
 
-class MinesTrixButton extends StatelessWidget {
+class MinesTrixButton extends StatefulWidget {
   MinesTrixButton(
       {Key? key,
-      required this.onPressed,
+      this.onPressed,
+      this.onFuturePressed,
       required this.label,
       required this.icon})
       : super(key: key);
-  final Function? onPressed;
+  final VoidCallback? onPressed;
+  final AsyncCallback? onFuturePressed;
   final IconData icon;
   final String label;
+  @override
+  _MinesTrixButtonState createState() => _MinesTrixButtonState();
+}
 
+class _MinesTrixButtonState extends State<MinesTrixButton> {
+  bool loading = false;
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
@@ -33,16 +41,37 @@ class MinesTrixButton extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(icon, color: Colors.white),
+                  !loading
+                      ? Icon(widget.icon, color: Colors.white)
+                      : CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
                   SizedBox(width: 10),
                   Flexible(
-                      child:
-                          Text(label, style: TextStyle(color: Colors.white))),
+                      child: Text(widget.label,
+                          style: TextStyle(color: Colors.white))),
                 ],
               ),
             ),
           ),
         ),
-        onPressed: onPressed as void Function()?);
+        onPressed: (widget.onPressed ?? widget.onFuturePressed) != null
+            ? () async {
+                if (loading == false) {
+                  setState(() {
+                    loading = true;
+                  });
+                  print("oups");
+                  widget.onPressed?.call();
+                  if (widget.onFuturePressed != null) {
+                    await widget.onFuturePressed!();
+                  }
+                  print("done");
+                  setState(() {
+                    loading = false;
+                  });
+                }
+              }
+            : null);
   }
 }

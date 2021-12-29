@@ -9,29 +9,28 @@
 // **************************************************************************
 
 import 'package:auto_route/auto_route.dart' as _i6;
-import 'package:flutter/material.dart' as _i18;
-import 'package:matrix/matrix.dart' as _i19;
-import 'package:minestrix_chat/view/matrix_chat_page.dart' as _i17;
+import 'package:flutter/material.dart' as _i17;
+import 'package:matrix/matrix.dart' as _i18;
+import 'package:minestrix_chat/view/matrix_chat_page.dart' as _i16;
 import 'package:minestrix_chat/view/matrix_chats_page.dart' as _i5;
 
 import 'components/post/postEditor.dart' as _i9;
-import 'pages/account/accountsDetailsPage.dart' as _i12;
+import 'pages/account/accountsDetailsPage.dart' as _i11;
 import 'pages/appWrapperPage.dart' as _i2;
 import 'pages/loginPage.dart' as _i3;
 import 'pages/matrixLoadingPage.dart' as _i1;
 import 'pages/minestrix/feedPage.dart' as _i7;
-import 'pages/minestrix/friends/friendsVue.dart' as _i15;
-import 'pages/minestrix/friends/researchPage.dart' as _i11;
+import 'pages/minestrix/friends/researchPage.dart' as _i10;
 import 'pages/minestrix/groups/groupPage.dart' as _i8;
 import 'pages/minestrix/homeWraperPage.dart' as _i4;
-import 'pages/minestrix/user/userFeedPage.dart' as _i14;
-import 'pages/minestrix/user/userFriendsPage.dart' as _i16;
-import 'pages/minestrix/user/userViewPage.dart' as _i10;
-import 'pages/settingsPage.dart' as _i13;
-import 'utils/minestrix/minestrixRoom.dart' as _i20;
+import 'pages/minestrix/user/friendsPage.dart' as _i14;
+import 'pages/minestrix/user/userFriendsPage.dart' as _i15;
+import 'pages/minestrix/user/userViewPage.dart' as _i13;
+import 'pages/settingsPage.dart' as _i12;
+import 'utils/minestrix/minestrixRoom.dart' as _i19;
 
 class AppRouter extends _i6.RootStackRouter {
-  AppRouter([_i18.GlobalKey<_i18.NavigatorState>? navigatorKey])
+  AppRouter([_i17.GlobalKey<_i17.NavigatorState>? navigatorKey])
       : super(navigatorKey);
 
   @override
@@ -90,52 +89,44 @@ class AppRouter extends _i6.RootStackRouter {
           routeData: routeData,
           child: _i9.PostEditorPage(key: args.key, sroom: args.sroom));
     },
+    UserWrapperRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i6.EmptyRouterPage());
+    },
+    ResearchRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: _i10.ResearchPage());
+    },
+    AccountsDetailsRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i11.AccountsDetailsPage());
+    },
+    SettingsRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i12.SettingsPage());
+    },
     UserViewRoute.name: (routeData) {
       final args = routeData.argsAs<UserViewRouteArgs>(
           orElse: () => const UserViewRouteArgs());
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i10.UserViewPage(
-              key: args.key, userId: args.userId, sroom: args.sroom));
-    },
-    ResearchRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: _i11.ResearchPage());
-    },
-    AccountsDetailsRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i12.AccountsDetailsPage());
-    },
-    SettingsRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i13.SettingsPage());
-    },
-    UserFeedRoute.name: (routeData) {
-      final args = routeData.argsAs<UserFeedRouteArgs>();
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData,
-          child: _i14.UserFeedPage(
-              key: args.key,
-              sroom: args.sroom,
-              sevents: args.sevents,
-              userID: args.userID,
-              isUserPage: args.isUserPage));
+          child: _i13.UserViewPage(key: args.key, userID: args.userID));
     },
     FriendsRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i15.FriendsPage());
+          routeData: routeData, child: const _i14.FriendsPage());
     },
     UserFriendsRoute.name: (routeData) {
       final args = routeData.argsAs<UserFriendsRouteArgs>();
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i16.UserFriendsPage(key: args.key, sroom: args.sroom));
+          child: _i15.UserFriendsPage(key: args.key, sroom: args.sroom));
     },
     MatrixChatRoute.name: (routeData) {
       final args = routeData.argsAs<MatrixChatRouteArgs>();
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i17.MatrixChatPage(
+          child: _i16.MatrixChatPage(
               key: args.key,
               roomId: args.roomId,
               client: args.client,
@@ -162,19 +153,24 @@ class AppRouter extends _i6.RootStackRouter {
                     path: 'group', parent: MinestrixRouter.name),
                 _i6.RouteConfig(PostEditorRoute.name,
                     path: 'createPost', parent: MinestrixRouter.name),
-                _i6.RouteConfig(UserViewRoute.name,
+                _i6.RouteConfig(UserWrapperRoute.name,
                     path: 'user',
                     parent: MinestrixRouter.name,
                     children: [
-                      _i6.RouteConfig(UserFeedRoute.name,
-                          path: 'feed', parent: UserViewRoute.name),
+                      _i6.RouteConfig('#redirect',
+                          path: '',
+                          parent: UserWrapperRoute.name,
+                          redirectTo: 'feed',
+                          fullMatch: true),
+                      _i6.RouteConfig(UserViewRoute.name,
+                          path: 'feed', parent: UserWrapperRoute.name),
                       _i6.RouteConfig(FriendsRoute.name,
-                          path: 'my_friends', parent: UserViewRoute.name),
+                          path: 'my_friends', parent: UserWrapperRoute.name),
                       _i6.RouteConfig(UserFriendsRoute.name,
-                          path: 'user_friends', parent: UserViewRoute.name),
+                          path: 'user_friends', parent: UserWrapperRoute.name),
                       _i6.RouteConfig('*#redirect',
                           path: '*',
-                          parent: UserViewRoute.name,
+                          parent: UserWrapperRoute.name,
                           redirectTo: 'feed',
                           fullMatch: true)
                     ]),
@@ -235,7 +231,7 @@ class AppWrapperRoute extends _i6.PageRouteInfo<void> {
 /// generated route for
 /// [_i3.LoginPage]
 class LoginRoute extends _i6.PageRouteInfo<LoginRouteArgs> {
-  LoginRoute({_i18.Key? key, String? title, dynamic Function(bool)? onLogin})
+  LoginRoute({_i17.Key? key, String? title, dynamic Function(bool)? onLogin})
       : super(LoginRoute.name,
             path: '/login',
             args: LoginRouteArgs(key: key, title: title, onLogin: onLogin));
@@ -246,7 +242,7 @@ class LoginRoute extends _i6.PageRouteInfo<LoginRouteArgs> {
 class LoginRouteArgs {
   const LoginRouteArgs({this.key, this.title, this.onLogin});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
   final String? title;
 
@@ -262,7 +258,7 @@ class LoginRouteArgs {
 /// [_i4.HomeWraperPage]
 class MinestrixRouter extends _i6.PageRouteInfo<MinestrixRouterArgs> {
   MinestrixRouter(
-      {_i18.Key? key, String? title, List<_i6.PageRouteInfo>? children})
+      {_i17.Key? key, String? title, List<_i6.PageRouteInfo>? children})
       : super(MinestrixRouter.name,
             path: '',
             args: MinestrixRouterArgs(key: key, title: title),
@@ -274,7 +270,7 @@ class MinestrixRouter extends _i6.PageRouteInfo<MinestrixRouterArgs> {
 class MinestrixRouterArgs {
   const MinestrixRouterArgs({this.key, this.title});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
   final String? title;
 
@@ -288,7 +284,7 @@ class MinestrixRouterArgs {
 /// [_i5.MatrixChatsPage]
 class MatrixChatsRoute extends _i6.PageRouteInfo<MatrixChatsRouteArgs> {
   MatrixChatsRoute(
-      {_i18.Key? key, required _i19.Client client, bool enableStories = false})
+      {_i17.Key? key, required _i18.Client client, bool enableStories = false})
       : super(MatrixChatsRoute.name,
             path: 'chats',
             args: MatrixChatsRouteArgs(
@@ -301,9 +297,9 @@ class MatrixChatsRouteArgs {
   const MatrixChatsRouteArgs(
       {this.key, required this.client, this.enableStories = false});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
-  final _i19.Client client;
+  final _i18.Client client;
 
   final bool enableStories;
 
@@ -333,7 +329,7 @@ class FeedRoute extends _i6.PageRouteInfo<void> {
 /// generated route for
 /// [_i8.GroupPage]
 class GroupRoute extends _i6.PageRouteInfo<GroupRouteArgs> {
-  GroupRoute({_i18.Key? key, _i20.MinestrixRoom? sroom})
+  GroupRoute({_i17.Key? key, _i19.MinestrixRoom? sroom})
       : super(GroupRoute.name,
             path: 'group', args: GroupRouteArgs(key: key, sroom: sroom));
 
@@ -343,9 +339,9 @@ class GroupRoute extends _i6.PageRouteInfo<GroupRouteArgs> {
 class GroupRouteArgs {
   const GroupRouteArgs({this.key, this.sroom});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
-  final _i20.MinestrixRoom? sroom;
+  final _i19.MinestrixRoom? sroom;
 
   @override
   String toString() {
@@ -356,7 +352,7 @@ class GroupRouteArgs {
 /// generated route for
 /// [_i9.PostEditorPage]
 class PostEditorRoute extends _i6.PageRouteInfo<PostEditorRouteArgs> {
-  PostEditorRoute({_i18.Key? key, _i20.MinestrixRoom? sroom})
+  PostEditorRoute({_i17.Key? key, _i19.MinestrixRoom? sroom})
       : super(PostEditorRoute.name,
             path: 'createPost',
             args: PostEditorRouteArgs(key: key, sroom: sroom));
@@ -367,9 +363,9 @@ class PostEditorRoute extends _i6.PageRouteInfo<PostEditorRouteArgs> {
 class PostEditorRouteArgs {
   const PostEditorRouteArgs({this.key, this.sroom});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
-  final _i20.MinestrixRoom? sroom;
+  final _i19.MinestrixRoom? sroom;
 
   @override
   String toString() {
@@ -378,38 +374,16 @@ class PostEditorRouteArgs {
 }
 
 /// generated route for
-/// [_i10.UserViewPage]
-class UserViewRoute extends _i6.PageRouteInfo<UserViewRouteArgs> {
-  UserViewRoute(
-      {_i18.Key? key,
-      String? userId,
-      _i20.MinestrixRoom? sroom,
-      List<_i6.PageRouteInfo>? children})
-      : super(UserViewRoute.name,
-            path: 'user',
-            args: UserViewRouteArgs(key: key, userId: userId, sroom: sroom),
-            initialChildren: children);
+/// [_i6.EmptyRouterPage]
+class UserWrapperRoute extends _i6.PageRouteInfo<void> {
+  const UserWrapperRoute({List<_i6.PageRouteInfo>? children})
+      : super(UserWrapperRoute.name, path: 'user', initialChildren: children);
 
-  static const String name = 'UserViewRoute';
-}
-
-class UserViewRouteArgs {
-  const UserViewRouteArgs({this.key, this.userId, this.sroom});
-
-  final _i18.Key? key;
-
-  final String? userId;
-
-  final _i20.MinestrixRoom? sroom;
-
-  @override
-  String toString() {
-    return 'UserViewRouteArgs{key: $key, userId: $userId, sroom: $sroom}';
-  }
+  static const String name = 'UserWrapperRoute';
 }
 
 /// generated route for
-/// [_i11.ResearchPage]
+/// [_i10.ResearchPage]
 class ResearchRoute extends _i6.PageRouteInfo<void> {
   const ResearchRoute() : super(ResearchRoute.name, path: 'search');
 
@@ -417,7 +391,7 @@ class ResearchRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i12.AccountsDetailsPage]
+/// [_i11.AccountsDetailsPage]
 class AccountsDetailsRoute extends _i6.PageRouteInfo<void> {
   const AccountsDetailsRoute()
       : super(AccountsDetailsRoute.name, path: 'accounts');
@@ -426,7 +400,7 @@ class AccountsDetailsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i13.SettingsPage]
+/// [_i12.SettingsPage]
 class SettingsRoute extends _i6.PageRouteInfo<void> {
   const SettingsRoute() : super(SettingsRoute.name, path: 'settings');
 
@@ -434,52 +408,30 @@ class SettingsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i14.UserFeedPage]
-class UserFeedRoute extends _i6.PageRouteInfo<UserFeedRouteArgs> {
-  UserFeedRoute(
-      {_i18.Key? key,
-      required _i20.MinestrixRoom sroom,
-      required Iterable<_i19.Event> sevents,
-      required String userID,
-      bool isUserPage = false})
-      : super(UserFeedRoute.name,
-            path: 'feed',
-            args: UserFeedRouteArgs(
-                key: key,
-                sroom: sroom,
-                sevents: sevents,
-                userID: userID,
-                isUserPage: isUserPage));
+/// [_i13.UserViewPage]
+class UserViewRoute extends _i6.PageRouteInfo<UserViewRouteArgs> {
+  UserViewRoute({_i17.Key? key, String? userID})
+      : super(UserViewRoute.name,
+            path: 'feed', args: UserViewRouteArgs(key: key, userID: userID));
 
-  static const String name = 'UserFeedRoute';
+  static const String name = 'UserViewRoute';
 }
 
-class UserFeedRouteArgs {
-  const UserFeedRouteArgs(
-      {this.key,
-      required this.sroom,
-      required this.sevents,
-      required this.userID,
-      this.isUserPage = false});
+class UserViewRouteArgs {
+  const UserViewRouteArgs({this.key, this.userID});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
-  final _i20.MinestrixRoom sroom;
-
-  final Iterable<_i19.Event> sevents;
-
-  final String userID;
-
-  final bool isUserPage;
+  final String? userID;
 
   @override
   String toString() {
-    return 'UserFeedRouteArgs{key: $key, sroom: $sroom, sevents: $sevents, userID: $userID, isUserPage: $isUserPage}';
+    return 'UserViewRouteArgs{key: $key, userID: $userID}';
   }
 }
 
 /// generated route for
-/// [_i15.FriendsPage]
+/// [_i14.FriendsPage]
 class FriendsRoute extends _i6.PageRouteInfo<void> {
   const FriendsRoute() : super(FriendsRoute.name, path: 'my_friends');
 
@@ -487,9 +439,9 @@ class FriendsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i16.UserFriendsPage]
+/// [_i15.UserFriendsPage]
 class UserFriendsRoute extends _i6.PageRouteInfo<UserFriendsRouteArgs> {
-  UserFriendsRoute({_i18.Key? key, required _i20.MinestrixRoom sroom})
+  UserFriendsRoute({_i17.Key? key, required _i19.MinestrixRoom sroom})
       : super(UserFriendsRoute.name,
             path: 'user_friends',
             args: UserFriendsRouteArgs(key: key, sroom: sroom));
@@ -500,9 +452,9 @@ class UserFriendsRoute extends _i6.PageRouteInfo<UserFriendsRouteArgs> {
 class UserFriendsRouteArgs {
   const UserFriendsRouteArgs({this.key, required this.sroom});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
-  final _i20.MinestrixRoom sroom;
+  final _i19.MinestrixRoom sroom;
 
   @override
   String toString() {
@@ -511,12 +463,12 @@ class UserFriendsRouteArgs {
 }
 
 /// generated route for
-/// [_i17.MatrixChatPage]
+/// [_i16.MatrixChatPage]
 class MatrixChatRoute extends _i6.PageRouteInfo<MatrixChatRouteArgs> {
   MatrixChatRoute(
-      {_i18.Key? key,
+      {_i17.Key? key,
       required String roomId,
-      required _i19.Client client,
+      required _i18.Client client,
       void Function()? onBack})
       : super(MatrixChatRoute.name,
             path: ':roomId',
@@ -530,11 +482,11 @@ class MatrixChatRouteArgs {
   const MatrixChatRouteArgs(
       {this.key, required this.roomId, required this.client, this.onBack});
 
-  final _i18.Key? key;
+  final _i17.Key? key;
 
   final String roomId;
 
-  final _i19.Client client;
+  final _i18.Client client;
 
   final void Function()? onBack;
 

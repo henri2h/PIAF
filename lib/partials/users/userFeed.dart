@@ -6,7 +6,6 @@ import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/partials/users/userFriendsCard.dart';
-import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
@@ -14,16 +13,9 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 
 class UserFeed extends StatefulWidget {
-  const UserFeed(
-      {Key? key,
-      required this.sroom,
-      required this.sevents,
-      required this.userID,
-      this.isUserPage = false})
+  const UserFeed({Key? key, required this.sroom, this.isUserPage = false})
       : super(key: key);
   final MinestrixRoom sroom;
-  final Iterable<Event> sevents;
-  final String userID;
 
   /// change the way the partial is displayed.
   final bool isUserPage;
@@ -34,45 +26,36 @@ class UserFeed extends StatefulWidget {
 
 class _UserFeedState extends State<UserFeed> {
   bool requestingHistory = false;
-  bool _updating = false;
-
-  ScrollController _controller = new ScrollController();
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(scrollListener);
-  }
-
-  @override
-  void deactivate() {
-    super.deactivate();
-    _controller.removeListener(scrollListener);
-  }
-
-  void scrollListener() async {
-    if (_controller.position.pixels >=
-        _controller.position.maxScrollExtent * 0.8) {
-      if (_updating == false) {
-        setState(() {
-          _updating = true;
-        });
-        print("[ userFeedPage ] : update from scroll");
-        await widget.sroom.timeline!.requestHistory();
-        setState(() {
-          _updating = false;
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    MinestrixRoom sroom = widget.sroom;
     MinestrixClient sclient = Matrix.of(context).sclient!;
+
+    Iterable<Event> sevents = sclient
+        .getSRoomFilteredEvents(widget.sroom.timeline!, eventTypesFilter: [
+      EventTypes.Message,
+      EventTypes.Encrypted,
+      EventTypes.RoomCreate,
+      EventTypes.RoomAvatar,
+      EventTypes.RoomMember
+    ]).where((Event e) {
+      if (e.type == EventTypes.RoomMember) {
+        if (e.prevContent != null &&
+            e.content["avatar_url"] != e.prevContent!["avatar_url"] &&
+            e.senderId == widget.sroom.user.id) {
+          // the room owner has changed it's profile picture
+          return true;
+        }
+        return false;
+      }
+      return true;
+    });
+
     return LayoutBuilder(
       builder: (context, constraints) => StreamBuilder(
           stream: widget.sroom.room.onUpdate.stream,
-          builder: (context, _) => ListView(
-                controller: _controller,
+          builder: (context, _) => Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,11 +79,6 @@ class _UserFeedState extends State<UserFeed> {
                         ),
                     ],
                   ),
-
-                  UserInfo(
-                      user: widget.sroom.user,
-                      avatar:
-                          widget.sroom.room.avatar?.getDownloadLink(sclient)),
 
                   if (constraints.maxWidth <= 900)
                     Column(
@@ -167,20 +145,19 @@ class _UserFeedState extends State<UserFeed> {
                               ),
                             ),
                             StoriesList(
-                                client: sclient, restrict: widget.userID),
+                                client: sclient, restrict: sroom.userID),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: PostWriterModal(sroom: sclient.userRoom),
                             ),
-                            for (Event e in widget.sevents)
+                            for (Event e in sevents)
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 5),
                                 child: Post(event: e),
                               ),
-                            if (widget.sevents.length == 0 ||
-                                widget.sevents.last.type !=
-                                    EventTypes.RoomCreate)
+                            if (sevents.length == 0 ||
+                                sevents.last.type != EventTypes.RoomCreate)
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: MaterialButton(

@@ -173,7 +173,8 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                       ),
                       PostWriterModal(sroom: sclient.userRoom),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 12),
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: FutureBuilder<List<Profile>>(
@@ -197,7 +198,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                     0) // may be a redundant check... we never know
                   return Padding(
                     padding:
-                        const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
+                        const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
                     child: Post(event: timeline![i - 1]),
                   );
                 else

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -28,6 +29,12 @@ class _FriendsPageState extends State<FriendsPage> {
 
     return ListView(
       children: [
+        FutureBuilder<Profile>(
+            future: sclient.ownProfile,
+            builder: (context, snap) {
+              if (!snap.hasData) return CircularProgressIndicator();
+              return UserInfo(profile: snap.data!);
+            }),
         H1Title("Following"),
         Padding(
           padding: const EdgeInsets.all(8.0),
