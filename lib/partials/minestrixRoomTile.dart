@@ -126,9 +126,7 @@ class MinestrixRoomTile extends StatelessWidget {
                                       fontWeight: FontWeight.bold,
                                     )),
                                 Text(
-                                  sroom.roomType == SRoomType.UserRoom
-                                      ? sroom.user.id
-                                      : sroom.room.topic,
+                                  sroom.room.topic,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(),
                                 )

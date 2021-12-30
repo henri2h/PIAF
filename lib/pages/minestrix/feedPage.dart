@@ -59,7 +59,7 @@ class _FeedPageState extends State<FeedPage> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(0),
-                          child: Text("Contacts",
+                          child: Text("Following",
                               style:
                                   TextStyle(fontSize: 22, letterSpacing: 1.1)),
                         ),
