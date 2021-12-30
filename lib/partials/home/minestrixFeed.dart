@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/post/postEditor.dart';
+import 'package:minestrix/pages/minestrix/postEditor.dart';
 import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
