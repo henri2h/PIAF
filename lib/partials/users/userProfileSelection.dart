@@ -59,8 +59,8 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                               thumnail: true,
                               defaultText: r.room.topic,
                               backgroundColor: Colors.blue,
-                              width: 50,
-                              height: 50,
+                              width: 45,
+                              height: 45,
                             ),
                             SizedBox(
                               width: 8,
@@ -85,17 +85,17 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                 ),
               if (widget.userId == sclient.userID)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: MaterialButton(
                     color: Colors.green,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                     child: Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(4),
                       child: Row(
                         children: [
                           SizedBox(
-                              height: 50,
+                              height: 45,
                               child: _creatingAccount
                                   ? Center(
                                       child: CircularProgressIndicator(
@@ -105,9 +105,13 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                           SizedBox(
                             width: 8,
                           ),
-                          Text("Create a new profile",
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w600))
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 110),
+                            child: Text("Create a new profile",
+                                maxLines: 2,
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w600)),
+                          )
                         ],
                       ),
                     ),
