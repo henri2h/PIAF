@@ -60,14 +60,16 @@ class AccountCard extends StatelessWidget {
                   size: 70),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 4.0, top: 2),
+              padding: const EdgeInsets.only(bottom: 6, top: 5),
               child: SizedBox(
                 width: 80,
-                height: 35,
+                height: 30,
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(displayName ?? userId,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.normal,
