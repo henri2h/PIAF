@@ -26,12 +26,13 @@ class PostHeader extends StatelessWidget {
                 child: MatrixUserImage(
                     client: sclient,
                     url: event!.sender.avatarUrl,
+                    defaultText: event!.sender.displayName ?? event!.sender.id,
+                    backgroundColor: Colors.blue,
                     width: 48,
                     height: 48,
                     thumnail: true,
                     defaultIcon: Icon(Icons.person, size: 48)),
               ),
-              SizedBox(width: 10),
               if (sroom.roomType == SRoomType.UserRoom)
                 Flexible(
                   child: Builder(builder: (BuildContext context) {
@@ -106,7 +107,8 @@ class PostHeader extends StatelessWidget {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Flexible(
                           child: TextButton(
