@@ -45,7 +45,6 @@ class LoginCardState extends State<LoginCard> {
     client = Matrix.of(context).sclient;
     return Stack(children: <Widget>[
       ListView(
-        // mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 600),
