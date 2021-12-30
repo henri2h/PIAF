@@ -7,7 +7,6 @@ import 'package:minestrix/partials/users/userAvatar.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/partials/matrix_images.dart';
 
 class UserInfo extends StatelessWidget {
   const UserInfo({Key? key, required this.profile, this.room})

@@ -110,7 +110,8 @@ class AppRouter extends _i6.RootStackRouter {
           orElse: () => const UserViewRouteArgs());
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i13.UserViewPage(key: args.key, userID: args.userID));
+          child: _i13.UserViewPage(
+              key: args.key, userID: args.userID, mroom: args.mroom));
     },
     FriendsRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
@@ -410,23 +411,26 @@ class SettingsRoute extends _i6.PageRouteInfo<void> {
 /// generated route for
 /// [_i13.UserViewPage]
 class UserViewRoute extends _i6.PageRouteInfo<UserViewRouteArgs> {
-  UserViewRoute({_i17.Key? key, String? userID})
+  UserViewRoute({_i17.Key? key, String? userID, _i19.MinestrixRoom? mroom})
       : super(UserViewRoute.name,
-            path: 'feed', args: UserViewRouteArgs(key: key, userID: userID));
+            path: 'feed',
+            args: UserViewRouteArgs(key: key, userID: userID, mroom: mroom));
 
   static const String name = 'UserViewRoute';
 }
 
 class UserViewRouteArgs {
-  const UserViewRouteArgs({this.key, this.userID});
+  const UserViewRouteArgs({this.key, this.userID, this.mroom});
 
   final _i17.Key? key;
 
   final String? userID;
 
+  final _i19.MinestrixRoom? mroom;
+
   @override
   String toString() {
-    return 'UserViewRouteArgs{key: $key, userID: $userID}';
+    return 'UserViewRouteArgs{key: $key, userID: $userID, mroom: $mroom}';
   }
 }
 

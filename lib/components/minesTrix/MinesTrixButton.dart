@@ -47,9 +47,7 @@ class _MinesTrixButtonState extends State<MinesTrixButton> {
                           color: Colors.white,
                         ),
                   SizedBox(width: 10),
-                  Flexible(
-                      child: Text(widget.label,
-                          style: TextStyle(color: Colors.white))),
+                  Text(widget.label, style: TextStyle(color: Colors.white)),
                 ],
               ),
             ),

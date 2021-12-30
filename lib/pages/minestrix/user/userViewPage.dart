@@ -4,6 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/partials/users/userFeed.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
+import 'package:minestrix/partials/users/userProfileSelection.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -15,7 +16,10 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
 /// a way to select which one to display
 class UserViewPage extends StatefulWidget {
   final String? userID;
-  const UserViewPage({Key? key, this.userID}) : super(key: key);
+  final MinestrixRoom? mroom;
+  const UserViewPage({Key? key, this.userID, this.mroom})
+      : assert(userID == null || mroom == null),
+        super(key: key);
 
   @override
   _UserViewPageState createState() => _UserViewPageState();
@@ -23,6 +27,7 @@ class UserViewPage extends StatefulWidget {
 
 class _UserViewPageState extends State<UserViewPage> {
   MinestrixRoom? mroom;
+
   String? userId;
   bool _updating = false;
 
@@ -60,6 +65,7 @@ class _UserViewPageState extends State<UserViewPage> {
   @override
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
+    mroom ??= widget.mroom;
 
     if (mroom == null) {
       userId = widget.userID;
@@ -85,6 +91,17 @@ class _UserViewPageState extends State<UserViewPage> {
 
           return ListView(controller: _controller, children: [
             UserInfo(profile: p, room: mroom?.room),
+            SizedBox(
+              height: 20,
+            ),
+            UserProfileSelection(
+                userId: userId!,
+                onRoomSelected: (MinestrixRoom r) {
+                  setState(() {
+                    mroom = r;
+                  });
+                },
+                roomSelectedId: mroom?.room.id),
             mroom != null
                 ? UserFeed(
                     sroom: mroom!,

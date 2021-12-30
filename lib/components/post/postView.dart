@@ -74,11 +74,14 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     Event e = widget.event;
     MinestrixClient sclient = Matrix.of(context).sclient!;
 
-    Timeline? t = sclient.srooms[e.roomId!]!.timeline;
+    Timeline? t = sclient.srooms[e.roomId!]?.timeline;
+    if (t == null) {
+      return CircularProgressIndicator();
+    }
     return StreamBuilder<Object>(
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
-          Set<Event> replies = e.aggregatedEvents(t!, RelationshipTypes.reply);
+          Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.reply);
           Set<Event> reactions =
               e.aggregatedEvents(t, RelationshipTypes.reaction);
           return Card(

@@ -1,12 +1,13 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:matrix/src/utils/space_child.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/components/customFutureButton.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/stories/stories_circle.dart';
 import 'package:minestrix_chat/utils/room_profile.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
@@ -55,19 +56,9 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                             setState(() {});
                           }));
 
-                if (r.getState("m.room.create")?.content["type"] ==
-                    "msczzzz.stories.stories_room")
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        StorieCircle(room: r),
-                        Expanded(child: RoomProfileListTile(r))
-                      ],
-                    ),
-                  );
-
-                return RoomProfileListTile(r);
+                return RoomProfileListTile(r, onLeave: () {
+                  setState(() {});
+                });
               });
             }),
         for (MinestrixRoom sroom in sclient.srooms.values.where((sroom) =>
@@ -79,7 +70,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     -1)))
           Column(
             children: [
-              RoomProfileListTile(sroom.room),
+              RoomProfileListTile(sroom.room, onLeave: () => setState(() {})),
               if (profile != null &&
                   profile.spaceChildren.contains(
                           (SpaceChild sc) => sc.roomId == sroom.room.id) ==
@@ -98,7 +89,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
           ),
         Padding(
           padding: const EdgeInsets.all(20),
-          child: Row(
+          child: Wrap(
             children: [
               if (profile != null)
                 Padding(
@@ -126,18 +117,28 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
   }
 }
 
-class RoomProfileListTile extends StatelessWidget {
-  const RoomProfileListTile(this.r, {Key? key}) : super(key: key);
+class RoomProfileListTile extends StatefulWidget {
+  const RoomProfileListTile(this.r, {Key? key, required this.onLeave})
+      : super(key: key);
   final Room r;
+  final VoidCallback onLeave;
+  @override
+  _RoomProfileListTileState createState() => _RoomProfileListTileState();
+}
+
+class _RoomProfileListTileState extends State<RoomProfileListTile> {
+  bool _updating = false;
 
   @override
   Widget build(BuildContext context) {
+    Room r = widget.r;
     return ListTile(
         title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text((r.name), style: TextStyle(fontWeight: FontWeight.bold))
             ]),
+        leading: _updating ? CircularProgressIndicator() : null,
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -200,19 +201,34 @@ class RoomProfileListTile extends StatelessWidget {
                       value: "leave")
                 ],
             icon: Icon(Icons.more_horiz),
-            onSelected: (String action) async {
-              switch (action) {
-                case "leave":
-                  await r.leave();
-                  /*setState(() {
-                                sclient.srooms.remove(r);
-                              }*/
-                  break;
-                default:
-              }
-            }),
+            onSelected: _updating
+                ? null
+                : (String action) async {
+                    MinestrixClient sclient = Matrix.of(context).sclient!;
+                    switch (action) {
+                      case "leave":
+                        setState(() {
+                          _updating = true;
+                        });
+                        await r.leave();
+                        /* await r.client.onSync.stream.firstWhere((sync) =>
+                            sync.rooms?.join?.containsKey(r.id) ?? false);*/
+
+                        await sclient.updateAll();
+                        setState(() {
+                          _updating = false;
+                        });
+                        widget.onLeave();
+                        break;
+                      default:
+                    }
+                  }),
         onTap: () {
-          // context.pushRoute(UserFeedRoute(sroom: r));
+          MinestrixClient sclient = Matrix.of(context).sclient!;
+          MinestrixRoom? _r = sclient.srooms[r.id];
+          if (_r != null)
+            context.navigateTo(
+                UserWrapperRoute(children: [UserViewRoute(mroom: _r)]));
         });
   }
 }

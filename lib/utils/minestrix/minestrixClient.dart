@@ -256,22 +256,29 @@ class MinestrixClient extends Client {
     if (userRoom == null) print("❌ User room not found");
   }
 
-  Future<String> createMinestrixAccount(String name, String desc) async {
+  Future<String> createMinestrixAccount(String name, String desc,
+      {bool waitForCreation = true,
+      Visibility visibility = Visibility.private}) async {
     String roomID = await createRoom(
         name: name,
         topic: desc,
-        visibility: Visibility.private,
+        visibility: visibility,
         creationContent: {"type": MinestrixTypes.account});
+    if (waitForCreation) {
+      // Wait for room actually appears in sync and update all
+      await onSync.stream
+          .firstWhere((sync) => sync.rooms?.join?.containsKey(roomID) ?? false);
+
+      await updateAll();
+    }
 
     return roomID;
   }
 
   Future createSMatrixUserProfile() async {
     String name = userID! + " timeline";
-    await createMinestrixAccount(name, "A Mines'Trix profile");
-
-    // refresh everything
-    await updateAll();
+    await createMinestrixAccount(name, "A private MinesTRIX profile",
+        waitForCreation: true);
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
@@ -368,12 +375,19 @@ class MinestrixClient extends Client {
     return false; // we haven't been able to add this user to our friend list
   }
 
-  Future<String> createMinestrixGroup(String name, String desc) async {
+  Future<String> createMinestrixGroup(String name, String desc,
+      {waitForCreation = true}) async {
     String roomID = await createRoom(
         name: name,
         topic: desc,
         visibility: Visibility.private,
         creationContent: {"type": MinestrixTypes.group});
+
+    if (waitForCreation) {
+      // Wait for room actually appears in sync
+      await onSync.stream
+          .firstWhere((sync) => sync.rooms?.join?.containsKey(roomID) ?? false);
+    }
 
     // launch sync
     await loadSRooms();
