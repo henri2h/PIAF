@@ -7,6 +7,7 @@ import 'package:minestrix/utils/Managers/ThemeManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:provider/provider.dart';
 
@@ -262,6 +263,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 await sclient.logout();
                 if (Navigator.of(context).canPop()) Navigator.of(context).pop();
               }),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snap) {
+                  if (!snap.hasData) return Container();
+                  return Text("Version : " + (snap.data?.version ?? 'null'));
+                }),
+          ),
         ],
       ),
     );
