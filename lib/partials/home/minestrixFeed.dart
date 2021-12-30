@@ -11,6 +11,7 @@ import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/partials/stories/stories_list.dart';
 
 class MinestrixFeed extends StatefulWidget {
   const MinestrixFeed({Key? key}) : super(key: key);
@@ -90,6 +91,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
               itemBuilder: (BuildContext context, int i) {
                 if (i == 0)
                   return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -171,6 +173,10 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                           ),
                         ],
                       ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: StoriesList(client: sclient),
+                      ),
                       PostWriterModal(sroom: sclient.userRoom),
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -191,7 +197,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                 );
                               }),
                         ),
-                      )
+                      ),
                     ],
                   );
                 if (timeline!.length >
