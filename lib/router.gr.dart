@@ -15,18 +15,18 @@ import 'package:minestrix_chat/view/matrix_chat_page.dart' as _i16;
 import 'package:minestrix_chat/view/matrix_chats_page.dart' as _i5;
 
 import 'components/post/postEditor.dart' as _i9;
-import 'pages/account/accountsDetailsPage.dart' as _i11;
+import 'pages/account/accountsDetailsPage.dart' as _i14;
 import 'pages/appWrapperPage.dart' as _i2;
 import 'pages/loginPage.dart' as _i3;
 import 'pages/matrixLoadingPage.dart' as _i1;
 import 'pages/minestrix/feedPage.dart' as _i7;
-import 'pages/minestrix/friends/researchPage.dart' as _i10;
+import 'pages/minestrix/friends/researchPage.dart' as _i13;
 import 'pages/minestrix/groups/groupPage.dart' as _i8;
 import 'pages/minestrix/homeWraperPage.dart' as _i4;
-import 'pages/minestrix/user/friendsPage.dart' as _i14;
-import 'pages/minestrix/user/userFriendsPage.dart' as _i15;
-import 'pages/minestrix/user/userViewPage.dart' as _i13;
-import 'pages/settingsPage.dart' as _i12;
+import 'pages/minestrix/user/friendsPage.dart' as _i11;
+import 'pages/minestrix/user/userFriendsPage.dart' as _i12;
+import 'pages/minestrix/user/userViewPage.dart' as _i10;
+import 'pages/settingsPage.dart' as _i15;
 import 'utils/minestrix/minestrixRoom.dart' as _i19;
 
 class AppRouter extends _i6.RootStackRouter {
@@ -89,39 +89,35 @@ class AppRouter extends _i6.RootStackRouter {
           routeData: routeData,
           child: _i9.PostEditorPage(key: args.key, sroom: args.sroom));
     },
-    UserWrapperRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i6.EmptyRouterPage());
-    },
-    ResearchRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: _i10.ResearchPage());
-    },
-    AccountsDetailsRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i11.AccountsDetailsPage());
-    },
-    SettingsRoute.name: (routeData) {
-      return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i12.SettingsPage());
-    },
     UserViewRoute.name: (routeData) {
       final args = routeData.argsAs<UserViewRouteArgs>(
           orElse: () => const UserViewRouteArgs());
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i13.UserViewPage(
+          child: _i10.UserViewPage(
               key: args.key, userID: args.userID, mroom: args.mroom));
     },
     FriendsRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i14.FriendsPage());
+          routeData: routeData, child: const _i11.FriendsPage());
     },
     UserFriendsRoute.name: (routeData) {
       final args = routeData.argsAs<UserFriendsRouteArgs>();
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i15.UserFriendsPage(key: args.key, sroom: args.sroom));
+          child: _i12.UserFriendsPage(key: args.key, sroom: args.sroom));
+    },
+    ResearchRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: _i13.ResearchPage());
+    },
+    AccountsDetailsRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i14.AccountsDetailsPage());
+    },
+    SettingsRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i15.SettingsPage());
     },
     MatrixChatRoute.name: (routeData) {
       final args = routeData.argsAs<MatrixChatRouteArgs>();
@@ -154,27 +150,12 @@ class AppRouter extends _i6.RootStackRouter {
                     path: 'group', parent: MinestrixRouter.name),
                 _i6.RouteConfig(PostEditorRoute.name,
                     path: 'createPost', parent: MinestrixRouter.name),
-                _i6.RouteConfig(UserWrapperRoute.name,
-                    path: 'user',
-                    parent: MinestrixRouter.name,
-                    children: [
-                      _i6.RouteConfig('#redirect',
-                          path: '',
-                          parent: UserWrapperRoute.name,
-                          redirectTo: 'feed',
-                          fullMatch: true),
-                      _i6.RouteConfig(UserViewRoute.name,
-                          path: 'feed', parent: UserWrapperRoute.name),
-                      _i6.RouteConfig(FriendsRoute.name,
-                          path: 'my_friends', parent: UserWrapperRoute.name),
-                      _i6.RouteConfig(UserFriendsRoute.name,
-                          path: 'user_friends', parent: UserWrapperRoute.name),
-                      _i6.RouteConfig('*#redirect',
-                          path: '*',
-                          parent: UserWrapperRoute.name,
-                          redirectTo: 'feed',
-                          fullMatch: true)
-                    ]),
+                _i6.RouteConfig(UserViewRoute.name,
+                    path: 'userfeed', parent: MinestrixRouter.name),
+                _i6.RouteConfig(FriendsRoute.name,
+                    path: 'my_friends', parent: MinestrixRouter.name),
+                _i6.RouteConfig(UserFriendsRoute.name,
+                    path: 'user_friends', parent: MinestrixRouter.name),
                 _i6.RouteConfig(ResearchRoute.name,
                     path: 'search', parent: MinestrixRouter.name),
                 _i6.RouteConfig(AccountsDetailsRoute.name,
@@ -375,45 +356,11 @@ class PostEditorRouteArgs {
 }
 
 /// generated route for
-/// [_i6.EmptyRouterPage]
-class UserWrapperRoute extends _i6.PageRouteInfo<void> {
-  const UserWrapperRoute({List<_i6.PageRouteInfo>? children})
-      : super(UserWrapperRoute.name, path: 'user', initialChildren: children);
-
-  static const String name = 'UserWrapperRoute';
-}
-
-/// generated route for
-/// [_i10.ResearchPage]
-class ResearchRoute extends _i6.PageRouteInfo<void> {
-  const ResearchRoute() : super(ResearchRoute.name, path: 'search');
-
-  static const String name = 'ResearchRoute';
-}
-
-/// generated route for
-/// [_i11.AccountsDetailsPage]
-class AccountsDetailsRoute extends _i6.PageRouteInfo<void> {
-  const AccountsDetailsRoute()
-      : super(AccountsDetailsRoute.name, path: 'accounts');
-
-  static const String name = 'AccountsDetailsRoute';
-}
-
-/// generated route for
-/// [_i12.SettingsPage]
-class SettingsRoute extends _i6.PageRouteInfo<void> {
-  const SettingsRoute() : super(SettingsRoute.name, path: 'settings');
-
-  static const String name = 'SettingsRoute';
-}
-
-/// generated route for
-/// [_i13.UserViewPage]
+/// [_i10.UserViewPage]
 class UserViewRoute extends _i6.PageRouteInfo<UserViewRouteArgs> {
   UserViewRoute({_i17.Key? key, String? userID, _i19.MinestrixRoom? mroom})
       : super(UserViewRoute.name,
-            path: 'feed',
+            path: 'userfeed',
             args: UserViewRouteArgs(key: key, userID: userID, mroom: mroom));
 
   static const String name = 'UserViewRoute';
@@ -435,7 +382,7 @@ class UserViewRouteArgs {
 }
 
 /// generated route for
-/// [_i14.FriendsPage]
+/// [_i11.FriendsPage]
 class FriendsRoute extends _i6.PageRouteInfo<void> {
   const FriendsRoute() : super(FriendsRoute.name, path: 'my_friends');
 
@@ -443,7 +390,7 @@ class FriendsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i15.UserFriendsPage]
+/// [_i12.UserFriendsPage]
 class UserFriendsRoute extends _i6.PageRouteInfo<UserFriendsRouteArgs> {
   UserFriendsRoute({_i17.Key? key, required _i19.MinestrixRoom sroom})
       : super(UserFriendsRoute.name,
@@ -464,6 +411,31 @@ class UserFriendsRouteArgs {
   String toString() {
     return 'UserFriendsRouteArgs{key: $key, sroom: $sroom}';
   }
+}
+
+/// generated route for
+/// [_i13.ResearchPage]
+class ResearchRoute extends _i6.PageRouteInfo<void> {
+  const ResearchRoute() : super(ResearchRoute.name, path: 'search');
+
+  static const String name = 'ResearchRoute';
+}
+
+/// generated route for
+/// [_i14.AccountsDetailsPage]
+class AccountsDetailsRoute extends _i6.PageRouteInfo<void> {
+  const AccountsDetailsRoute()
+      : super(AccountsDetailsRoute.name, path: 'accounts');
+
+  static const String name = 'AccountsDetailsRoute';
+}
+
+/// generated route for
+/// [_i15.SettingsPage]
+class SettingsRoute extends _i6.PageRouteInfo<void> {
+  const SettingsRoute() : super(SettingsRoute.name, path: 'settings');
+
+  static const String name = 'SettingsRoute';
 }
 
 /// generated route for

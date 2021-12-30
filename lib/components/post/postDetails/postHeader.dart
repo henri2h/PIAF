@@ -50,9 +50,8 @@ class PostHeader extends StatelessWidget {
                                       .bodyText1!
                                       .color),
                               onPressed: () {
-                                context.navigateTo(UserWrapperRoute(children: [
-                                  UserViewRoute(userID: event!.senderId)
-                                ]));
+                                context.navigateTo(
+                                    UserViewRoute(userID: event!.senderId));
                               },
                               child: Text(
                                   (event!.sender.displayName ??
@@ -76,10 +75,8 @@ class PostHeader extends StatelessWidget {
                                         .bodyText1!
                                         .color),
                                 onPressed: () {
-                                  context.navigateTo(UserWrapperRoute(
-                                      children: [
-                                        UserViewRoute(userID: feedOwner.id)
-                                      ]));
+                                  context.navigateTo(
+                                      UserViewRoute(userID: feedOwner.id));
                                 },
                                 child: Text(
                                     (feedOwner.displayName ?? feedOwner.id),
@@ -114,9 +111,8 @@ class PostHeader extends StatelessWidget {
                         Flexible(
                           child: TextButton(
                             onPressed: () {
-                              context.navigateTo(UserWrapperRoute(children: [
-                                UserViewRoute(userID: event!.senderId)
-                              ]));
+                              context.navigateTo(
+                                  UserViewRoute(userID: event!.senderId));
                             },
                             child: Text(
                                 (event!.sender.displayName ?? event!.sender.id),

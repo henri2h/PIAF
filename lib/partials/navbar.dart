@@ -34,8 +34,8 @@ class NavBarDesktop extends StatelessWidget {
                 icon: Icons.person,
                 onPressed: () async {
                   await context.navigateTo(AppWrapperRoute());
-                  context.navigateTo(
-                      UserWrapperRoute(children: [UserViewRoute()]));
+                  await context.navigateTo(UserViewRoute(
+                      userID: Matrix.of(context).sclient!.userID));
                 }),
             NavBarButton(
                 name: "Chats",
@@ -116,8 +116,7 @@ class NavBarMobileState extends State<NavBarMobile> {
         context.pushRoute(ResearchRoute());
         break;
       case 2:
-        context.navigateTo(
-            UserWrapperRoute(children: [UserViewRoute(userID: userId)]));
+        context.navigateTo(UserViewRoute(userID: userId));
         break;
       default:
     }

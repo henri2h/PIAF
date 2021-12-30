@@ -39,8 +39,7 @@ class AccountCard extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         onPressed: () {
-          context.navigateTo(UserWrapperRoute());
-          context.navigateTo(UserViewRoute(userID: userId));
+          context.pushRoute(UserViewRoute(userID: userId));
         },
         child: Column(
           children: [

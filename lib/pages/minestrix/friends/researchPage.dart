@@ -43,8 +43,7 @@ class _ResearchPageState extends State<ResearchPage> {
             );
           },
           onSuggestionSelected: (Profile p) async {
-            context.navigateTo(
-                UserWrapperRoute(children: [UserViewRoute(userID: p.userId)]));
+            context.navigateTo(UserViewRoute(userID: p.userId));
           },
         ),
       ),

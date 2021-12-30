@@ -226,9 +226,7 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
         onTap: () {
           MinestrixClient sclient = Matrix.of(context).sclient!;
           MinestrixRoom? _r = sclient.srooms[r.id];
-          if (_r != null)
-            context.navigateTo(
-                UserWrapperRoute(children: [UserViewRoute(mroom: _r)]));
+          if (_r != null) context.navigateTo(UserViewRoute(mroom: _r));
         });
   }
 }
