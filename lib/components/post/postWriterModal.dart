@@ -40,7 +40,19 @@ class PostWriterModal extends StatelessWidget {
                       children: [
                         Icon(Icons.edit),
                         SizedBox(width: 10),
-                        Expanded(child: Text("Write a post as " + sroom!.name)),
+                        Expanded(
+                            child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Write a post on " + sroom!.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(sroom!.room.topic,
+                                maxLines: 1, overflow: TextOverflow.ellipsis)
+                          ],
+                        )),
                       ],
                     ),
                   )))

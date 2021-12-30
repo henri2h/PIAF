@@ -131,8 +131,7 @@ class _UserFeedState extends State<UserFeed> {
                                     client: sclient, restrict: sroom.userID),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child:
-                                      PostWriterModal(sroom: sclient.userRoom),
+                                  child: PostWriterModal(sroom: sroom),
                                 ),
                                 for (Event e in sevents)
                                   Padding(
