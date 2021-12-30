@@ -43,25 +43,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
       builder: (BuildContext context) {
         return Padding(
           padding: EdgeInsets.only(top: paddingTop, left: paddingLeft),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: height,
-                width: width,
-                child: Material(
-                  child: EmojiPicker(
-                    onEmojiSelected: (Category category, Emoji emoji) {
-                      Navigator.of(context).pop<Emoji>(emoji);
-                    },
-                    config: Config(
-                      columns: 10,
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
+          child: MinestrixEmojiPicker(height: height, width: width),
         );
       },
     );
@@ -103,46 +85,65 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 10),
                           child: PostContent(e)),
-                      Divider(),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4.0, vertical: 2),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Expanded(
-                              child: GestureDetector(
-                                child: MaterialButton(
-                                    child: reactions.isEmpty
-                                        ? Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(Icons.emoji_emotions),
-                                              SizedBox(width: 10),
-                                              Flexible(child: Text("React"))
-                                            ],
-                                          )
-                                        : PostReactions(
-                                            event: e, reactions: reactions),
-                                    onPressed: () {}),
-                                onTapDown: (TapDownDetails detail) async {
-                                  await pickEmoji(detail, e);
-                                },
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: MaterialButton(
+                            if (reactions.isNotEmpty)
+                              Flexible(
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.reply),
-                                    SizedBox(width: 10),
-                                    Flexible(child: Text("Comment"))
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: MaterialButton(
+                                          child: PostReactions(
+                                              event: e, reactions: reactions),
+                                          onPressed: () {}),
+                                    ),
                                   ],
                                 ),
-                                onPressed: replyButtonClick,
                               ),
+                            GestureDetector(
+                              child: MaterialButton(
+                                  elevation: 0,
+                                  color: Color(0xFF323232),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 2),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.insert_emoticon_rounded),
+                                      SizedBox(width: 5),
+                                      Text("Reaction")
+                                    ],
+                                  ),
+                                  onPressed: () {}),
+                              onTapDown: (TapDownDetails detail) async {
+                                await pickEmoji(detail, e);
+                              },
+                            ),
+                            SizedBox(width: 9),
+                            MaterialButton(
+                              elevation: 0,
+                              color: Color(0xFF323232),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 2),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.reply),
+                                  SizedBox(width: 5),
+                                  Text("Comment")
+                                ],
+                              ),
+                              onPressed: replyButtonClick,
                             ),
                           ],
                         ),
@@ -172,5 +173,44 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     setState(() {
       showReplyBox = !showReplyBox;
     });
+  }
+}
+
+class MinestrixEmojiPicker extends StatefulWidget {
+  final double height;
+  final double width;
+
+  const MinestrixEmojiPicker({
+    Key? key,
+    required this.height,
+    required this.width,
+  }) : super(key: key);
+
+  @override
+  _MinestrixEmojiPickerState createState() => _MinestrixEmojiPickerState();
+}
+
+class _MinestrixEmojiPickerState extends State<MinestrixEmojiPicker> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: widget.height,
+          width: widget.width,
+          child: Material(
+            child: EmojiPicker(
+              onEmojiSelected: (Category category, Emoji emoji) {
+                Navigator.of(context).pop<Emoji>(emoji);
+              },
+              config: Config(
+                columns: 10,
+              ),
+            ),
+          ),
+        )
+      ],
+    );
   }
 }
