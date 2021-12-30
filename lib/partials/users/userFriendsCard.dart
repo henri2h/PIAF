@@ -1,7 +1,9 @@
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -27,7 +29,16 @@ class UserFriendsCard extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: H2Title("Friends"),
+                child: MaterialButton(
+                  onPressed: () {
+                    if (sroom.isUserPage) {
+                      context.navigateTo(FriendsRoute());
+                    } else {
+                      context.navigateTo(UserFriendsRoute(sroom: sroom));
+                    }
+                  },
+                  child: H2Title("Followers"),
+                ),
               ),
               Wrap(alignment: WrapAlignment.spaceBetween, children: [
                 for (User user in snap.data!
@@ -35,7 +46,7 @@ class UserFriendsCard extends StatelessWidget {
                         u.membership == Membership.join &&
                         u.id != sclient!.userID &&
                         u.id != sroom.user.id)
-                    .take(9))
+                    .take(12))
                   AccountCard(user: user),
               ]),
             ],

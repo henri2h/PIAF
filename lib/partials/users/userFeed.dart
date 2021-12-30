@@ -86,7 +86,7 @@ class _UserFeedState extends State<UserFeed> {
                         MaterialButton(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text("See all friends"),
+                              child: Text("Followers"),
                             ),
                             onPressed: () {
                               if (widget.isUserPage) {
@@ -109,24 +109,7 @@ class _UserFeedState extends State<UserFeed> {
                           width: 400,
                           child: Padding(
                               padding: const EdgeInsets.all(15),
-                              child: Column(
-                                children: [
-                                  UserFriendsCard(sroom: widget.sroom),
-                                  MaterialButton(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text("See all friends"),
-                                      ),
-                                      onPressed: () {
-                                        if (widget.isUserPage) {
-                                          context.navigateTo(FriendsRoute());
-                                        } else {
-                                          context.navigateTo(UserFriendsRoute(
-                                              sroom: widget.sroom));
-                                        }
-                                      })
-                                ],
-                              )),
+                              child: UserFriendsCard(sroom: widget.sroom)),
                         ),
                       Flexible(
                         flex: 9,
