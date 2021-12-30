@@ -108,7 +108,7 @@ deploy_android_fdroid:
     - cd build/app/outputs/flutter-apk/
     - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*' ../../../../pubspec.yaml) && mv app-release.apk "fr.henri2h.minestrix_${UPDATE_VERSION}.apk"
     - rsync -raz  ./ $USER@$HOST:fdroid/repo
-    - ssh $USER@$HOST -t '/bin/bash cd fdroid && fdroid update'
+    - ssh $USER@$HOST -t '/bin/bash cd /home/minestrix-website/fdroid && fdroid update'
   only:
     - master
 
