@@ -2,7 +2,7 @@
 // @AdaptiveAutoRouter
 // @CustomAutoRouter
 import 'package:auto_route/auto_route.dart';
-import 'package:minestrix/components/post/postEditor.dart';
+import 'package:minestrix/pages/minestrix/postEditor.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
 import 'package:minestrix/pages/appWrapperPage.dart';
 import 'package:minestrix/pages/loginPage.dart';

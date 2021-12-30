@@ -30,7 +30,8 @@ class PostWriterModal extends StatelessWidget {
               child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(40)))),
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(40)))),
                   onPressed: () {
                     context.pushRoute(PostEditorRoute(sroom: sroom));
                   },

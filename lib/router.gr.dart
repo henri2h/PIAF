@@ -14,7 +14,6 @@ import 'package:matrix/matrix.dart' as _i18;
 import 'package:minestrix_chat/view/matrix_chat_page.dart' as _i16;
 import 'package:minestrix_chat/view/matrix_chats_page.dart' as _i5;
 
-import 'components/post/postEditor.dart' as _i9;
 import 'pages/account/accountsDetailsPage.dart' as _i14;
 import 'pages/appWrapperPage.dart' as _i2;
 import 'pages/loginPage.dart' as _i3;
@@ -23,6 +22,7 @@ import 'pages/minestrix/feedPage.dart' as _i7;
 import 'pages/minestrix/friends/researchPage.dart' as _i13;
 import 'pages/minestrix/groups/groupPage.dart' as _i8;
 import 'pages/minestrix/homeWraperPage.dart' as _i4;
+import 'pages/minestrix/postEditor.dart' as _i9;
 import 'pages/minestrix/user/friendsPage.dart' as _i11;
 import 'pages/minestrix/user/userFriendsPage.dart' as _i12;
 import 'pages/minestrix/user/userViewPage.dart' as _i10;
