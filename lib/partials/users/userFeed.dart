@@ -134,64 +134,71 @@ class _UserFeedState extends State<UserFeed> {
                       Flexible(
                         flex: 9,
                         fit: FlexFit.loose,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 8.0),
-                                child: H2Title("Posts"),
-                              ),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 900),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15, vertical: 8.0),
+                                    child: H2Title("Posts"),
+                                  ),
+                                ),
+                                StoriesList(
+                                    client: sclient, restrict: sroom.userID),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child:
+                                      PostWriterModal(sroom: sclient.userRoom),
+                                ),
+                                for (Event e in sevents)
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 5),
+                                    child: Post(event: e),
+                                  ),
+                                if (sevents.length == 0 ||
+                                    sevents.last.type != EventTypes.RoomCreate)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: MaterialButton(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              if (requestingHistory)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 10),
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                              Text("Load more posts"),
+                                            ],
+                                          ),
+                                        ),
+                                        onPressed: () async {
+                                          if (requestingHistory == false) {
+                                            setState(() {
+                                              requestingHistory = true;
+                                            });
+                                            await widget.sroom.room
+                                                .requestHistory();
+                                            setState(() {
+                                              requestingHistory = false;
+                                            });
+                                          }
+                                        }),
+                                  ),
+                              ],
                             ),
-                            StoriesList(
-                                client: sclient, restrict: sroom.userID),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: PostWriterModal(sroom: sclient.userRoom),
-                            ),
-                            for (Event e in sevents)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5),
-                                child: Post(event: e),
-                              ),
-                            if (sevents.length == 0 ||
-                                sevents.last.type != EventTypes.RoomCreate)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: MaterialButton(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          if (requestingHistory)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 10),
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            ),
-                                          Text("Load more posts"),
-                                        ],
-                                      ),
-                                    ),
-                                    onPressed: () async {
-                                      if (requestingHistory == false) {
-                                        setState(() {
-                                          requestingHistory = true;
-                                        });
-                                        await widget.sroom.room
-                                            .requestHistory();
-                                        setState(() {
-                                          requestingHistory = false;
-                                        });
-                                      }
-                                    }),
-                              ),
-                          ],
+                          ),
                         ),
                       ),
                     ],

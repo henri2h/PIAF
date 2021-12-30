@@ -33,7 +33,7 @@ class UserInfo extends StatelessWidget {
               IconButton(
                   icon: Icon(Icons.arrow_back),
                   onPressed: () {
-                    context.navigateBack();
+                    AutoRouter.of(context).pop();
                   }),
             Expanded(child: H1Title(isUserPage ? "My account" : "User feed")),
             if (isUserPage)

@@ -64,6 +64,12 @@ class _UserViewPageState extends State<UserViewPage> {
 
   @override
   Widget build(BuildContext context) {
+    // if we navigate to an other user
+    if (userId != (widget.userID ?? widget.mroom?.userID)) {
+      userId = null;
+      mroom = null;
+    }
+
     MinestrixClient sclient = Matrix.of(context).sclient!;
     mroom ??= widget.mroom;
 
