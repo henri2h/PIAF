@@ -83,9 +83,6 @@ class _UserFeedState extends State<UserFeed> {
                   if (constraints.maxWidth <= 900)
                     Column(
                       children: [
-                        Padding(
-                            padding: const EdgeInsets.all(15),
-                            child: UserFriendsCard(sroom: widget.sroom)),
                         MaterialButton(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),

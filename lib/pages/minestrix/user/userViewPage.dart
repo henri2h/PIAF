@@ -64,7 +64,6 @@ class _UserViewPageState extends State<UserViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("test");
     // if we navigate to an other user
     if (userId != (widget.userID ?? widget.mroom?.userID)) {
       userId = null;
