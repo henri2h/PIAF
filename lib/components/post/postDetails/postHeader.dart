@@ -110,22 +110,20 @@ class PostHeader extends StatelessWidget {
                     Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Flexible(
-                          child: TextButton(
-                            onPressed: () {
-                              context.navigateTo(
-                                  UserViewRoute(userID: event!.senderId));
-                            },
-                            child: Text(
-                                (event!.sender.displayName ?? event!.sender.id),
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1!
-                                        .color,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold)),
-                          ),
+                        TextButton(
+                          onPressed: () {
+                            context.navigateTo(
+                                UserViewRoute(userID: event!.senderId));
+                          },
+                          child: Text(
+                              (event!.sender.displayName ?? event!.sender.id),
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .color,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold)),
                         ),
                         Text("to",
                             style: TextStyle(
@@ -133,23 +131,21 @@ class PostHeader extends StatelessWidget {
                                     .textTheme
                                     .bodyText1!
                                     .color)),
-                        Flexible(
-                          child: TextButton(
-                            onPressed: () {
-                              MinestrixRoom? sroom =
-                                  sclient.srooms[event!.roomId];
-                              if (sroom != null)
-                                context.navigateTo(GroupRoute(sroom: sroom));
-                            },
-                            child: Text(sroom.name,
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1!
-                                        .color,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400)),
-                          ),
+                        TextButton(
+                          onPressed: () {
+                            MinestrixRoom? sroom =
+                                sclient.srooms[event!.roomId];
+                            if (sroom != null)
+                              context.navigateTo(GroupRoute(sroom: sroom));
+                          },
+                          child: Text(sroom.name,
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .color,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400)),
                         ),
                       ],
                     ),
