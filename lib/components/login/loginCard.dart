@@ -43,21 +43,17 @@ class LoginCardState extends State<LoginCard> {
   @override
   Widget build(BuildContext context) {
     client = Matrix.of(context).sclient;
-    return Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 600),
-                    child: buildSimpleDetail()),
-              ],
-            ),
-          ),
-          advancedViewSwitch()
-        ]);
+    return Stack(children: <Widget>[
+      ListView(
+        // mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 600),
+              child: buildSimpleDetail()),
+        ],
+      ),
+      Positioned(bottom: 0, right: 0, child: advancedViewSwitch())
+    ]);
   }
 
   void _loginAction(MinestrixClient client,
