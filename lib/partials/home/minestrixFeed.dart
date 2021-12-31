@@ -1,13 +1,14 @@
+
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/accountCard.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/pages/minestrix/postEditor.dart';
-import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
+import 'package:minestrix/pages/minestrix/postEditor.dart';
+import 'package:minestrix/partials/feedManager.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
@@ -22,8 +23,6 @@ class MinestrixFeed extends StatefulWidget {
 
 class _MinestrixFeedState extends State<MinestrixFeed> {
   List<Event>? timeline;
-
-  ScrollController _controller = new ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -83,133 +82,111 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                 timeline!.length.toString());
           }
 
-          return ListView.builder(
-              shrinkWrap: true,
-              controller: _controller,
-              cacheExtent: 8000,
-              itemCount: timeline!.length + 1,
-              itemBuilder: (BuildContext context, int i) {
-                if (i == 0)
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          return FeedManager(
+            timeline: timeline!,
+            firstItem: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    H1Title("Feed"),
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
                         children: [
-                          H1Title("Feed"),
-                          Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Row(
-                              children: [
-                                IconButton(
-                                    icon: Icon(Icons.group_add),
-                                    onPressed: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => CreateGroup());
-                                    }),
-                                IconButton(
-                                    icon: Icon(Icons.post_add),
-                                    onPressed: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => Scaffold(
-                                              appBar: AppBar(
-                                                  title: Text("New post")),
-                                              body: PostEditorPage()));
-                                    }),
-                                IconButton(icon: Builder(builder: (context) {
-                                  int notif = sclient.totalNotificationsCount;
-                                  if (notif == 0) {
-                                    return Icon(Icons.message_outlined);
-                                  } else {
-                                    return Stack(
-                                      children: [
-                                        Icon(Icons.message),
-                                        Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 3, horizontal: 15),
-                                            child: CircleAvatar(
-                                                radius: 11,
-                                                backgroundColor: Colors.red,
-                                                child: Text(notif.toString(),
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12,
-                                                    )))),
-                                      ],
-                                    );
-                                  }
-                                }), onPressed: () async {
-                                  await context.navigateTo(
-                                      MatrixChatsRoute(client: sclient));
-                                }),
-                                StreamBuilder(
-                                    stream: sclient
-                                        .notifications.onNotifications.stream,
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot snapshot) {
-                                      return Column(
-                                        children: [
-                                          IconButton(
-                                              icon: sclient
-                                                          .notifications
-                                                          .notifications
-                                                          .length ==
-                                                      0
-                                                  ? Icon(
-                                                      Icons.notifications_none)
-                                                  : Icon(Icons
-                                                      .notifications_active),
-                                              onPressed: () {
-                                                Scaffold.of(context)
-                                                    .openEndDrawer();
-                                              }),
-                                        ],
-                                      );
-                                    })
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: StoriesList(client: sclient),
-                      ),
-                      PostWriterModal(sroom: sclient.userRoom),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 12),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: FutureBuilder<List<Profile>>(
-                              future:
-                                  sclient.friendsSuggestions.getSuggestions(),
-                              builder: (context, snap) {
-                                if (snap.hasData == false)
-                                  return Text("Loading");
-                                return Row(
+                          IconButton(
+                              icon: Icon(Icons.group_add),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => CreateGroup());
+                              }),
+                          IconButton(
+                              icon: Icon(Icons.post_add),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(title: Text("New post")),
+                                        body: PostEditorPage()));
+                              }),
+                          IconButton(icon: Builder(builder: (context) {
+                            int notif = sclient.totalNotificationsCount;
+                            if (notif == 0) {
+                              return Icon(Icons.message_outlined);
+                            } else {
+                              return Stack(
+                                children: [
+                                  Icon(Icons.message),
+                                  Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 3, horizontal: 15),
+                                      child: CircleAvatar(
+                                          radius: 11,
+                                          backgroundColor: Colors.red,
+                                          child: Text(notif.toString(),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              )))),
+                                ],
+                              );
+                            }
+                          }), onPressed: () async {
+                            await context
+                                .navigateTo(MatrixChatsRoute(client: sclient));
+                          }),
+                          StreamBuilder(
+                              stream:
+                                  sclient.notifications.onNotifications.stream,
+                              builder: (BuildContext context,
+                                  AsyncSnapshot snapshot) {
+                                return Column(
                                   children: [
-                                    for (Profile p in snap.data!)
-                                      AccountCard(profile: p),
+                                    IconButton(
+                                        icon: sclient.notifications
+                                                    .notifications.length ==
+                                                0
+                                            ? Icon(Icons.notifications_none)
+                                            : Icon(Icons.notifications_active),
+                                        onPressed: () {
+                                          Scaffold.of(context).openEndDrawer();
+                                        }),
                                   ],
                                 );
-                              }),
-                        ),
+                              })
+                        ],
                       ),
-                    ],
-                  );
-                if (timeline!.length >
-                    0) // may be a redundant check... we never know
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
-                    child: Post(event: timeline![i - 1]),
-                  );
-                else
-                  return Text("Empty");
-              });
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: StoriesList(client: sclient),
+                ),
+                PostWriterModal(sroom: sclient.userRoom),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: FutureBuilder<List<Profile>>(
+                        future: sclient.friendsSuggestions.getSuggestions(),
+                        builder: (context, snap) {
+                          if (snap.hasData == false) return Text("Loading");
+                          return Row(
+                            children: [
+                              for (Profile p in snap.data!)
+                                AccountCard(profile: p),
+                            ],
+                          );
+                        }),
+                  ),
+                ),
+              ],
+            ),
+          );
         });
   }
 }

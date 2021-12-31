@@ -1,6 +1,5 @@
 import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixTheme.dart';
 
 class PostReactions extends StatelessWidget {
   final Event event;

@@ -4,8 +4,8 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixContactView.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserSelection.dart';
-import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
+import 'package:minestrix/partials/feedManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -86,9 +86,10 @@ class _GroupPageState extends State<GroupPage> {
             flex: 8,
             child: StreamBuilder(
                 stream: sroom.room.onUpdate.stream,
-                builder: (context, _) => ListView(
-                      children: [
-                        if (sroom.room.avatar != null)
+                builder: (context, _) => FeedManager(
+                  timeline: sevents,
+
+                  firstItem:   Column(children:[ if (sroom.room.avatar != null)
                           Center(
                               child: MatrixUserImage(
                                   client: sclient,
@@ -120,25 +121,9 @@ class _GroupPageState extends State<GroupPage> {
                         Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: PostWriterModal(sroom: sroom),
-                        ),
-                        for (Event e in sevents)
-                          Column(
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5),
-                                child: Post(event: e),
-                              ),
-                              /* Divider(
-                                  indent: 25,
-                                  endIndent: 25,
-                                  thickness: 0.5,
-                                ),*/
-                            ],
-                          ),
-                      ],
-                    )),
-          ),
+                        ),]),
+                )  
+          ),)
         ],
       ),
     );

@@ -137,7 +137,7 @@ class _UserFeedState extends State<UserFeed> {
                                   Padding(
                                     padding:
                                         const EdgeInsets.symmetric(vertical: 5),
-                                    child: Post(event: e),
+                                    child: Post(event: e, onReact: (e) {}),
                                   ),
                                 if (sevents.length == 0 ||
                                     sevents.last.type != EventTypes.RoomCreate)

@@ -1,5 +1,7 @@
+
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/components/post/postDetails/postContent.dart';
 import 'package:minestrix/components/post/postDetails/postHeader.dart';
@@ -9,8 +11,11 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class Post extends StatefulWidget {
+  
   final Event event;
-  Post({Key? key, required this.event}) : super(key: key);
+  final void Function(TapDownDetails) onReact;
+  Post({Key? key, required this.event, required this.onReact}) : super(key: key);
+  
 
   @override
   _PostState createState() => _PostState();
@@ -19,20 +24,21 @@ class Post extends StatefulWidget {
 enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
 
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
+  final key = GlobalKey();
   bool showReplyBox = false;
 
-  Future<void> pickEmoji(TapDownDetails detail, Event e) async {
+/*  Future<void> pickEmoji(TapDownDetails detail, Event e) async {
     print(detail.globalPosition.dx.toString());
     print(detail.globalPosition.dy.toString());
     double paddingLeft = detail.globalPosition.dx;
     double paddingTop =
         detail.globalPosition.dy + 30; // + 30 in order to be under the button
 
-    const double width = 400;
-    const double height = 180;
+    double width = min(MediaQuery.of(context).size.width, 400);
+    double height = min(MediaQuery.of(context).size.height, 180);
 
     if ((MediaQuery.of(context).size.width - paddingLeft) < width)
-      paddingLeft = 0;
+      paddingLeft = MediaQuery.of(context).size.width - width;
     if ((MediaQuery.of(context).size.height - paddingTop) < height)
       paddingTop = MediaQuery.of(context).size.height - height;
 
@@ -49,7 +55,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     );
 
     if (emoji != null) await e.room.sendReaction(e.eventId, emoji.emoji);
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +66,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     if (t == null) {
       return CircularProgressIndicator();
     }
+
     return StreamBuilder<Object>(
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
@@ -67,6 +74,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
           Set<Event> reactions =
               e.aggregatedEvents(t, RelationshipTypes.reaction);
           return Card(
+            key: key,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -81,6 +89,13 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       PostHeader(event: e),
+                      GestureDetector(
+                        onTapDown: (TapDownDetails e) {
+                          widget.onReact(e);
+                        },
+                        child:
+                            IconButton(icon: Icon(Icons.add), onPressed: () {}),
+                      ),
                       Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 10),
@@ -107,6 +122,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                 ),
                               ),
                             GestureDetector(
+                              behavior: HitTestBehavior.translucent,
                               child: MaterialButton(
                                   elevation: 0,
                                   color: Color(0xFF323232),
@@ -124,7 +140,8 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                   ),
                                   onPressed: () {}),
                               onTapDown: (TapDownDetails detail) async {
-                                await pickEmoji(detail, e);
+                                
+                                widget.onReact(detail);
                               },
                             ),
                             SizedBox(width: 9),
@@ -150,6 +167,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                       )
                     ],
                   ),
+
                   if (replies.isNotEmpty || showReplyBox) Divider(),
                   Container(
                     child: Column(
@@ -179,38 +197,132 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
 class MinestrixEmojiPicker extends StatefulWidget {
   final double height;
   final double width;
+  final String? selectedEmoji;
+  final EdgeInsets? selectedEdge;
 
-  const MinestrixEmojiPicker({
-    Key? key,
-    required this.height,
-    required this.width,
-  }) : super(key: key);
+  const MinestrixEmojiPicker(
+      {Key? key,
+      required this.height,
+      required this.width,
+      required this.selectedEmoji,
+      required this.selectedEdge})
+      : super(key: key);
 
   @override
   _MinestrixEmojiPickerState createState() => _MinestrixEmojiPickerState();
 }
 
 class _MinestrixEmojiPickerState extends State<MinestrixEmojiPicker> {
+  bool _open = false;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          height: widget.height,
-          width: widget.width,
-          child: Material(
-            child: EmojiPicker(
-              onEmojiSelected: (Category category, Emoji emoji) {
-                Navigator.of(context).pop<Emoji>(emoji);
-              },
-              config: Config(
-                columns: 10,
+    return Padding(
+      padding: widget.selectedEdge ?? EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!_open)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    MinestrixEmojiPickerItem("😄",
+                        selected: widget.selectedEmoji),
+                    MinestrixEmojiPickerItem("👍️",
+                        selected: widget.selectedEmoji),
+                    MinestrixEmojiPickerItem("❤️",
+                        selected: widget.selectedEmoji),
+                    MinestrixEmojiPickerItem("😇",
+                        selected: widget.selectedEmoji),
+                    MinestrixEmojiPickerItem("+",
+                        selected: widget.selectedEmoji)
+                  ],
+                ),
               ),
             ),
-          ),
-        )
-      ],
+          if (_open)
+            SizedBox(
+              height: widget.height,
+              width: widget.width,
+              child: Material(
+                child: EmojiPicker(
+                  onEmojiSelected: (Category category, Emoji emoji) {
+                    Navigator.of(context).pop<Emoji>(emoji);
+                  },
+                  config: Config(
+                    columns: 10,
+                  ),
+                ),
+              ),
+            )
+        ],
+      ),
+    );
+  }
+}
+
+class EmjoiPickerRenderObject extends SingleChildRenderObjectWidget {
+  final String index;
+
+  EmjoiPickerRenderObject(
+      {required Widget child, required this.index, Key? key})
+      : super(child: child, key: key);
+
+  @override
+  EmojiPickerRenderProxy createRenderObject(BuildContext context) {
+    return EmojiPickerRenderProxy()..index = index;
+  }
+
+  @override
+  void updateRenderObject(
+      BuildContext context, EmojiPickerRenderProxy renderObject) {
+    renderObject..index = index;
+  }
+}
+
+class EmojiPickerRenderProxy extends RenderProxyBox {
+  String index = "o";
+}
+
+class MinestrixEmojiPickerItem extends StatefulWidget {
+  final String emoji;
+  final String? selected;
+
+  const MinestrixEmojiPickerItem(this.emoji, {Key? key, this.selected})
+      : super(key: key);
+
+  @override
+  _MinestrixEmojiPickerItemState createState() =>
+      _MinestrixEmojiPickerItemState();
+}
+
+class _MinestrixEmojiPickerItemState extends State<MinestrixEmojiPickerItem> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    _hover = widget.selected == widget.emoji;
+    return EmjoiPickerRenderObject(
+      index: widget.emoji,
+      child: MouseRegion(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child:
+              Text(widget.emoji, style: TextStyle(fontSize: _hover ? 38 : 28)),
+        ),
+        onEnter: (d) {
+          setState(() {
+            _hover = true;
+          });
+        },
+        onExit: (d) {
+          setState(() {
+            _hover = false;
+          });
+        },
+      ),
     );
   }
 }
