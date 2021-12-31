@@ -87,9 +87,9 @@ class _GroupPageState extends State<GroupPage> {
             child: StreamBuilder(
                 stream: sroom.room.onUpdate.stream,
                 builder: (context, _) => FeedManager(
-                  timeline: sevents,
-
-                  firstItem:   Column(children:[ if (sroom.room.avatar != null)
+                      timeline: sevents,
+                      firstItem: Column(children: [
+                        if (sroom.room.avatar != null)
                           Center(
                               child: MatrixUserImage(
                                   client: sclient,
@@ -121,9 +121,10 @@ class _GroupPageState extends State<GroupPage> {
                         Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: PostWriterModal(sroom: sroom),
-                        ),]),
-                )  
-          ),)
+                        ),
+                      ]),
+                    )),
+          )
         ],
       ),
     );

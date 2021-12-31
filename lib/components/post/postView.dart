@@ -1,4 +1,3 @@
-
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -11,11 +10,10 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class Post extends StatefulWidget {
-  
   final Event event;
   final void Function(TapDownDetails) onReact;
-  Post({Key? key, required this.event, required this.onReact}) : super(key: key);
-  
+  Post({Key? key, required this.event, required this.onReact})
+      : super(key: key);
 
   @override
   _PostState createState() => _PostState();
@@ -89,13 +87,6 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       PostHeader(event: e),
-                      GestureDetector(
-                        onTapDown: (TapDownDetails e) {
-                          widget.onReact(e);
-                        },
-                        child:
-                            IconButton(icon: Icon(Icons.add), onPressed: () {}),
-                      ),
                       Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 10),
@@ -140,7 +131,6 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                   ),
                                   onPressed: () {}),
                               onTapDown: (TapDownDetails detail) async {
-                                
                                 widget.onReact(detail);
                               },
                             ),

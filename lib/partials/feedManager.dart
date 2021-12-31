@@ -9,16 +9,15 @@ import 'package:minestrix/components/post/postView.dart';
 class FeedManager extends StatefulWidget {
   final List<Event> timeline;
   final Widget firstItem;
-  const FeedManager({ Key? key, required this.timeline, required this.firstItem}) : super(key: key);
+  const FeedManager({Key? key, required this.timeline, required this.firstItem})
+      : super(key: key);
 
   @override
   _FeedManagerState createState() => _FeedManagerState();
 }
 
 class _FeedManagerState extends State<FeedManager> {
-
-
-    ScrollController _controller = new ScrollController();
+  ScrollController _controller = new ScrollController();
 
   String? _selectedEmoji;
   bool _EmojiPickerDisplayed = false;
@@ -90,79 +89,76 @@ class _FeedManagerState extends State<FeedManager> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return  Listener(
-            onPointerDown: (e) {
-              _detectTapedItem(e, isEventPointerDown: true);
-            },
-            onPointerUp: _selectTapedItem,
-            onPointerMove: _detectTapedItem,
-            onPointerHover: _detectTapedItem,
-            //onPointerUp: _clearSelection,
-            behavior: HitTestBehavior.translucent,
-            child: Stack(
-              key: key,
-              children: [
-                ListView.builder(
-                    shrinkWrap: true,
-                    controller: _controller,
-                    cacheExtent: 8000,
-                    itemCount: widget.timeline.length + 1,
-                    physics: _EmojiPickerDisplayed
-                        ? NeverScrollableScrollPhysics()
-                        : AlwaysScrollableScrollPhysics(),
-                    itemBuilder: (BuildContext context, int i) {
-                      if (i == 0)
-                        return widget.firstItem;
-                         if (widget.timeline.length >
-                          0) // may be a redundant check... we never know
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 2, horizontal: 12),
-                          child: Post(
-                              event: widget.timeline[i - 1],
-                              onReact: (TapDownDetails detail) {
-                                final RenderBox? box = key.currentContext!
-                                    .findRenderObject() as RenderBox?;
+    return Listener(
+      onPointerDown: (e) {
+        _detectTapedItem(e, isEventPointerDown: true);
+      },
+      onPointerUp: _selectTapedItem,
+      onPointerMove: _detectTapedItem,
+      onPointerHover: _detectTapedItem,
+      //onPointerUp: _clearSelection,
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        key: key,
+        children: [
+          ListView.builder(
+              shrinkWrap: true,
+              controller: _controller,
+              cacheExtent: 8000,
+              itemCount: widget.timeline.length + 1,
+              physics: _EmojiPickerDisplayed
+                  ? NeverScrollableScrollPhysics()
+                  : AlwaysScrollableScrollPhysics(),
+              itemBuilder: (BuildContext context, int i) {
+                if (i == 0) return widget.firstItem;
+                if (widget.timeline.length >
+                    0) // may be a redundant check... we never know
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
+                    child: Post(
+                        event: widget.timeline[i - 1],
+                        onReact: (TapDownDetails detail) {
+                          final RenderBox? box = key.currentContext!
+                              .findRenderObject() as RenderBox?;
 
-                                if (box != null) {
-                                  Offset offset =
-                                      box.globalToLocal(detail.globalPosition);
+                          if (box != null) {
+                            Offset offset =
+                                box.globalToLocal(detail.globalPosition);
 
-                                  double paddingLeft = offset.dx;
-                                  double paddingTop = offset.dy +
-                                      22; // + 30 in order to be under the button
+                            double paddingLeft = offset.dx;
+                            double paddingTop = offset.dy +
+                                22; // + 30 in order to be under the button
 
-                                  double width = min(box.size.width, 400);
-                                  double height = min(box.size.height, 180);
+                            double width = min(box.size.width, 400);
+                            double height = min(box.size.height, 180);
 
-                                  if ((box.size.width - paddingLeft) < width)
-                                    paddingLeft = box.size.width - width;
-                                  if ((box.size.height - paddingTop) < height)
-                                    paddingTop = box.size.height - height;
-                                  setState(() {
-                                    _EmojiPickerDisplayed = true;
-                                    _EmojiPickerEdge = EdgeInsets.only(
-                                        top: paddingTop, left: paddingLeft);
-                                  });
-                                }
-                              }),
-                        );
-                      else
-                        return Text("Empty");
-                    }),
-                if (_EmojiPickerDisplayed)
-                  MinestrixEmojiPicker(
-                    width: 100,
-                    height: 100,
-                    selectedEmoji: _selectedEmoji,
-                    selectedEdge: _EmojiPickerEdge,
-                  )
-              ],
-            ),
-          );
-        
+                            if ((box.size.width - paddingLeft) < width)
+                              paddingLeft = box.size.width - width;
+                            if ((box.size.height - paddingTop) < height)
+                              paddingTop = box.size.height - height;
+                            setState(() {
+                              _EmojiPickerDisplayed = true;
+                              _EmojiPickerEdge = EdgeInsets.only(
+                                  top: paddingTop, left: paddingLeft);
+                            });
+                          }
+                        }),
+                  );
+                else
+                  return Text("Empty");
+              }),
+          if (_EmojiPickerDisplayed)
+            MinestrixEmojiPicker(
+              width: 100,
+              height: 100,
+              selectedEmoji: _selectedEmoji,
+              selectedEdge: _EmojiPickerEdge,
+            )
+        ],
+      ),
+    );
   }
 }
