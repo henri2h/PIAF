@@ -20,6 +20,7 @@ class _FeedManagerState extends State<FeedManager> {
   ScrollController _controller = new ScrollController();
 
   String? _selectedEmoji;
+  Event? _selectedEvent;
   bool _EmojiPickerDisplayed = false;
   EdgeInsets? _EmojiPickerEdge;
 
@@ -71,20 +72,28 @@ class _FeedManagerState extends State<FeedManager> {
     }
   }
 
-  void _selectTapedItem(_) {
+  void _selectTapedItem(_) async {
+    setState(() {
+      _EmojiPickerDisplayed = false;
+    });
     if (_selectedEmoji != null) {
       print("Selected : " + _selectedEmoji!);
 
       if (_selectedEmoji! == "+") {
         print("more selection");
+      } else if (_selectedEmoji != null && _selectedEvent != null) {
+        await _selectedEvent!.room
+            .sendReaction(_selectedEvent!.eventId, _selectedEmoji!);
       }
-      _clearSelection(null);
     }
+
+    _clearSelection(null);
   }
 
   void _clearSelection(PointerUpEvent? event) {
     setState(() {
       _selectedEmoji = null;
+      _selectedEvent = null;
       _EmojiPickerDisplayed = false;
     });
   }
@@ -121,6 +130,8 @@ class _FeedManagerState extends State<FeedManager> {
                     child: Post(
                         event: widget.timeline[i - 1],
                         onReact: (TapDownDetails detail) {
+                          _selectedEvent = widget.timeline[i - 1];
+
                           final RenderBox? box = key.currentContext!
                               .findRenderObject() as RenderBox?;
 

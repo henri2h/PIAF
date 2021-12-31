@@ -99,17 +99,20 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                           children: [
                             if (reactions.isNotEmpty)
                               Flexible(
-                                child: Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: MaterialButton(
-                                          child: PostReactions(
-                                              event: e, reactions: reactions),
-                                          onPressed: () {}),
-                                    ),
-                                  ],
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: MaterialButton(
+                                            child: PostReactions(
+                                                event: e, reactions: reactions),
+                                            onPressed: () {}),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             GestureDetector(
