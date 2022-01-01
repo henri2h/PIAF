@@ -5,8 +5,8 @@ import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/partials/navbar.dart';
 import 'package:minestrix/router.gr.dart';
 
-class HomeWraperPage extends StatefulWidget {
-  HomeWraperPage({Key? key, this.title}) : super(key: key);
+class HomeWrapperPage extends StatefulWidget {
+  HomeWrapperPage({Key? key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -20,10 +20,10 @@ class HomeWraperPage extends StatefulWidget {
   final String? title;
 
   @override
-  _HomeWraperPageState createState() => _HomeWraperPageState();
+  _HomeWrapperPageState createState() => _HomeWrapperPageState();
 }
 
-class _HomeWraperPageState extends State<HomeWraperPage> {
+class _HomeWrapperPageState extends State<HomeWrapperPage> {
   Widget? widgetView = null;
 
   @override

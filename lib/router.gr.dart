@@ -21,7 +21,7 @@ import 'pages/matrixLoadingPage.dart' as _i1;
 import 'pages/minestrix/feedPage.dart' as _i7;
 import 'pages/minestrix/friends/researchPage.dart' as _i13;
 import 'pages/minestrix/groups/groupPage.dart' as _i8;
-import 'pages/minestrix/homeWraperPage.dart' as _i4;
+import 'pages/minestrix/homeWrapperPage.dart' as _i4;
 import 'pages/minestrix/postEditor.dart' as _i9;
 import 'pages/minestrix/user/friendsPage.dart' as _i11;
 import 'pages/minestrix/user/userFriendsPage.dart' as _i12;
@@ -56,7 +56,7 @@ class AppRouter extends _i6.RootStackRouter {
           orElse: () => const MinestrixRouterArgs());
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i4.HomeWraperPage(key: args.key, title: args.title));
+          child: _i4.HomeWrapperPage(key: args.key, title: args.title));
     },
     MatrixChatsRoute.name: (routeData) {
       final args = routeData.argsAs<MatrixChatsRouteArgs>();
@@ -237,7 +237,7 @@ class LoginRouteArgs {
 }
 
 /// generated route for
-/// [_i4.HomeWraperPage]
+/// [_i4.HomeWrapperPage]
 class MinestrixRouter extends _i6.PageRouteInfo<MinestrixRouterArgs> {
   MinestrixRouter(
       {_i17.Key? key, String? title, List<_i6.PageRouteInfo>? children})

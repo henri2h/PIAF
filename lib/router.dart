@@ -10,7 +10,7 @@ import 'package:minestrix/pages/matrixLoadingPage.dart';
 import 'package:minestrix/pages/minestrix/feedPage.dart';
 import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
 import 'package:minestrix/pages/minestrix/groups/groupPage.dart';
-import 'package:minestrix/pages/minestrix/homeWraperPage.dart';
+import 'package:minestrix/pages/minestrix/homeWrapperPage.dart';
 import 'package:minestrix/pages/minestrix/user/friendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userFriendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userViewPage.dart';
@@ -31,7 +31,7 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
       AutoRoute(
           path: '',
           name: 'MinestrixRouter',
-          page: HomeWraperPage,
+          page: HomeWrapperPage,
           children: [
             AutoRoute(path: 'feed', page: FeedPage, initial: true),
             AutoRoute(path: 'group', page: GroupPage),
