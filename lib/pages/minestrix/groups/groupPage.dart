@@ -4,11 +4,12 @@ import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixContactView.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/components/minesTrix/MinesTrixUserSelection.dart';
+import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/components/post/postWriterModal.dart';
-import 'package:minestrix/partials/feedManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
 class GroupPage extends StatefulWidget {
@@ -86,44 +87,56 @@ class _GroupPageState extends State<GroupPage> {
             flex: 8,
             child: StreamBuilder(
                 stream: sroom.room.onUpdate.stream,
-                builder: (context, _) => FeedManager(
-                      timeline: sevents,
-                      firstItem: Column(children: [
-                        if (sroom.room.avatar != null)
-                          Center(
-                              child: MatrixUserImage(
-                                  client: sclient,
-                                  url: sroom.room.avatar,
-                                  unconstraigned: true,
-                                  rounded: false,
-                                  maxHeight: 500)),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 8.0),
-                              child: H1Title(sroom.name),
-                            ),
-                            Padding(
-                                padding: const EdgeInsets.all(15),
-                                child: Row(children: [
-                                  for (User user in sroom.room
-                                      .getParticipants()
-                                      .where((User u) =>
-                                          u.membership == Membership.join))
-                                    MatrixUserImage(
-                                        client: sclient,
-                                        url: user.avatarUrl,
-                                        thumnail: true)
-                                ])),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: PostWriterModal(sroom: sroom),
-                        ),
-                      ]),
-                    )),
+                builder: (context, _) => CustomListViewWithEmoji(
+                    itemCount: sevents.length + 1,
+                    itemBuilder: (BuildContext c, int i,
+                        void Function(TapDownDetails, Event) onReact) {
+                      if (i == 0) {
+                        return Column(children: [
+                          if (sroom.room.avatar != null)
+                            Center(
+                                child: MatrixUserImage(
+                                    client: sclient,
+                                    url: sroom.room.avatar,
+                                    unconstraigned: true,
+                                    rounded: false,
+                                    maxHeight: 500)),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 8.0),
+                                child: H1Title(sroom.name),
+                              ),
+                              Padding(
+                                  padding: const EdgeInsets.all(15),
+                                  child: Row(children: [
+                                    for (User user in sroom.room
+                                        .getParticipants()
+                                        .where((User u) =>
+                                            u.membership == Membership.join))
+                                      MatrixUserImage(
+                                          client: sclient,
+                                          url: user.avatarUrl,
+                                          thumnail: true)
+                                  ])),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: PostWriterModal(sroom: sroom),
+                          ),
+                        ]);
+                      }
+
+                      return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 2, horizontal: 12),
+                          child: Post(
+                              event: sevents[i - 1],
+                              onReact: (TapDownDetails e) =>
+                                  onReact(e, sevents[i - 1])));
+                    })),
           )
         ],
       ),
