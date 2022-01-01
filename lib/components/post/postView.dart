@@ -9,7 +9,7 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class Post extends StatefulWidget {
   final Event event;
-  final void Function(TapDownDetails) onReact;
+  final void Function(Offset) onReact;
   Post({Key? key, required this.event, required this.onReact})
       : super(key: key);
 
@@ -22,36 +22,6 @@ enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   final key = GlobalKey();
   bool showReplyBox = false;
-
-/*  Future<void> pickEmoji(TapDownDetails detail, Event e) async {
-    print(detail.globalPosition.dx.toString());
-    print(detail.globalPosition.dy.toString());
-    double paddingLeft = detail.globalPosition.dx;
-    double paddingTop =
-        detail.globalPosition.dy + 30; // + 30 in order to be under the button
-
-    double width = min(MediaQuery.of(context).size.width, 400);
-    double height = min(MediaQuery.of(context).size.height, 180);
-
-    if ((MediaQuery.of(context).size.width - paddingLeft) < width)
-      paddingLeft = MediaQuery.of(context).size.width - width;
-    if ((MediaQuery.of(context).size.height - paddingTop) < height)
-      paddingTop = MediaQuery.of(context).size.height - height;
-
-    Emoji? emoji = await showDialog<Emoji>(
-      barrierDismissible: true,
-      barrierColor: Colors.transparent,
-      context: context,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(top: paddingTop, left: paddingLeft),
-          child: MinestrixEmojiPicker(height: height, width: width),
-        );
-      },
-    );
-
-    if (emoji != null) await e.room.sendReaction(e.eventId, emoji.emoji);
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +102,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                   ),
                                   onPressed: () {}),
                               onTapDown: (TapDownDetails detail) async {
-                                widget.onReact(detail);
+                                widget.onReact(detail.globalPosition);
                               },
                             ),
                             SizedBox(width: 9),

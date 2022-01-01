@@ -85,7 +85,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
           return CustomListViewWithEmoji(
               itemCount: timeline!.length + 1,
               itemBuilder: (BuildContext c, int i,
-                  void Function(TapDownDetails, Event) onReact) {
+                  void Function(Offset, Event) onReact) {
                 if (i == 0) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +204,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                         const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
                     child: Post(
                         event: timeline![i - 1],
-                        onReact: (TapDownDetails e) =>
+                        onReact: (Offset e) =>
                             onReact(e, timeline![i - 1])));
               });
         });

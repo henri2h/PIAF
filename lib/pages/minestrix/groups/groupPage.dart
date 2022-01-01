@@ -90,7 +90,7 @@ class _GroupPageState extends State<GroupPage> {
                 builder: (context, _) => CustomListViewWithEmoji(
                     itemCount: sevents.length + 1,
                     itemBuilder: (BuildContext c, int i,
-                        void Function(TapDownDetails, Event) onReact) {
+                        void Function(Offset, Event) onReact) {
                       if (i == 0) {
                         return Column(children: [
                           if (sroom.room.avatar != null)
@@ -134,7 +134,7 @@ class _GroupPageState extends State<GroupPage> {
                               vertical: 2, horizontal: 12),
                           child: Post(
                               event: sevents[i - 1],
-                              onReact: (TapDownDetails e) =>
+                              onReact: (e) =>
                                   onReact(e, sevents[i - 1])));
                     })),
           )
