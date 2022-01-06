@@ -22,6 +22,7 @@ enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   final key = GlobalKey();
   bool showReplyBox = false;
+  bool showReplies = true;
 
   @override
   Widget build(BuildContext context) {
@@ -71,24 +72,44 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            if (reactions.isNotEmpty)
-                              Flexible(
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0),
-                                        child: MaterialButton(
-                                            child: PostReactions(
-                                                event: e, reactions: reactions),
-                                            onPressed: () {}),
+                            Flexible(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  if (reactions.isNotEmpty)
+                                    Flexible(
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8.0),
+                                              child: MaterialButton(
+                                                  child: PostReactions(
+                                                      event: e,
+                                                      reactions: reactions),
+                                                  onPressed: () {}),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
+                                  if (replies.isNotEmpty)
+                                    MaterialButton(
+                                        child: Text(
+                                            (showReplies ? "Hide " : "Show ") +
+                                                replies.length.toString() +
+                                                " comments"),
+                                        onPressed: () {
+                                          setState(() {
+                                            showReplies = !showReplies;
+                                          });
+                                        }),
+                                ],
                               ),
+                            ),
                             GestureDetector(
                               behavior: HitTestBehavior.translucent,
                               child: MaterialButton(
@@ -135,22 +156,25 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                     ],
                   ),
 
-                  if (replies.isNotEmpty || showReplyBox) Divider(),
-                  Container(
-                    child: Column(
-                      children: [
-                        if (replies.isNotEmpty || showReplyBox)
-                          RepliesVue(
-                              timeline: t,
-                              event: e,
-                              replies: replies,
-                              showEditBox: showReplyBox,
-                              setReplyVisibility: (bool value) => setState(() {
-                                    showReplyBox = value;
-                                  })),
-                      ],
+                  if (replies.isNotEmpty && showReplies || showReplyBox)
+                    Divider(),
+                  if (showReplies)
+                    Container(
+                      child: Column(
+                        children: [
+                          if (replies.isNotEmpty || showReplyBox)
+                            RepliesVue(
+                                timeline: t,
+                                event: e,
+                                replies: replies,
+                                showEditBox: showReplyBox,
+                                setReplyVisibility: (bool value) =>
+                                    setState(() {
+                                      showReplyBox = value;
+                                    })),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

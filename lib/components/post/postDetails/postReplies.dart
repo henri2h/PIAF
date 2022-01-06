@@ -30,7 +30,7 @@ class RepliesVue extends StatefulWidget {
 }
 
 class _RepliesVueState extends State<RepliesVue> {
-  int tMax = 10;
+  int tMax = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +158,7 @@ class _RepliesVueState extends State<RepliesVue> {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(left: 50.0),
+                    padding: const EdgeInsets.only(left: 20.0),
                     child: RepliesVue(
                         event: revent,
                         timeline: widget.timeline,
@@ -170,10 +170,10 @@ class _RepliesVueState extends State<RepliesVue> {
           if (directRepliesToEvent.length > max)
             Center(
                 child: MaterialButton(
-                    child: Text("load more"),
+                    child: Text("Show more"),
                     onPressed: () {
                       setState(() {
-                        tMax = max + 10;
+                        tMax = max + 5;
                       });
                     }))
         ],
