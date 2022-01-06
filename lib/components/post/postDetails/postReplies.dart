@@ -48,6 +48,18 @@ class _RepliesVueState extends State<RepliesVue> {
                 room: widget.event.room,
                 onReplyTo: widget.event,
                 hintText: "Reply",
+                allowSendingPictures: false,
+                overrideSending: (String text) async {
+                  Map<String, dynamic> content = {
+                    "msgtype": MessageTypes.Text,
+                    "body": text,
+                    "m.relates_to": {
+                      "rel_type": MinestrixClient.elementThreadEventType,
+                      "event_id": widget.event.eventId
+                    }
+                  };
+                  await widget.event.room.sendEvent(content);
+                },
                 onSend: () {
                   setState(() {
                     showEditBox = false;
