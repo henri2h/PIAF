@@ -48,11 +48,13 @@ class PostContent extends StatelessWidget {
               children: [
                 MarkdownBody(data: event.body),
                 const SizedBox(height: 10),
-                ConstrainedBox(
-                    constraints: BoxConstraints(
-                        maxHeight: imageMaxHeight ?? double.infinity,
-                        minHeight: imageMaxHeight ?? double.infinity),
-                    child: MImage(event: event)),
+                imageMaxHeight != null
+                    ? ConstrainedBox(
+                        constraints: BoxConstraints(
+                            maxHeight: imageMaxHeight!,
+                            minHeight: imageMaxHeight ?? 400),
+                        child: MImage(event: event))
+                    : MImage(event: event),
               ],
             );
           case MessageTypes.Video:
