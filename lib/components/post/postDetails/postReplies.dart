@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/components/post/postDetails/postContent.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
@@ -10,14 +11,18 @@ import 'package:minestrix_chat/partials/chat/matrix_message_composer.dart';
 
 class RepliesVue extends StatefulWidget {
   final Event event;
+  final Timeline timeline;
   final Set<Event> replies;
-  final String regex = "(>(.*)\n)*\n"; // TODO : find a better way
   final bool showEditBox;
+
+  final void Function(bool value)? setReplyVisibility;
   RepliesVue({
     Key? key,
     required this.event,
     required this.replies,
+    required this.timeline,
     this.showEditBox = false,
+    this.setReplyVisibility,
   }) : super(key: key);
 
   @override
@@ -25,27 +30,52 @@ class RepliesVue extends StatefulWidget {
 }
 
 class _RepliesVueState extends State<RepliesVue> {
-  bool? showEditBox = null;
-  bool? lastShowEditBox = null;
+  int tMax = 10;
 
   @override
   Widget build(BuildContext context) {
-    // edit inner value when widget value change
-    if (lastShowEditBox != widget.showEditBox) {
-      showEditBox = showEditBox == null ? widget.showEditBox : !showEditBox!;
-      lastShowEditBox = widget.showEditBox;
-    }
-
     // get replies
     MinestrixClient? sclient = Matrix.of(context).sclient;
-    int max = min(widget.replies.length, 2);
 
+    List<Event> directRepliesToEvent = widget.replies.where((element) {
+      /*
+                Here we are doing a bit of a hack. In input, we have all the events with a io.element.thread relation.
+                However if we reply to a message in this stread, it will still have a reference 'rel_type' of io.element.thread
+                to the main event. So we filter the event according to the ["m.relates_to"]["m.in_reply_to"]["event_id"]
+                 */
+      // get the references to this ev of event but not not event with a different m.in_reply_to
+
+      Map<String, dynamic>? relates_to = element.content["m.relates_to"];
+      if (relates_to == null) {
+        print("null");
+        return false;
+      }
+
+      if (relates_to.containsKey("m.in_reply_to") == true) {
+        String val = relates_to["m.in_reply_to"]["event_id"];
+        if (val != widget.event.eventId) {
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        // We are displaying the direct comment of post
+        if (relates_to["event_id"] == widget.event.eventId) {
+          return true;
+        } else {
+          // it's a reply to a comment of the post
+          // so we don't redisplay the direct comments
+          return false;
+        }
+      }
+    }).toList();
+
+    int max = min(directRepliesToEvent.length, tMax);
     return Container(
-//      decoration: BoxDecoration(color: Colors.grey),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (showEditBox == true)
+          if (widget.showEditBox == true)
             MatrixMessageComposer(
                 client: sclient!,
                 room: widget.event.room,
@@ -64,11 +94,11 @@ class _RepliesVueState extends State<RepliesVue> {
                   await widget.event.room.sendEvent(content);
                 },
                 onSend: () {
-                  setState(() {
-                    showEditBox = false;
-                  });
+                  widget.setReplyVisibility?.call(false);
                 }),
-          for (Event revent in widget.replies.toList().sublist(0, max))
+          for (Event revent
+              in directRepliesToEvent.sublist(0, max)
+                ..sort((a, b) => b.originServerTs.compareTo(a.originServerTs)))
             Padding(
               padding:
                   const EdgeInsets.symmetric(vertical: 2.0, horizontal: 20.0),
@@ -117,8 +147,7 @@ class _RepliesVueState extends State<RepliesVue> {
                                       ],
                                     ),
                                     SizedBox(height: 5),
-                                    Text(revent.body.replaceFirst(
-                                        new RegExp(widget.regex), "")),
+                                    PostContent(revent, imageMaxHeight: 200),
                                   ],
                                 ),
                               ),
@@ -132,17 +161,21 @@ class _RepliesVueState extends State<RepliesVue> {
                     padding: const EdgeInsets.only(left: 50.0),
                     child: RepliesVue(
                         event: revent,
-                        replies: revent.aggregatedEvents(
-                            sclient!.srooms[revent.roomId!]!.timeline!,
-                            RelationshipTypes.reply)),
+                        timeline: widget.timeline,
+                        replies: widget.replies),
                   )
                 ],
               ),
             ),
-          if (widget.replies.length > max)
+          if (directRepliesToEvent.length > max)
             Center(
-                child:
-                    MaterialButton(child: Text("load more"), onPressed: () {}))
+                child: MaterialButton(
+                    child: Text("load more"),
+                    onPressed: () {
+                      setState(() {
+                        tMax = max + 10;
+                      });
+                    }))
         ],
       ),
     );

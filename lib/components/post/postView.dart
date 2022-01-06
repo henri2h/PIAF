@@ -36,12 +36,12 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     return StreamBuilder<Object>(
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
-          Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.reply);
-
           // support for threaded replies
-          Set<Event> threadReplies =
+          Set<Event> replies =
               e.aggregatedEvents(t, MinestrixClient.elementThreadEventType);
-          replies.addAll(threadReplies);
+
+          // TODO : remove me after in next update
+          replies.addAll(e.aggregatedEvents(t, RelationshipTypes.reply));
 
           Set<Event> reactions =
               e.aggregatedEvents(t, RelationshipTypes.reaction);
@@ -141,9 +141,13 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                       children: [
                         if (replies.isNotEmpty || showReplyBox)
                           RepliesVue(
+                              timeline: t,
                               event: e,
                               replies: replies,
-                              showEditBox: showReplyBox),
+                              showEditBox: showReplyBox,
+                              setReplyVisibility: (bool value) => setState(() {
+                                    showReplyBox = value;
+                                  })),
                       ],
                     ),
                   ),
