@@ -6,18 +6,19 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:minestrix_chat/partials/chat/matrix_message_composer.dart';
 
 class RepliesVue extends StatefulWidget {
   final Event event;
   final Set<Event> replies;
   final String regex = "(>(.*)\n)*\n"; // TODO : find a better way
   final bool showEditBox;
-  RepliesVue(
-      {Key? key,
-      required this.event,
-      required this.replies,
-      this.showEditBox = false})
-      : super(key: key);
+  RepliesVue({
+    Key? key,
+    required this.event,
+    required this.replies,
+    this.showEditBox = false,
+  }) : super(key: key);
 
   @override
   _RepliesVueState createState() => _RepliesVueState();
@@ -25,10 +26,12 @@ class RepliesVue extends StatefulWidget {
 
 class _RepliesVueState extends State<RepliesVue> {
   bool? showEditBox = null;
+  bool? lastShowEditBox = null;
 
   @override
   Widget build(BuildContext context) {
-    if (showEditBox == null) showEditBox = widget.showEditBox;
+    // edit inner value when widget value change
+    if (lastShowEditBox != widget.showEditBox) showEditBox = widget.showEditBox;
 
     // get replies
     MinestrixClient? sclient = Matrix.of(context).sclient;
@@ -39,7 +42,18 @@ class _RepliesVueState extends State<RepliesVue> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.showEditBox)
+          if (showEditBox == true)
+            MatrixMessageComposer(
+                client: sclient!,
+                room: widget.event.room,
+                onReplyTo: widget.event,
+                hintText: "Reply",
+                onSend: () {
+                  setState(() {
+                    showEditBox = false;
+                  });
+                }),
+          if (showEditBox == true)
             ReplyBox(
                 event: widget.event,
                 onMessageSend: () {
@@ -62,20 +76,21 @@ class _RepliesVueState extends State<RepliesVue> {
                           children: [
                             Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                                    const EdgeInsets.symmetric(vertical: 6),
                                 child: MatrixUserImage(
                                   client: sclient,
                                   url: revent.sender.avatarUrl,
+                                  defaultText: revent.sender.calcDisplayname(),
+                                  backgroundColor: Colors.blue,
                                   width: 32,
                                   height: 32,
                                   thumnail: true,
                                   rounded: true,
                                 )),
-                            SizedBox(width: 10),
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 12),
+                                    vertical: 6, horizontal: 12),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
