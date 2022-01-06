@@ -28,9 +28,12 @@ class _PostEditorPageState extends State<PostEditorPage>
   Future<void> sendPost(MinestrixClient sclient, String postContent,
       {Event? inReplyTo}) async {
     if (file != null) {
-      MatrixFile f =
-          MatrixImageFile(bytes: file!.toUint8List(), name: postContent);
-      await sroom!.room.sendFileEvent(f);
+      MatrixFile f = MatrixImageFile(
+          bytes: file!.toUint8List(), name: file!.fileName ?? 'null');
+      await sroom!.room.sendFileEvent(
+        f,
+        extraContent: {'body': postContent},
+      );
     } else {
       await sroom!.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
     }
