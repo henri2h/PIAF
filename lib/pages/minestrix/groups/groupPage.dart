@@ -134,8 +134,7 @@ class _GroupPageState extends State<GroupPage> {
                               vertical: 2, horizontal: 12),
                           child: Post(
                               event: sevents[i - 1],
-                              onReact: (e) =>
-                                  onReact(e, sevents[i - 1])));
+                              onReact: (e) => onReact(e, sevents[i - 1])));
                     })),
           )
         ],

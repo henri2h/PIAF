@@ -204,8 +204,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                         const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
                     child: Post(
                         event: timeline![i - 1],
-                        onReact: (Offset e) =>
-                            onReact(e, timeline![i - 1])));
+                        onReact: (Offset e) => onReact(e, timeline![i - 1])));
               });
         });
   }
