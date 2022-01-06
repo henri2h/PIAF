@@ -31,7 +31,10 @@ class _RepliesVueState extends State<RepliesVue> {
   @override
   Widget build(BuildContext context) {
     // edit inner value when widget value change
-    if (lastShowEditBox != widget.showEditBox) showEditBox = widget.showEditBox;
+    if (lastShowEditBox != widget.showEditBox) {
+      showEditBox = showEditBox == null ? widget.showEditBox : !showEditBox!;
+      lastShowEditBox = widget.showEditBox;
+    }
 
     // get replies
     MinestrixClient? sclient = Matrix.of(context).sclient;
@@ -61,14 +64,6 @@ class _RepliesVueState extends State<RepliesVue> {
                   await widget.event.room.sendEvent(content);
                 },
                 onSend: () {
-                  setState(() {
-                    showEditBox = false;
-                  });
-                }),
-          if (showEditBox == true)
-            ReplyBox(
-                event: widget.event,
-                onMessageSend: () {
                   setState(() {
                     showEditBox = false;
                   });
@@ -148,66 +143,6 @@ class _RepliesVueState extends State<RepliesVue> {
             Center(
                 child:
                     MaterialButton(child: Text("load more"), onPressed: () {}))
-        ],
-      ),
-    );
-  }
-}
-
-class ReplyBox extends StatelessWidget {
-  final Event event;
-  final Function? onMessageSend;
-
-  const ReplyBox({Key? key, required this.event, this.onMessageSend})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    TextEditingController tc = TextEditingController();
-    MinestrixClient sclient = Matrix.of(context).sclient!;
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          MatrixUserImage(
-              client: sclient,
-              url: sclient.userRoom!.user.avatarUrl,
-              width: 38,
-              thumnail: true,
-              height: 38),
-          SizedBox(width: 10),
-          Expanded(
-              child: TextField(
-            controller: tc,
-            keyboardType: TextInputType.multiline,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Color(0xf5f8fc),
-              contentPadding: EdgeInsets.all(15),
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              labelText: 'Reply',
-            ),
-          )),
-          SizedBox(width: 10),
-          IconButton(
-              icon: Icon(Icons.send),
-              onPressed: () async {
-                Map<String, dynamic> content = {
-                  "msgtype": MessageTypes.Text,
-                  "body": tc.text,
-                  "m.relates_to": {
-                    "rel_type": MinestrixClient.elementThreadEventType,
-                    "event_id": event.eventId
-                  }
-                };
-                await event.room.sendEvent(content);
-                //await event.room.sendTextEvent(tc.text, inReplyTo: event);
-                tc.clear();
-
-                // send event
-                onMessageSend!();
-              })
         ],
       ),
     );
