@@ -51,7 +51,7 @@ class PostContent extends StatelessWidget {
             return Text(event.body);
 
           default:
-            return Text("other message type : " + event.messageType);
+            return Text("other message type : " + event.messageType);
         }
       case EventTypes.RoomCreate:
         return Column(

@@ -166,7 +166,16 @@ class ReplyBox extends StatelessWidget {
           IconButton(
               icon: Icon(Icons.send),
               onPressed: () async {
-                await event.room.sendTextEvent(tc.text, inReplyTo: event);
+                Map<String, dynamic> content = {
+                  "msgtype": MessageTypes.Text,
+                  "body": tc.text,
+                  "m.relates_to": {
+                    "rel_type": MinestrixClient.elementThreadEventType,
+                    "event_id": event.eventId
+                  }
+                };
+                await event.room.sendEvent(content);
+                //await event.room.sendTextEvent(tc.text, inReplyTo: event);
                 tc.clear();
 
                 // send event

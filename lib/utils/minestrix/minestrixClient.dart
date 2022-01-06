@@ -281,6 +281,8 @@ class MinestrixClient extends Client {
         waitForCreation: true);
   }
 
+  static const String elementThreadEventType = "io.element.thread";
+
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
       {List<String> eventTypesFilter: const [
         EventTypes.Message,
@@ -291,7 +293,8 @@ class MinestrixClient extends Client {
             !{
               RelationshipTypes.edit,
               RelationshipTypes.reaction,
-              RelationshipTypes.reply
+              RelationshipTypes.reply,
+              elementThreadEventType
             }.contains(e.relationshipType) &&
             eventTypesFilter.contains(e.type) &&
             !e.redacted)

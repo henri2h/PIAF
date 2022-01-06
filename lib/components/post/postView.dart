@@ -37,6 +37,12 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
         stream: e.room.onUpdate.stream,
         builder: (context, snapshot) {
           Set<Event> replies = e.aggregatedEvents(t, RelationshipTypes.reply);
+
+          // support for threaded replies
+          Set<Event> threadReplies =
+              e.aggregatedEvents(t, MinestrixClient.elementThreadEventType);
+          replies.addAll(threadReplies);
+
           Set<Event> reactions =
               e.aggregatedEvents(t, RelationshipTypes.reaction);
           return Card(
