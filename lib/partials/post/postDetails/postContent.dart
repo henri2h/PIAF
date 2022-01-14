@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/post/postView.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
+import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
 
 class PostContent extends StatelessWidget {

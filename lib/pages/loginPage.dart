@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/login/loginCard.dart';
+import 'package:minestrix/partials/login/loginCard.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';

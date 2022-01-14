@@ -1,8 +1,8 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/accountCard.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/components/account/accountCard.dart';
+import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';

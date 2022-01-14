@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixContactView.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixUserSelection.dart';
-import 'package:minestrix/components/post/postView.dart';
-import 'package:minestrix/components/post/postWriterModal.dart';
+import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
+import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
+import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix/partials/post/postWriterModal.dart';
+import 'package:minestrix/partials/users/MinesTrixUserSelection.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';

@@ -1,10 +1,10 @@
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixButton.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/components/post/postView.dart';
-import 'package:minestrix/components/post/postWriterModal.dart';
+import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
+import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/partials/users/userFriendsCard.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/partials/users/userProfileSelection.dart';

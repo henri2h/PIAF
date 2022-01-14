@@ -3,8 +3,8 @@ import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/helpers/adaptativeFlatButton.dart';
-import 'package:minestrix/components/dialogs/simple_dialogs.dart';
+import 'package:minestrix/partials/components/buttons/adaptativeFlatButton.dart';
+import 'package:minestrix/partials/components/dialogs/simple_dialogs.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
 class KeyVerificationDialog extends StatefulWidget {

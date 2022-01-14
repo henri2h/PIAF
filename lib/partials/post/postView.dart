@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/post/postDetails/postContent.dart';
-import 'package:minestrix/components/post/postDetails/postHeader.dart';
-import 'package:minestrix/components/post/postDetails/postReactions.dart';
-import 'package:minestrix/components/post/postDetails/postReplies.dart';
+import 'package:minestrix/partials/post/postDetails/postContent.dart';
+import 'package:minestrix/partials/post/postDetails/postHeader.dart';
+import 'package:minestrix/partials/post/postDetails/postReactions.dart';
+import 'package:minestrix/partials/post/postDetails/postReplies.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 

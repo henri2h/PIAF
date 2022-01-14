@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
 import 'package:minestrix/pages/debugPage.dart';
+import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/utils/Managers/ThemeManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';

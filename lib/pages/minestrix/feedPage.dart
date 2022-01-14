@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/components/quickLinksList.dart';
-import 'package:minestrix/partials/home/minestrixFeed.dart';
+import 'package:minestrix/partials/components/quickLinksList.dart';
+import 'package:minestrix/partials/feed/minestrixFeed.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
