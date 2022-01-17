@@ -86,7 +86,7 @@ class MinestrixRoomTile extends StatelessWidget {
     final MinestrixClient? client = Matrix.of(context).sclient;
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(4.0),
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
@@ -117,7 +117,8 @@ class MinestrixRoomTile extends StatelessWidget {
                       ),
                       Flexible(
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0, vertical: 2),
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[

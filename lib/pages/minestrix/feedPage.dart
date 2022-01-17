@@ -52,21 +52,7 @@ class _FeedPageState extends State<FeedPage> {
                 Flexible(
                   flex: 4,
                   fit: FlexFit.loose,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(0),
-                          child: Text("Following",
-                              style:
-                                  TextStyle(fontSize: 22, letterSpacing: 1.1)),
-                        ),
-                        Expanded(child: StreamContactBar()),
-                      ],
-                    ),
-                  ),
+                  child: RightBar(),
                 ),
             ],
           );
