@@ -33,14 +33,16 @@ class ThemeNotifier with ChangeNotifier {
   ThemeNotifier() {
     StorageManager.readData('themeMode').then((value) {
       print('value read from storage: ' + value.toString());
+      _mode = AppThemeMode.values.firstWhere(
+          (e) => e.toString() == value.toString(),
+          orElse: () => AppThemeMode.light);
 
-      _mode = value;
       _loadMode();
     });
   }
 
   void _setMode(AppThemeMode t) {
-    StorageManager.saveData('themeMode', t);
+    StorageManager.saveData('themeMode', t.toString());
     _mode = t;
     _loadMode();
   }
