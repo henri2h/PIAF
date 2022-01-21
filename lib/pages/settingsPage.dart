@@ -131,21 +131,32 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           SizedBox(height: 10),
-          SwitchListTile(
-              value: themeMode == AppThemeMode.dark,
-              secondary: themeMode == AppThemeMode.dark
-                  ? Icon(Icons.dark_mode)
-                  : Icon(Icons.light_mode),
-              title: themeMode == AppThemeMode.dark
-                  ? Text("Set light mode")
-                  : Text("Set dark mode"),
+          RadioListTile(
+              groupValue: themeMode,
+              secondary: Icon(Icons.light_mode),
+              value: AppThemeMode.light,
               onChanged: (value) {
-                if (!value)
-                  context.read<ThemeNotifier>().setLightMode();
-                else
-                  context.read<ThemeNotifier>().setDarkMode();
+                context.read<ThemeNotifier>().setLightMode();
                 setState(() {});
-              }),
+              },
+              title: Text("Light mode")),
+          RadioListTile(
+              secondary: Icon(Icons.dark_mode),
+              groupValue: themeMode,
+              value: AppThemeMode.dark,
+              onChanged: (value) {
+                context.read<ThemeNotifier>().setDarkMode();
+                setState(() {});
+              },
+              title: Text("Dark mode")),
+          RadioListTile(
+              groupValue: themeMode,
+              value: AppThemeMode.black,
+              onChanged: (value) {
+                context.read<ThemeNotifier>().setBlackMode();
+                setState(() {});
+              },
+              title: Text("Black mode")),
           SizedBox(height: 10),
           H2Title("Security"),
           Padding(
