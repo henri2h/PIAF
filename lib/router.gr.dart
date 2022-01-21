@@ -124,9 +124,9 @@ class AppRouter extends _i6.RootStackRouter {
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData, child: const _i15.SettingsPage());
     },
-    SettingsProfileRoute.name: (routeData) {
+    SettingsAccountRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
-          routeData: routeData, child: const _i16.SettingsProfilePage());
+          routeData: routeData, child: const _i16.SettingsAccountPage());
     },
     SettingsThemeRoute.name: (routeData) {
       return _i6.MaterialPageX<dynamic>(
@@ -179,7 +179,7 @@ class AppRouter extends _i6.RootStackRouter {
                     path: 'accounts', parent: MinestrixRouter.name),
                 _i6.RouteConfig(SettingsRoute.name,
                     path: 'settings', parent: MinestrixRouter.name),
-                _i6.RouteConfig(SettingsProfileRoute.name,
+                _i6.RouteConfig(SettingsAccountRoute.name,
                     path: 'settings/profile', parent: MinestrixRouter.name),
                 _i6.RouteConfig(SettingsThemeRoute.name,
                     path: 'settings/theme', parent: MinestrixRouter.name),
@@ -462,12 +462,12 @@ class SettingsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i16.SettingsProfilePage]
-class SettingsProfileRoute extends _i6.PageRouteInfo<void> {
-  const SettingsProfileRoute()
-      : super(SettingsProfileRoute.name, path: 'settings/profile');
+/// [_i16.SettingsAccountPage]
+class SettingsAccountRoute extends _i6.PageRouteInfo<void> {
+  const SettingsAccountRoute()
+      : super(SettingsAccountRoute.name, path: 'settings/profile');
 
-  static const String name = 'SettingsProfileRoute';
+  static const String name = 'SettingsAccountRoute';
 }
 
 /// generated route for

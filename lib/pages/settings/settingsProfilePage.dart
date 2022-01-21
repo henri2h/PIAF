@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
@@ -5,14 +6,14 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 
-class SettingsProfilePage extends StatefulWidget {
-  const SettingsProfilePage({Key? key}) : super(key: key);
+class SettingsAccountPage extends StatefulWidget {
+  const SettingsAccountPage({Key? key}) : super(key: key);
 
   @override
-  _SettingsProfilePageState createState() => _SettingsProfilePageState();
+  _SettingsAccountPageState createState() => _SettingsAccountPageState();
 }
 
-class _SettingsProfilePageState extends State<SettingsProfilePage> {
+class _SettingsAccountPageState extends State<SettingsAccountPage> {
   TextEditingController? displayNameController;
   bool savingDisplayName = false;
 
@@ -22,70 +23,22 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
 
     return ListView(
       children: [
-        CustomHeader("Profile"),
+        CustomHeader("Account"),
+        ListTile(
+            title: Text("Your user ID:"),
+            subtitle: Text(sclient.userID ?? "null")),
         FutureBuilder(
             future: sclient.getUserProfile(sclient.userID!),
             builder: (context, AsyncSnapshot<ProfileInformation> p) {
               if (displayNameController == null && p.hasData == true) {
                 displayNameController = new TextEditingController(
-                    text: (p.data!.displayname ?? sclient.userID!));
+                    text: (p.data?.displayname ?? sclient.userID!));
               }
 
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (displayNameController != null)
-                          SizedBox(
-                            width: 200,
-                            child: TextField(
-                              controller: displayNameController,
-                              decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: 'User name',
-                                  hintText: 'User name'),
-                              onChanged: (_) {
-                                setState(() {});
-                              },
-                            ),
-                          ),
-                        SizedBox(width: 10),
-                        if (displayNameController?.text != p.data?.displayname)
-                          ElevatedButton(
-                            child: SizedBox(
-                              height: 50,
-                              child: Row(
-                                children: [
-                                  if (savingDisplayName)
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 10),
-                                      child: CircularProgressIndicator(
-                                          color: Colors.white),
-                                    ),
-                                  Text("Save"),
-                                ],
-                              ),
-                            ),
-                            onPressed: () async {
-                              if (displayNameController?.text !=
-                                  null) if (savingDisplayName != true) {
-                                setState(() {
-                                  savingDisplayName = true;
-                                });
-                                await sclient.setDisplayName(sclient.userID!,
-                                    displayNameController?.text);
-                                setState(() {
-                                  savingDisplayName = false;
-                                });
-                              }
-                            },
-                          ),
-                        SizedBox(width: 10),
-                        MatrixUserImage(
+              return ListTile(
+                  leading: savingDisplayName
+                      ? CircularProgressIndicator()
+                      : MatrixUserImage(
                           client: Matrix.of(context).sclient,
                           url: p.data?.avatarUrl,
                           width: 48,
@@ -94,30 +47,36 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
                           rounded: true,
                           defaultIcon: Icon(Icons.person, size: 32),
                         ),
+                  title: Text("Edit display name"),
+                  trailing: Icon(Icons.edit),
+                  subtitle: Text(p.data?.displayname ?? sclient.userID!),
+                  onTap: () async {
+                    List<String>? results = await showTextInputDialog(
+                      context: context,
+                      textFields: [
+                        DialogTextField(
+                            hintText: "Your display name",
+                            initialText: p.data?.displayname ?? "")
                       ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(sclient.userID!),
-                    ),
-                  ],
-                ),
-              );
+                      title: "Set display name",
+                    );
+                    if (results?.isNotEmpty == true) {
+                      setState(() {
+                        savingDisplayName = true;
+                      });
+                      await sclient.setDisplayName(
+                          sclient.userID!, results![0]);
+                      setState(() {
+                        savingDisplayName = false;
+                      });
+                    }
+                  });
             }),
-        MaterialButton(
-            color: Colors.red,
-            elevation: 3,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Icon(Icons.exit_to_app, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text("logout", style: TextStyle(color: Colors.white)),
-                ],
-              ),
-            ),
-            onPressed: () async {
+        ListTile(
+            iconColor: Colors.red,
+            title: Text("Logout"),
+            trailing: Icon(Icons.logout),
+            onTap: () async {
               await sclient.logout();
               if (Navigator.of(context).canPop()) Navigator.of(context).pop();
             }),

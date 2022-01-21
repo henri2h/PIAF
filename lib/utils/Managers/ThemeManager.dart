@@ -7,6 +7,9 @@ class ThemeNotifier with ChangeNotifier {
   final blackTheme = ThemeData(
     primaryColor: Colors.blue[800],
     scaffoldBackgroundColor: Colors.black,
+    primarySwatch: Colors.blue,
+    bottomNavigationBarTheme:
+        BottomNavigationBarThemeData(backgroundColor: Colors.black),
     cardColor: Colors.grey[900],
     brightness: Brightness.dark,
   );

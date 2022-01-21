@@ -23,11 +23,11 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           CustomHeader("Settings"),
           ListTile(
-            title: Text("Profile"),
+            title: Text("Account"),
             trailing: Icon(Icons.arrow_forward),
             leading: Icon(Icons.person),
             onTap: () {
-              context.navigateTo(SettingsProfileRoute());
+              context.navigateTo(SettingsAccountRoute());
             },
           ),
           ListTile(

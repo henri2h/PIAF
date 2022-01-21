@@ -45,7 +45,7 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
             AutoRoute(path: 'search', page: ResearchPage),
             AutoRoute(path: 'accounts', page: AccountsDetailsPage),
             AutoRoute(path: 'settings', page: SettingsPage),
-            AutoRoute(path: 'settings/profile', page: SettingsProfilePage),
+            AutoRoute(path: 'settings/account', page: SettingsAccountPage),
             AutoRoute(path: 'settings/theme', page: SettingsThemePage),
             AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
             RedirectRoute(path: '*', redirectTo: 'feed')
