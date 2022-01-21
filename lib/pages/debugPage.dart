@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
@@ -60,12 +61,12 @@ class _DebugPageState extends State<DebugPage> {
     }
 
     return ListView(children: [
+      CustomHeader("Debug"),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            H1Title("Debug"),
             if (sclient != null)
               Text("MinesTRIX rooms length : " +
                   sclient!.srooms.length.toString()),

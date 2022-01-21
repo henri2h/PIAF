@@ -14,7 +14,10 @@ import 'package:minestrix/pages/minestrix/homeWrapperPage.dart';
 import 'package:minestrix/pages/minestrix/user/friendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userFriendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userViewPage.dart';
-import 'package:minestrix/pages/settingsPage.dart';
+import 'package:minestrix/pages/settings/settingsPage.dart';
+import 'package:minestrix/pages/settings/settingsProfilePage.dart';
+import 'package:minestrix/pages/settings/settingsSecurityPage.dart';
+import 'package:minestrix/pages/settings/settingsThemePage.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
@@ -42,6 +45,9 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
             AutoRoute(path: 'search', page: ResearchPage),
             AutoRoute(path: 'accounts', page: AccountsDetailsPage),
             AutoRoute(path: 'settings', page: SettingsPage),
+            AutoRoute(path: 'settings/profile', page: SettingsProfilePage),
+            AutoRoute(path: 'settings/theme', page: SettingsThemePage),
+            AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
             RedirectRoute(path: '*', redirectTo: 'feed')
           ]),
       AutoRoute(

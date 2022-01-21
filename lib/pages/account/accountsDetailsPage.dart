@@ -2,6 +2,7 @@ import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:matrix/src/utils/space_child.dart';
+import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 import 'package:minestrix/router.gr.dart';
@@ -26,7 +27,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
 
     return ListView(
       children: [
-        H1Title("Accounts"),
+        CustomHeader("Accounts"),
         if (profile == null)
           Padding(
             padding: const EdgeInsets.all(25),

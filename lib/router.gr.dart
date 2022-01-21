@@ -7,11 +7,13 @@
 // **************************************************************************
 // AutoRouteGenerator
 // **************************************************************************
+//
+// ignore_for_file: type=lint
 
 import 'package:auto_route/auto_route.dart' as _i6;
-import 'package:flutter/material.dart' as _i17;
-import 'package:matrix/matrix.dart' as _i18;
-import 'package:minestrix_chat/view/matrix_chat_page.dart' as _i16;
+import 'package:flutter/material.dart' as _i20;
+import 'package:matrix/matrix.dart' as _i21;
+import 'package:minestrix_chat/view/matrix_chat_page.dart' as _i19;
 import 'package:minestrix_chat/view/matrix_chats_page.dart' as _i5;
 
 import 'pages/account/accountsDetailsPage.dart' as _i14;
@@ -26,11 +28,14 @@ import 'pages/minestrix/postEditor.dart' as _i9;
 import 'pages/minestrix/user/friendsPage.dart' as _i11;
 import 'pages/minestrix/user/userFriendsPage.dart' as _i12;
 import 'pages/minestrix/user/userViewPage.dart' as _i10;
-import 'pages/settingsPage.dart' as _i15;
-import 'utils/minestrix/minestrixRoom.dart' as _i19;
+import 'pages/settings/settingsPage.dart' as _i15;
+import 'pages/settings/settingsProfilePage.dart' as _i16;
+import 'pages/settings/settingsSecurityPage.dart' as _i18;
+import 'pages/settings/settingsThemePage.dart' as _i17;
+import 'utils/minestrix/minestrixRoom.dart' as _i22;
 
 class AppRouter extends _i6.RootStackRouter {
-  AppRouter([_i17.GlobalKey<_i17.NavigatorState>? navigatorKey])
+  AppRouter([_i20.GlobalKey<_i20.NavigatorState>? navigatorKey])
       : super(navigatorKey);
 
   @override
@@ -119,11 +124,23 @@ class AppRouter extends _i6.RootStackRouter {
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData, child: const _i15.SettingsPage());
     },
+    SettingsProfileRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i16.SettingsProfilePage());
+    },
+    SettingsThemeRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i17.SettingsThemePage());
+    },
+    SettingsSecurityRoute.name: (routeData) {
+      return _i6.MaterialPageX<dynamic>(
+          routeData: routeData, child: const _i18.SettingsSecurityPage());
+    },
     MatrixChatRoute.name: (routeData) {
       final args = routeData.argsAs<MatrixChatRouteArgs>();
       return _i6.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i16.MatrixChatPage(
+          child: _i19.MatrixChatPage(
               key: args.key,
               roomId: args.roomId,
               client: args.client,
@@ -162,6 +179,12 @@ class AppRouter extends _i6.RootStackRouter {
                     path: 'accounts', parent: MinestrixRouter.name),
                 _i6.RouteConfig(SettingsRoute.name,
                     path: 'settings', parent: MinestrixRouter.name),
+                _i6.RouteConfig(SettingsProfileRoute.name,
+                    path: 'settings/profile', parent: MinestrixRouter.name),
+                _i6.RouteConfig(SettingsThemeRoute.name,
+                    path: 'settings/theme', parent: MinestrixRouter.name),
+                _i6.RouteConfig(SettingsSecurityRoute.name,
+                    path: 'settings/security', parent: MinestrixRouter.name),
                 _i6.RouteConfig('*#redirect',
                     path: '*',
                     parent: MinestrixRouter.name,
@@ -213,7 +236,7 @@ class AppWrapperRoute extends _i6.PageRouteInfo<void> {
 /// generated route for
 /// [_i3.LoginPage]
 class LoginRoute extends _i6.PageRouteInfo<LoginRouteArgs> {
-  LoginRoute({_i17.Key? key, String? title, dynamic Function(bool)? onLogin})
+  LoginRoute({_i20.Key? key, String? title, dynamic Function(bool)? onLogin})
       : super(LoginRoute.name,
             path: '/login',
             args: LoginRouteArgs(key: key, title: title, onLogin: onLogin));
@@ -224,7 +247,7 @@ class LoginRoute extends _i6.PageRouteInfo<LoginRouteArgs> {
 class LoginRouteArgs {
   const LoginRouteArgs({this.key, this.title, this.onLogin});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
   final String? title;
 
@@ -240,7 +263,7 @@ class LoginRouteArgs {
 /// [_i4.HomeWrapperPage]
 class MinestrixRouter extends _i6.PageRouteInfo<MinestrixRouterArgs> {
   MinestrixRouter(
-      {_i17.Key? key, String? title, List<_i6.PageRouteInfo>? children})
+      {_i20.Key? key, String? title, List<_i6.PageRouteInfo>? children})
       : super(MinestrixRouter.name,
             path: '',
             args: MinestrixRouterArgs(key: key, title: title),
@@ -252,7 +275,7 @@ class MinestrixRouter extends _i6.PageRouteInfo<MinestrixRouterArgs> {
 class MinestrixRouterArgs {
   const MinestrixRouterArgs({this.key, this.title});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
   final String? title;
 
@@ -266,7 +289,7 @@ class MinestrixRouterArgs {
 /// [_i5.MatrixChatsPage]
 class MatrixChatsRoute extends _i6.PageRouteInfo<MatrixChatsRouteArgs> {
   MatrixChatsRoute(
-      {_i17.Key? key, required _i18.Client client, bool enableStories = false})
+      {_i20.Key? key, required _i21.Client client, bool enableStories = false})
       : super(MatrixChatsRoute.name,
             path: 'chats',
             args: MatrixChatsRouteArgs(
@@ -279,9 +302,9 @@ class MatrixChatsRouteArgs {
   const MatrixChatsRouteArgs(
       {this.key, required this.client, this.enableStories = false});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
-  final _i18.Client client;
+  final _i21.Client client;
 
   final bool enableStories;
 
@@ -311,7 +334,7 @@ class FeedRoute extends _i6.PageRouteInfo<void> {
 /// generated route for
 /// [_i8.GroupPage]
 class GroupRoute extends _i6.PageRouteInfo<GroupRouteArgs> {
-  GroupRoute({_i17.Key? key, _i19.MinestrixRoom? sroom})
+  GroupRoute({_i20.Key? key, _i22.MinestrixRoom? sroom})
       : super(GroupRoute.name,
             path: 'group', args: GroupRouteArgs(key: key, sroom: sroom));
 
@@ -321,9 +344,9 @@ class GroupRoute extends _i6.PageRouteInfo<GroupRouteArgs> {
 class GroupRouteArgs {
   const GroupRouteArgs({this.key, this.sroom});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
-  final _i19.MinestrixRoom? sroom;
+  final _i22.MinestrixRoom? sroom;
 
   @override
   String toString() {
@@ -334,7 +357,7 @@ class GroupRouteArgs {
 /// generated route for
 /// [_i9.PostEditorPage]
 class PostEditorRoute extends _i6.PageRouteInfo<PostEditorRouteArgs> {
-  PostEditorRoute({_i17.Key? key, _i19.MinestrixRoom? sroom})
+  PostEditorRoute({_i20.Key? key, _i22.MinestrixRoom? sroom})
       : super(PostEditorRoute.name,
             path: 'createPost',
             args: PostEditorRouteArgs(key: key, sroom: sroom));
@@ -345,9 +368,9 @@ class PostEditorRoute extends _i6.PageRouteInfo<PostEditorRouteArgs> {
 class PostEditorRouteArgs {
   const PostEditorRouteArgs({this.key, this.sroom});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
-  final _i19.MinestrixRoom? sroom;
+  final _i22.MinestrixRoom? sroom;
 
   @override
   String toString() {
@@ -358,7 +381,7 @@ class PostEditorRouteArgs {
 /// generated route for
 /// [_i10.UserViewPage]
 class UserViewRoute extends _i6.PageRouteInfo<UserViewRouteArgs> {
-  UserViewRoute({_i17.Key? key, String? userID, _i19.MinestrixRoom? mroom})
+  UserViewRoute({_i20.Key? key, String? userID, _i22.MinestrixRoom? mroom})
       : super(UserViewRoute.name,
             path: 'userfeed',
             args: UserViewRouteArgs(key: key, userID: userID, mroom: mroom));
@@ -369,11 +392,11 @@ class UserViewRoute extends _i6.PageRouteInfo<UserViewRouteArgs> {
 class UserViewRouteArgs {
   const UserViewRouteArgs({this.key, this.userID, this.mroom});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
   final String? userID;
 
-  final _i19.MinestrixRoom? mroom;
+  final _i22.MinestrixRoom? mroom;
 
   @override
   String toString() {
@@ -392,7 +415,7 @@ class FriendsRoute extends _i6.PageRouteInfo<void> {
 /// generated route for
 /// [_i12.UserFriendsPage]
 class UserFriendsRoute extends _i6.PageRouteInfo<UserFriendsRouteArgs> {
-  UserFriendsRoute({_i17.Key? key, required _i19.MinestrixRoom sroom})
+  UserFriendsRoute({_i20.Key? key, required _i22.MinestrixRoom sroom})
       : super(UserFriendsRoute.name,
             path: 'user_friends',
             args: UserFriendsRouteArgs(key: key, sroom: sroom));
@@ -403,9 +426,9 @@ class UserFriendsRoute extends _i6.PageRouteInfo<UserFriendsRouteArgs> {
 class UserFriendsRouteArgs {
   const UserFriendsRouteArgs({this.key, required this.sroom});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
-  final _i19.MinestrixRoom sroom;
+  final _i22.MinestrixRoom sroom;
 
   @override
   String toString() {
@@ -439,12 +462,39 @@ class SettingsRoute extends _i6.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i16.MatrixChatPage]
+/// [_i16.SettingsProfilePage]
+class SettingsProfileRoute extends _i6.PageRouteInfo<void> {
+  const SettingsProfileRoute()
+      : super(SettingsProfileRoute.name, path: 'settings/profile');
+
+  static const String name = 'SettingsProfileRoute';
+}
+
+/// generated route for
+/// [_i17.SettingsThemePage]
+class SettingsThemeRoute extends _i6.PageRouteInfo<void> {
+  const SettingsThemeRoute()
+      : super(SettingsThemeRoute.name, path: 'settings/theme');
+
+  static const String name = 'SettingsThemeRoute';
+}
+
+/// generated route for
+/// [_i18.SettingsSecurityPage]
+class SettingsSecurityRoute extends _i6.PageRouteInfo<void> {
+  const SettingsSecurityRoute()
+      : super(SettingsSecurityRoute.name, path: 'settings/security');
+
+  static const String name = 'SettingsSecurityRoute';
+}
+
+/// generated route for
+/// [_i19.MatrixChatPage]
 class MatrixChatRoute extends _i6.PageRouteInfo<MatrixChatRouteArgs> {
   MatrixChatRoute(
-      {_i17.Key? key,
+      {_i20.Key? key,
       required String roomId,
-      required _i18.Client client,
+      required _i21.Client client,
       void Function()? onBack})
       : super(MatrixChatRoute.name,
             path: ':roomId',
@@ -458,11 +508,11 @@ class MatrixChatRouteArgs {
   const MatrixChatRouteArgs(
       {this.key, required this.roomId, required this.client, this.onBack});
 
-  final _i17.Key? key;
+  final _i20.Key? key;
 
   final String roomId;
 
-  final _i18.Client client;
+  final _i21.Client client;
 
   final void Function()? onBack;
 
