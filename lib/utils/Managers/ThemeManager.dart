@@ -113,4 +113,9 @@ class ThemeNotifier with ChangeNotifier {
     _loadMode();
     notifyListeners();
   }
+
+  static isColorEquals(Color a, Color b) {
+    return a.toString().split('(0x')[1].split(')')[0] ==
+        b.toString().split('(0x')[1].split(')')[0];
+  }
 }

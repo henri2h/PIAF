@@ -94,10 +94,11 @@ class ColorChooser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color primaryColor = context.read<ThemeNotifier>().primaryColor;
+    print(color.toString() + " " + primaryColor.toString());
     return IconButton(
         color: Colors.red,
         icon: CircleAvatar(
-          child: primaryColor == color
+          child: ThemeNotifier.isColorEquals(primaryColor, color)
               ? Icon(Icons.check, color: Colors.white)
               : null,
           backgroundColor: color,
