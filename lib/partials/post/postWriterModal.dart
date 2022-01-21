@@ -23,14 +23,14 @@ class PostWriterModal extends StatelessWidget {
               height: 48,
               width: 48,
               defaultText: sclient.userRoom!.user.displayName,
-              backgroundColor: Colors.blue,
+              backgroundColor: Theme.of(context).primaryColor,
               thumnail: true),
           SizedBox(width: 30),
           Expanded(
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(40)))),
+              child: MaterialButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                  color: Theme.of(context).primaryColor,
                   onPressed: () {
                     context.pushRoute(PostEditorRoute(sroom: sroom));
                   },

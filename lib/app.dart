@@ -97,7 +97,7 @@ class _MinestrixState extends State<Minestrix> {
                                 _appRouter.defaultRouteParser(),
                             debugShowCheckedModeBanner: false,
                             // theme :
-                            theme: theme.getTheme(),
+                            theme: theme.theme,
                           );
                         }));
               }),

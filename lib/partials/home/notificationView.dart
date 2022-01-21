@@ -23,7 +23,7 @@ class NotificationView extends StatelessWidget {
             DrawerHeader(
               child: Text('Notifications'),
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Theme.of(context).primaryColor,
               ),
             ),
             Padding(

@@ -51,7 +51,7 @@ class AccountCard extends StatelessWidget {
               height: 80,
               thumnail: true,
               rounded: false,
-              backgroundColor: Colors.blue,
+              backgroundColor: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(10.0),
                   topRight: Radius.circular(10)),

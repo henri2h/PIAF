@@ -70,7 +70,7 @@ class _PostEditorPageState extends State<PostEditorPage>
                           client: sclient,
                           url: sclient.userRoom!.user.avatarUrl,
                           defaultText: sclient.userRoom!.user.displayName,
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Theme.of(context).primaryColor,
                           width: 48,
                           thumnail: true,
                           height: 48),
@@ -120,7 +120,8 @@ class _PostEditorPageState extends State<PostEditorPage>
                                     client: sclient,
                                     url: sroom!.room.avatar,
                                     defaultText: sroom!.room.topic,
-                                    backgroundColor: Colors.blue,
+                                    backgroundColor:
+                                        Theme.of(context).primaryColor,
                                     width: 42,
                                     thumnail: true,
                                     height: 42),

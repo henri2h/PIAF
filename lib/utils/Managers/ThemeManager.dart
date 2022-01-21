@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/utils/Managers/StorageManager.dart';
 
+enum AppThemeMode { dark, light, black }
+
 class ThemeNotifier with ChangeNotifier {
-  final darkTheme = ThemeData.dark();
-
-  /*ThemeData(
-    primarySwatch: MaterialColor.,
-    primaryColor: Colors.black,
+  final blackTheme = ThemeData(
+    primaryColor: Colors.blue[800],
+    scaffoldBackgroundColor: Colors.black,
+    cardColor: Colors.grey[900],
     brightness: Brightness.dark,
-    backgroundColor: const Color(0xFF212121),
-    accentColor: Colors.white,
-    accentIconTheme: IconThemeData(color: Colors.black),
-    dividerColor: Colors.black12,
-  );*/
+  );
 
+  final darkTheme = ThemeData.dark();
   final lightTheme = ThemeData.light();
+
   /*ThemeData(
     primarySwatch: Colors.black,
     primaryColor: Colors.white,
@@ -26,37 +25,54 @@ class ThemeNotifier with ChangeNotifier {
   );*/
 
   ThemeData? _themeData;
-  bool _darkMode = false;
-  bool isDarkMode() => _darkMode;
-  ThemeData? getTheme() => _themeData;
+  ThemeData? get theme => _themeData;
+
+  AppThemeMode? _mode;
+  AppThemeMode? get mode => _mode;
 
   ThemeNotifier() {
     StorageManager.readData('themeMode').then((value) {
       print('value read from storage: ' + value.toString());
-      var themeMode = value ?? 'light';
-      if (themeMode == 'light') {
-        _themeData = lightTheme;
-        _darkMode = false;
-      } else {
-        print('setting dark theme');
-        _themeData = darkTheme;
-        _darkMode = true;
-      }
-      notifyListeners();
+
+      _mode = value;
+      _loadMode();
     });
   }
 
-  void setDarkMode() async {
-    _themeData = darkTheme;
-    _darkMode = true;
-    StorageManager.saveData('themeMode', 'dark');
+  void _setMode(AppThemeMode t) {
+    StorageManager.saveData('themeMode', t);
+    _mode = t;
+    _loadMode();
+  }
+
+  void _loadMode() {
+    switch (_mode) {
+      case AppThemeMode.light:
+        _themeData = lightTheme;
+        break;
+
+      case AppThemeMode.dark:
+        _themeData = darkTheme;
+        break;
+      case AppThemeMode.black:
+        _themeData = blackTheme;
+        break;
+      default:
+        _themeData = lightTheme;
+    }
+
     notifyListeners();
   }
 
+  void setBlackMode() async {
+    _setMode(AppThemeMode.black);
+  }
+
+  void setDarkMode() async {
+    _setMode(AppThemeMode.dark);
+  }
+
   void setLightMode() async {
-    _themeData = lightTheme;
-    _darkMode = false;
-    StorageManager.saveData('themeMode', 'light');
-    notifyListeners();
+    _setMode(AppThemeMode.light);
   }
 }

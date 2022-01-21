@@ -58,7 +58,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                               url: r.room.avatar,
                               thumnail: true,
                               defaultText: r.room.topic,
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Theme.of(context).primaryColor,
                               width: 45,
                               height: 45,
                             ),

@@ -118,7 +118,8 @@ class _RepliesVueState extends State<RepliesVue> {
                                   client: sclient,
                                   url: revent.sender.avatarUrl,
                                   defaultText: revent.sender.calcDisplayname(),
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
                                   width: 32,
                                   height: 32,
                                   thumnail: true,

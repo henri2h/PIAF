@@ -109,7 +109,7 @@ class MinestrixRoomTile extends StatelessWidget {
                         url: sroom.avatar,
                         fit: true,
                         defaultText: sroom.name,
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Theme.of(context).primaryColor,
                         thumnail: true,
                         width: 46,
                         height: 46,

@@ -51,7 +51,7 @@ class _HomeWrapperPageState extends State<HomeWrapperPage> {
           Padding(
             padding: const EdgeInsets.only(bottom: 15.0),
             child: Material(
-              color: Colors.blue,
+              color: Theme.of(context).primaryColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(30))),
               elevation: 30,

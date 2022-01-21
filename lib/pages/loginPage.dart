@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
           )),
           Expanded(
             child: Container(
-              //color: Colors.blue[700],
+              //color: Theme.of(context).primaryColor[700],
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(

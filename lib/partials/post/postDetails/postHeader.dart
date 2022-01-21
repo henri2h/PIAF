@@ -27,7 +27,7 @@ class PostHeader extends StatelessWidget {
                     client: sclient,
                     url: event!.sender.avatarUrl,
                     defaultText: event!.sender.displayName ?? event!.sender.id,
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Theme.of(context).primaryColor,
                     width: 48,
                     height: 48,
                     thumnail: true,

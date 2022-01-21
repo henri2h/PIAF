@@ -27,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
     MinestrixClient sclient = Matrix.of(context).sclient!;
     final TextEditingController _passphraseController = TextEditingController();
 
-    bool isDarkMode = context.read<ThemeNotifier>().isDarkMode();
+    AppThemeMode? themeMode = context.read<ThemeNotifier>().mode;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: ListView(
@@ -132,11 +132,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           SizedBox(height: 10),
           SwitchListTile(
-              value: isDarkMode,
-              secondary:
-                  isDarkMode ? Icon(Icons.dark_mode) : Icon(Icons.light_mode),
-              title:
-                  isDarkMode ? Text("Set light mode") : Text("Set dark mode"),
+              value: themeMode == AppThemeMode.dark,
+              secondary: themeMode == AppThemeMode.dark
+                  ? Icon(Icons.dark_mode)
+                  : Icon(Icons.light_mode),
+              title: themeMode == AppThemeMode.dark
+                  ? Text("Set light mode")
+                  : Text("Set dark mode"),
               onChanged: (value) {
                 if (!value)
                   context.read<ThemeNotifier>().setLightMode();

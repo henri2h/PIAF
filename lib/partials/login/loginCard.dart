@@ -337,7 +337,7 @@ class LoginCardState extends State<LoginCard> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Card(
-            color: Colors.blue,
+            color: Theme.of(context).primaryColor,
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
