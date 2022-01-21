@@ -4,18 +4,27 @@ import 'package:minestrix/utils/Managers/StorageManager.dart';
 enum AppThemeMode { dark, light, black }
 
 class ThemeNotifier with ChangeNotifier {
-  final blackTheme = ThemeData(
-    primaryColor: Colors.blue[800],
-    scaffoldBackgroundColor: Colors.black,
-    primarySwatch: Colors.blue,
-    bottomNavigationBarTheme:
-        BottomNavigationBarThemeData(backgroundColor: Colors.black),
-    cardColor: Colors.grey[900],
-    brightness: Brightness.dark,
-  );
+  Color get primaryColor => _primaryColor;
+  Color _primaryColor = Colors.blue[800]!;
 
-  final darkTheme = ThemeData.dark();
-  final lightTheme = ThemeData.light();
+  ThemeData? _blackTheme;
+  ThemeData? _darkTheme;
+  ThemeData? _lightTheme;
+
+  void _buildTheme() {
+    _blackTheme = ThemeData(
+      primaryColor: _primaryColor,
+      scaffoldBackgroundColor: Colors.black,
+      primarySwatch: Colors.blue,
+      bottomNavigationBarTheme:
+          BottomNavigationBarThemeData(backgroundColor: Colors.black),
+      cardColor: Colors.grey[900],
+      brightness: Brightness.dark,
+    );
+
+    _darkTheme = ThemeData.dark().copyWith(primaryColor: _primaryColor);
+    _lightTheme = ThemeData.light().copyWith(primaryColor: _primaryColor);
+  }
 
   /*ThemeData(
     primarySwatch: Colors.black,
@@ -34,14 +43,30 @@ class ThemeNotifier with ChangeNotifier {
   AppThemeMode? get mode => _mode;
 
   ThemeNotifier() {
-    StorageManager.readData('themeMode').then((value) {
-      print('value read from storage: ' + value.toString());
-      _mode = AppThemeMode.values.firstWhere(
-          (e) => e.toString() == value.toString(),
-          orElse: () => AppThemeMode.light);
+    _loadDataFromStorage();
+  }
 
-      _loadMode();
-    });
+  Future<void> _loadDataFromStorage() async {
+    var color = await StorageManager.readData('color');
+
+    try {
+      String valueString =
+          color.split('(0x')[1].split(')')[0]; // kind of hacky..
+      int value = int.parse(valueString, radix: 16);
+      _primaryColor = Color(value);
+    } catch (e) {}
+
+    _buildTheme();
+
+    var value = await StorageManager.readData('themeMode');
+
+    print('value read from storage: ' + value.toString());
+
+    _mode = AppThemeMode.values.firstWhere(
+        (e) => e.toString() == value.toString(),
+        orElse: () => AppThemeMode.light);
+
+    _loadMode();
   }
 
   void _setMode(AppThemeMode t) {
@@ -53,17 +78,17 @@ class ThemeNotifier with ChangeNotifier {
   void _loadMode() {
     switch (_mode) {
       case AppThemeMode.light:
-        _themeData = lightTheme;
+        _themeData = _lightTheme;
         break;
 
       case AppThemeMode.dark:
-        _themeData = darkTheme;
+        _themeData = _darkTheme;
         break;
       case AppThemeMode.black:
-        _themeData = blackTheme;
+        _themeData = _blackTheme;
         break;
       default:
-        _themeData = lightTheme;
+        _themeData = _lightTheme;
     }
 
     notifyListeners();
@@ -79,5 +104,13 @@ class ThemeNotifier with ChangeNotifier {
 
   void setLightMode() async {
     _setMode(AppThemeMode.light);
+  }
+
+  void setPrimaryColor(Color color) {
+    StorageManager.saveData('color', color.toString());
+    _primaryColor = color;
+    _buildTheme();
+    _loadMode();
+    notifyListeners();
   }
 }
