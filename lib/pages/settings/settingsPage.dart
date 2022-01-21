@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
 import 'package:minestrix/pages/debugPage.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
