@@ -2,7 +2,7 @@ import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:matrix/src/utils/space_child.dart';
-import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
+import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
@@ -30,7 +30,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
         if (profile == null)
           Padding(
             padding: const EdgeInsets.all(25),
-            child: CustomFutureButton(
+            child: CustomTextFutureButton(
                 onPressed: () async {
                   await RoomProfile.createProfileRoom(sclient);
                   setState(() {});
@@ -77,7 +77,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                       false)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: CustomFutureButton(
+                  child: CustomTextFutureButton(
                       onPressed: () async {
                         await profile.setSpaceChild(sroom.room.id);
                         setState(() {});
@@ -94,7 +94,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
               if (profile != null)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: CustomFutureButton(
+                  child: CustomTextFutureButton(
                       onPressed: () async {
                         await profile.createStoriesRoom();
                         setState(() {});
@@ -104,7 +104,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                 ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: CustomFutureButton(
+                child: CustomTextFutureButton(
                     onPressed: () async {},
                     text: "Create a public MinesTRIX room",
                     icon: Icon(Icons.person_add)),

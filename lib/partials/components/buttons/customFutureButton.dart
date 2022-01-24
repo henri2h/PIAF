@@ -2,15 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CustomFutureButton extends StatefulWidget {
+  final AsyncCallback onPressed;
+  final Widget icon;
+  final List<Widget> children;
+  final Color? color;
+
   const CustomFutureButton(
       {Key? key,
       required this.onPressed,
-      required this.text,
-      required this.icon})
+      required this.children,
+      required this.icon,
+      this.color})
       : super(key: key);
-  final AsyncCallback onPressed;
-  final Widget icon;
-  final String text;
 
   @override
   _CustomFutureButtonState createState() => _CustomFutureButtonState();
@@ -21,22 +24,30 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: loading
-                    ? CircularProgressIndicator(color: Colors.white)
-                    : widget.icon,
-              ),
-              Text(widget.text),
-            ],
+    return MaterialButton(
+        child: Card(
+          color: widget.color,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: loading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : widget.icon,
+                ),
+                Expanded(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [...widget.children],
+                ))
+              ],
+            ),
           ),
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         onPressed: () async {
           if (loading) return;
 
