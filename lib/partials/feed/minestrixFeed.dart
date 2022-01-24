@@ -1,7 +1,6 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/pages/minestrix/postEditor.dart';
 import 'package:minestrix/partials/components/account/accountCard.dart';
 import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
@@ -69,6 +68,15 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                 context.pushRoute(FriendsRoute());
                               }),
                         ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CustomTextFutureButton(
+                            icon: Icon(Icons.group_add),
+                            text: "Create a group",
+                            onPressed: () async {
+                              context.pushRoute(CreateGroupRoute());
+                            }),
+                      ),
                     ],
                   ),
                 ),
@@ -121,9 +129,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                 IconButton(
                                     icon: Icon(Icons.group_add),
                                     onPressed: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => CreateGroup());
+                                      context.pushRoute(CreateGroupRoute());
                                     }),
                                 IconButton(
                                     icon: Icon(Icons.post_add),
