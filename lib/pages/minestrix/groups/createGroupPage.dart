@@ -9,6 +9,9 @@ class CreateGroupPage extends StatefulWidget {
 }
 
 class _CreateGroupPageState extends State<CreateGroupPage> {
+  bool _isE2EEnabled = true;
+  bool _isPublicGroup = false;
+
   String? errorText = null;
   @override
   Widget build(BuildContext context) {
@@ -16,9 +19,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
     TextEditingController tName = TextEditingController();
     TextEditingController tDesc = TextEditingController();
-
-    bool _isE2EEnabled = true;
-    bool _isPublicGroup = false;
 
     return SafeArea(
       child: Column(
