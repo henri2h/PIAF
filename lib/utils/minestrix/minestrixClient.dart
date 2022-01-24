@@ -275,13 +275,11 @@ class MinestrixClient extends Client {
     return roomID;
   }
 
-  Future createSMatrixUserProfile() async {
+  Future<void> createSMatrixUserProfile() async {
     String name = userID! + " timeline";
-    await createMinestrixAccount(name, "A private MinesTRIX profile",
+    await createMinestrixAccount(name, "Private MinesTRIX profile",
         waitForCreation: true);
   }
-
-  static const String elementThreadEventType = "io.element.thread";
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
       {List<String> eventTypesFilter: const [
@@ -294,7 +292,7 @@ class MinestrixClient extends Client {
               RelationshipTypes.edit,
               RelationshipTypes.reaction,
               RelationshipTypes.reply,
-              elementThreadEventType
+              MinestrixTypes.elementThreadEventType
             }.contains(e.relationshipType) &&
             eventTypesFilter.contains(e.type) &&
             !e.redacted)

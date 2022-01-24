@@ -5,6 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/post/postDetails/postContent.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:minestrix_chat/partials/chat/matrix_message_composer.dart';
@@ -87,7 +88,7 @@ class _RepliesVueState extends State<RepliesVue> {
                     "msgtype": MessageTypes.Text,
                     "body": text,
                     "m.relates_to": {
-                      "rel_type": MinestrixClient.elementThreadEventType,
+                      "rel_type": MinestrixTypes.elementThreadEventType,
                       "event_id": widget.event.eventId
                     }
                   };
