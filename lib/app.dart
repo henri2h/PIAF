@@ -68,38 +68,32 @@ class _MinestrixState extends State<Minestrix> {
                   }
                 }
 
-                return StreamBuilder<String>(
-                    stream: sclient.onSRoomsUpdate.stream,
-                    builder: (context, sroomSnap) => FutureBuilder(
-                        future: initMatrix(sclient),
-                        builder: (context, snap) {
-                          return MaterialApp.router(
-                            routerDelegate: AutoRouterDelegate.declarative(
-                              _appRouter,
-                              routes: (_) {
-                                print("route up");
-                                return [
-                                  if (state.hasData == false ||
-                                      (state.data == LoginState.loggedIn &&
-                                          !sclient.userRoomCreated))
-                                    MatrixLoadingRoute()
-                                  else if (state.data == LoginState.loggedIn &&
-                                      sclient.userRoomCreated)
-                                    AppWrapperRoute()
-                                  // if they are not logged in, bring them to the Login page
-                                  else
-                                    LoginRoute()
-                                ];
-                              },
-                            ),
+                return FutureBuilder(
+                    future: initMatrix(sclient),
+                    builder: (context, snap) {
+                      return MaterialApp.router(
+                        routerDelegate: AutoRouterDelegate.declarative(
+                          _appRouter,
+                          routes: (_) {
+                            print("route up");
+                            return [
+                              if (state.hasData == false)
+                                MatrixLoadingRoute()
+                              else if (state.data == LoginState.loggedIn)
+                                AppWrapperRoute()
+                              // if they are not logged in, bring them to the Login page
+                              else
+                                LoginRoute()
+                            ];
+                          },
+                        ),
 
-                            routeInformationParser:
-                                _appRouter.defaultRouteParser(),
-                            debugShowCheckedModeBanner: false,
-                            // theme :
-                            theme: theme.theme,
-                          );
-                        }));
+                        routeInformationParser: _appRouter.defaultRouteParser(),
+                        debugShowCheckedModeBanner: false,
+                        // theme :
+                        theme: theme.theme,
+                      );
+                    });
               }),
         ),
       ),

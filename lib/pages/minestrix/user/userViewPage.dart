@@ -87,7 +87,7 @@ class _UserViewPageState extends State<UserViewPage> {
       userId = mroom!.user.id;
     }
 
-    User? user_in = sclient.userRoom!.room.getParticipants().firstWhereOrNull(
+    User? user_in = sclient.userRoom?.room.getParticipants().firstWhereOrNull(
         (User u) => (u.id == userId)); // check if the user is following us
 
     return FutureBuilder<Profile>(
