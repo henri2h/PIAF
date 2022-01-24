@@ -117,6 +117,114 @@ class MinestrixRoom {
 
     return null;
   }
+
+  Future<void> sendPost(String postContent,
+      {Event? inReplyTo, MatrixImageFile? image}) async {
+    Map<String, dynamic> extraContent = {
+      'body': postContent,
+      MinestrixTypes.post: [
+        {"m.text": postContent}
+      ]
+    };
+    if (image != null) {
+      await sendFileEventWithType(image,
+          type: MinestrixTypes.post,
+          extraContent: extraContent,
+          inReplyTo: inReplyTo);
+    } else {
+      await room.sendEvent(extraContent,
+          type: MinestrixTypes.post, inReplyTo: inReplyTo);
+    }
+  }
+
+  Future<Uri> sendFileEventWithType(
+    MatrixFile file, {
+    required String type,
+    String? txid,
+    Event? inReplyTo,
+    String? editEventId,
+    bool waitUntilSent = false,
+    MatrixImageFile? thumbnail,
+    Map<String, dynamic>? extraContent,
+  }) async {
+    MatrixFile uploadFile = file; // ignore: omit_local_variable_types
+    MatrixFile? uploadThumbnail =
+        thumbnail; // ignore: omit_local_variable_types
+    EncryptedFile? encryptedFile;
+    EncryptedFile? encryptedThumbnail;
+    if (room.encrypted && room.client.fileEncryptionEnabled) {
+      encryptedFile = await file.encrypt();
+      uploadFile = encryptedFile.toMatrixFile();
+
+      if (thumbnail != null) {
+        encryptedThumbnail = await thumbnail.encrypt();
+        uploadThumbnail = encryptedThumbnail.toMatrixFile();
+      }
+    }
+    final uploadResp = await room.client.uploadContent(
+      uploadFile.bytes,
+      filename: uploadFile.name,
+      contentType: uploadFile.mimeType,
+    );
+    final thumbnailUploadResp = uploadThumbnail != null
+        ? await room.client.uploadContent(
+            uploadThumbnail.bytes,
+            filename: uploadThumbnail.name,
+            contentType: uploadThumbnail.mimeType,
+          )
+        : null;
+
+    // Send event
+    final content = <String, dynamic>{
+      'msgtype': file.msgType,
+      'body': file.name,
+      'filename': file.name,
+      if (encryptedFile == null) 'url': uploadResp.toString(),
+      if (encryptedFile != null)
+        'file': {
+          'url': uploadResp.toString(),
+          'mimetype': file.mimeType,
+          'v': 'v2',
+          'key': {
+            'alg': 'A256CTR',
+            'ext': true,
+            'k': encryptedFile.k,
+            'key_ops': ['encrypt', 'decrypt'],
+            'kty': 'oct'
+          },
+          'iv': encryptedFile.iv,
+          'hashes': {'sha256': encryptedFile.sha256}
+        },
+      'info': {
+        ...file.info,
+        if (thumbnail != null && encryptedThumbnail == null)
+          'thumbnail_url': thumbnailUploadResp.toString(),
+        if (thumbnail != null && encryptedThumbnail != null)
+          'thumbnail_file': {
+            'url': thumbnailUploadResp.toString(),
+            'mimetype': thumbnail.mimeType,
+            'v': 'v2',
+            'key': {
+              'alg': 'A256CTR',
+              'ext': true,
+              'k': encryptedThumbnail.k,
+              'key_ops': ['encrypt', 'decrypt'],
+              'kty': 'oct'
+            },
+            'iv': encryptedThumbnail.iv,
+            'hashes': {'sha256': encryptedThumbnail.sha256}
+          },
+        if (thumbnail != null) 'thumbnail_info': thumbnail.info,
+      },
+      if (extraContent != null) ...extraContent,
+    };
+    final sendResponse = room.sendEvent(content,
+        txid: txid, inReplyTo: inReplyTo, editEventId: editEventId, type: type);
+    if (waitUntilSent) {
+      await sendResponse;
+    }
+    return uploadResp;
+  }
 }
 
 enum SRoomType { UserRoom, Group }
