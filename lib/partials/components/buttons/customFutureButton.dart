@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CustomFutureButton extends StatefulWidget {
-  final AsyncCallback onPressed;
+  final AsyncCallback? onPressed;
   final Widget icon;
   final List<Widget> children;
   final Color? color;
@@ -48,19 +48,21 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
           ),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        onPressed: () async {
-          if (loading) return;
+        onPressed: widget.onPressed != null
+            ? () async {
+                if (loading) return;
 
-          setState(() {
-            loading = true;
-          });
-          try {
-            await widget.onPressed();
-          } finally {
-            setState(() {
-              loading = false;
-            });
-          }
-        });
+                setState(() {
+                  loading = true;
+                });
+                try {
+                  await widget.onPressed!();
+                } finally {
+                  setState(() {
+                    loading = false;
+                  });
+                }
+              }
+            : null);
   }
 }

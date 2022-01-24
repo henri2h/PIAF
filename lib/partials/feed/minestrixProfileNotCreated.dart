@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class MinestrixProfileNotCreated extends StatelessWidget {
   const MinestrixProfileNotCreated({
@@ -8,6 +10,8 @@ class MinestrixProfileNotCreated extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    MinestrixClient? sclient = Matrix.of(context).sclient;
+
     return CustomFutureButton(
         icon: Icon(Icons.skateboarding_outlined),
         color: Theme.of(context).primaryColor,
@@ -16,6 +20,6 @@ class MinestrixProfileNotCreated extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           Text("No profile was found", style: TextStyle(fontSize: 14)),
         ],
-        onPressed: () async {});
+        onPressed: sclient?.createSMatrixUserProfile);
   }
 }
