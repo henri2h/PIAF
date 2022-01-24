@@ -26,20 +26,16 @@ class RightBar extends StatelessWidget {
                         itemCount: sgroups.length + sfriends.length + 2,
                         itemBuilder: (BuildContext context, int i) {
                           if (i == 0)
-                            return Padding(
-                              padding: const EdgeInsets.all(0),
-                              child: Text("Following",
-                                  style: TextStyle(
-                                      fontSize: 22, letterSpacing: 1.1)),
-                            );
+                            return rightbarHeader(
+                                header: "Followers",
+                                noItemText: "No followers found",
+                                hasItems: sfriends.isEmpty);
 
                           if (i == sfriends.length + 1)
-                            return Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Text("Groups",
-                                  style: TextStyle(
-                                      fontSize: 22, letterSpacing: 1.1)),
-                            );
+                            return rightbarHeader(
+                                header: "Groups",
+                                noItemText: "No groups found",
+                                hasItems: sgroups.isEmpty);
 
                           if (i <= sfriends.length) {
                             return Padding(
@@ -60,5 +56,41 @@ class RightBar extends StatelessWidget {
                 ],
               );
             }));
+  }
+}
+
+class rightbarHeader extends StatelessWidget {
+  final String header;
+  final String noItemText;
+  final bool hasItems;
+  const rightbarHeader(
+      {Key? key,
+      required this.header,
+      required this.noItemText,
+      required this.hasItems})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(header, style: TextStyle(fontSize: 22, letterSpacing: 1.1)),
+          if (hasItems)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Icon(Icons.no_accounts),
+                  SizedBox(width: 6),
+                  Text(noItemText),
+                ],
+              ),
+            )
+        ],
+      ),
+    );
   }
 }
