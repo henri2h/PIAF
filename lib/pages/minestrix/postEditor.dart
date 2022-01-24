@@ -2,7 +2,7 @@ import 'package:file_picker_cross/file_picker_cross.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -59,50 +59,33 @@ class _PostEditorPageState extends State<PostEditorPage>
         length: 2,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      MatrixUserImage(
-                          client: sclient,
-                          url: sclient.userRoom!.user.avatarUrl,
-                          defaultText: sclient.userRoom!.user.displayName,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          width: 48,
-                          thumnail: true,
-                          height: 48),
-                      SizedBox(width: 5),
-                      H1Title("What's up ?"),
-                    ],
-                  ),
-                  Card(
-                    color: _t.text.isEmpty ? null : Colors.green,
-                    child: IconButton(
-                        icon: _sending
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                    color: Colors.white))
-                            : Icon(Icons.send, color: Colors.white),
-                        onPressed: _sending || _t.text.isEmpty
-                            ? null
-                            : () async {
-                                setState(() {
-                                  _sending = true;
-                                });
+            CustomHeader(
+              "What's up ?",
+              actionButton: [
+                Card(
+                  color: _t.text.isEmpty ? null : Colors.green,
+                  child: IconButton(
+                      icon: _sending
+                          ? Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.white))
+                          : Icon(Icons.send, color: Colors.white),
+                      onPressed: _sending || _t.text.isEmpty
+                          ? null
+                          : () async {
+                              setState(() {
+                                _sending = true;
+                              });
 
-                                await sendPost(sclient, _t.text);
+                              await sendPost(sclient, _t.text);
 
-                                setState(() {
-                                  _sending = false;
-                                });
-                                Navigator.of(context).pop();
-                              }),
-                  )
-                ],
-              ),
+                              setState(() {
+                                _sending = false;
+                              });
+                              Navigator.of(context).pop();
+                            }),
+                )
+              ],
             ),
             Expanded(
               child: Container(
@@ -111,84 +94,98 @@ class _PostEditorPageState extends State<PostEditorPage>
                     children: [
                       ListView(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                MatrixUserImage(
-                                    client: sclient,
-                                    url: sroom!.room.avatar,
-                                    defaultText: sroom!.room.topic,
-                                    backgroundColor:
-                                        Theme.of(context).primaryColor,
-                                    width: 42,
-                                    thumnail: true,
-                                    height: 42),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("Post on " + sroom!.name,
-                                          style: TextStyle(fontSize: 22)),
-                                      SizedBox(height: 4),
-                                      Text(sroom!.room.topic)
-                                    ],
-                                  ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              MatrixUserImage(
+                                  client: sclient,
+                                  url: sroom!.room.avatar,
+                                  defaultText: sroom!.room.topic,
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  width: 48,
+                                  thumnail: true,
+                                  height: 48),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Post on " + sroom!.name,
+                                        style: TextStyle(fontSize: 22)),
+                                    SizedBox(height: 4),
+                                    Text(sroom!.room.topic)
+                                  ],
                                 ),
-                                Card(
-                                  child: IconButton(
-                                      icon: Icon(Icons.add_a_photo),
-                                      onPressed: () async {
-                                        FilePickerCross f =
-                                            await FilePickerCross
-                                                .importFromStorage(
-                                                    type: FileTypeCross.image);
-                                        setState(() {
-                                          file = f;
-                                        });
-                                      }),
-                                ),
-                              ],
-                            ),
+                              ),
+                              Card(
+                                child: IconButton(
+                                    icon: Icon(Icons.add_a_photo),
+                                    onPressed: () async {
+                                      FilePickerCross f = await FilePickerCross
+                                          .importFromStorage(
+                                              type: FileTypeCross.image);
+                                      setState(() {
+                                        file = f;
+                                      });
+                                    }),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 6),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextField(
-                                minLines: 3,
-                                controller: _t,
-                                cursorColor: Colors.grey,
-                                //controller: _searchController,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: 15, horizontal: 12),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(15),
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(15),
-                                    ),
-                                  ),
-                                  prefixIcon:
-                                      Icon(Icons.edit, color: Colors.grey),
-                                  filled: true,
-                                  hintStyle: TextStyle(color: Colors.grey),
-                                  labelText: "Post content",
-                                  labelStyle: TextStyle(color: Colors.grey),
-                                  alignLabelWithHint: true,
-                                  hintText: "Post content",
+                          SizedBox(height: 12),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              MatrixUserImage(
+                                  client: sclient,
+                                  url: sclient.userRoom!.user.avatarUrl,
+                                  defaultText:
+                                      sclient.userRoom!.user.displayName,
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  width: 48,
+                                  thumnail: true,
+                                  height: 48),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextField(
+                                      minLines: 3,
+                                      controller: _t,
+                                      cursorColor: Colors.grey,
+                                      //controller: _searchController,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 15, horizontal: 12),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(15),
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(15),
+                                          ),
+                                        ),
+                                        prefixIcon: Icon(Icons.edit,
+                                            color: Colors.grey),
+                                        filled: true,
+                                        hintStyle:
+                                            TextStyle(color: Colors.grey),
+                                        labelText: "Post content",
+                                        labelStyle:
+                                            TextStyle(color: Colors.grey),
+                                        alignLabelWithHint: true,
+                                        hintText: "Post content",
+                                      ),
+                                      keyboardType: TextInputType.multiline,
+                                      maxLines: null,
+                                      onChanged: (_) => setState(() {})),
                                 ),
-                                keyboardType: TextInputType.multiline,
-                                maxLines: null,
-                                onChanged: (_) => setState(() {})),
+                              ),
+                            ],
                           ),
                         ],
                       ),
