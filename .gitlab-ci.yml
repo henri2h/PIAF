@@ -1,134 +1,118 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 image: cirrusci/flutter:stable
-
 stages:
-  - analyze
-  - build
-  - test
-  - deploy
-
+- analyze
+- build
+- test
+- deploy
 build_linux:
   stage: build
-  before_script: [sudo apt update && sudo apt install curl clang cmake ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libsqlite3-dev -y]
+  before_script:
+  - sudo apt update && sudo apt install curl clang cmake ninja-build pkg-config libgtk-3-dev
+    libblkid-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libsqlite3-dev -y
   script:
-    - flutter config --enable-linux-desktop
-    - flutter clean
-    - flutter pub get
-    - flutter packages pub run build_runner build --delete-conflicting-outputs
-    - flutter build linux --release
+  - flutter config --enable-linux-desktop
+  - flutter clean
+  - flutter pub get
+  - flutter packages pub run build_runner build --delete-conflicting-outputs
+  - flutter build linux --release
   artifacts:
     when: on_success
     paths:
-      - build/linux/x64/release/bundle/
+    - build/linux/x64/release/bundle/
   tags:
-    - shared
-
+  - shared
 build_android_bundle:
   stage: build
-
   script:
-    - echo $KEYSTORE_FILE | base64 -d > android/app/keystore.jks
-    - echo $KEYSTORE_PROPERTIES | base64 -d > android/key.properties
-    - flutter clean
-    - flutter pub get
-    - flutter packages pub run build_runner build --delete-conflicting-outputs
-    - flutter build appbundle --release
+  - echo $KEYSTORE_FILE | base64 -d > android/app/keystore.jks
+  - echo $KEYSTORE_PROPERTIES | base64 -d > android/key.properties
+  - flutter clean
+  - flutter pub get
+  - flutter packages pub run build_runner build --delete-conflicting-outputs
+  - flutter build appbundle --release
   artifacts:
     when: on_success
     paths:
-      - build/app/outputs/bundle/release/app-release.aab
+    - build/app/outputs/bundle/release/app-release.aab
   tags:
-    - shared
-
+  - shared
 build_android_apk:
   stage: build
-
   script:
-    - echo $KEYSTORE_FILE | base64 -d > android/app/keystore.jks
-    - echo $KEYSTORE_PROPERTIES | base64 -d > android/key.properties
-    - flutter clean
-    - flutter pub get
-    - flutter packages pub run build_runner build --delete-conflicting-outputs
-    - flutter build apk --release
+  - echo $KEYSTORE_FILE | base64 -d > android/app/keystore.jks
+  - echo $KEYSTORE_PROPERTIES | base64 -d > android/key.properties
+  - flutter clean
+  - flutter pub get
+  - flutter packages pub run build_runner build --delete-conflicting-outputs
+  - flutter build apk --release
   artifacts:
     when: on_success
     paths:
-      - build/app/outputs/flutter-apk/app-release.apk
-
+    - build/app/outputs/flutter-apk/app-release.apk
   tags:
-    - shared
-
+  - shared
 build_web:
   stage: build
-
   script:
-    - flutter clean
-    - flutter pub get
-    - flutter packages pub run build_runner build --delete-conflicting-outputs
-    - flutter build web --release
-
+  - flutter clean
+  - flutter pub get
+  - flutter packages pub run build_runner build --delete-conflicting-outputs
+  - flutter build web --release
   artifacts:
     when: on_success
     paths:
-      - build/web/
-
+    - build/web/
   tags:
-    - shared
-
+  - shared
 deploy_web:
-  image: "debian:buster"
+  image: debian:buster
   stage: deploy
-  
   before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - 'which rsync || ( apt-get update -y && apt-get install rsync -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
+  - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+  - which rsync || ( apt-get update -y && apt-get install rsync -y )
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
   script:
-    - rsync -az build/web/ $USER@$HOST:app --delete
+  - rsync -az build/web/ $USER@$HOST:app --delete
   only:
-    - master
-
+  - master
 deploy_android_fdroid:
-  image: "debian:buster"
+  image: debian:buster
   stage: deploy
-  
   before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - 'which rsync || ( apt-get update -y && apt-get install rsync -y )'
-    - 'which pcregrep || ( apt-get update -y && apt-get install pcregrep -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
+  - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+  - which rsync || ( apt-get update -y && apt-get install rsync -y )
+  - which pcregrep || ( apt-get update -y && apt-get install pcregrep -y )
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan -t rsa $HOST >> ~/.ssh/known_hosts
   script:
-    - cd build/app/outputs/flutter-apk/
-    - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*' ../../../../pubspec.yaml) && mv app-release.apk "fr.henri2h.minestrix_${UPDATE_VERSION}.apk"
-    - rsync -raz  ./ $USER@$HOST:fdroid/repo
-    - ssh $USER@$HOST -t '/bin/bash -i -l -c  "cd fdroid && fdroid update"'
+  - cd build/app/outputs/flutter-apk/
+  - export UPDATE_VERSION=$(pcregrep -o1 'version:\s([0-9]*\.[0-9]*\.[0-9]*)\+[0-9]*'
+    ../../../../pubspec.yaml) && mv app-release.apk "fr.henri2h.minestrix_${UPDATE_VERSION}.apk"
+  - rsync -raz  ./ $USER@$HOST:fdroid/repo
+  - ssh $USER@$HOST -t '/bin/bash -i -l -c  "cd fdroid && fdroid update"'
   only:
-    - master
-
-
-
+  - master
 analyze:
   stage: analyze
-
   script:
-    - flutter analyze
-    - flutter format lib/ --set-exit-if-changed
-    
+  - flutter analyze
+  - flutter format lib/ --set-exit-if-changed
   tags:
-    - shared
-
-#unit_test:
-#  stage: test
-#
-#  script:
-#    - flutter test test/*
-#
-#  tags:
-#    - shared
+  - shared
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
