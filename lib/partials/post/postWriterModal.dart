@@ -25,37 +25,39 @@ class PostWriterModal extends StatelessWidget {
               defaultText: sclient.userRoom!.user.displayName,
               backgroundColor: Theme.of(context).primaryColor,
               thumnail: true),
-          SizedBox(width: 30),
+          SizedBox(width: 20),
           Expanded(
-              child: MaterialButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                  color: Theme.of(context).primaryColor,
-                  onPressed: () {
+              child: TextField(
+                  minLines: 1,
+                  maxLines: 1,
+                  readOnly: true,
+                  showCursor: false,
+                  onTap: () {
                     context.pushRoute(PostEditorRoute(sroom: sroom));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(9.0),
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit),
-                        SizedBox(width: 10),
-                        Expanded(
-                            child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Write a post on " + sroom!.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(sroom!.room.topic,
-                                maxLines: 1, overflow: TextOverflow.ellipsis)
-                          ],
-                        )),
-                      ],
+                  cursorColor: Colors.grey,
+                  decoration: InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(15),
+                      ),
                     ),
-                  )))
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(15),
+                      ),
+                    ),
+                    prefixIcon: Icon(Icons.edit, color: Colors.grey),
+                    filled: true,
+                    hintStyle: TextStyle(color: Colors.grey),
+                    labelText: "Write a post on " + sroom!.name,
+                    hintText: "Write a post on " + sroom!.name,
+                    labelStyle: TextStyle(color: Colors.grey),
+                  ))),
         ],
       ),
     ));
