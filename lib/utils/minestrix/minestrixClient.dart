@@ -284,7 +284,7 @@ class MinestrixClient extends Client {
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
       {List<String> eventTypesFilter: const [
-        EventTypes.Message,
+        MatrixTypes.post,
         EventTypes.Encrypted
       ]}) {
     List<Event> filteredEvents = t.events

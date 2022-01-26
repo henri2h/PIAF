@@ -3,6 +3,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/event/matrix_image.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
 
 class PostContent extends StatelessWidget {
@@ -33,7 +35,11 @@ class PostContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (event.type) {
-      case EventTypes.Message:
+      case MatrixTypes.post:
+        return MatrixPost(
+            event: event,
+            imageMaxHeight: imageMaxHeight,
+            imageMaxWidth: imageMaxWidth);
       case EventTypes.Encrypted:
         switch (event.messageType) {
           case MessageTypes.Text:
@@ -109,7 +115,7 @@ class PostContent extends StatelessWidget {
         update = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Default : "),
+            Text("Default : "),
             Text(event.content.toString()),
             Text(event.prevContent.toString())
             /*
@@ -129,6 +135,43 @@ class PostContent extends StatelessWidget {
             update,
             Text(event.type),
           ]),
+    );
+  }
+}
+
+class MatrixPost extends StatelessWidget {
+  final double? imageMaxHeight;
+  final double? imageMaxWidth;
+  const MatrixPost(
+      {Key? key, required this.event, this.imageMaxHeight, this.imageMaxWidth})
+      : super(key: key);
+
+  final Event event;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (Map<String, dynamic> item in event.content[MatrixTypes.post])
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MarkdownBody(
+                data: item["m.text"],
+              ),
+              if (item["m.file"] is Map) // There is a
+                Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: imageMaxHeight != null
+                        ? ConstrainedBox(
+                            constraints: BoxConstraints(
+                                maxHeight: imageMaxHeight!,
+                                minHeight: imageMaxHeight ?? 400),
+                            child: MatrixImageViewever(event: event, map: item))
+                        : MatrixImageViewever(event: event, map: item))
+            ],
+          ),
+      ],
     );
   }
 }
