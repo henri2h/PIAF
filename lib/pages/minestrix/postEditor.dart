@@ -8,6 +8,7 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class PostEditorPage extends StatefulWidget {
   PostEditorPage({Key? key, this.sroom}) : super(key: key);
@@ -24,20 +25,6 @@ class _PostEditorPageState extends State<PostEditorPage>
   bool _sending = false;
 
   MinestrixRoom? sroom;
-
-  Future<void> sendPost(MinestrixClient sclient, String postContent,
-      {Event? inReplyTo}) async {
-    if (file != null) {
-      MatrixFile f = MatrixImageFile(
-          bytes: file!.toUint8List(), name: file!.fileName ?? 'null');
-      await sroom!.room.sendFileEvent(
-        f,
-        extraContent: {'body': postContent},
-      );
-    } else {
-      await sroom!.room.sendTextEvent(postContent, inReplyTo: inReplyTo);
-    }
-  }
 
   Future<void> _launchURL(String url) async {
     if (await canLaunch(url)) {
@@ -77,7 +64,13 @@ class _PostEditorPageState extends State<PostEditorPage>
                                 _sending = true;
                               });
 
-                              await sendPost(sclient, _t.text);
+                              MatrixImageFile? f;
+                              if (file != null)
+                                f = MatrixImageFile(
+                                    bytes: file!.toUint8List(),
+                                    name: file!.fileName ?? 'null');
+
+                              await sroom?.room.sendPost(_t.text, image: f);
 
                               setState(() {
                                 _sending = false;
