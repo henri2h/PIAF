@@ -47,7 +47,10 @@ class ContactView extends StatelessWidget {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text((sroom.user?.displayName ?? sroom.userID ?? 'null'),
+                                Text(
+                                    (sroom.user?.displayName ??
+                                        sroom.userID ??
+                                        'null'),
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Theme.of(context)

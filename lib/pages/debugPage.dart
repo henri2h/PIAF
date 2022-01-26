@@ -83,7 +83,8 @@ class _DebugPageState extends State<DebugPage> {
                               Icon(Icons.person, size: 16),
                               SizedBox(width: 10),
                               Text((srooms[i].user?.displayName ??
-                                  srooms[i].userID ?? "null")),
+                                  srooms[i].userID ??
+                                  "null")),
                             ],
                           ),
                           Text(srooms[i].room.id),

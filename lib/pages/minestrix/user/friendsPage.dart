@@ -94,7 +94,9 @@ class _FriendsPageState extends State<FriendsPage> {
                               MatrixUserImage(
                                   client: sclient, url: sm.user?.avatarUrl),
                               SizedBox(width: 10),
-                              Text((sm.user?.displayName ?? sm.userID ?? "null")),
+                              Text((sm.user?.displayName ??
+                                  sm.userID ??
+                                  "null")),
                             ],
                           ),
                           Row(
