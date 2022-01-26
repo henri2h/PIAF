@@ -14,7 +14,6 @@ import 'package:minestrix/utils/Fluffychat/FluffyboxDatabase.dart';
 import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -91,7 +90,7 @@ class MinestrixClient extends Client {
         timerCallbackEventUpdate?.cancel();
         timerCallbackEventUpdate =
             new Timer(const Duration(milliseconds: 300), () async {
-          print("[ sync ] : New event");
+          print("[ sync ] : New event");
           await loadNewTimeline(); // new message, we only need to rebuild timeline
         });
       } else {
@@ -108,7 +107,7 @@ class MinestrixClient extends Client {
     });
     onFirstSyncSub ??= onFirstSync.stream.listen((bool result) async {
       if (result) {
-        print("[ client ] : on first sync completed");
+        print("[ client ] : on first sync completed");
         await updateAll();
       }
     });
@@ -155,7 +154,7 @@ class MinestrixClient extends Client {
   Timer? timerCallbackEventUpdate;
 
   Future<void> updateAll() async {
-    Logs().i("[ Minestrix Client ] : updating all");
+    Logs().i("[ Minestrix Client ] : updating all");
     await loadSRooms();
     await autoFollowFollowers(); // TODO : Let's see if we keep this in the future
     await loadNewTimeline();
@@ -167,7 +166,7 @@ class MinestrixClient extends Client {
     for (MinestrixRoom sr in srooms.values) {
       await sr.timeline!.requestHistory();
 
-      print("First sync progress : " + (counter / n * 100).toString());
+      print("First sync progress : " + (counter / n * 100).toString());
       counter++;
     }
   }
@@ -217,7 +216,7 @@ class MinestrixClient extends Client {
               // this means that the client has been initialisated
               // we can load the friendsVue
 
-              print("Found MinesTRIX account : " + rs.name);
+              print("Found MinesTRIX account : " + rs.name);
               onTimelineUpdate.add("up");
             }
           }
