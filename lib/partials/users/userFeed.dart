@@ -43,7 +43,7 @@ class _UserFeedState extends State<UserFeed> {
       if (e.type == EventTypes.RoomMember) {
         if (e.prevContent != null &&
             e.content["avatar_url"] != e.prevContent!["avatar_url"] &&
-            e.senderId == widget.sroom.user.id) {
+            e.senderId == widget.sroom.userID) {
           // the room owner has changed it's profile picture
           return true;
         }

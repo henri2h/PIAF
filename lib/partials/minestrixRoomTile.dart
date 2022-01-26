@@ -5,6 +5,7 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class ContactView extends StatelessWidget {
   const ContactView({
@@ -22,7 +23,7 @@ class ContactView extends StatelessWidget {
         ),
         child: TextButton(
           onPressed: () {
-            context.navigateTo(UserViewRoute(userID: sroom.user.id));
+            context.navigateTo(UserViewRoute(userID: sroom.userID));
           },
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -33,7 +34,7 @@ class ContactView extends StatelessWidget {
                     children: [
                       MatrixUserImage(
                         client: Matrix.of(context).sclient,
-                        url: sroom.user.avatarUrl,
+                        url: sroom.avatar,
                         width: 32,
                         height: 32,
                         thumnail: true,
@@ -46,7 +47,7 @@ class ContactView extends StatelessWidget {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text((sroom.user.displayName ?? sroom.user.id),
+                                Text((sroom.user?.displayName ?? sroom.userID ?? 'null'),
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Theme.of(context)
@@ -54,7 +55,7 @@ class ContactView extends StatelessWidget {
                                             .bodyText1!
                                             .color)),
                                 Text(
-                                  sroom.user.id,
+                                  sroom.userID!,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       color: Theme.of(context)
@@ -90,10 +91,10 @@ class MinestrixRoomTile extends StatelessWidget {
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
-          if (sroom.roomType == SRoomType.Group) {
+          if (sroom.type == FeedRoomType.group) {
             await context.navigateTo(GroupRoute(sroom: sroom));
           } else {
-            context.navigateTo(UserViewRoute(userID: sroom.user.id));
+            context.navigateTo(UserViewRoute(userID: sroom.userID));
           }
         },
         child: Padding(

@@ -26,10 +26,9 @@ class FriendRequestList extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          MatrixUserImage(
-                              client: sclient, url: sm.user.avatarUrl),
+                          MatrixUserImage(client: sclient, url: sm.avatar),
                           SizedBox(width: 10),
-                          Text((sm.user.displayName ?? sm.user.id)),
+                          Text(sm.name),
                         ],
                       ),
                       Row(

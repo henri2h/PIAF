@@ -53,7 +53,7 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                 if (widget.ignoreUserFollowingUser) {
                   // add the user following the user in the ignore list
                   sclient.following.forEach((key, MinestrixRoom sroom) {
-                    participants!.add(sroom.user);
+                    participants!.add(sroom.user!);
                   });
                 }
 

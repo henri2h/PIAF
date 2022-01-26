@@ -19,10 +19,10 @@ class PostWriterModal extends StatelessWidget {
         children: [
           MatrixUserImage(
               client: sclient,
-              url: sclient.userRoom!.user.avatarUrl,
+              url: sclient.userRoom!.user?.avatarUrl,
               height: 48,
               width: 48,
-              defaultText: sclient.userRoom!.user.displayName,
+              defaultText: sclient.userRoom!.user?.displayName,
               backgroundColor: Theme.of(context).primaryColor,
               thumnail: true),
           SizedBox(width: 20),

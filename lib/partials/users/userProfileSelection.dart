@@ -5,6 +5,7 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 import 'package:matrix_api_lite/src/generated/model.dart' as model;
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class UserProfileSelection extends StatefulWidget {
   const UserProfileSelection(
@@ -29,7 +30,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
 
     List<MinestrixRoom> _rooms = sclient.srooms.values
         .where((MinestrixRoom r) =>
-            r.userID == widget.userId && r.roomType == SRoomType.UserRoom)
+            r.userID == widget.userId && r.type == FeedRoomType.user)
         .toList();
 
     if (_rooms.length > 1 || widget.userId == sclient.userID)

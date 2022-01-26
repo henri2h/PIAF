@@ -138,9 +138,9 @@ class _PostEditorPageState extends State<PostEditorPage>
                             children: [
                               MatrixUserImage(
                                   client: sclient,
-                                  url: sclient.userRoom!.user.avatarUrl,
+                                  url: sclient.userRoom!.user?.avatarUrl,
                                   defaultText:
-                                      sclient.userRoom!.user.displayName,
+                                      sclient.userRoom!.user?.displayName,
                                   backgroundColor:
                                       Theme.of(context).primaryColor,
                                   width: 48,

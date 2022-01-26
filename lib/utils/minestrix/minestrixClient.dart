@@ -15,6 +15,8 @@ import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/platforms_info.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:path_provider/path_provider.dart';
 
 class MinestrixClient extends Client {
@@ -32,13 +34,13 @@ class MinestrixClient extends Client {
 
   // room sub types
   Map<String, MinestrixRoom> get sgroups => Map.from(srooms)
-    ..removeWhere((key, value) => value.roomType != SRoomType.Group);
+    ..removeWhere((key, value) => value.type != FeedRoomType.group);
 
   Map<String, MinestrixRoom> get sfriends => Map.from(srooms)
-    ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
+    ..removeWhere((key, value) => value.type != FeedRoomType.user);
 
   Map<String, MinestrixRoom> get following => Map.from(srooms)
-    ..removeWhere((key, value) => value.roomType != SRoomType.UserRoom);
+    ..removeWhere((key, value) => value.type != FeedRoomType.user);
 
   Map<String, MinestrixRoom> minestrixInvites = Map<String, MinestrixRoom>();
   /* => Map.from(srooms)
@@ -186,12 +188,12 @@ class MinestrixClient extends Client {
   /// check if the specified room is a smatrix room or not.
   /// If yes, then store it in srooms list
   Future<void> checkRoom(Room r) async {
-    MinestrixRoom? rs = await MinestrixRoom.loadMinesTrixRoom(r, this);
+    MinestrixRoom rs = await MinestrixRoom(r);
 
     // write that we have loaded this room in order to not process it twice
     roomsLoaded[r.id] = false;
 
-    if (rs != null) {
+    if (rs.isFeed) {
       // if class is correctly initialisated, we can add it
       // if we are here, it means that we have a valid smatrix room
 
@@ -208,10 +210,10 @@ class MinestrixClient extends Client {
           }
 
           // check if this room is a user thread
-          if (rs.roomType == SRoomType.UserRoom) {
-            userIdToRoomId[rs.user.id] = rs.room.id;
+          if (rs.type == FeedRoomType.user) {
+            userIdToRoomId[rs.userID!] = rs.room.id;
 
-            if (userID == rs.user.id) {
+            if (userID == rs.userID) {
               userRoom = rs; // we have found our user smatrix room
               // this means that the client has been initialisated
               // we can load the friendsVue
@@ -262,7 +264,7 @@ class MinestrixClient extends Client {
         name: name,
         topic: desc,
         visibility: visibility,
-        creationContent: {"type": MinestrixTypes.account});
+        creationContent: {"type": MatrixTypes.account});
     if (waitForCreation) {
       // Wait for room actually appears in sync and update all
       await onSync.stream
@@ -291,7 +293,7 @@ class MinestrixClient extends Client {
               RelationshipTypes.edit,
               RelationshipTypes.reaction,
               RelationshipTypes.reply,
-              MinestrixTypes.elementThreadEventType
+              MatrixTypes.elementThreadEventType
             }.contains(e.relationshipType) &&
             eventTypesFilter.contains(e.type) &&
             !e.redacted)
@@ -330,7 +332,7 @@ class MinestrixClient extends Client {
     for (MinestrixRoom r in sr) {
       // check if the user is already in the list and accept invitation
       bool exists =
-          (followers.firstWhereOrNull((element) => r.user.id == element.id) !=
+          (followers.firstWhereOrNull((element) => r.userID == element.id) !=
               null);
       if (exists) {
         await r.room.join();
@@ -342,9 +344,9 @@ class MinestrixClient extends Client {
     // iterate through rooms and add every user from thoose rooms not in our friend list
     for (MinestrixRoom r in sfriends.values) {
       bool exists =
-          (users.firstWhereOrNull((User u) => r.user.id == u.id) != null);
+          (users.firstWhereOrNull((User u) => r.userID == u.id) != null);
       if (!exists) {
-        await userRoom!.room.invite(r.user.id);
+        await userRoom!.room.invite(r.userID!);
       }
     }
   }
@@ -381,7 +383,7 @@ class MinestrixClient extends Client {
         name: name,
         topic: desc,
         visibility: Visibility.private,
-        creationContent: {"type": MinestrixTypes.group});
+        creationContent: {"type": MatrixTypes.group});
 
     if (waitForCreation) {
       // Wait for room actually appears in sync

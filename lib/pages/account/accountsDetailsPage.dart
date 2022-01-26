@@ -8,6 +8,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:minestrix_chat/utils/room_profile.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
@@ -62,8 +63,8 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
               });
             }),
         for (MinestrixRoom sroom in sclient.srooms.values.where((sroom) =>
-            sroom.user.id == sclient.userID &&
-            sroom.roomType == SRoomType.UserRoom &&
+            sroom.userID == sclient.userID &&
+            sroom.type == FeedRoomType.user &&
             (profile == null ||
                 profile.spaceChildren.indexWhere(
                         (SpaceChild sc) => sc.roomId == sroom.room.id) ==

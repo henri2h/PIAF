@@ -6,7 +6,7 @@ import 'package:minestrix/partials/post/postDetails/postReactions.dart';
 import 'package:minestrix/partials/post/postDetails/postReplies.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixTypes.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
 
 class Post extends StatefulWidget {
   final Event event;
@@ -40,7 +40,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
         builder: (context, snapshot) {
           // support for threaded replies
           Set<Event> replies =
-              e.aggregatedEvents(t, MinestrixTypes.elementThreadEventType);
+              e.aggregatedEvents(t, MatrixTypes.elementThreadEventType);
 
           // TODO : remove me after in next update
           replies.addAll(e.aggregatedEvents(t, RelationshipTypes.reply));

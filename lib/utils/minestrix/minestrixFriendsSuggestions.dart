@@ -13,7 +13,7 @@ class MinestrixFriendsSugestion {
 
     search.results.removeWhere((profile) =>
         client.sfriends.values
-            .firstWhereOrNull((element) => element.user.id == profile.userId) !=
+            .firstWhereOrNull((element) => element.userID == profile.userId) !=
         null);
     return search.results;
   }

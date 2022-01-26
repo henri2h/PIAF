@@ -6,6 +6,7 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
@@ -33,10 +34,10 @@ class PostHeader extends StatelessWidget {
                     thumnail: true,
                     defaultIcon: Icon(Icons.person, size: 48)),
               ),
-              if (sroom.roomType == SRoomType.UserRoom)
+              if (sroom.type == FeedRoomType.user)
                 Flexible(
                   child: Builder(builder: (BuildContext context) {
-                    User feedOwner = sroom.user;
+                    User feedOwner = sroom.user!;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +103,7 @@ class PostHeader extends StatelessWidget {
                     );
                   }),
                 ),
-              if (sroom.roomType == SRoomType.Group)
+              if (sroom.type == FeedRoomType.group)
                 Flexible(
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
