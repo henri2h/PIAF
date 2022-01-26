@@ -66,7 +66,10 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                       Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 10),
-                          child: PostContent(e)),
+                          child: PostContent(
+                            e,
+                            imageMaxHeight: 300,
+                          )),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 4.0, vertical: 2),
