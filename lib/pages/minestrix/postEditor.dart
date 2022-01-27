@@ -65,10 +65,12 @@ class _PostEditorPageState extends State<PostEditorPage>
                               });
 
                               MatrixImageFile? f;
-                              if (file != null)
-                                f = MatrixImageFile(
+                              if (file != null) {
+                                // get and shrink image
+                                f = await MatrixImageFile.shrink(
                                     bytes: file!.toUint8List(),
                                     name: file!.fileName ?? 'null');
+                              }
 
                               await sroom?.room.sendPost(_t.text, image: f);
 
