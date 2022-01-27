@@ -150,9 +150,16 @@ class MatrixPost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Map<String, dynamic>> items = [];
+    if (event.content[MatrixTypes.post] is List<Map<String, dynamic>>) {
+      items = event.content[MatrixTypes.post];
+    } else if (event.content[MatrixTypes.post] is Map<String, dynamic>) {
+      items.add(event.content[MatrixTypes.post]);
+    }
+
     return Column(
       children: [
-        for (Map<String, dynamic> item in event.content[MatrixTypes.post])
+        for (Map<String, dynamic> item in items)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
