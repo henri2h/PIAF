@@ -36,6 +36,7 @@ class PostContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (event.type) {
+      case EventTypes.Encrypted:
       case MatrixTypes.post:
         return MatrixPost(
             event: event,
@@ -68,7 +69,7 @@ class PostContent extends StatelessWidget {
             return Text(event.body);
 
           default:
-            return Text("other message type : " + event.messageType);
+            return Text("other message type : " + event.type);
         }
       case EventTypes.RoomCreate:
         return Column(
@@ -164,9 +165,10 @@ class MatrixPost extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MarkdownBody(
-                data: item[ExtensibleTypes.text],
-              ),
+              if (item[ExtensibleTypes.text] != null)
+                MarkdownBody(
+                  data: item[ExtensibleTypes.text],
+                ),
               if (item[ExtensibleTypes.file] is Map) // There is a
                 Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
