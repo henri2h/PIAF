@@ -26,7 +26,7 @@ dependencies:
 
 
   # Matrix
-  matrix:  ^0.7.0-nullsafety.9
+  matrix: ^0.8.0
   flutter_olm: ^1.1.2
   flutter_openssl_crypto: ^0.0.1
 
@@ -51,6 +51,7 @@ dependencies:
   flutter_markdown:
   emoji_picker_flutter: ^1.0.7
 
+  # images
   image_picker:
   file_picker_cross:
   path_provider: ^2.0.5

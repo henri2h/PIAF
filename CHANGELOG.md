@@ -10,6 +10,7 @@ A new Flutter project.
 * New post design
 * Support image reply and reply indentation (reply as thread)
 * Added a theming setting page
+* Added image blurhash support
 
 ## v0.1.5 - 2021-11-26
 
