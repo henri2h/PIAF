@@ -151,8 +151,8 @@ class MatrixPost extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> items = [];
-    if (event.content[MatrixTypes.post] is List<Map<String, dynamic>>) {
-      items = event.content[MatrixTypes.post];
+    if (event.content[MatrixTypes.post] is List<dynamic>) {
+      items = [...event.content[MatrixTypes.post]];
     } else if (event.content[MatrixTypes.post] is Map<String, dynamic>) {
       items.add(event.content[MatrixTypes.post]);
     }
