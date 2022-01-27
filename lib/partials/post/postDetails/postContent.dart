@@ -3,6 +3,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix_chat/config/extensible_types.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/event/matrix_image.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
@@ -164,9 +165,9 @@ class MatrixPost extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               MarkdownBody(
-                data: item["m.text"],
+                data: item[ExtensibleTypes.text],
               ),
-              if (item["m.file"] is Map) // There is a
+              if (item[ExtensibleTypes.file] is Map) // There is a
                 Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: imageMaxHeight != null
