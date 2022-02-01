@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
                         builder: (context, snap) {
                           if (!snap.hasData) return Container();
                           return Text(
-                              "Version : " + (snap.data?.version ?? 'null'));
+                              "Version " + (snap.data?.version ?? 'null'));
                         }),
                     TextButton(
                       onPressed: () async =>
@@ -59,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                       onPressed: () async => await _launchURL(
                           "https://gitlab.com/minestrix/minestrix-flutter"),
-                      child: new Text('MinesTRIX code'),
+                      child: new Text('MinesTRIX code'),
                     ),
                   ],
                 ),
