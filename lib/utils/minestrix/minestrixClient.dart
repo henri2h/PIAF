@@ -10,12 +10,12 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/Fluffychat/FluffyboxDatabase.dart';
 import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/utils/database/fluffybox_database.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:path_provider/path_provider.dart';
 
