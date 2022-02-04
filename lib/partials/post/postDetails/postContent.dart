@@ -3,9 +3,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
-import 'package:minestrix_chat/config/extensible_types.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/event/matrix_image.dart';
+import 'package:minestrix_chat/partials/feed/posts/matrix_post_content.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
 
 class PostContent extends StatelessWidget {
@@ -38,7 +37,7 @@ class PostContent extends StatelessWidget {
     switch (event.type) {
       case EventTypes.Encrypted:
       case MatrixTypes.post:
-        return MatrixPost(
+        return MatrixPostContent(
             event: event,
             imageMaxHeight: imageMaxHeight,
             imageMaxWidth: imageMaxWidth);
@@ -137,51 +136,6 @@ class PostContent extends StatelessWidget {
             update,
             Text(event.type),
           ]),
-    );
-  }
-}
-
-class MatrixPost extends StatelessWidget {
-  final double? imageMaxHeight;
-  final double? imageMaxWidth;
-  const MatrixPost(
-      {Key? key, required this.event, this.imageMaxHeight, this.imageMaxWidth})
-      : super(key: key);
-
-  final Event event;
-
-  @override
-  Widget build(BuildContext context) {
-    List<Map<String, dynamic>> items = [];
-    if (event.content[MatrixTypes.post] is List<dynamic>) {
-      items = [...event.content[MatrixTypes.post]];
-    } else if (event.content[MatrixTypes.post] is Map<String, dynamic>) {
-      items.add(event.content[MatrixTypes.post]);
-    }
-
-    return Column(
-      children: [
-        for (Map<String, dynamic> item in items)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (item[ExtensibleTypes.text] != null)
-                MarkdownBody(
-                  data: item[ExtensibleTypes.text],
-                ),
-              if (item[ExtensibleTypes.file] is Map) // There is a
-                Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: imageMaxHeight != null
-                        ? ConstrainedBox(
-                            constraints: BoxConstraints(
-                                maxHeight: imageMaxHeight!,
-                                minHeight: imageMaxHeight ?? 400),
-                            child: MatrixImageViewever(event: event, map: item))
-                        : MatrixImageViewever(event: event, map: item))
-            ],
-          ),
-      ],
     );
   }
 }
