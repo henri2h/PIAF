@@ -13,12 +13,19 @@ class MinestrixProfileNotCreated extends StatelessWidget {
     MinestrixClient? sclient = Matrix.of(context).sclient;
 
     return CustomFutureButton(
-        icon: Icon(Icons.skateboarding_outlined),
+        icon: Icon(Icons.skateboarding_outlined,
+            color: Theme.of(context).colorScheme.onPrimary),
         color: Theme.of(context).primaryColor,
         children: [
           Text("Create your account",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          Text("No profile was found", style: TextStyle(fontSize: 14)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onPrimary)),
+          Text("No profile was found",
+              style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onPrimary)),
         ],
         onPressed: sclient?.createSMatrixUserProfile);
   }
