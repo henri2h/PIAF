@@ -28,7 +28,7 @@ dependencies:
   # Matrix
   matrix: ^0.8.0
   flutter_olm: ^1.1.2
-  flutter_openssl_crypto: ^0.0.1
+  flutter_openssl_crypto: ^0.1.0
 
   # Database
   hive_flutter: ^1.1.0
