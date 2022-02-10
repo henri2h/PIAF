@@ -378,7 +378,8 @@ class MinestrixClient extends Client {
   }
 
   Future<String> createMinestrixGroup(String name, String desc,
-      {waitForCreation = true}) async {
+      {waitForCreation = true,
+      Visibility visibility = Visibility.private}) async {
     String roomID = await createRoom(
         name: name,
         topic: desc,
