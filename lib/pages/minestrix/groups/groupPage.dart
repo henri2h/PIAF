@@ -11,6 +11,7 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/view/matrix_chat_page.dart';
 
 class GroupPage extends StatefulWidget {
   GroupPage({Key? key, this.sroom}) : super(key: key);
@@ -32,56 +33,77 @@ class _GroupPageState extends State<GroupPage> {
       builder: (BuildContext context, BoxConstraints constraints) => Row(
         children: [
           if (constraints.maxWidth > 900)
-            Flexible(
-              flex: 2,
-              child: StreamBuilder(
-                  stream: sclient.onSync.stream,
-                  builder: (context, _) => FutureBuilder<List<User>>(
-                      future: sroom.room.requestParticipants(),
-                      builder: (context, snap) {
-                        if (snap.hasData == false)
-                          return CircularProgressIndicator();
+            SizedBox(
+              width: 280,
+              child: Column(
+                children: [
+                  Flexible(
+                    flex: 2,
+                    child: StreamBuilder(
+                        stream: sclient.onSync.stream,
+                        builder: (context, _) => FutureBuilder<List<User>>(
+                            future: sroom.room.requestParticipants(),
+                            builder: (context, snap) {
+                              if (snap.hasData == false)
+                                return CircularProgressIndicator();
 
-                        participants = snap.data!;
-                        return ListView(
-                          children: [
-                            for (User p in participants.where(
-                                (User u) => u.membership == Membership.join))
-                              MinesTrixContactView(user: p),
-                            if (participants.indexWhere((User u) =>
-                                    u.membership == Membership.invite) !=
-                                -1)
-                              Column(
+                              participants = snap.data!;
+                              return ListView(
                                 children: [
-                                  H2Title("Invited"),
                                   for (User p in participants.where((User u) =>
-                                      u.membership == Membership.invite))
+                                      u.membership == Membership.join))
                                     MinesTrixContactView(user: p),
-                                ],
-                              ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: MinesTrixButton(
-                                  label: "Add users",
-                                  icon: Icons.person_add,
-                                  onPressed: () async {
-                                    List<Profile>? profiles =
-                                        await Navigator.of(context).push(
-                                            MaterialPageRoute<List<Profile>>(
-                                      builder: (_) => MinesTrixUserSelection(),
-                                    ));
+                                  if (participants.indexWhere((User u) =>
+                                          u.membership == Membership.invite) !=
+                                      -1)
+                                    Column(
+                                      children: [
+                                        H2Title("Invited"),
+                                        for (User p in participants.where(
+                                            (User u) =>
+                                                u.membership ==
+                                                Membership.invite))
+                                          MinesTrixContactView(user: p),
+                                      ],
+                                    ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: MinesTrixButton(
+                                        label: "Add users",
+                                        icon: Icons.person_add,
+                                        onPressed: () async {
+                                          List<Profile>? profiles =
+                                              await Navigator.of(context).push(
+                                                  MaterialPageRoute<
+                                                      List<Profile>>(
+                                            builder: (_) =>
+                                                MinesTrixUserSelection(),
+                                          ));
 
-                                    profiles?.forEach((Profile p) async {
-                                      await sroom.room.invite(p.userId);
-                                    });
-                                    participants =
-                                        await sroom.room.requestParticipants();
-                                    setState(() {});
-                                  }),
-                            )
-                          ],
-                        );
-                      })),
+                                          profiles?.forEach((Profile p) async {
+                                            await sroom.room.invite(p.userId);
+                                          });
+                                          participants = await sroom.room
+                                              .requestParticipants();
+                                          setState(() {});
+                                        }),
+                                  )
+                                ],
+                              );
+                            })),
+                  ),
+                  MaterialButton(
+                      child: Text("Chat"),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                                child: MatrixChatPage(
+                                    roomId: widget.sroom!.room.id,
+                                    client: sclient)));
+                      })
+                ],
+              ),
             ),
           Flexible(
             flex: 8,
