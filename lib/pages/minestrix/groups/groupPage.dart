@@ -145,27 +145,6 @@ class _GroupPageState extends State<GroupPage> {
                                     unconstraigned: true,
                                     rounded: false,
                                     maxHeight: 500)),
-                          Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 8.0),
-                                child: H1Title(sroom.name),
-                              ),
-                              Padding(
-                                  padding: const EdgeInsets.all(15),
-                                  child: Row(children: [
-                                    for (User user in sroom.room
-                                        .getParticipants()
-                                        .where((User u) =>
-                                            u.membership == Membership.join))
-                                      MatrixUserImage(
-                                          client: sclient,
-                                          url: user.avatarUrl,
-                                          thumnail: true)
-                                  ])),
-                            ],
-                          ),
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: PostWriterModal(sroom: sroom),
