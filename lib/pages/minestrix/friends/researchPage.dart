@@ -2,6 +2,7 @@ import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/minestrixRoomTile.dart';
 import 'package:minestrix/router.gr.dart';
@@ -20,7 +21,7 @@ class _ResearchPageState extends State<ResearchPage> {
   Widget build(BuildContext context) {
     MinestrixClient? sclient = Matrix.of(context).sclient;
     return ListView(children: [
-      H1Title("Search"),
+      CustomHeader("Search"),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: TypeAheadField(
