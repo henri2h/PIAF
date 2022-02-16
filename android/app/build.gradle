@@ -44,7 +44,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "fr.henri2h.minestrix"
-        minSdkVersion 18 //flutter.minSdkVersion // override
+        minSdkVersion 19 //flutter.minSdkVersion // override
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
