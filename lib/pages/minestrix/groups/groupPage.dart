@@ -3,6 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
+import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix/partials/post/postWriterModal.dart';
@@ -135,6 +136,7 @@ class _GroupPageState extends State<GroupPage> {
                         void Function(Offset, Event) onReact) {
                       if (i == 0) {
                         return Column(children: [
+                          CustomHeader(sroom.name),
                           if (sroom.room.avatar != null)
                             Center(
                                 child: MatrixUserImage(
