@@ -94,8 +94,8 @@ class _PostEditorPageState extends State<PostEditorPage>
                             children: [
                               MatrixUserImage(
                                   client: sclient,
-                                  url: sroom!.room.avatar,
-                                  defaultText: sroom!.room.topic,
+                                  url: sroom?.room.avatar,
+                                  defaultText: sroom?.room.topic,
                                   backgroundColor:
                                       Theme.of(context).primaryColor,
                                   width: 48,
@@ -106,10 +106,10 @@ class _PostEditorPageState extends State<PostEditorPage>
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("Post on " + sroom!.name,
+                                    Text("Post on " + (sroom?.name ?? ""),
                                         style: TextStyle(fontSize: 22)),
                                     SizedBox(height: 4),
-                                    Text(sroom!.room.topic)
+                                    Text(sroom?.room.topic ?? "null")
                                   ],
                                 ),
                               ),
@@ -133,9 +133,9 @@ class _PostEditorPageState extends State<PostEditorPage>
                             children: [
                               MatrixUserImage(
                                   client: sclient,
-                                  url: sclient.userRoom!.user?.avatarUrl,
+                                  url: sclient.userRoom?.user?.avatarUrl,
                                   defaultText:
-                                      sclient.userRoom!.user?.displayName,
+                                      sclient.userRoom?.user?.displayName,
                                   backgroundColor:
                                       Theme.of(context).primaryColor,
                                   width: 48,

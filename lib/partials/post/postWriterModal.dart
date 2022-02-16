@@ -34,7 +34,8 @@ class PostWriterModal extends StatelessWidget {
                   readOnly: true,
                   showCursor: false,
                   onTap: () {
-                    context.pushRoute(PostEditorRoute(sroom: sroom));
+                    if (sroom != null)
+                      context.pushRoute(PostEditorRoute(sroom: sroom));
                   },
                   cursorColor: Colors.grey,
                   decoration: InputDecoration(
