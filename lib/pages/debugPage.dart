@@ -39,7 +39,7 @@ class _DebugPageState extends State<DebugPage> {
 
     if (this.mounted)
       setState(() {
-        print("[ debug ] : State : " + timelineLength.length.toString());
+        print("[ debug ] : State : " + timelineLength.length.toString());
       });
   }
 
@@ -67,7 +67,7 @@ class _DebugPageState extends State<DebugPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (sclient != null)
-              Text("MinesTRIX rooms length : " +
+              Text("MinesTRIX rooms length : " +
                   sclient!.srooms.length.toString()),
             if (srooms.length != 0)
               for (var i = 0; i < srooms.length; i++)
@@ -82,8 +82,9 @@ class _DebugPageState extends State<DebugPage> {
                             children: [
                               Icon(Icons.person, size: 16),
                               SizedBox(width: 10),
-                              Text((srooms[i].user.displayName ??
-                                  srooms[i].user.id)),
+                              Text((srooms[i].user?.displayName ??
+                                  srooms[i].userID ??
+                                  "null")),
                             ],
                           ),
                           Text(srooms[i].room.id),

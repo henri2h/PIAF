@@ -1,11 +1,12 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/account/accountCard.dart';
-import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
 import 'package:minestrix/pages/minestrix/postEditor.dart';
-import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
+import 'package:minestrix/partials/components/account/accountCard.dart';
+import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/feed/minestrixProfileNotCreated.dart';
+import 'package:minestrix/partials/feed/notficationBell.dart';
 import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/router.gr.dart';
@@ -27,40 +28,67 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
   @override
   Widget build(BuildContext context) {
     MinestrixClient? sclient = Matrix.of(context).sclient;
+
     return StreamBuilder(
         stream: sclient!.onTimelineUpdate.stream,
         builder: (context, _) {
           if (sclient.stimeline.length == 0)
-            return ListView(
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                H1Title("Timeline is empty"),
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: MinesTrixButton(
-                      label: "Write your first post",
-                      icon: Icons.post_add,
-                      onPressed: () {
-                        context.pushRoute(PostEditorRoute());
-                      }),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      H1Title("Welcome on MinesTRIX"),
+                      H2Title(sclient.userRoomCreated != true
+                          ? "First time here ?"
+                          : "Your timeline is empty"),
+                      if (sclient.userRoomCreated != true)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: MinestrixProfileNotCreated(),
+                        ),
+                      if (sclient.userRoomCreated == true)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomTextFutureButton(
+                              icon: Icon(Icons.post_add),
+                              text: "Write your first post",
+                              onPressed: () async {
+                                context.pushRoute(PostEditorRoute());
+                              }),
+                        ),
+                      if (sclient.userRoomCreated == true)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomTextFutureButton(
+                              icon: Icon(Icons.person_add),
+                              text: "Add some followers",
+                              onPressed: () async {
+                                context.pushRoute(FriendsRoute());
+                              }),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CustomTextFutureButton(
+                            icon: Icon(Icons.group_add),
+                            text: "Create a group",
+                            onPressed: () async {
+                              context.pushRoute(CreateGroupRoute());
+                            }),
+                      ),
+                    ],
+                  ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: MinesTrixButton(
-                      label: "Add some friends",
-                      icon: Icons.person_add,
-                      onPressed: () {
-                        context.pushRoute(FriendsRoute());
-                      }),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: MinesTrixButton(
-                      label: "Refresh rooms",
-                      icon: Icons.refresh,
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomTextFutureButton(
+                      icon: Icon(Icons.refresh),
+                      text: "Refresh rooms",
                       onPressed: () async {
                         await sclient.updateAll();
                       }),
-                )
+                ),
               ],
             );
 
@@ -101,9 +129,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                 IconButton(
                                     icon: Icon(Icons.group_add),
                                     onPressed: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => CreateGroup());
+                                      context.pushRoute(CreateGroupRoute());
                                     }),
                                 IconButton(
                                     icon: Icon(Icons.post_add),
@@ -184,32 +210,5 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                         onReact: (Offset e) => onReact(e, timeline![i - 1])));
               });
         });
-  }
-}
-
-class NotificationBell extends StatelessWidget {
-  const NotificationBell({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
-
-    return sclient == null
-        ? Icon(Icons.error)
-        : StreamBuilder(
-            stream: sclient.notifications.onNotifications.stream,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              return Column(
-                children: [
-                  IconButton(
-                      icon: sclient.notifications.notifications.length == 0
-                          ? Icon(Icons.notifications_none)
-                          : Icon(Icons.notifications_active),
-                      onPressed: () {
-                        Scaffold.of(context).openEndDrawer();
-                      }),
-                ],
-              );
-            });
   }
 }

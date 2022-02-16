@@ -2,6 +2,8 @@ import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 
 class QuickLinksBar extends StatefulWidget {
   @override
@@ -12,6 +14,7 @@ class _QuickLinksBarState extends State<QuickLinksBar>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
+    MinestrixClient sclient = Matrix.of(context).sclient!;
     return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Column(
         children: [
@@ -46,6 +49,7 @@ class _QuickLinksBarState extends State<QuickLinksBar>
               }),
         ],
       ),
+      SyncStatusCard(client: sclient),
       QuickLinkButton(
           onPressed: () async {
             await context.navigateTo(AppWrapperRoute());

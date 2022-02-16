@@ -31,7 +31,7 @@ class UserFriendsCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: MaterialButton(
                   onPressed: () {
-                    if (sroom.isUserPage) {
+                    if (sroom.isFeed) {
                       context.navigateTo(FriendsRoute());
                     } else {
                       context.navigateTo(UserFriendsRoute(sroom: sroom));
@@ -45,7 +45,7 @@ class UserFriendsCard extends StatelessWidget {
                     .where((User u) =>
                         u.membership == Membership.join &&
                         u.id != sclient!.userID &&
-                        u.id != sroom.user.id)
+                        u.id != sroom.userID)
                     .take(12))
                   AccountCard(user: user),
               ]),

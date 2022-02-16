@@ -3,6 +3,8 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/feed/posts/matrix_post_content.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
 
 class PostContent extends StatelessWidget {
@@ -33,7 +35,12 @@ class PostContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (event.type) {
-      case EventTypes.Message:
+      case EventTypes.Encrypted:
+      case MatrixTypes.post:
+        return MatrixPostContent(
+            event: event,
+            imageMaxHeight: imageMaxHeight,
+            imageMaxWidth: imageMaxWidth);
       case EventTypes.Encrypted:
         switch (event.messageType) {
           case MessageTypes.Text:
@@ -61,7 +68,7 @@ class PostContent extends StatelessWidget {
             return Text(event.body);
 
           default:
-            return Text("other message type : " + event.messageType);
+            return Text("other message type : " + event.type);
         }
       case EventTypes.RoomCreate:
         return Column(
@@ -109,7 +116,7 @@ class PostContent extends StatelessWidget {
         update = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Default : "),
+            Text("Default : "),
             Text(event.content.toString()),
             Text(event.prevContent.toString())
             /*

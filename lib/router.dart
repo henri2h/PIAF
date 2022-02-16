@@ -2,6 +2,7 @@
 // @AdaptiveAutoRouter
 // @CustomAutoRouter
 import 'package:auto_route/auto_route.dart';
+import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
 import 'package:minestrix/pages/minestrix/postEditor.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
 import 'package:minestrix/pages/appWrapperPage.dart';
@@ -38,6 +39,7 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
           children: [
             AutoRoute(path: 'feed', page: FeedPage, initial: true),
             AutoRoute(path: 'group', page: GroupPage),
+            AutoRoute(path: 'group/create', page: CreateGroupPage),
             AutoRoute(path: 'createPost', page: PostEditorPage),
             AutoRoute(path: 'userfeed', page: UserViewPage),
             AutoRoute(path: 'my_friends', page: FriendsPage),

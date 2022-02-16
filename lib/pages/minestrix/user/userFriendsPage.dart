@@ -17,22 +17,23 @@ class UserFriendsPage extends StatelessWidget {
     MinestrixClient? sclient = Matrix.of(context).sclient;
     return ListView(
       children: [
-        FutureBuilder<Profile>(
-            future: sroom.room.client.getProfileFromUserId(sroom.userID),
-            builder: (context, snap) {
-              if (!snap.hasData) return CircularProgressIndicator();
-              return UserInfo(profile: snap.data!);
-            }),
+        if (sroom.userID != null)
+          FutureBuilder<Profile>(
+              future: sroom.room.client.getProfileFromUserId(sroom.userID!),
+              builder: (context, snap) {
+                if (!snap.hasData) return CircularProgressIndicator();
+                return UserInfo(profile: snap.data!);
+              }),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child:
-              H2Title((sroom.user.displayName ?? sroom.user.id) + " friends"),
+          child: H2Title(
+              (sroom.user?.displayName ?? sroom.userID ?? "null") + " friends"),
         ),
         Wrap(alignment: WrapAlignment.center, children: [
           for (User user in sroom.room.getParticipants().where((User u) =>
               u.membership == Membership.join &&
               u.id != sclient!.userID &&
-              u.id != sroom.user.id))
+              u.id != sroom.userID))
             AccountCard(user: user),
         ]),
       ],

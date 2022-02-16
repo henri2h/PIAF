@@ -1,5 +1,16 @@
+
 # Change Log for minestrix
 A new Flutter project.
+
+## v0.1.6 - 2022
+
+## Feature
+* Experimental space support
+* Experimental story support
+* New post design
+* Support image reply and reply indentation (reply as thread)
+* Added a theming setting page
+* Added image blurhash support
 
 ## v0.1.5 - 2021-11-26
 

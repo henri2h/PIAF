@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/partials/login/loginCard.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/partials/login/login_card.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildDesktop() {
+    MinestrixClient sclient = Matrix.of(context).sclient!;
     return Scaffold(
       body: Row(
         children: [
@@ -49,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                         builder: (context, snap) {
                           if (!snap.hasData) return Container();
                           return Text(
-                              "Version : " + (snap.data?.version ?? 'null'));
+                              "Version " + (snap.data?.version ?? 'null'));
                         }),
                     TextButton(
                       onPressed: () async =>
@@ -59,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                       onPressed: () async => await _launchURL(
                           "https://gitlab.com/minestrix/minestrix-flutter"),
-                      child: new Text('MinesTRIX code'),
+                      child: new Text('MinesTRIX code'),
                     ),
                   ],
                 ),
@@ -73,7 +76,9 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[Expanded(child: LoginCard())],
+                  children: <Widget>[
+                    Expanded(child: LoginMatrixPage(client: sclient))
+                  ],
                 ),
               ),
             ),
@@ -84,6 +89,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildMobile() {
+    MinestrixClient sclient = Matrix.of(context).sclient!;
+
     return Scaffold(
       body: Container(
         color: Colors.grey[200],
@@ -97,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.white,
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(40))),
-                    child: LoginCard()))
+                    child: LoginMatrixPage(client: sclient)))
           ],
         ),
       ),

@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/pages/minestrix/groups/createGroup.dart';
+import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
 import 'package:minestrix/partials/home/notificationView.dart';
 import 'package:minestrix/partials/navbar.dart';
 import 'package:minestrix/router.gr.dart';
@@ -72,7 +72,7 @@ class _HomeWrapperPageState extends State<HomeWrapperPage> {
                   FloatingActionButton(
                     onPressed: () async {
                       showDialog(
-                          context: context, builder: (_) => CreateGroup());
+                          context: context, builder: (_) => CreateGroupPage());
                     },
                     tooltip: "New group",
                     child: Container(

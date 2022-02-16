@@ -3,13 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/Managers/StorageManager.dart';
 import 'package:minestrix/utils/Managers/ThemeManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/utils/login/login_extension.dart';
 import 'package:provider/provider.dart';
-import 'package:minestrix/utils/web/pluginWebLogin_stub.dart'
-    if (dart.library.html) 'package:minestrix/utils/web/pluginWebLogin.dart';
 
 class Minestrix extends StatefulWidget {
   @override
@@ -32,16 +30,6 @@ class _MinestrixState extends State<Minestrix> {
     return true;
   }
 
-  Future<bool> ssoLogin(MinestrixClient sclient, String token) async {
-    String homeserverUrl = await StorageManager.readData('homeserver');
-    String user = await StorageManager.readData('user');
-
-    await sclient.customLoginAction(LoginType.mLoginToken,
-        homeserver: homeserverUrl, user: user, token: token);
-
-    return true;
-  }
-
   bool loginAsWeb = false;
   @override
   Widget build(BuildContext context) {
@@ -56,50 +44,41 @@ class _MinestrixState extends State<Minestrix> {
                 // detect if the user did try to login with a token
                 // don't try it twice !
                 if (kIsWeb) {
-                  if (loginAsWeb == false) {
-                    String? token = WebLogin.getToken();
-                    if (token != null) {
-                      loginAsWeb = true;
-                      return FutureBuilder(
-                          future: ssoLogin(sclient, token),
-                          builder: (context, snap) =>
-                              CircularProgressIndicator());
-                    }
+                  if (loginAsWeb == false && sclient.shouldSSOLogin) {
+                    loginAsWeb = true;
+                    return FutureBuilder(
+                        future: sclient.ssoLogin(),
+                        builder: (context, snap) =>
+                            CircularProgressIndicator());
                   }
                 }
 
-                return StreamBuilder<String>(
-                    stream: sclient.onSRoomsUpdate.stream,
-                    builder: (context, sroomSnap) => FutureBuilder(
-                        future: initMatrix(sclient),
-                        builder: (context, snap) {
-                          return MaterialApp.router(
-                            routerDelegate: AutoRouterDelegate.declarative(
-                              _appRouter,
-                              routes: (_) {
-                                print("route up");
-                                return [
-                                  if (state.hasData == false ||
-                                      (state.data == LoginState.loggedIn &&
-                                          !sclient.userRoomCreated))
-                                    MatrixLoadingRoute()
-                                  else if (state.data == LoginState.loggedIn &&
-                                      sclient.userRoomCreated)
-                                    AppWrapperRoute()
-                                  // if they are not logged in, bring them to the Login page
-                                  else
-                                    LoginRoute()
-                                ];
-                              },
-                            ),
+                return FutureBuilder(
+                    future: initMatrix(sclient),
+                    builder: (context, snap) {
+                      return MaterialApp.router(
+                        routerDelegate: AutoRouterDelegate.declarative(
+                          _appRouter,
+                          routes: (_) {
+                            print("route up");
+                            return [
+                              if (state.hasData == false)
+                                MatrixLoadingRoute()
+                              else if (state.data == LoginState.loggedIn)
+                                AppWrapperRoute()
+                              // if they are not logged in, bring them to the Login page
+                              else
+                                LoginRoute()
+                            ];
+                          },
+                        ),
 
-                            routeInformationParser:
-                                _appRouter.defaultRouteParser(),
-                            debugShowCheckedModeBanner: false,
-                            // theme :
-                            theme: theme.theme,
-                          );
-                        }));
+                        routeInformationParser: _appRouter.defaultRouteParser(),
+                        debugShowCheckedModeBanner: false,
+                        // theme :
+                        theme: theme.theme,
+                      );
+                    });
               }),
         ),
       ),

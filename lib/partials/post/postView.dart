@@ -6,6 +6,7 @@ import 'package:minestrix/partials/post/postDetails/postReactions.dart';
 import 'package:minestrix/partials/post/postDetails/postReplies.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
 
 class Post extends StatefulWidget {
   final Event event;
@@ -39,7 +40,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
         builder: (context, snapshot) {
           // support for threaded replies
           Set<Event> replies =
-              e.aggregatedEvents(t, MinestrixClient.elementThreadEventType);
+              e.aggregatedEvents(t, MatrixTypes.elementThreadEventType);
 
           // TODO : remove me after in next update
           replies.addAll(e.aggregatedEvents(t, RelationshipTypes.reply));
@@ -65,7 +66,10 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                       Padding(
                           padding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 10),
-                          child: PostContent(e)),
+                          child: PostContent(
+                            e,
+                            imageMaxHeight: 300,
+                          )),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 4.0, vertical: 2),
@@ -114,7 +118,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                               behavior: HitTestBehavior.translucent,
                               child: MaterialButton(
                                   elevation: 0,
-                                  color: Color(0xFF323232),
+                                  color: Theme.of(context).primaryColor,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10)),
                                   padding: const EdgeInsets.symmetric(
@@ -122,9 +126,16 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.insert_emoticon_rounded),
+                                      Icon(Icons.insert_emoticon_rounded,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary),
                                       SizedBox(width: 5),
-                                      Text("Reaction")
+                                      Text("Reaction",
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onPrimary))
                                     ],
                                   ),
                                   onPressed: () {}),
@@ -135,7 +146,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                             SizedBox(width: 9),
                             MaterialButton(
                               elevation: 0,
-                              color: Color(0xFF323232),
+                              color: Theme.of(context).primaryColor,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10)),
                               padding: const EdgeInsets.symmetric(
@@ -143,9 +154,16 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.reply),
+                                  Icon(Icons.reply,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary),
                                   SizedBox(width: 5),
-                                  Text("Comment")
+                                  Text("Comment",
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary))
                                 ],
                               ),
                               onPressed: replyButtonClick,
