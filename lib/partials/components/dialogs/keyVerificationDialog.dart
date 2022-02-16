@@ -1,9 +1,8 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
-import 'package:matrix/encryption/utils/key_verification.dart';
-import 'package:matrix/matrix.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/partials/components/buttons/adaptativeFlatButton.dart';
+import 'package:matrix/encryption/utils/key_verification.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/dialogs/simple_dialogs.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
@@ -120,14 +119,14 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
             mainAxisSize: MainAxisSize.min,
           ),
         );
-        buttons.add(AdaptiveFlatButton(
+        buttons.add(TextButton(
           child: Text("submit"),
           onPressed: () {
             input = textEditingController.text;
             checkInput();
           },
         ));
-        buttons.add(AdaptiveFlatButton(
+        buttons.add(TextButton(
           child: Text("skip"),
           onPressed: () => widget.request!.openSSSS(skip: true),
         ));
@@ -138,11 +137,11 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
               style: TextStyle(fontSize: 20)),
           margin: EdgeInsets.only(left: 8.0, right: 8.0),
         );
-        buttons.add(AdaptiveFlatButton(
+        buttons.add(TextButton(
           child: Text("accept"),
           onPressed: () => widget.request!.acceptVerification(),
         ));
-        buttons.add(AdaptiveFlatButton(
+        buttons.add(TextButton(
           child: Text("reject"),
           onPressed: () {
             widget.request!.rejectVerification().then((_) {
@@ -202,13 +201,12 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
           ],
           mainAxisSize: MainAxisSize.min,
         );
-        buttons.add(AdaptiveFlatButton(
+        buttons.add(TextButton(
           child: Text("theyMatch"),
           onPressed: () => widget.request!.acceptSas(),
         ));
-        buttons.add(AdaptiveFlatButton(
-          textColor: Colors.red,
-          child: Text("theyDontMatch"),
+        buttons.add(TextButton(
+          child: Text("theyDontMatch", style: TextStyle(color: Colors.red)),
           onPressed: () => widget.request!.rejectSas(),
         ));
         break;
@@ -242,7 +240,7 @@ class _KeyVerificationPageState extends State<KeyVerificationDialog> {
           ],
           mainAxisSize: MainAxisSize.min,
         );
-        buttons.add(AdaptiveFlatButton(
+        buttons.add(TextButton(
           child: Text("close"),
           onPressed: () => Navigator.of(context).pop(),
         ));
