@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
+import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix/partials/post/postWriterModal.dart';
@@ -57,6 +58,8 @@ class _GroupPageState extends State<GroupPage> {
                                           u.membership == Membership.invite) !=
                                       -1)
                                     Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         H2Title("Invited"),
                                         for (User p in participants.where(
@@ -92,16 +95,33 @@ class _GroupPageState extends State<GroupPage> {
                               );
                             })),
                   ),
-                  MaterialButton(
-                      child: Text("Chat"),
-                      onPressed: () {
+                  CustomFutureButton(
+                      icon: Icon(Icons.chat,
+                          color: Theme.of(context).colorScheme.onPrimary),
+                      color: Theme.of(context).primaryColor,
+                      children: [
+                        Text("Open chat",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color:
+                                    Theme.of(context).colorScheme.onPrimary)),
+                        if (widget.sroom?.room.lastEvent?.text != null)
+                          Text(widget.sroom!.room.lastEvent!.text,
+                              maxLines: 2,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary)),
+                      ],
+                      onPressed: () async {
                         showDialog(
                             context: context,
                             builder: (context) => Dialog(
                                 child: MatrixChatPage(
                                     roomId: widget.sroom!.room.id,
                                     client: sclient)));
-                      })
+                      }),
                 ],
               ),
             ),
