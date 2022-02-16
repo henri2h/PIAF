@@ -19,10 +19,11 @@ class PostWriterModal extends StatelessWidget {
         children: [
           MatrixUserImage(
               client: sclient,
-              url: sclient.userRoom!.user?.avatarUrl,
+              url: sclient.userRoom?.user?.avatarUrl,
               height: 48,
               width: 48,
-              defaultText: sclient.userRoom!.user?.displayName,
+              defaultText:
+                  sclient.userRoom?.user?.displayName ?? sclient.userID,
               backgroundColor: Theme.of(context).primaryColor,
               thumnail: true),
           SizedBox(width: 20),
@@ -54,8 +55,8 @@ class PostWriterModal extends StatelessWidget {
                     prefixIcon: Icon(Icons.edit, color: Colors.grey),
                     filled: true,
                     hintStyle: TextStyle(color: Colors.grey),
-                    labelText: "Write a post on " + sroom!.name,
-                    hintText: "Write a post on " + sroom!.name,
+                    labelText: "Write a post on " + (sroom?.name ?? ""),
+                    hintText: "Write a post on " + (sroom?.name ?? ""),
                     labelStyle: TextStyle(color: Colors.grey),
                   ))),
         ],

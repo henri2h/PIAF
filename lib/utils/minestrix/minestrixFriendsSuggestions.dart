@@ -40,11 +40,11 @@ class MinestrixFriendsSugestion {
     List<ProfileCount> ps = profiles.values
         .sorted((ProfileCount a, ProfileCount b) => b.pos.compareTo(a.pos))
         .toList();
-
-    ps.removeWhere((ProfileCount profile) =>
-        client.userRoom!.room.getParticipants().firstWhereOrNull(
-            (User element) => element.id == profile.p.userId) !=
-        null);
+    if (client.userRoom != null)
+      ps.removeWhere((ProfileCount profile) =>
+          client.userRoom!.room.getParticipants().firstWhereOrNull(
+              (User element) => element.id == profile.p.userId) !=
+          null);
 
     // get the 20 best results
     return ps.take(20).map<Profile>((ProfileCount p) => p.p).toList();
