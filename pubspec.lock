@@ -666,7 +666,7 @@ packages:
       name: image_picker_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.4.3"
+    version: "2.4.4"
   intl:
     dependency: transitive
     description:
@@ -763,7 +763,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: aa3fd3ec26f7aacc5d9397875140814ed05c94b0
+      resolved-ref: "8cad70942f0193cb06f677e03caa3ab876a80e79"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"
@@ -1415,7 +1415,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.4.0"
+    version: "2.4.1"
   xdg_directories:
     dependency: transitive
     description:
