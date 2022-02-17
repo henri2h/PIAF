@@ -134,12 +134,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                 IconButton(
                                     icon: Icon(Icons.post_add),
                                     onPressed: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => Scaffold(
-                                              appBar: AppBar(
-                                                  title: Text("New post")),
-                                              body: PostEditorPage()));
+                                      context.pushRoute(PostEditorRoute());
                                     }),
                                 IconButton(icon: Builder(builder: (context) {
                                   int notif = sclient.totalNotificationsCount;
