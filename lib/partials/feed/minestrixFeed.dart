@@ -1,7 +1,6 @@
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/minestrix/postEditor.dart';
 import 'package:minestrix/partials/components/account/accountCard.dart';
 import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
