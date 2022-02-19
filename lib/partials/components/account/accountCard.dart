@@ -56,8 +56,7 @@ class AccountCard extends StatelessWidget {
                   topLeft: Radius.circular(10.0),
                   topRight: Radius.circular(10)),
               defaultIcon: Icon(Icons.person,
-                  color: Theme.of(context).textTheme.bodyText1!.color,
-                  size: 70),
+                  color: Theme.of(context).colorScheme.onPrimary, size: 70),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 6, top: 5),
