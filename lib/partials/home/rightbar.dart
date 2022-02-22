@@ -1,9 +1,15 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
+import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/feed/minestrixProfileNotCreated.dart';
 import 'package:minestrix/partials/minestrixRoomTile.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 
 class RightBar extends StatelessWidget {
   const RightBar({Key? key}) : super(key: key);
@@ -50,6 +56,29 @@ class RightBar extends StatelessWidget {
                             );
                           }
                         }),
+                  ),
+                  H2Title("Groups"),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        for (Room room in sclient.calendarEvents)
+                          ListTile(
+                              title: Text(room.name),
+                              subtitle: Text(room.topic),
+                              trailing: Icon(Icons.navigate_next),
+                              leading: MatrixUserImage(
+                                  client: sclient,
+                                  thumnail: true,
+                                  url: room.avatar,
+                                  defaultText: room.name,
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor),
+                              onTap: () async {
+                                await context
+                                    .navigateTo(CalendarEventRoute(room: room));
+                              }),
+                      ],
+                    ),
                   ),
                   if (sclient.userRoomCreated != true)
                     MinestrixProfileNotCreated(),
