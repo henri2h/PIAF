@@ -282,6 +282,7 @@ class MinestrixClient extends Client {
         waitForCreation: true);
   }
 
+// TODO: remove me
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
       {List<String> eventTypesFilter: const [
         MatrixTypes.post,
