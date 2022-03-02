@@ -38,7 +38,7 @@ class _CalendarEventCardState extends State<CalendarEventCard> {
                       widget.room.topic,
                       maxLines: 4,
                     ),
-                    Row(
+                    Wrap(
                       children: [
                         Text("Created by ", style: TextStyle(fontSize: 14)),
                         Text(
