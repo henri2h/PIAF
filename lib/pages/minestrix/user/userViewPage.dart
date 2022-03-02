@@ -104,8 +104,7 @@ class _UserViewPageState extends State<UserViewPage> {
             timeline =
                 sclient.getSRoomFilteredEvents(mroom!.timeline!).toList();
 
-          bool displayUpdating = timeline?.length == 0 ||
-              timeline?.last.type != EventTypes.RoomCreate;
+          bool canRequestHistory = mroom!.timeline?.canRequestHistory == true;
           return LayoutBuilder(builder: (context, constraints) {
             return Row(
               children: [
@@ -116,6 +115,15 @@ class _UserViewPageState extends State<UserViewPage> {
                         ? CircularProgressIndicator()
                         : ListView(
                             children: [
+                              H2Title("User profiles"),
+                              UserProfileSelection(
+                                  userId: userId!,
+                                  onRoomSelected: (MinestrixRoom r) {
+                                    setState(() {
+                                      mroom = r;
+                                    });
+                                  },
+                                  roomSelectedId: mroom?.room.id),
                               Padding(
                                   padding: const EdgeInsets.all(15),
                                   child: UserFriendsCard(sroom: mroom!)),
@@ -127,7 +135,7 @@ class _UserViewPageState extends State<UserViewPage> {
                       key: Key(mroom?.room.id ?? "room"),
                       controller: _controller,
                       itemCount: timeline?.length != null
-                          ? timeline!.length + 2 + (displayUpdating ? 1 : 0)
+                          ? timeline!.length + 2 + (canRequestHistory ? 1 : 0)
                           : 2,
                       itemBuilder:
                           (context, i, void Function(Offset, Event) onReact) {
@@ -138,14 +146,6 @@ class _UserViewPageState extends State<UserViewPage> {
                               SizedBox(
                                 height: 20,
                               ),
-                              UserProfileSelection(
-                                  userId: userId!,
-                                  onRoomSelected: (MinestrixRoom r) {
-                                    setState(() {
-                                      mroom = r;
-                                    });
-                                  },
-                                  roomSelectedId: mroom?.room.id),
                             ],
                           );
 
