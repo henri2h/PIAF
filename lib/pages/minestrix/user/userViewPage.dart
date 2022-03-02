@@ -106,116 +106,126 @@ class _UserViewPageState extends State<UserViewPage> {
 
           bool canRequestHistory = mroom!.timeline?.canRequestHistory == true;
           return LayoutBuilder(builder: (context, constraints) {
-            return Row(
-              children: [
-                if (constraints.maxWidth > 900)
-                  SizedBox(
-                    width: 300,
-                    child: mroom == null
-                        ? CircularProgressIndicator()
-                        : ListView(
-                            children: [
-                              H2Title("User profiles"),
-                              UserProfileSelection(
-                                  userId: userId!,
-                                  onRoomSelected: (MinestrixRoom r) {
-                                    setState(() {
-                                      mroom = r;
-                                    });
-                                  },
-                                  roomSelectedId: mroom?.room.id),
-                              Padding(
-                                  padding: const EdgeInsets.all(15),
-                                  child: UserFriendsCard(sroom: mroom!)),
-                            ],
-                          ),
-                  ),
-                Flexible(
-                  child: CustomListViewWithEmoji(
-                      key: Key(mroom?.room.id ?? "room"),
-                      controller: _controller,
-                      itemCount: timeline?.length != null
-                          ? timeline!.length + 2 + (canRequestHistory ? 1 : 0)
-                          : 2,
-                      itemBuilder:
-                          (context, i, void Function(Offset, Event) onReact) {
-                        if (i == 0)
-                          return Column(
-                            children: [
-                              UserInfo(profile: p, room: mroom?.room),
-                              SizedBox(
-                                height: 20,
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 1200),
+                child: Row(
+                  children: [
+                    if (constraints.maxWidth > 900)
+                      SizedBox(
+                        width: 300,
+                        child: mroom == null
+                            ? CircularProgressIndicator()
+                            : ListView(
+                                children: [
+                                  H2Title("User profiles"),
+                                  UserProfileSelection(
+                                      userId: userId!,
+                                      onRoomSelected: (MinestrixRoom r) {
+                                        setState(() {
+                                          mroom = r;
+                                        });
+                                      },
+                                      roomSelectedId: mroom?.room.id),
+                                  Padding(
+                                      padding: const EdgeInsets.all(15),
+                                      child: UserFriendsCard(sroom: mroom!)),
+                                ],
                               ),
-                            ],
-                          );
+                      ),
+                    Flexible(
+                      child: CustomListViewWithEmoji(
+                          key: Key(mroom?.room.id ?? "room"),
+                          controller: _controller,
+                          itemCount: timeline?.length != null
+                              ? timeline!.length +
+                                  2 +
+                                  (canRequestHistory ? 1 : 0)
+                              : 2,
+                          itemBuilder: (context, i,
+                              void Function(Offset, Event) onReact) {
+                            if (i == 0)
+                              return Column(
+                                children: [
+                                  UserInfo(profile: p, room: mroom?.room),
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                ],
+                              );
 
-                        if (timeline != null) {
-                          if (i == 1) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Center(
-                                  child: Padding(
+                            if (timeline != null) {
+                              if (i == 1) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 15, vertical: 8.0),
+                                        child: H2Title("Posts"),
+                                      ),
+                                    ),
+                                    StoriesList(
+                                        client: sclient,
+                                        restrict: mroom!.userID),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: PostWriterModal(sroom: mroom),
+                                    )
+                                  ],
+                                );
+                              } else if ((i - 2) < timeline.length) {
+                                return Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 15, vertical: 8.0),
-                                    child: H2Title("Posts"),
-                                  ),
-                                ),
-                                StoriesList(
-                                    client: sclient, restrict: mroom!.userID),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: PostWriterModal(sroom: mroom),
-                                )
-                              ],
-                            );
-                          } else if ((i - 2) < timeline.length) {
-                            return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 2, horizontal: 12),
-                                child: Post(
-                                    event: timeline[i - 2],
-                                    onReact: (Offset e) =>
-                                        onReact(e, timeline![i - 2])));
-                          }
+                                        vertical: 2, horizontal: 12),
+                                    child: Post(
+                                        event: timeline[i - 2],
+                                        onReact: (Offset e) =>
+                                            onReact(e, timeline![i - 2])));
+                              }
 
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: MaterialButton(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      if (_requestingHistory)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 10),
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      Text("Load more posts"),
-                                    ],
-                                  ),
-                                ),
-                                onPressed: () async {
-                                  if (_requestingHistory == false) {
-                                    setState(() {
-                                      _requestingHistory = true;
-                                    });
-                                    await mroom!.room.requestHistory();
-                                    setState(() {
-                                      _requestingHistory = false;
-                                    });
-                                  }
-                                }),
-                          );
-                        } else {
-                          return UnknownUser(
-                              user_in: user_in, sclient: sclient, p: p);
-                        }
-                      }),
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: MaterialButton(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          if (_requestingHistory)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 10),
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          Text("Load more posts"),
+                                        ],
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      if (_requestingHistory == false) {
+                                        setState(() {
+                                          _requestingHistory = true;
+                                        });
+                                        await mroom!.room.requestHistory();
+                                        setState(() {
+                                          _requestingHistory = false;
+                                        });
+                                      }
+                                    }),
+                              );
+                            } else {
+                              return UnknownUser(
+                                  user_in: user_in, sclient: sclient, p: p);
+                            }
+                          }),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           });
         });
