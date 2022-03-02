@@ -32,6 +32,7 @@ class _CalendarEventCardState extends State<CalendarEventCard> {
                   widget.room.name,
                 ),
                 subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.room.topic,
@@ -39,10 +40,12 @@ class _CalendarEventCardState extends State<CalendarEventCard> {
                     ),
                     Row(
                       children: [
-                        Text("Created by"),
-                        Text(widget.room.createEvent?.sender.displayName ??
-                            widget.room.createEvent?.senderId ??
-                            "")
+                        Text("Created by ", style: TextStyle(fontSize: 14)),
+                        Text(
+                            widget.room.createEvent?.sender.displayName ??
+                                widget.room.createEvent?.senderId ??
+                                "",
+                            style: TextStyle(fontWeight: FontWeight.bold))
                       ],
                     )
                   ],
