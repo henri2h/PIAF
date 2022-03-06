@@ -118,7 +118,6 @@ class _UserViewPageState extends State<UserViewPage> {
                             ? CircularProgressIndicator()
                             : ListView(
                                 children: [
-                                  H2Title("User profiles"),
                                   UserProfileSelection(
                                       userId: userId!,
                                       onRoomSelected: (MinestrixRoom r) {

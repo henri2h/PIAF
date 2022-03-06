@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
@@ -33,108 +34,111 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
             r.userID == widget.userId && r.type == FeedRoomType.user)
         .toList();
 
-    if (_rooms.length > 1 || widget.userId == sclient.userID)
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (MinestrixRoom r in _rooms)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: MaterialButton(
-                      color: r.room.id == widget.roomSelectedId
-                          ? Colors.green
-                          : null,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Row(
-                          children: [
-                            MatrixUserImage(
-                              client: sclient,
-                              url: r.room.avatar,
-                              thumnail: true,
-                              defaultText: r.room.topic,
-                              backgroundColor: Theme.of(context).primaryColor,
-                              width: 45,
-                              height: 45,
-                            ),
-                            SizedBox(
-                              width: 8,
-                            ),
-                            ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: 100),
-                              child: Text(r.room.topic,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          widget.onRoomSelected(r);
-                        });
-                      }),
-                ),
-              if (widget.userId == sclient.userID)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: MaterialButton(
-                    color: Colors.green,
+    if (_rooms.length > 1 || widget.userId == sclient.userID) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            H2Title("User profiles"),
+            for (MinestrixRoom r in _rooms)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: MaterialButton(
+                    color: r.room.id == widget.roomSelectedId
+                        ? Theme.of(context).primaryColor
+                        : null,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                     child: Padding(
                       padding: const EdgeInsets.all(4),
                       child: Row(
                         children: [
-                          SizedBox(
-                              height: 45,
-                              child: _creatingAccount
-                                  ? Center(
-                                      child: CircularProgressIndicator(
-                                          color: Colors.white),
-                                    )
-                                  : Icon(Icons.add, size: 36)),
+                          MatrixUserImage(
+                            client: sclient,
+                            url: r.room.avatar,
+                            thumnail: true,
+                            defaultText: r.room.topic,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            width: 45,
+                            height: 45,
+                          ),
                           SizedBox(
                             width: 8,
                           ),
                           ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: 110),
-                            child: Text("Create a new profile",
+                            constraints: BoxConstraints(maxWidth: 100),
+                            child: Text(r.room.topic,
                                 maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w600)),
-                          )
+                                    color: r.room.id == widget.roomSelectedId
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary
+                                        : null,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600)),
+                          ),
                         ],
                       ),
                     ),
-                    onPressed: _creatingAccount
-                        ? null
-                        : () async {
-                            setState(() {
-                              _creatingAccount = true;
-                            });
-                            await sclient.createMinestrixAccount(
-                                sclient.userID! + " timeline", "public account",
-                                visibility: model.Visibility.public);
-                            setState(() {
-                              _creatingAccount = false;
-                            });
-                          },
+                    onPressed: () {
+                      setState(() {
+                        widget.onRoomSelected(r);
+                      });
+                    }),
+              ),
+            if (widget.userId == sclient.userID)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: MaterialButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                            height: 45,
+                            child: _creatingAccount
+                                ? Center(
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white),
+                                  )
+                                : Icon(Icons.add, size: 36)),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 110),
+                          child: Text("Create a new profile",
+                              maxLines: 2,
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w600)),
+                        )
+                      ],
+                    ),
                   ),
-                )
-            ],
-          ),
+                  onPressed: _creatingAccount
+                      ? null
+                      : () async {
+                          setState(() {
+                            _creatingAccount = true;
+                          });
+                          await sclient.createMinestrixAccount(
+                              sclient.userID! + " timeline", "public account",
+                              visibility: model.Visibility.public);
+                          setState(() {
+                            _creatingAccount = false;
+                          });
+                        },
+                ),
+              )
+          ],
         ),
       );
+    }
 
     return Container();
   }
