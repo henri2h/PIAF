@@ -165,7 +165,9 @@ class MinestrixClient extends Client {
   Future<void> requestHistoryForSRooms() async {
     int n = srooms.values.length;
     int counter = 0;
-    for (MinestrixRoom sr in srooms.values) {
+    List<MinestrixRoom> rooms = srooms.values
+        .toList(); // Try to prevent «Concurrent modification during iteration»
+    for (MinestrixRoom sr in rooms) {
       await sr.timeline!.requestHistory();
 
       print("First sync progress : " + (counter / n * 100).toString());
