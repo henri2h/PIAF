@@ -17,6 +17,7 @@ import 'package:minestrix/pages/minestrix/homeWrapperPage.dart';
 import 'package:minestrix/pages/minestrix/user/friendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userFriendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userViewPage.dart';
+import 'package:minestrix/pages/settings/settingsLabsPage.dart';
 import 'package:minestrix/pages/settings/settingsPage.dart';
 import 'package:minestrix/pages/settings/settingsProfilePage.dart';
 import 'package:minestrix/pages/settings/settingsSecurityPage.dart';
@@ -55,6 +56,7 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
             AutoRoute(path: 'settings/account', page: SettingsAccountPage),
             AutoRoute(path: 'settings/theme', page: SettingsThemePage),
             AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
+            AutoRoute(path: 'settings/labs', page: SettingsLabsPage),
             RedirectRoute(path: '*', redirectTo: 'feed')
           ]),
       AutoRoute(
