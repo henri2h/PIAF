@@ -43,7 +43,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
             H2Title("User profiles"),
             for (MinestrixRoom r in _rooms)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                 child: MaterialButton(
                     color: r.room.id == widget.roomSelectedId
                         ? Theme.of(context).primaryColor
