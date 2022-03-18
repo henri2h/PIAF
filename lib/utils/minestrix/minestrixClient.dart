@@ -115,23 +115,6 @@ class MinestrixClient extends Client {
     });
   }
 
-  Future<bool> customLoginAction(LoginType loginType,
-      {required String homeserver,
-      required String user,
-      String? password,
-      String? token}) async {
-    await checkHomeserver(homeserver);
-    await login(loginType,
-        identifier: AuthenticationUserIdentifier(user: user),
-        password: password,
-        token: token,
-        initialDeviceDisplayName: clientName);
-
-    await roomsLoading;
-    await updateAll(); // start synchronsiation
-    return true;
-  }
-
   Future<List<User>> getFollowers() async {
     return (await getSUsers())
         .where((User u) => u.membership == Membership.join)

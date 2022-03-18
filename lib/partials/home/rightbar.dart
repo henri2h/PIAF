@@ -57,27 +57,28 @@ class RightBar extends StatelessWidget {
                           }
                         }),
                   ),
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        MaterialButton(
-                          child: H2Title("Events"),
-                          onPressed: () {
-                            context.navigateTo(CalendarEventListRoute());
-                          },
-                        ),
-                        for (Room room in (sclient.calendarEvents
-                              ..sort((Room a, Room b) =>
-                                  b.lastEvent?.originServerTs != null &&
-                                          a.lastEvent?.originServerTs != null
-                                      ? b.lastEvent!.originServerTs.compareTo(
-                                          a.lastEvent!.originServerTs)
-                                      : 0))
-                            .take(3))
-                          CalendarEventCard(room: room)
-                      ],
+                  if (Matrix.of(context).settings.calendarEventSupport)
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          MaterialButton(
+                            child: H2Title("Events"),
+                            onPressed: () {
+                              context.navigateTo(CalendarEventListRoute());
+                            },
+                          ),
+                          for (Room room in (sclient.calendarEvents
+                                ..sort((Room a, Room b) =>
+                                    b.lastEvent?.originServerTs != null &&
+                                            a.lastEvent?.originServerTs != null
+                                        ? b.lastEvent!.originServerTs.compareTo(
+                                            a.lastEvent!.originServerTs)
+                                        : 0))
+                              .take(3))
+                            CalendarEventCard(room: room)
+                        ],
+                      ),
                     ),
-                  ),
                   if (sclient.userRoomCreated != true)
                     MinestrixProfileNotCreated(),
                 ],
