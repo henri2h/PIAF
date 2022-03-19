@@ -38,7 +38,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
-            title: Text("Accounts"),
+            title: Text("Profiles"),
             trailing: Icon(Icons.arrow_forward),
             leading: Icon(Icons.people),
             onTap: () {

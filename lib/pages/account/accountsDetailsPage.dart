@@ -8,8 +8,11 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:minestrix_chat/utils/room_profile.dart';
+
+import '../../partials/components/buttons/customFutureButton.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
   const AccountsDetailsPage({Key? key}) : super(key: key);
@@ -27,41 +30,120 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
 
     return ListView(
       children: [
-        CustomHeader("Accounts"),
+        CustomHeader("Profiles"),
         if (profile == null)
           Padding(
             padding: const EdgeInsets.all(25),
-            child: CustomTextFutureButton(
-                onPressed: () async {
-                  await RoomProfile.createProfileRoom(sclient);
-                  setState(() {});
-                },
-                text: "Create profile",
-                icon: Icon(Icons.create)),
+            child: Card(
+              child: Wrap(
+                direction: Axis.horizontal,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.spaceAround,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16),
+                          child: Icon(Icons.person, size: 50),
+                        ),
+                        Flexible(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 500),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("No user space found",
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600)),
+                                SizedBox(height: 4),
+                                Text(
+                                    "A user space is used to allow store your profile information. It can be used by other users to discover your MinesTRIX profile.")
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CustomFutureButton(
+                        onPressed: () async {
+                          await RoomProfile.createProfileRoom(sclient);
+                          setState(() {});
+                        },
+                        children: [
+                          Text("Create user space",
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary))
+                        ],
+                        color: Theme.of(context).primaryColor,
+                        expanded: false,
+                        icon: Icon(Icons.add,
+                            color: Theme.of(context).colorScheme.onPrimary)),
+                  ),
+                ],
+              ),
+            ),
           ),
         if (profile != null)
-          for (SpaceChild s in profile.spaceChildren)
-            Builder(builder: (context) {
-              if (s.roomId == null) return Icon(Icons.error);
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: MatrixUserImage(
+                          url: profile.r.avatar,
+                          client: profile.r.client,
+                          thumnail: true,
+                          backgroundColor: Theme.of(context).primaryColor,
+                          defaultText: profile.r.name,
+                          width: 80,
+                          height: 80),
+                    ),
+                    Text(profile.r.name,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(profile.r.topic)
+                  ],
+                ),
+              ),
+              for (SpaceChild s in profile.spaceChildren)
+                Padding(
+                  padding: const EdgeInsets.only(left: 80.0),
+                  child: Builder(builder: (context) {
+                    if (s.roomId == null) return Icon(Icons.error);
 
-              return Builder(builder: (context) {
-                Room? r = sclient.getRoomById(s.roomId!);
-                if (r == null)
-                  return ListTile(
-                      leading: Icon(Icons.error),
-                      title: Text("could not open " + s.roomId!),
-                      trailing: IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () async {
-                            await profile.removeSpaceChild(s.roomId!);
-                            setState(() {});
-                          }));
+                    return Builder(builder: (context) {
+                      Room? r = sclient.getRoomById(s.roomId!);
+                      if (r == null)
+                        return ListTile(
+                            leading: Icon(Icons.error),
+                            title: Text("could not open " + s.roomId!),
+                            trailing: IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () async {
+                                  await profile.removeSpaceChild(s.roomId!);
+                                  setState(() {});
+                                }));
 
-                return RoomProfileListTile(r, onLeave: () {
-                  setState(() {});
-                });
-              });
-            }),
+                      return RoomProfileListTile(r, onLeave: () {
+                        setState(() {});
+                      });
+                    });
+                  }),
+                ),
+            ],
+          ),
         for (MinestrixRoom sroom in sclient.srooms.values.where((sroom) =>
             sroom.userID == sclient.userID &&
             sroom.type == FeedRoomType.user &&
