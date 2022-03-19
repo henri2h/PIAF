@@ -57,6 +57,13 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ListTile(
+              title: Text("Labs"),
+              trailing: Icon(Icons.arrow_forward),
+              leading: Icon(Icons.warning),
+              onTap: () {
+                context.navigateTo(SettingsLabsRoute());
+              }),
+          ListTile(
             title: Text("Debug"),
             trailing: Icon(Icons.arrow_forward),
             leading: Icon(Icons.bug_report),

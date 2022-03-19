@@ -2,6 +2,8 @@
 // @AdaptiveAutoRouter
 // @CustomAutoRouter
 import 'package:auto_route/auto_route.dart';
+import 'package:minestrix/pages/calendar_events/calendarEventPage.dart';
+import 'package:minestrix/pages/minestrix/calendarEvents/calendarEventsListPage.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
 import 'package:minestrix/pages/minestrix/postEditor.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
@@ -15,6 +17,7 @@ import 'package:minestrix/pages/minestrix/homeWrapperPage.dart';
 import 'package:minestrix/pages/minestrix/user/friendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userFriendsPage.dart';
 import 'package:minestrix/pages/minestrix/user/userViewPage.dart';
+import 'package:minestrix/pages/settings/settingsLabsPage.dart';
 import 'package:minestrix/pages/settings/settingsPage.dart';
 import 'package:minestrix/pages/settings/settingsProfilePage.dart';
 import 'package:minestrix/pages/settings/settingsSecurityPage.dart';
@@ -44,12 +47,16 @@ import 'package:minestrix_chat/view/matrix_chats_page.dart';
             AutoRoute(path: 'userfeed', page: UserViewPage),
             AutoRoute(path: 'my_friends', page: FriendsPage),
             AutoRoute(path: 'user_friends', page: UserFriendsPage),
+            AutoRoute(path: 'calendar_events/item', page: CalendarEventPage),
+            AutoRoute(
+                path: 'calendar_events/list', page: CalendarEventListPage),
             AutoRoute(path: 'search', page: ResearchPage),
             AutoRoute(path: 'accounts', page: AccountsDetailsPage),
             AutoRoute(path: 'settings', page: SettingsPage),
             AutoRoute(path: 'settings/account', page: SettingsAccountPage),
             AutoRoute(path: 'settings/theme', page: SettingsThemePage),
             AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
+            AutoRoute(path: 'settings/labs', page: SettingsLabsPage),
             RedirectRoute(path: '*', redirectTo: 'feed')
           ]),
       AutoRoute(

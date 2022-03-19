@@ -6,6 +6,8 @@ import 'package:minestrix/partials/components/dialogs/keyVerificationDialog.dart
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 
+import 'settings.dart';
+
 class Matrix extends StatefulWidget {
   final Widget? child;
 
@@ -31,9 +33,12 @@ class MatrixState extends State<Matrix> {
   StreamSubscription<KeyVerification>? onKeyVerificationRequestSub;
   StreamSubscription<EventUpdate>? onEvent;
 
+  late Settings settings;
+
   @override
   void initState() {
     super.initState();
+    settings = Settings();
     initMatrix();
   }
 

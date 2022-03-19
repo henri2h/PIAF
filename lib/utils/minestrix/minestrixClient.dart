@@ -115,23 +115,6 @@ class MinestrixClient extends Client {
     });
   }
 
-  Future<bool> customLoginAction(LoginType loginType,
-      {required String homeserver,
-      required String user,
-      String? password,
-      String? token}) async {
-    await checkHomeserver(homeserver);
-    await login(loginType,
-        identifier: AuthenticationUserIdentifier(user: user),
-        password: password,
-        token: token,
-        initialDeviceDisplayName: clientName);
-
-    await roomsLoading;
-    await updateAll(); // start synchronsiation
-    return true;
-  }
-
   Future<List<User>> getFollowers() async {
     return (await getSUsers())
         .where((User u) => u.membership == Membership.join)
@@ -165,7 +148,9 @@ class MinestrixClient extends Client {
   Future<void> requestHistoryForSRooms() async {
     int n = srooms.values.length;
     int counter = 0;
-    for (MinestrixRoom sr in srooms.values) {
+    List<MinestrixRoom> rooms = srooms.values
+        .toList(); // Try to prevent «Concurrent modification during iteration»
+    for (MinestrixRoom sr in rooms) {
       await sr.timeline!.requestHistory();
 
       print("First sync progress : " + (counter / n * 100).toString());
@@ -282,6 +267,7 @@ class MinestrixClient extends Client {
         waitForCreation: true);
   }
 
+// TODO: remove me
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
       {List<String> eventTypesFilter: const [
         MatrixTypes.post,

@@ -11,7 +11,8 @@ import 'package:minestrix_chat/config/matrix_types.dart';
 class Post extends StatefulWidget {
   final Event event;
   final void Function(Offset) onReact;
-  Post({Key? key, required this.event, required this.onReact})
+  final Timeline? timeline;
+  Post({Key? key, required this.event, required this.onReact, this.timeline})
       : super(key: key);
 
   @override
@@ -30,7 +31,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
     Event e = widget.event;
     MinestrixClient sclient = Matrix.of(context).sclient!;
 
-    Timeline? t = sclient.srooms[e.roomId!]?.timeline;
+    Timeline? t = sclient.srooms[e.roomId!]?.timeline ?? widget.timeline;
     if (t == null) {
       return CircularProgressIndicator();
     }

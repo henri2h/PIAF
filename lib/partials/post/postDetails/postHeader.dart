@@ -10,12 +10,12 @@ import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
-  final Event? event;
-  const PostHeader({Key? key, this.event}) : super(key: key);
+  final Event event;
+  const PostHeader({Key? key, required this.event}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final MinestrixClient sclient = Matrix.of(context).sclient!;
-    MinestrixRoom sroom = sclient.srooms[event!.roomId!]!;
+    MinestrixRoom? sroom = sclient.srooms[event.roomId!];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -26,18 +26,19 @@ class PostHeader extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: MatrixUserImage(
                     client: sclient,
-                    url: event!.sender.avatarUrl,
-                    defaultText: event!.sender.displayName ?? event!.sender.id,
+                    url: event.sender.avatarUrl,
+                    defaultText: event.sender.displayName ?? event.sender.id,
                     backgroundColor: Theme.of(context).primaryColor,
                     width: 48,
                     height: 48,
                     thumnail: true,
                     defaultIcon: Icon(Icons.person, size: 48)),
               ),
-              if (sroom.type == FeedRoomType.user)
+              if (sroom?.type != FeedRoomType.group)
                 Flexible(
                   child: Builder(builder: (BuildContext context) {
-                    User feedOwner = sroom.user!;
+                    User? feedOwner =
+                        event.room.getState("m.room.create")?.sender;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,23 +54,22 @@ class PostHeader extends StatelessWidget {
                                       .color),
                               onPressed: () {
                                 context.navigateTo(
-                                    UserViewRoute(userID: event!.senderId));
+                                    UserViewRoute(userID: event.senderId));
                               },
                               child: Text(
-                                  (event!.sender.displayName ??
-                                      event!.sender.id),
+                                  (event.sender.displayName ?? event.sender.id),
                                   style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold)),
                             ),
-                            if (event!.sender.id != feedOwner.id)
+                            if (event.sender.id != feedOwner?.id)
                               Text("to",
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .textTheme
                                           .bodyText1!
                                           .color)),
-                            if (event!.sender.id != feedOwner.id)
+                            if (event.sender.id != feedOwner?.id)
                               TextButton(
                                 style: TextButton.styleFrom(
                                     primary: Theme.of(context)
@@ -78,10 +78,12 @@ class PostHeader extends StatelessWidget {
                                         .color),
                                 onPressed: () {
                                   context.navigateTo(
-                                      UserViewRoute(userID: feedOwner.id));
+                                      UserViewRoute(userID: feedOwner?.id));
                                 },
                                 child: Text(
-                                    (feedOwner.displayName ?? feedOwner.id),
+                                    (feedOwner?.displayName ??
+                                        feedOwner?.id ??
+                                        "null"),
                                     overflow: TextOverflow.clip,
                                     style: TextStyle(
                                         fontSize: 16,
@@ -91,7 +93,7 @@ class PostHeader extends StatelessWidget {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(timeago.format(event!.originServerTs),
+                          child: Text(timeago.format(event.originServerTs),
                               style: TextStyle(
                                   fontWeight: FontWeight.normal,
                                   color: Theme.of(context)
@@ -103,7 +105,7 @@ class PostHeader extends StatelessWidget {
                     );
                   }),
                 ),
-              if (sroom.type == FeedRoomType.group)
+              if (sroom?.type == FeedRoomType.group)
                 Flexible(
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,10 +116,10 @@ class PostHeader extends StatelessWidget {
                         TextButton(
                           onPressed: () {
                             context.navigateTo(
-                                UserViewRoute(userID: event!.senderId));
+                                UserViewRoute(userID: event.senderId));
                           },
                           child: Text(
-                              (event!.sender.displayName ?? event!.sender.id),
+                              (event.sender.displayName ?? event.sender.id),
                               style: TextStyle(
                                   color: Theme.of(context)
                                       .textTheme
@@ -134,12 +136,11 @@ class PostHeader extends StatelessWidget {
                                     .color)),
                         TextButton(
                           onPressed: () {
-                            MinestrixRoom? sroom =
-                                sclient.srooms[event!.roomId];
+                            MinestrixRoom? sroom = sclient.srooms[event.roomId];
                             if (sroom != null)
                               context.navigateTo(GroupRoute(sroom: sroom));
                           },
-                          child: Text(sroom.name,
+                          child: Text(event.room.name,
                               style: TextStyle(
                                   color: Theme.of(context)
                                       .textTheme
@@ -150,7 +151,7 @@ class PostHeader extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Text(timeago.format(event!.originServerTs),
+                    Text(timeago.format(event.originServerTs),
                         style: TextStyle(
                             fontWeight: FontWeight.normal,
                             color: Theme.of(context).textTheme.caption!.color)),
@@ -159,7 +160,7 @@ class PostHeader extends StatelessWidget {
             ],
           ),
         ),
-        if (event!.canRedact)
+        if (event.canRedact)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -181,7 +182,7 @@ class PostHeader extends StatelessWidget {
                                   ],
                                 ),
                                 value: "edit"),*/ // TODO : implement post editing
-                          if (event!.canRedact)
+                          if (event.canRedact)
                             PopupMenuItem(
                                 child: Row(
                                   children: [
@@ -197,7 +198,7 @@ class PostHeader extends StatelessWidget {
                     onSelected: (String action) async {
                       switch (action) {
                         case "delete":
-                          await event!.redactEvent();
+                          await event.redactEvent();
                           break;
                         default:
                       }
