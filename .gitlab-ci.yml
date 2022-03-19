@@ -108,6 +108,9 @@ deploy_android_fdroid:
 analyze:
   stage: analyze
   script:
+  - flutter clean
+  - flutter pub get
+  - flutter packages pub run build_runner build
   - flutter analyze
   - flutter format lib/ --set-exit-if-changed
   tags:
