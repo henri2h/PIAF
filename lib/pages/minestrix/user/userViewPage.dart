@@ -14,6 +14,7 @@ import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
+import 'package:minestrix_chat/utils/matrix/client_extension.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
@@ -334,7 +335,23 @@ class UnknownUser extends StatelessWidget {
                               Text("Follow",
                                   style: TextStyle(fontWeight: FontWeight.bold))
                             ],
-                            onPressed: () async {},
+                            onPressed: () async {
+                              switch (space.joinRule) {
+                                case JoinRules.public:
+                                  sclient.joinRoom(space
+                                      .id); // TODO: update me to support joining over federation (need the via field)
+                                  await sclient.waitForRoomInSync(space.id);
+
+                                  break;
+                                case JoinRules.knock:
+                                  sclient.knockRoom(space.id);
+                                  await sclient.waitForRoomInSync(space.id);
+
+                                  break;
+                                default:
+                              }
+                              sclient.knockRoom(space.id);
+                            },
                             expanded: false),
                   ],
                 );
