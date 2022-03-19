@@ -330,27 +330,30 @@ class UnknownUser extends StatelessWidget {
                   onPressed: null,
                 )),
               SizedBox(width: 30),
-              CustomFutureButton(
-                  icon: Icon(Icons.message),
-                  children: [Text("Send a message")],
-                  expanded: false,
-                  onPressed: () async {
-                    String? roomId = sclient.getDirectChatFromUserId(p.userId);
-                    if (roomId != null) {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (BuildContext context) => MatrixChatPage(
-                                  roomId: roomId, client: sclient)));
-                    } else {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (BuildContext context) => Scaffold(
-                                  appBar: AppBar(title: Text("Start chat")),
-                                  body: MatrixChatsPage(client: sclient))));
-                    }
-                  }),
+              if (p.userId != sclient.userID)
+                CustomFutureButton(
+                    icon: Icon(Icons.message),
+                    children: [Text("Send a message")],
+                    expanded: false,
+                    onPressed: () async {
+                      String? roomId =
+                          sclient.getDirectChatFromUserId(p.userId);
+                      if (roomId != null) {
+                        await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    MatrixChatPage(
+                                        roomId: roomId, client: sclient)));
+                      } else {
+                        await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) => Scaffold(
+                                    appBar: AppBar(title: Text("Start chat")),
+                                    body: MatrixChatsPage(client: sclient))));
+                      }
+                    }),
             ],
           ),
         ),
