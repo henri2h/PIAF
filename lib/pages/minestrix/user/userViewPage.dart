@@ -11,10 +11,15 @@ import 'package:minestrix/partials/users/userProfileSelection.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
+import 'package:minestrix_chat/utils/profile_space.dart';
+import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
+
+import '../../../partials/components/buttons/customFutureButton.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display
@@ -111,26 +116,24 @@ class _UserViewPageState extends State<UserViewPage> {
                 constraints: BoxConstraints(maxWidth: 1200),
                 child: Row(
                   children: [
-                    if (constraints.maxWidth > 900)
+                    if (constraints.maxWidth > 900 && mroom != null)
                       SizedBox(
                         width: 300,
-                        child: mroom == null
-                            ? CircularProgressIndicator()
-                            : ListView(
-                                children: [
-                                  UserProfileSelection(
-                                      userId: userId!,
-                                      onRoomSelected: (MinestrixRoom r) {
-                                        setState(() {
-                                          mroom = r;
-                                        });
-                                      },
-                                      roomSelectedId: mroom?.room.id),
-                                  Padding(
-                                      padding: const EdgeInsets.all(15),
-                                      child: UserFriendsCard(sroom: mroom!)),
-                                ],
-                              ),
+                        child: ListView(
+                          children: [
+                            UserProfileSelection(
+                                userId: userId!,
+                                onRoomSelected: (MinestrixRoom r) {
+                                  setState(() {
+                                    mroom = r;
+                                  });
+                                },
+                                roomSelectedId: mroom?.room.id),
+                            Padding(
+                                padding: const EdgeInsets.all(15),
+                                child: UserFriendsCard(sroom: mroom!)),
+                          ],
+                        ),
                       ),
                     Flexible(
                       child: CustomListViewWithEmoji(
@@ -247,17 +250,6 @@ class UnknownUser extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
           child: Row(
             children: [
-              if (user_in == null ||
-                  (user_in?.membership != Membership.join &&
-                      user_in?.membership != Membership.invite))
-                Flexible(
-                  child: MinesTrixButton(
-                      icon: Icons.person_add,
-                      label: "Follow",
-                      onFuturePressed: () async {
-                        await sclient.addFriend(p.userId);
-                      }),
-                ),
               if (user_in != null && user_in?.membership == Membership.invite)
                 Flexible(
                     child: MinesTrixButton(
@@ -315,8 +307,47 @@ class UnknownUser extends StatelessWidget {
                   style: TextStyle(fontSize: 20))
             ],
           ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: FutureBuilder<List<SpaceRoom>?>(
+              future: getProfileSpaceContent(),
+              builder: (context, snapshot) {
+                List<SpaceRoom> profiles = (snapshot.data ?? [])
+                    .where((SpaceRoom room) =>
+                        room.roomType == MatrixTypes.account)
+                    .toList();
+
+                if (!snapshot.hasData) return CircularProgressIndicator();
+                return Column(
+                  children: [
+                    for (SpaceRoom space in profiles)
+                      if ([JoinRules.knock, JoinRules.public]
+                              .contains(space.joinRule) &&
+                          (sclient.getRoomById(space.id) == null ||
+                              ![Membership.knock, Membership.join].contains(
+                                  sclient.getRoomById(space.id)?.membership)))
+                        CustomFutureButton(
+                            icon: Icon(Icons.person_add),
+                            children: [
+                              Text(space.name),
+                              Text("Follow",
+                                  style: TextStyle(fontWeight: FontWeight.bold))
+                            ],
+                            onPressed: () async {},
+                            expanded: false),
+                  ],
+                );
+              }),
         )
       ],
     );
+  }
+
+  Future<List<SpaceRoom>?> getProfileSpaceContent() async {
+    var roomId =
+        await sclient.getRoomIdByAlias(ProfileSpace.getAliasName(p.userId));
+    if (roomId.roomId == null) return null;
+    return await sclient.getRoomHierarchy(roomId.roomId!);
   }
 }
