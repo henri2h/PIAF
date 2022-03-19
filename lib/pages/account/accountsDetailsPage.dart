@@ -191,7 +191,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                         await profile.setSpaceChild(sroom.room.id);
                         setState(() {});
                       },
-                      text: "Add to profile list",
+                      text: "Add to " + profile.r.name,
                       icon: Icon(Icons.add)),
                 )
             ],
@@ -199,6 +199,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
         Padding(
           padding: const EdgeInsets.all(20),
           child: Wrap(
+            alignment: WrapAlignment.center,
             children: [
               if (profile != null)
                 Padding(
@@ -209,13 +210,15 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                         setState(() {});
                       },
                       text: "Create stories room",
-                      icon: Icon(Icons.photo)),
+                      expanded: false,
+                      icon: Icon(Icons.add_a_photo)),
                 ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: CustomTextFutureButton(
                     onPressed: () async {},
                     text: "Create a public MinesTRIX room",
+                    expanded: false,
                     icon: Icon(Icons.person_add)),
               )
             ],
