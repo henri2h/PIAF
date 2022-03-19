@@ -172,7 +172,9 @@ class _UserViewPageState extends State<UserViewPage> {
                                     ),
                                     StoriesList(
                                         client: sclient,
-                                        restrict: mroom!.userID),
+                                        restrict: mroom!.userID,
+                                        allowCreatingStory:
+                                            mroom!.userID == sclient.userID),
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: PostWriterModal(sroom: mroom),
