@@ -21,6 +21,7 @@ import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 import '../../../partials/components/buttons/customFutureButton.dart';
+import '../../../partials/feed/minestrixProfileNotCreated.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display
@@ -357,22 +358,25 @@ class UnknownUser extends StatelessWidget {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 100),
-          child: Column(
-            children: [
-              Text("Your are not in this user friend list",
-                  style: TextStyle(fontSize: 40)),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Text("😧", style: TextStyle(fontSize: 40)),
-              ),
-              Text(
-                  "Or he/she may not have a MINESTRIX account (yet), send him a message ;)",
-                  style: TextStyle(fontSize: 20))
-            ],
-          ),
-        ),
+        p.userId != sclient.userID
+            ? Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 60, vertical: 100),
+                child: Column(
+                  children: [
+                    Text("Your are not in this user friend list",
+                        style: TextStyle(fontSize: 40)),
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text("😧", style: TextStyle(fontSize: 40)),
+                    ),
+                    Text(
+                        "Or he/she may not have a MINESTRIX account (yet), send him a message ;)",
+                        style: TextStyle(fontSize: 20))
+                  ],
+                ),
+              )
+            : MinestrixProfileNotCreated()
       ],
     );
   }
