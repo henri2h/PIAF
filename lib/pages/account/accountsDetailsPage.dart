@@ -98,50 +98,64 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: MatrixUserImage(
-                          url: profile.r.avatar,
-                          client: profile.r.client,
-                          thumnail: true,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          defaultText: profile.r.name,
-                          width: 80,
-                          height: 80),
-                    ),
-                    SizedBox(width: 4),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(profile.r.name,
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text(profile.r.topic),
-                        Card(
-                            color: Theme.of(context).primaryColor,
-                            child: Padding(
+                child: ListTile(
+                  title: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: MatrixUserImage(
+                            url: profile.r.avatar,
+                            client: profile.r.client,
+                            thumnail: true,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            defaultText: profile.r.name,
+                            width: 80,
+                            height: 80),
+                      ),
+                      SizedBox(width: 4),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(profile.r.name,
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text(profile.r.topic),
+                          Card(
+                              color: Theme.of(context).primaryColor,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Text(profile.r.canonicalAlias,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    )),
+                              )),
+                          if (profile.r.joinRules == JoinRules.public)
+                            Padding(
                               padding: const EdgeInsets.all(4.0),
-                              child: Text(profile.r.canonicalAlias,
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                  )),
-                            )),
-                        if (profile.r.joinRules == JoinRules.public)
-                          Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Row(
-                              children: [
-                                Text("Public profile space",
-                                    style: TextStyle(fontSize: 12)),
-                              ],
+                              child: Row(
+                                children: [
+                                  Text("Public profile space",
+                                      style: TextStyle(fontSize: 12)),
+                                ],
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () async {
+                        await showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                                child: ConvSettingsCard(
+                                    room: profile.r,
+                                    onClose: () =>
+                                        Navigator.of(context).pop())));
+                      }),
                 ),
               ),
               for (SpaceChild s in profile.spaceChildren)
