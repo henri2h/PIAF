@@ -9,8 +9,8 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
-import 'package:minestrix_chat/utils/room_profile.dart';
 
 import '../../partials/components/buttons/customFutureButton.dart';
 
@@ -26,7 +26,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
 
-    RoomProfile? profile = RoomProfile.getProfileRoom(sclient);
+    ProfileSpace? profile = ProfileSpace.getProfileSpace(sclient);
 
     return ListView(
       children: [
@@ -74,7 +74,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: CustomFutureButton(
                         onPressed: () async {
-                          await RoomProfile.createProfileRoom(sclient);
+                          await ProfileSpace.createProfileSpace(sclient);
                           setState(() {});
                         },
                         children: [
@@ -110,10 +110,36 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                           width: 80,
                           height: 80),
                     ),
-                    Text(profile.r.name,
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text(profile.r.topic)
+                    SizedBox(width: 4),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(profile.r.name,
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text(profile.r.topic),
+                        Card(
+                            color: Theme.of(context).primaryColor,
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(profile.r.canonicalAlias,
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  )),
+                            )),
+                        if (profile.r.joinRules == JoinRules.public)
+                          Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Row(
+                              children: [
+                                Text("Public profile space",
+                                    style: TextStyle(fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
