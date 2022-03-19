@@ -8,6 +8,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/matrix_user_image.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
@@ -303,6 +304,15 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
         trailing: PopupMenuButton<String>(
             itemBuilder: (_) => [
                   PopupMenuItem(
+                      child: Row(children: [
+                        Icon(
+                          Icons.settings,
+                        ),
+                        SizedBox(width: 10),
+                        Text("Settings", style: TextStyle()),
+                      ]),
+                      value: "settings"),
+                  PopupMenuItem(
                       child: Row(
                         children: [
                           Icon(Icons.delete_forever, color: Colors.red),
@@ -318,6 +328,15 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
                 : (String action) async {
                     MinestrixClient sclient = Matrix.of(context).sclient!;
                     switch (action) {
+                      case "settings":
+                        await showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                                child: ConvSettingsCard(
+                                    room: r,
+                                    onClose: () =>
+                                        Navigator.of(context).pop())));
+                        break;
                       case "leave":
                         setState(() {
                           _updating = true;
