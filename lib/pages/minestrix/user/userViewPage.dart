@@ -104,7 +104,7 @@ class _UserViewPageState extends State<UserViewPage> {
             timeline =
                 sclient.getSRoomFilteredEvents(mroom!.timeline!).toList();
 
-          bool canRequestHistory = mroom!.timeline?.canRequestHistory == true;
+          bool canRequestHistory = mroom?.timeline?.canRequestHistory == true;
           return LayoutBuilder(builder: (context, constraints) {
             return Center(
               child: ConstrainedBox(
