@@ -6,12 +6,14 @@ class CustomFutureButton extends StatefulWidget {
   final Widget icon;
   final List<Widget> children;
   final Color? color;
+  final bool expanded;
 
   const CustomFutureButton(
       {Key? key,
       required this.onPressed,
       required this.children,
       required this.icon,
+      this.expanded = true,
       this.color})
       : super(key: key);
 
@@ -38,11 +40,16 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
                       ? CircularProgressIndicator(color: Colors.white)
                       : widget.icon,
                 ),
-                Expanded(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [...widget.children],
-                ))
+                widget.expanded
+                    ? Expanded(
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [...widget.children],
+                      ))
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [...widget.children],
+                      )
               ],
             ),
           ),
