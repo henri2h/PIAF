@@ -60,7 +60,7 @@ class ThemeNotifier with ChangeNotifier {
 
     var value = await StorageManager.readData('themeMode');
 
-    print('value read from storage: ' + value.toString());
+    print('theme: ' + value.toString());
 
     _mode = AppThemeMode.values.firstWhere(
         (e) => e.toString() == value.toString(),
