@@ -7,6 +7,7 @@ import 'package:minestrix/partials/post/postDetails/postReplies.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
 class Post extends StatefulWidget {
   final Event event;
@@ -43,7 +44,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
           Set<Event> replies =
               e.aggregatedEvents(t, MatrixTypes.elementThreadEventType);
 
-          // TODO : remove me after in next update
+          // TODO: remove me after in next update
           replies.addAll(e.aggregatedEvents(t, RelationshipTypes.reply));
 
           Set<Event> reactions =
@@ -95,7 +96,24 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                                   child: PostReactions(
                                                       event: e,
                                                       reactions: reactions),
-                                                  onPressed: () {}),
+                                                  onPressed: () async {
+                                                    await showDialog(
+                                                        context: context,
+                                                        builder: (context) =>
+                                                            Dialog(
+                                                                child:
+                                                                    ConstrainedBox(
+                                                              constraints:
+                                                                  BoxConstraints(
+                                                                      maxWidth:
+                                                                          600,
+                                                                      maxHeight:
+                                                                          600),
+                                                              child: EventReactionList(
+                                                                  reactions:
+                                                                      reactions),
+                                                            )));
+                                                  }),
                                             ),
                                           ],
                                         ),
