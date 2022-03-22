@@ -4,7 +4,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class ContactView extends StatelessWidget {
@@ -32,13 +32,11 @@ class ContactView extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      MatrixUserImage(
+                      MatrixImageAvatar(
                         client: Matrix.of(context).sclient,
                         url: sroom.avatar,
                         width: 32,
                         height: 32,
-                        thumnail: true,
-                        rounded: true,
                         defaultIcon: Icon(Icons.person, size: 32),
                       ),
                       Flexible(
@@ -109,7 +107,7 @@ class MinestrixRoomTile extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      MatrixUserImage(
+                      MatrixImageAvatar(
                         url: sroom.avatar,
                         fit: true,
                         defaultText: sroom.name,

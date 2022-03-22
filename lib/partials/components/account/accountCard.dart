@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class AccountCard extends StatelessWidget {
   AccountCard({Key? key, this.user, this.profile})
@@ -43,14 +43,13 @@ class AccountCard extends StatelessWidget {
         },
         child: Column(
           children: [
-            MatrixUserImage(
+            MatrixImageAvatar(
               client: Matrix.of(context).sclient,
               url: avatarUrl,
               defaultText: displayName,
               width: 80,
               height: 80,
-              thumnail: true,
-              rounded: false,
+              shape: MatrixImageAvatarShape.none,
               backgroundColor: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(10.0),

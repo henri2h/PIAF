@@ -5,7 +5,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -24,7 +24,7 @@ class PostHeader extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: MatrixUserImage(
+                child: MatrixImageAvatar(
                     client: sclient,
                     url: event.sender.avatarUrl,
                     defaultText: event.sender.displayName ?? event.sender.id,

@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class AddUserPage extends StatefulWidget {
   AddUserPage(BuildContext context, {Key? key}) : super(key: key);
@@ -57,7 +57,7 @@ class _AddUserPageState extends State<AddUserPage> {
                 return ListTile(
                   leading: profile.avatarUrl == null
                       ? Icon(Icons.person)
-                      : MatrixUserImage(
+                      : MatrixImageAvatar(
                           client: sclient, url: profile.avatarUrl),
                   title: Text((profile.displayName ?? profile.userId)),
                   subtitle: Text(profile.userId),
@@ -74,7 +74,7 @@ class _AddUserPageState extends State<AddUserPage> {
           for (Profile p in profiles)
             ListTile(
                 title: Text((p.displayName ?? p.userId)),
-                leading: MatrixUserImage(
+                leading: MatrixImageAvatar(
                     client: sclient, url: p.avatarUrl, thumnail: true),
                 subtitle: Text(p.userId)),
         ]));

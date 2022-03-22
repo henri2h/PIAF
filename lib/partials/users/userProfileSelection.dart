@@ -5,7 +5,7 @@ import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 import 'package:matrix_api_lite/src/generated/model.dart' as model;
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class UserProfileSelection extends StatefulWidget {
@@ -54,7 +54,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                       padding: const EdgeInsets.all(4),
                       child: Row(
                         children: [
-                          MatrixUserImage(
+                          MatrixImageAvatar(
                             client: sclient,
                             url: r.room.avatar,
                             thumnail: true,

@@ -9,7 +9,7 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
@@ -103,7 +103,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: MatrixUserImage(
+                        child: MatrixImageAvatar(
                             url: profile.r.avatar,
                             client: profile.r.client,
                             thumnail: true,

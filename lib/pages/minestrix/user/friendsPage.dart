@@ -7,7 +7,7 @@ import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({Key? key}) : super(key: key);
@@ -64,7 +64,8 @@ class _FriendsPageState extends State<FriendsPage> {
               return ListTile(
                 leading: profile.avatarUrl == null
                     ? Icon(Icons.person)
-                    : MatrixUserImage(client: sclient, url: profile.avatarUrl),
+                    : MatrixImageAvatar(
+                        client: sclient, url: profile.avatarUrl),
                 title: Text((profile.displayName ?? profile.userId)),
                 subtitle: Text(profile.userId),
               );
@@ -91,7 +92,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         children: [
                           Row(
                             children: [
-                              MatrixUserImage(
+                              MatrixImageAvatar(
                                   client: sclient, url: sm.user?.avatarUrl),
                               SizedBox(width: 10),
                               Text((sm.user?.displayName ??

@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class SettingsAccountPage extends StatefulWidget {
   const SettingsAccountPage({Key? key}) : super(key: key);
@@ -38,13 +38,12 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
               return ListTile(
                   leading: savingDisplayName
                       ? CircularProgressIndicator()
-                      : MatrixUserImage(
+                      : MatrixImageAvatar(
                           client: Matrix.of(context).sclient,
                           url: p.data?.avatarUrl,
                           width: 48,
                           height: 48,
                           thumnail: true,
-                          rounded: true,
                           defaultIcon: Icon(Icons.person, size: 32),
                         ),
                   title: Text("Edit display name"),

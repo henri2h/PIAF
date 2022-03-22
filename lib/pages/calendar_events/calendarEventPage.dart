@@ -5,7 +5,7 @@ import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/poll/poll.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 import 'package:minestrix_chat/partials/calendar_event/calendarEventWidget.dart';
@@ -47,11 +47,11 @@ class _CalendarEventPageState extends State<CalendarEventPage> {
                   return ListView(
                     children: [
                       CustomHeader("Event"),
-                      MatrixUserImage(
+                      MatrixImageAvatar(
                         client: room.client,
                         url: room.avatar,
                         width: 2000,
-                        rounded: false,
+                        shape: MatrixImageAvatarShape.none,
                         height: 250,
                         defaultText: room.name,
                         thumnail:

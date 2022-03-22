@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class MinesTrixContactView extends StatelessWidget {
   const MinesTrixContactView({
@@ -29,7 +29,7 @@ class MinesTrixContactView extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        MatrixUserImage(
+                        MatrixImageAvatar(
                             client: Matrix.of(context).sclient,
                             url: user.avatarUrl,
                             width: 48,

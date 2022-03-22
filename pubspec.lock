@@ -589,7 +589,7 @@ packages:
       name: hive
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.6"
+    version: "2.1.0"
   hive_flutter:
     dependency: "direct main"
     description:
@@ -761,11 +761,9 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "1adc7a759ec2ee32641ecda414456ca77f95c602"
-      url: "https://gitlab.com/minestrix/minestrix-chat.git"
-    source: git
+      path: minestrix-chat
+      relative: true
+    source: path
     version: "0.0.1"
   nested:
     dependency: transitive
@@ -1415,7 +1413,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.4.1"
+    version: "2.4.3"
   xdg_directories:
     dependency: transitive
     description:

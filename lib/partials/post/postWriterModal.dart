@@ -4,7 +4,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class PostWriterModal extends StatelessWidget {
   PostWriterModal({Key? key, required this.sroom}) : super(key: key);
@@ -17,7 +17,7 @@ class PostWriterModal extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
       child: Row(
         children: [
-          MatrixUserImage(
+          MatrixImageAvatar(
               client: sclient,
               url: sclient.userRoom?.user?.avatarUrl,
               height: 48,
