@@ -12,7 +12,7 @@ import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 
 class GroupPage extends StatefulWidget {
@@ -139,11 +139,11 @@ class _GroupPageState extends State<GroupPage> {
                           CustomHeader(sroom.name),
                           if (sroom.room.avatar != null)
                             Center(
-                                child: MatrixUserImage(
+                                child: MatrixImageAvatar(
                                     client: sclient,
                                     url: sroom.room.avatar,
                                     unconstraigned: true,
-                                    rounded: false,
+                                    shape: MatrixImageAvatarShape.none,
                                     maxHeight: 500)),
                           Padding(
                             padding: const EdgeInsets.all(10.0),

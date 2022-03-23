@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class UserAvatar extends StatelessWidget {
   final Profile p;
@@ -20,13 +20,12 @@ class UserAvatar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            MatrixUserImage(
+            MatrixImageAvatar(
               client: Matrix.of(context).sclient,
               url: p.avatarUrl,
               width: 250,
               height: 250,
-              thumnail: true,
-              rounded: false,
+              shape: MatrixImageAvatarShape.none,
               defaultIcon: Icon(Icons.person, size: 120),
             ),
             SizedBox(height: 10),

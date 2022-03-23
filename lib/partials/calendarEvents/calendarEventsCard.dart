@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class CalendarEventCard extends StatefulWidget {
@@ -51,7 +51,7 @@ class _CalendarEventCardState extends State<CalendarEventCard> {
                   ],
                 ),
                 trailing: Icon(Icons.navigate_next),
-                leading: MatrixUserImage(
+                leading: MatrixImageAvatar(
                     client: widget.room.client,
                     thumnail: true,
                     url: widget.room.avatar,

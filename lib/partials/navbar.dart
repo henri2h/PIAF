@@ -6,7 +6,7 @@ import 'package:minestrix/partials/feed/notficationBell.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class NavBarDesktop extends StatelessWidget {
   const NavBarDesktop({Key? key}) : super(key: key);
@@ -141,7 +141,7 @@ class NavBarMobileState extends State<NavBarMobile> {
                   future: sclient.getProfileFromUserId(sclient.userID!),
                   builder: (BuildContext context, AsyncSnapshot<Profile> p) {
                     if (p.data?.avatarUrl == null) return Icon(Icons.person);
-                    return MatrixUserImage(
+                    return MatrixImageAvatar(
                         client: sclient,
                         url: p.data!.avatarUrl,
                         fit: true,

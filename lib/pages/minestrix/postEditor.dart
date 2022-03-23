@@ -6,7 +6,7 @@ import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
@@ -92,7 +92,7 @@ class _PostEditorPageState extends State<PostEditorPage>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              MatrixUserImage(
+                              MatrixImageAvatar(
                                   client: sclient,
                                   url: sroom?.room.avatar,
                                   defaultText: sroom?.room.topic,
@@ -131,7 +131,7 @@ class _PostEditorPageState extends State<PostEditorPage>
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              MatrixUserImage(
+                              MatrixImageAvatar(
                                   client: sclient,
                                   url: sclient.userRoom?.user?.avatarUrl,
                                   defaultText:

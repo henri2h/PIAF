@@ -6,7 +6,7 @@ import 'package:minestrix/partials/post/postDetails/postContent.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/matrix_user_image.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:minestrix_chat/partials/chat/matrix_message_composer.dart';
 
@@ -115,7 +115,7 @@ class _RepliesVueState extends State<RepliesVue> {
                             Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 6),
-                                child: MatrixUserImage(
+                                child: MatrixImageAvatar(
                                   client: sclient,
                                   url: revent.sender.avatarUrl,
                                   defaultText: revent.sender.calcDisplayname(),
@@ -123,8 +123,6 @@ class _RepliesVueState extends State<RepliesVue> {
                                       Theme.of(context).primaryColor,
                                   width: 32,
                                   height: 32,
-                                  thumnail: true,
-                                  rounded: true,
                                 )),
                             Expanded(
                               child: Padding(
