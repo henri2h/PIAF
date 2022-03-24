@@ -6,11 +6,9 @@ import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_content.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
+import 'package:minestrix_chat/utils/intl/matrix_translation_mock.dart';
 
 class PostContent extends StatelessWidget {
-  final String regex =
-      "(>(.*)\n)*\n"; // TODO : find a better way to remove the formated body
-
   final Event event;
   final double? imageMaxHeight;
   final double? imageMaxWidth;
@@ -46,7 +44,7 @@ class PostContent extends StatelessWidget {
           case MessageTypes.Text:
           case MessageTypes.Emote:
             return MarkdownBody(
-              data: event.body.replaceFirst(new RegExp(regex), ""),
+              data: event.getLocalizedBody(MatrixLocals()),
             );
 
           case MessageTypes.Image:
