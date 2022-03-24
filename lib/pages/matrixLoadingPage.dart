@@ -38,7 +38,6 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
                 stream: sclient.onSyncStatus.stream,
                 builder: (context, snap) {
                   if (!snap.hasData) return Center(child: MinestrixTitle());
-                  print(snap.data!.status.toString());
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,
