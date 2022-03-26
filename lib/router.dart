@@ -5,7 +5,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:minestrix/pages/calendar_events/calendarEventPage.dart';
 import 'package:minestrix/pages/minestrix/calendarEvents/calendarEventsListPage.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
-import 'package:minestrix/pages/minestrix/postEditor.dart';
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
 import 'package:minestrix/pages/appWrapperPage.dart';
 import 'package:minestrix/pages/loginPage.dart';
@@ -22,6 +21,7 @@ import 'package:minestrix/pages/settings/settingsPage.dart';
 import 'package:minestrix/pages/settings/settingsProfilePage.dart';
 import 'package:minestrix/pages/settings/settingsSecurityPage.dart';
 import 'package:minestrix/pages/settings/settingsThemePage.dart';
+import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
