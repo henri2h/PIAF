@@ -45,7 +45,7 @@ class _FeedPageState extends State<FeedPage> {
               Flexible(
                 flex: 12,
                 child: Container(
-                    constraints: BoxConstraints(maxWidth: 760),
+                    constraints: BoxConstraints(maxWidth: 680),
                     child: MinestrixFeed()),
               ),
               if (constraints.maxWidth > 900)
