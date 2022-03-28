@@ -56,165 +56,157 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  // post content
-
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PostHeader(event: e),
-                      Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: PostContent(
-                            e,
-                            imageMaxHeight: 300,
-                          )),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0, vertical: 4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Flexible(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  if (reactions.isNotEmpty)
-                                    Flexible(
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Row(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8.0),
-                                              child: MaterialButton(
-                                                  child: PostReactions(
-                                                      event: e,
-                                                      reactions: reactions),
-                                                  onPressed: () async {
-                                                    await showDialog(
-                                                        context: context,
-                                                        builder: (context) =>
-                                                            Dialog(
-                                                                child:
-                                                                    ConstrainedBox(
-                                                              constraints:
-                                                                  BoxConstraints(
-                                                                      maxWidth:
-                                                                          600,
-                                                                      maxHeight:
-                                                                          600),
-                                                              child: EventReactionList(
-                                                                  reactions:
-                                                                      reactions),
-                                                            )));
-                                                  }),
-                                            ),
-                                          ],
-                                        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                // post content
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    PostHeader(event: e),
+                    PostContent(
+                      e,
+                      imageMaxHeight: 300,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0, vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                if (reactions.isNotEmpty)
+                                  Flexible(
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: MaterialButton(
+                                                child: PostReactions(
+                                                    event: e,
+                                                    reactions: reactions),
+                                                onPressed: () async {
+                                                  await showDialog(
+                                                      context: context,
+                                                      builder: (context) =>
+                                                          Dialog(
+                                                              child:
+                                                                  ConstrainedBox(
+                                                            constraints:
+                                                                BoxConstraints(
+                                                                    maxWidth:
+                                                                        600,
+                                                                    maxHeight:
+                                                                        600),
+                                                            child: EventReactionList(
+                                                                reactions:
+                                                                    reactions),
+                                                          )));
+                                                }),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  if (replies.isNotEmpty)
-                                    MaterialButton(
-                                        child: Text(
-                                            (showReplies ? "Hide " : "Show ") +
-                                                replies.length.toString() +
-                                                " comments"),
-                                        onPressed: () {
-                                          setState(() {
-                                            showReplies = !showReplies;
-                                          });
-                                        }),
-                                ],
-                              ),
-                            ),
-                            GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              child: MaterialButton(
-                                  elevation: 0,
-                                  color: Theme.of(context).primaryColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 2),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.insert_emoticon_rounded,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary),
-                                      SizedBox(width: 5),
-                                      Text("Reaction",
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onPrimary))
-                                    ],
                                   ),
-                                  onPressed: () {}),
-                              onTapDown: (TapDownDetails detail) async {
-                                widget.onReact(detail.globalPosition);
-                              },
+                                if (replies.isNotEmpty)
+                                  MaterialButton(
+                                      child: Text(
+                                          (showReplies ? "Hide " : "Show ") +
+                                              replies.length.toString() +
+                                              " comments"),
+                                      onPressed: () {
+                                        setState(() {
+                                          showReplies = !showReplies;
+                                        });
+                                      }),
+                              ],
                             ),
-                            SizedBox(width: 9),
-                            MaterialButton(
-                              elevation: 0,
-                              color: Theme.of(context).primaryColor,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 2),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.reply,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary),
-                                  SizedBox(width: 5),
-                                  Text("Comment",
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary))
-                                ],
-                              ),
-                              onPressed: replyButtonClick,
+                          ),
+                          GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            child: MaterialButton(
+                                elevation: 0,
+                                color: Theme.of(context).primaryColor,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 2),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.insert_emoticon_rounded,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary),
+                                    SizedBox(width: 5),
+                                    Text("Reaction",
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onPrimary))
+                                  ],
+                                ),
+                                onPressed: () {}),
+                            onTapDown: (TapDownDetails detail) async {
+                              widget.onReact(detail.globalPosition);
+                            },
+                          ),
+                          SizedBox(width: 9),
+                          MaterialButton(
+                            elevation: 0,
+                            color: Theme.of(context).primaryColor,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 2),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.reply,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary),
+                                SizedBox(width: 5),
+                                Text("Comment",
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary))
+                              ],
                             ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-
-                  if (replies.isNotEmpty && showReplies || showReplyBox)
-                    Divider(),
-                  if (showReplies)
-                    Container(
-                      child: Column(
-                        children: [
-                          if (replies.isNotEmpty || showReplyBox)
-                            RepliesVue(
-                                timeline: t,
-                                event: e,
-                                replies: replies,
-                                showEditBox: showReplyBox,
-                                setReplyVisibility: (bool value) =>
-                                    setState(() {
-                                      showReplyBox = value;
-                                    })),
+                            onPressed: replyButtonClick,
+                          ),
                         ],
                       ),
+                    )
+                  ],
+                ),
+
+                if (replies.isNotEmpty && showReplies || showReplyBox)
+                  Divider(),
+                if (showReplies)
+                  Container(
+                    child: Column(
+                      children: [
+                        if (replies.isNotEmpty || showReplyBox)
+                          RepliesVue(
+                              timeline: t,
+                              event: e,
+                              replies: replies,
+                              showEditBox: showReplyBox,
+                              setReplyVisibility: (bool value) => setState(() {
+                                    showReplyBox = value;
+                                  })),
+                      ],
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           );
         });
