@@ -1,10 +1,12 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class SettingsAccountPage extends StatefulWidget {
   const SettingsAccountPage({Key? key}) : super(key: key);

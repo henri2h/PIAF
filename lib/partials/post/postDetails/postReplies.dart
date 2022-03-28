@@ -1,14 +1,16 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/chat/matrix_message_composer.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
 import 'package:minestrix/partials/post/postDetails/postContent.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:minestrix_chat/partials/chat/matrix_message_composer.dart';
 
 class RepliesVue extends StatefulWidget {
   final Event event;

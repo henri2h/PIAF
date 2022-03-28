@@ -1,11 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
+
 import 'package:minestrix/partials/components/dialogs/keyVerificationDialog.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/platforms_info.dart';
-
 import 'settings.dart';
 
 class Matrix extends StatefulWidget {

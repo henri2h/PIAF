@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/calendar_event/calendarEventWidget.dart';
+import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
+import 'package:minestrix_chat/utils/poll/poll.dart';
+import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
+import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/post/postView.dart';
-import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/poll/poll.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
-import 'package:minestrix_chat/partials/calendar_event/calendarEventWidget.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
-import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 
 class CalendarEventPage extends StatefulWidget {
   final Room room;

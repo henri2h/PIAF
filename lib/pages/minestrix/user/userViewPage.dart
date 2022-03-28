@@ -1,6 +1,16 @@
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
+
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/custom_list_view.dart';
+import 'package:minestrix_chat/partials/stories/stories_list.dart';
+import 'package:minestrix_chat/utils/matrix/client_extension.dart';
+import 'package:minestrix_chat/utils/profile_space.dart';
+import 'package:minestrix_chat/utils/spaces/space_extension.dart';
+import 'package:minestrix_chat/view/matrix_chat_page.dart';
+import 'package:minestrix_chat/view/matrix_chats_page.dart';
+
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
@@ -11,15 +21,6 @@ import 'package:minestrix/partials/users/userProfileSelection.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/stories/stories_list.dart';
-import 'package:minestrix_chat/utils/matrix/client_extension.dart';
-import 'package:minestrix_chat/utils/profile_space.dart';
-import 'package:minestrix_chat/utils/spaces/space_extension.dart';
-import 'package:minestrix_chat/view/matrix_chat_page.dart';
-import 'package:minestrix_chat/view/matrix_chats_page.dart';
-
 import '../../../partials/components/buttons/customFutureButton.dart';
 import '../../../partials/feed/minestrixProfileNotCreated.dart';
 

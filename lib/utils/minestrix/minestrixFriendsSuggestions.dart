@@ -1,5 +1,6 @@
 import 'package:collection/src/iterable_extensions.dart';
 import 'package:matrix/matrix.dart';
+
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class MinestrixFriendsSugestion {

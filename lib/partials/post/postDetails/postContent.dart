@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/minestrixTitle.dart';
-import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_content.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
 import 'package:minestrix_chat/utils/intl/matrix_translation_mock.dart';
+
+import 'package:minestrix/partials/minestrixTitle.dart';
+import 'package:minestrix/partials/post/postView.dart';
 
 class PostContent extends StatelessWidget {
   final Event event;
@@ -99,15 +101,17 @@ class PostContent extends StatelessWidget {
     Widget update;
     switch (pUp) {
       case PostTypeUpdate.DisplayName:
-        update = Text("Display name update");
+        update = Text(
+            "Display name update " + event.getLocalizedBody(MatrixLocals()));
 
         break;
       case PostTypeUpdate.ProfilePicture:
-        update = Text("Profile picture update");
+        update = Text(
+            "Profile picture update " + event.getLocalizedBody(MatrixLocals()));
 
         break;
       case PostTypeUpdate.Membership:
-        update = Text("Joined");
+        update = Text("Joined " + event.getLocalizedBody(MatrixLocals()));
 
         break;
       default:
@@ -115,6 +119,7 @@ class PostContent extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Default : "),
+            Text(event.getLocalizedBody(MatrixLocals())),
             Text(event.content.toString()),
             Text(event.prevContent.toString())
             /*

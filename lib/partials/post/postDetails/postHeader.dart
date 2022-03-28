@@ -1,13 +1,15 @@
+import 'package:flutter/material.dart';
+
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
-import 'package:flutter/material.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
   final Event event;
@@ -23,7 +25,7 @@ class PostHeader extends StatelessWidget {
           child: Row(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: MatrixImageAvatar(
                     client: sclient,
                     url: event.sender.avatarUrl,

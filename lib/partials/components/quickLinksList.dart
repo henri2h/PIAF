@@ -1,9 +1,11 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
+
+import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
+
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 
 class QuickLinksBar extends StatefulWidget {
   @override

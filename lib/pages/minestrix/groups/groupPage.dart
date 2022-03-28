@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/custom_list_view.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/view/matrix_chat_page.dart';
+
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
@@ -11,9 +16,6 @@ import 'package:minestrix/partials/users/MinesTrixUserSelection.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/view/matrix_chat_page.dart';
 
 class GroupPage extends StatefulWidget {
   GroupPage({Key? key, this.sroom}) : super(key: key);

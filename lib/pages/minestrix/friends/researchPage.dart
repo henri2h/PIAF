@@ -1,7 +1,10 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
+
+import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/minestrixRoomTile.dart';
@@ -9,7 +12,6 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class ResearchPage extends StatefulWidget {
   @override

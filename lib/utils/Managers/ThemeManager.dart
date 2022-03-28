@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:minestrix_chat/helpers/storage_manager.dart';
 
 enum AppThemeMode { dark, light, black }

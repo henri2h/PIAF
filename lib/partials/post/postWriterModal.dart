@@ -1,10 +1,12 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
+
+import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class PostWriterModal extends StatelessWidget {
   PostWriterModal({Key? key, required this.sroom}) : super(key: key);

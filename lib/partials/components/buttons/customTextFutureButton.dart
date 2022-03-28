@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 
 class CustomTextFutureButton extends StatelessWidget {

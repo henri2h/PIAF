@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:matrix/matrix.dart';
+
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/utils/matrixWidget.dart';

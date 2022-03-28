@@ -1,13 +1,15 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'package:auto_route/auto_route.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/utils/login/login_extension.dart';
+import 'package:provider/provider.dart';
+
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/Managers/ThemeManager.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/utils/login/login_extension.dart';
-import 'package:provider/provider.dart';
 
 class Minestrix extends StatefulWidget {
   @override

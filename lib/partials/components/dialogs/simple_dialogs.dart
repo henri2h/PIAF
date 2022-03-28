@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart';
+
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:matrix/matrix.dart';
-import 'package:flutter/material.dart';
 
 class SimpleDialogs {
   final BuildContext context;

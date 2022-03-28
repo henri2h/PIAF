@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:matrix/matrix.dart' as m;
+
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';

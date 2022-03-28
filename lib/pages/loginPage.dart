@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/partials/minestrixTitle.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+
 import 'package:minestrix_chat/partials/login/login_card.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:minestrix/partials/minestrixTitle.dart';
+import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key, this.title, this.onLogin}) : super(key: key);

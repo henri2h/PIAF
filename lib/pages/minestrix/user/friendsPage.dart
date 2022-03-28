@@ -1,13 +1,15 @@
-import 'package:matrix/matrix.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+
 import 'package:minestrix/partials/components/account/accountCard.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({Key? key}) : super(key: key);

@@ -1,8 +1,10 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
+
 import 'package:minestrix/partials/components/dialogs/simple_dialogs.dart';
 import 'package:minestrix/utils/platforms_info.dart';
 

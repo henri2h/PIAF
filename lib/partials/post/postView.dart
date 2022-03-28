@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
+
 import 'package:minestrix/partials/post/postDetails/postContent.dart';
 import 'package:minestrix/partials/post/postDetails/postHeader.dart';
 import 'package:minestrix/partials/post/postDetails/postReactions.dart';
 import 'package:minestrix/partials/post/postDetails/postReplies.dart';
 import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
 class Post extends StatefulWidget {
   final Event event;
@@ -55,7 +57,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -66,15 +68,14 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                     children: [
                       PostHeader(event: e),
                       Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           child: PostContent(
                             e,
                             imageMaxHeight: 300,
                           )),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 4.0, vertical: 2),
+                            horizontal: 10.0, vertical: 4),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [

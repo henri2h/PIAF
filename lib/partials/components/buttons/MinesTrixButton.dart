@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTheme.dart';
 
 class MinesTrixButton extends StatefulWidget {

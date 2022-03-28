@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+
+import 'package:minestrix/utils/matrixWidget.dart';
 
 class UserAvatar extends StatelessWidget {
   final Profile p;

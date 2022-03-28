@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:matrix/matrix.dart';
+
 import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class MinestrixNotifications {
