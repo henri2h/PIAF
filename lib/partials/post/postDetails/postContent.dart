@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
@@ -9,6 +10,7 @@ import 'package:minestrix_chat/utils/intl/matrix_translation_mock.dart';
 
 import 'package:minestrix/partials/minestrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix/router.gr.dart';
 
 class PostContent extends StatelessWidget {
   final Event event;
@@ -40,7 +42,10 @@ class PostContent extends StatelessWidget {
         return MatrixPostContent(
             event: event,
             imageMaxHeight: imageMaxHeight,
-            imageMaxWidth: imageMaxWidth);
+            imageMaxWidth: imageMaxWidth,
+            onImagePressed: (image, post) {
+              context.pushRoute(PostGalleryRoute(image: image, post: post));
+            });
       case EventTypes.Encrypted:
         switch (event.messageType) {
           case MessageTypes.Text:

@@ -7,25 +7,26 @@ import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
-import 'package:minestrix/pages/account/accountsDetailsPage.dart';
-import 'package:minestrix/pages/appWrapperPage.dart';
-import 'package:minestrix/pages/calendar_events/calendarEventPage.dart';
-import 'package:minestrix/pages/loginPage.dart';
-import 'package:minestrix/pages/matrixLoadingPage.dart';
-import 'package:minestrix/pages/minestrix/calendarEvents/calendarEventsListPage.dart';
-import 'package:minestrix/pages/minestrix/feedPage.dart';
-import 'package:minestrix/pages/minestrix/friends/researchPage.dart';
-import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
-import 'package:minestrix/pages/minestrix/groups/groupPage.dart';
-import 'package:minestrix/pages/minestrix/homeWrapperPage.dart';
-import 'package:minestrix/pages/minestrix/user/friendsPage.dart';
-import 'package:minestrix/pages/minestrix/user/userFriendsPage.dart';
-import 'package:minestrix/pages/minestrix/user/userViewPage.dart';
-import 'package:minestrix/pages/settings/settingsLabsPage.dart';
-import 'package:minestrix/pages/settings/settingsPage.dart';
-import 'package:minestrix/pages/settings/settingsProfilePage.dart';
-import 'package:minestrix/pages/settings/settingsSecurityPage.dart';
-import 'package:minestrix/pages/settings/settingsThemePage.dart';
+import 'pages/account/accountsDetailsPage.dart';
+import 'pages/appWrapperPage.dart';
+import 'pages/calendar_events/calendarEventPage.dart';
+import 'pages/loginPage.dart';
+import 'pages/matrixLoadingPage.dart';
+import 'pages/minestrix/calendarEvents/calendarEventsListPage.dart';
+import 'pages/minestrix/feedPage.dart';
+import 'pages/minestrix/friends/researchPage.dart';
+import 'pages/minestrix/groups/createGroupPage.dart';
+import 'pages/minestrix/groups/groupPage.dart';
+import 'pages/minestrix/homeWrapperPage.dart';
+import 'pages/minestrix/image/post_gallery_page.dart';
+import 'pages/minestrix/user/friendsPage.dart';
+import 'pages/minestrix/user/userFriendsPage.dart';
+import 'pages/minestrix/user/userViewPage.dart';
+import 'pages/settings/settingsLabsPage.dart';
+import 'pages/settings/settingsPage.dart';
+import 'pages/settings/settingsProfilePage.dart';
+import 'pages/settings/settingsSecurityPage.dart';
+import 'pages/settings/settingsThemePage.dart';
 
 @MaterialAutoRouter(
   replaceInRouteName: 'Page,Route',
@@ -50,6 +51,7 @@ import 'package:minestrix/pages/settings/settingsThemePage.dart';
             AutoRoute(path: 'my_friends', page: FriendsPage),
             AutoRoute(path: 'user_friends', page: UserFriendsPage),
             AutoRoute(path: 'calendar_events/item', page: CalendarEventPage),
+            AutoRoute(path: 'post/image_gallery', page: PostGalleryPage),
             AutoRoute(
                 path: 'calendar_events/list', page: CalendarEventListPage),
             AutoRoute(path: 'search', page: ResearchPage),
