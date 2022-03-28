@@ -1,13 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-
-import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/event/matrix_image.dart';
 import 'package:minestrix_chat/utils/social/posts/model/json/social_image_item.dart';
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
 
-import '../../../partials/components/layouts/customHeader.dart';
 import '../../../partials/post/gallery/post_gallery_nav_button.dart';
 import '../../../partials/post/postDetails/postHeader.dart';
 

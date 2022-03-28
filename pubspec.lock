@@ -776,8 +776,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: HEAD
-      resolved-ref: "1e77f1e026f7f47392e3bf4ac8b3853eb9e18add"
+      ref: "henri/new-post-editor"
+      resolved-ref: "92e6c959bc723057973284ff905a37b25311b18a"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"

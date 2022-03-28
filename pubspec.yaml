@@ -86,7 +86,9 @@ dependencies:
   
   minestrix_chat:
     #path: './minestrix-chat'
-    git: https://gitlab.com/minestrix/minestrix-chat.git
+    git:
+      url: https://gitlab.com/minestrix/minestrix-chat.git
+      ref: henri/new-post-editor
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
 
