@@ -6,10 +6,11 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/login/login_extension.dart';
 import 'package:provider/provider.dart';
 
-import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/Managers/ThemeManager.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'router.gr.dart';
+import 'utils/managers/theme_manager.dart';
+import 'utils/matrixWidget.dart';
+import 'utils/minestrix/minestrixClient.dart';
+
 
 class Minestrix extends StatefulWidget {
   @override
