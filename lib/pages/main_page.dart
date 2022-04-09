@@ -22,7 +22,6 @@ class _MainPageState extends State<MainPage> {
       routes: [
         FeedRoute(),
         ResearchRoute(),
-        UserRoute(userID: sclient.userID),
         MatrixChatsRoute(
             client: Matrix.of(context).sclient!,
             allowPop: false,
@@ -31,7 +30,8 @@ class _MainPageState extends State<MainPage> {
                   client: Matrix.of(context).sclient!,
                   roomId: roomId,
                   onBack: () => context.popRoute()));
-            })
+            }),
+        UserRoute(userID: sclient.userID),
       ],
       bottomNavigationBuilder: (_, tabsRouter) {
         return BottomNavigationBar(
@@ -39,9 +39,35 @@ class _MainPageState extends State<MainPage> {
           onTap: tabsRouter.setActiveIndex,
           type: BottomNavigationBarType.fixed,
           items: [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined), label: 'Feed'),
+            BottomNavigationBarItem(icon: Icon(Icons.list), label: "Feed"),
             BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
+            BottomNavigationBarItem(
+                icon: StreamBuilder(
+                    stream: sclient.onSync.stream,
+                    builder: (context, _) {
+                      int notif = sclient.totalNotificationsCount;
+                      if (notif == 0) {
+                        return Icon(Icons.message_outlined);
+                      } else {
+                        return Stack(
+                          children: [
+                            Icon(Icons.message),
+                            Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 3, horizontal: 15),
+                                child: CircleAvatar(
+                                    radius: 11,
+                                    backgroundColor: Colors.red,
+                                    child: Text(notif.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        )))),
+                          ],
+                        );
+                      }
+                    }),
+                label: "Chat"),
             BottomNavigationBarItem(
                 icon: SizedBox(
                   height: 30,
@@ -59,7 +85,6 @@ class _MainPageState extends State<MainPage> {
                       }),
                 ),
                 label: "My account"),
-            BottomNavigationBarItem(icon: Icon(Icons.message), label: "Chat"),
           ],
         );
       },

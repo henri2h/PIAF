@@ -132,37 +132,6 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                     onPressed: () {
                                       context.pushRoute(CreateGroupRoute());
                                     }),
-                                IconButton(
-                                    icon: Icon(Icons.post_add),
-                                    onPressed: () {
-                                      context.pushRoute(PostEditorRoute());
-                                    }),
-                                IconButton(icon: Builder(builder: (context) {
-                                  int notif = sclient.totalNotificationsCount;
-                                  if (notif == 0) {
-                                    return Icon(Icons.message_outlined);
-                                  } else {
-                                    return Stack(
-                                      children: [
-                                        Icon(Icons.message),
-                                        Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 3, horizontal: 15),
-                                            child: CircleAvatar(
-                                                radius: 11,
-                                                backgroundColor: Colors.red,
-                                                child: Text(notif.toString(),
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12,
-                                                    )))),
-                                      ],
-                                    );
-                                  }
-                                }), onPressed: () async {
-                                  await context.navigateTo(
-                                      MatrixChatsRoute(client: sclient));
-                                }),
                                 NotificationBell()
                               ],
                             ),
