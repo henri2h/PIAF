@@ -29,7 +29,7 @@ import 'pages/settings/settingsProfilePage.dart';
 import 'pages/settings/settingsSecurityPage.dart';
 import 'pages/settings/settingsThemePage.dart';
 
-@MaterialAutoRouter(
+@AdaptiveAutoRouter(
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
     AutoRoute(page: MatrixLoadingPage),
