@@ -11,7 +11,6 @@ import 'utils/managers/theme_manager.dart';
 import 'utils/matrixWidget.dart';
 import 'utils/minestrix/minestrixClient.dart';
 
-
 class Minestrix extends StatefulWidget {
   @override
   _MinestrixState createState() => _MinestrixState();

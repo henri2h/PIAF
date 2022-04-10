@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'package:collection/collection.dart' show IterableExtension;
@@ -348,7 +349,9 @@ class UnknownUser extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (BuildContext context) =>
                                     MatrixChatPage(
-                                        roomId: roomId, client: sclient)));
+                                        roomId: roomId,
+                                        client: sclient,
+                                        onBack: () => context.popRoute())));
                       } else {
                         await Navigator.push(
                             context,

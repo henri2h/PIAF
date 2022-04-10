@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/auto_route.dart';
-
+import 'package:flutter/material.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
 import 'package:minestrix/partials/home/notificationView.dart';
-import 'package:minestrix/partials/navbar.dart';
 import 'package:minestrix/router.gr.dart';
 
 class HomeWrapperPage extends StatefulWidget {
@@ -36,7 +33,7 @@ class _HomeWrapperPageState extends State<HomeWrapperPage> {
       return Scaffold(
         //floatingActionButton: buildFloattingButton(),
         body: AutoRouter(),
-        bottomNavigationBar: isWideScreen ? null : NavBarMobile(),
+        // bottomNavigationBar: isWideScreen ? null : NavBarMobile(),
         endDrawer: NotificationView(),
       );
     });
