@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/Managers/ThemeManager.dart';
+
+import '../../utils/managers/theme_manager.dart';
 
 class SettingsThemePage extends StatefulWidget {
   const SettingsThemePage({Key? key}) : super(key: key);
