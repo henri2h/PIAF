@@ -114,35 +114,37 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                             height: 80),
                       ),
                       SizedBox(width: 4),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(profile.r.name,
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold)),
-                          Text(profile.r.topic),
-                          Card(
-                              color: Theme.of(context).primaryColor,
-                              child: Padding(
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(profile.r.name,
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold)),
+                            Text(profile.r.topic),
+                            Card(
+                                color: Theme.of(context).primaryColor,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text(profile.r.canonicalAlias,
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      )),
+                                )),
+                            if (profile.r.joinRules == JoinRules.public)
+                              Padding(
                                 padding: const EdgeInsets.all(4.0),
-                                child: Text(profile.r.canonicalAlias,
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                    )),
-                              )),
-                          if (profile.r.joinRules == JoinRules.public)
-                            Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Row(
-                                children: [
-                                  Text("Public profile space",
-                                      style: TextStyle(fontSize: 12)),
-                                ],
+                                child: Row(
+                                  children: [
+                                    Text("Public profile space",
+                                        style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -229,14 +231,15 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                       expanded: false,
                       icon: Icon(Icons.add_a_photo)),
                 ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CustomTextFutureButton(
-                    onPressed: () async {},
-                    text: "Create a public MinesTRIX room",
-                    expanded: false,
-                    icon: Icon(Icons.person_add)),
-              )
+              if (Matrix.of(context).settings.multipleFeedSupport)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomTextFutureButton(
+                      onPressed: () async {},
+                      text: "Create a public MinesTRIX room",
+                      expanded: false,
+                      icon: Icon(Icons.person_add)),
+                )
             ],
           ),
         ),

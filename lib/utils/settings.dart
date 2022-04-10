@@ -3,9 +3,19 @@ import 'dart:convert';
 import 'package:minestrix_chat/helpers/storage_manager.dart';
 
 class Settings {
-  bool get calendarEventSupport => _settings["calendar"] ?? false;
+  final _calendar = "calendar";
+  final _multipleFeed = "multiple_feed";
+
+  bool get multipleFeedSupport => _settings[_multipleFeed] ?? false;
+  bool get calendarEventSupport => _settings[_calendar] ?? false;
+
   set calendarEventSupport(bool value) {
-    _settings["calendar"] = value;
+    _settings[_calendar] = value;
+    saveData();
+  }
+
+  set multipleFeedSupport(bool value) {
+    _settings[_multipleFeed] = value;
     saveData();
   }
 
