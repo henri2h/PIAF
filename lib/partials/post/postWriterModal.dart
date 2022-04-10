@@ -15,9 +15,8 @@ class PostWriterModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
-    return Card(
-        child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
       child: Row(
         children: [
           MatrixImageAvatar(
@@ -41,6 +40,6 @@ class PostWriterModal extends StatelessWidget {
           )),
         ],
       ),
-    ));
+    );
   }
 }
