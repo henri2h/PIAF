@@ -26,9 +26,6 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
     return ListView(
       children: [
         CustomHeader("Account"),
-        ListTile(
-            title: Text("Your user ID:"),
-            subtitle: Text(sclient.userID ?? "null")),
         FutureBuilder(
             future: sclient.getUserProfile(sclient.userID!),
             builder: (context, AsyncSnapshot<ProfileInformation> p) {
@@ -74,13 +71,8 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
                   });
             }),
         ListTile(
-            iconColor: Colors.red,
-            title: Text("Logout"),
-            trailing: Icon(Icons.logout),
-            onTap: () async {
-              await sclient.logout();
-              if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-            }),
+            title: Text("Your user ID:"),
+            subtitle: Text(sclient.userID ?? "null")),
       ],
     );
   }
