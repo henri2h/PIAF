@@ -25,8 +25,6 @@ class _MinestrixState extends State<Minestrix> {
       _initLock = true;
       await m.init(
           waitForFirstSync: false, waitUntilLoadCompletedLoaded: false);
-
-     
     }
     return true;
   }
