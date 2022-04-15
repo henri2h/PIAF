@@ -25,9 +25,6 @@ class _MinestrixState extends State<Minestrix> {
       _initLock = true;
       await m.init(
           waitForFirstSync: false, waitUntilLoadCompletedLoaded: false);
-
-      await m.roomsLoading;
-      await m.updateAll(); // load all minestrix rooms and build timeline
     }
     return true;
   }

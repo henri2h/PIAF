@@ -209,9 +209,8 @@ class MinestrixClient extends Client {
               onTimelineUpdate.add("up");
             }
           }
-        } catch (e) {
-          print(e.toString());
-          print("Could not load room : " + r.displayname);
+        } catch (e, s) {
+          Logs().e("Could not load room : " + r.displayname, e.toString(), s);
         }
       } else if (r.membership == Membership.invite) {
         minestrixInvites[rs.room.id] = rs;

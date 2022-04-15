@@ -15,31 +15,33 @@ class PostWriterModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     MinestrixClient sclient = Matrix.of(context).sclient!;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
-      child: Row(
-        children: [
-          MatrixImageAvatar(
-              client: sclient,
-              url: sclient.userRoom?.user?.avatarUrl,
-              height: 48,
-              width: 48,
-              defaultText:
-                  sclient.userRoom?.user?.displayName ?? sclient.userID,
-              backgroundColor: Theme.of(context).primaryColor,
-              thumnail: true),
-          SizedBox(width: 20),
-          Expanded(
-              child: FakeTextField(
-            onPressed: () {
-              if (sroom != null)
-                context.pushRoute(PostEditorRoute(room: sroom!.room));
-            },
-            icon: Icons.edit,
-            text: "Write a post on " + (sroom?.name ?? ""),
-          )),
-        ],
-      ),
-    );
+    return sroom != null
+        ? Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
+            child: Row(
+              children: [
+                MatrixImageAvatar(
+                    client: sclient,
+                    url: sclient.userRoom?.user?.avatarUrl,
+                    height: 48,
+                    width: 48,
+                    defaultText:
+                        sclient.userRoom?.user?.displayName ?? sclient.userID,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    thumnail: true),
+                SizedBox(width: 20),
+                Expanded(
+                    child: FakeTextField(
+                  onPressed: () {
+                    if (sroom != null)
+                      context.pushRoute(PostEditorRoute(room: sroom!.room));
+                  },
+                  icon: Icons.edit,
+                  text: "Write a post on " + (sroom?.name ?? ""),
+                )),
+              ],
+            ),
+          )
+        : Container();
   }
 }
