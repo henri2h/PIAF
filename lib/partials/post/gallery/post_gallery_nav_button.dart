@@ -44,8 +44,9 @@ class _PostGalleryNavButtonState extends State<PostGalleryNavButton> {
               ),
             ),
           Center(
-            child: IconButton(
-                icon: Icon(widget.icon, size: 40, color: Colors.white),
+            child: MaterialButton(
+                minWidth: 0,
+                child: Icon(widget.icon, size: 40, color: Colors.white),
                 onPressed: widget.onPressed),
           ),
         ]),
