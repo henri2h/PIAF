@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/calendar_event/calendarEventWidget.dart';
+import 'package:minestrix_chat/partials/calendar_event/calendar_event_widget.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
