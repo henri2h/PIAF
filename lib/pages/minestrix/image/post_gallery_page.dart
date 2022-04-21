@@ -27,67 +27,72 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
   int get pos => widget.post.images.indexOf(image);
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Stack(
-            alignment: Alignment.center,
-            fit: StackFit.expand,
-            children: [
-              MatrixImage(
-                  key: Key(image.file?.url ?? pos.toString()),
-                  event: widget.post.event!,
-                  image: image,
-                  boxfit: BoxFit.cover,
-                  borderRadius: BorderRadius.zero),
-              PostGalleryNavButton(
-                  alignment: Alignment.centerLeft,
-                  icon: Icons.keyboard_arrow_left,
-                  onPressed: pos > 0
-                      ? () => setState(() {
-                            image = widget.post.images[pos - 1];
-                          })
-                      : () => null),
-              PostGalleryNavButton(
-                  alignment: Alignment.centerRight,
-                  icon: Icons.keyboard_arrow_right,
-                  onPressed: (pos + 1) < widget.post.images.length
-                      ? () => setState(() {
-                            image = widget.post.images[pos + 1];
-                          })
-                      : () => null),
-              if (Navigator.of(context).canPop())
-                Positioned(
-                    top: 8,
-                    right: 8,
-                    child: IconButton(
-                        icon: Icon(Icons.close, size: 40, color: Colors.white),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        })),
-              Positioned(
-                  bottom: 12,
-                  right: 12,
-                  child: Text(
-                    (pos + 1).toString() +
-                        "/" +
-                        widget.post.images.length.toString(),
-                    style: TextStyle(
-                        fontSize: 26,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600),
-                  ))
-            ],
-          ),
-        ),
-        SizedBox(
-            width: 340,
-            child: ListView(
+    return LayoutBuilder(builder: (context, constraints) {
+      return Row(
+        children: [
+          Expanded(
+            child: Stack(
+              alignment: Alignment.center,
+              fit: StackFit.expand,
               children: [
-                PostHeader(event: widget.post.event!),
+                MatrixImage(
+                    key: Key(image.file?.url ?? pos.toString()),
+                    event: widget.post.event!,
+                    image: image,
+                    boxfit: BoxFit.cover,
+                    borderRadius: BorderRadius.zero),
+                PostGalleryNavButton(
+                    alignment: Alignment.centerLeft,
+                    icon: Icons.keyboard_arrow_left,
+                    onPressed: pos > 0
+                        ? () => setState(() {
+                              image = widget.post.images[pos - 1];
+                            })
+                        : () => null),
+                PostGalleryNavButton(
+                    alignment: Alignment.centerRight,
+                    icon: Icons.keyboard_arrow_right,
+                    onPressed: (pos + 1) < widget.post.images.length
+                        ? () => setState(() {
+                              image = widget.post.images[pos + 1];
+                            })
+                        : () => null),
+                if (Navigator.of(context).canPop())
+                  Positioned(
+                      top: 8,
+                      right: 8,
+                      child: MaterialButton(
+                          minWidth: 0,
+                          child:
+                              Icon(Icons.close, size: 40, color: Colors.white),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          })),
+                Positioned(
+                    bottom: 12,
+                    right: 12,
+                    child: Text(
+                      (pos + 1).toString() +
+                          "/" +
+                          widget.post.images.length.toString(),
+                      style: TextStyle(
+                          fontSize: 26,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600),
+                    ))
               ],
-            )),
-      ],
-    );
+            ),
+          ),
+          if (constraints.maxWidth > 1000)
+            SizedBox(
+                width: 340,
+                child: ListView(
+                  children: [
+                    PostHeader(event: widget.post.event!),
+                  ],
+                )),
+        ],
+      );
+    });
   }
 }

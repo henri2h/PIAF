@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:minestrix_chat/helpers/storage_manager.dart';
 
+import '../platforms_info.dart';
+
 enum AppThemeMode { dark, light, black }
 
 class ThemeNotifier with ChangeNotifier {
@@ -14,28 +16,47 @@ class ThemeNotifier with ChangeNotifier {
 
   void _buildTheme() {
     _blackTheme = ThemeData(
-      primaryColor: _primaryColor,
-      scaffoldBackgroundColor: Colors.black,
-      primarySwatch: Colors.blue,
-      bottomNavigationBarTheme:
-          BottomNavigationBarThemeData(backgroundColor: Colors.black),
-      cardColor: Colors.grey[900],
-      brightness: Brightness.dark,
-    );
+        primaryColor: _primaryColor,
+        scaffoldBackgroundColor: Colors.black,
+        primarySwatch: Colors.blue,
+        bottomNavigationBarTheme:
+            BottomNavigationBarThemeData(backgroundColor: Colors.black),
+        cardColor: Colors.grey[900],
+        brightness: Brightness.dark,
+        textTheme: PlatformInfos.isDesktop
+            ? Typography.material2018().white.merge(fallbackTextTheme)
+            : null);
 
-    _darkTheme = ThemeData.dark().copyWith(primaryColor: _primaryColor);
-    _lightTheme = ThemeData.light().copyWith(primaryColor: _primaryColor);
+    _darkTheme = ThemeData.dark().copyWith(
+        primaryColor: _primaryColor,
+        textTheme: PlatformInfos.isDesktop
+            ? Typography.material2018().white.merge(fallbackTextTheme)
+            : null);
+    _lightTheme = ThemeData.light().copyWith(
+        primaryColor: _primaryColor,
+        textTheme: PlatformInfos.isDesktop
+            ? Typography.material2018().black.merge(fallbackTextTheme)
+            : null);
   }
 
-  /*ThemeData(
-    primarySwatch: Colors.black,
-    primaryColor: Colors.white,
-    brightness: Brightness.light,
-    backgroundColor: const Color(0xFFE5E5E5),
-    accentColor: Colors.black,
-    accentIconTheme: IconThemeData(color: Colors.white),
-    dividerColor: Colors.white54,
-  );*/
+  static const fallbackTextStyle =
+      TextStyle(fontFamily: 'Roboto', fontFamilyFallback: ['NotoEmoji']);
+
+  static var fallbackTextTheme = const TextTheme(
+    bodyText1: fallbackTextStyle,
+    bodyText2: fallbackTextStyle,
+    button: fallbackTextStyle,
+    caption: fallbackTextStyle,
+    overline: fallbackTextStyle,
+    headline1: fallbackTextStyle,
+    headline2: fallbackTextStyle,
+    headline3: fallbackTextStyle,
+    headline4: fallbackTextStyle,
+    headline5: fallbackTextStyle,
+    headline6: fallbackTextStyle,
+    subtitle1: fallbackTextStyle,
+    subtitle2: fallbackTextStyle,
+  );
 
   ThemeData? _themeData;
   ThemeData? get theme => _themeData;

@@ -161,7 +161,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                       }),
                 ),
               ),
-              for (SpaceChild s in profile.spaceChildren)
+              for (SpaceChild s in profile.r.spaceChildren)
                 Padding(
                   padding: const EdgeInsets.only(left: 80.0),
                   child: Builder(builder: (context) {
@@ -192,21 +192,21 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
             sroom.userID == sclient.userID &&
             sroom.type == FeedRoomType.user &&
             (profile == null ||
-                profile.spaceChildren.indexWhere(
+                profile.r.spaceChildren.indexWhere(
                         (SpaceChild sc) => sc.roomId == sroom.room.id) ==
                     -1)))
           Column(
             children: [
               RoomProfileListTile(sroom.room, onLeave: () => setState(() {})),
               if (profile != null &&
-                  profile.spaceChildren.contains(
+                  profile.r.spaceChildren.contains(
                           (SpaceChild sc) => sc.roomId == sroom.room.id) ==
                       false)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CustomTextFutureButton(
                       onPressed: () async {
-                        await profile.setSpaceChild(sroom.room.id);
+                        await profile.r.setSpaceChild(sroom.room.id);
                         setState(() {});
                       },
                       text: "Add to " + profile.r.name,
