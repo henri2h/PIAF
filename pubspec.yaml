@@ -55,6 +55,9 @@ dependencies:
   image_picker:
   file_picker_cross:
   path_provider: ^2.0.5
+  native_imaging:
+    git: https://gitlab.com/famedly/company/frontend/libraries/native_imaging.git
+
 
   # time formating
   timeago: ^3.0.2
@@ -76,12 +79,13 @@ dependencies:
   # Notifications
   #firebase_messaging: ^7.0.3
   #flutter_local_notifications: ^3.0.2
+  
   # Flushbar
   another_flushbar: ^1.10.25
+
   #dialogs
   adaptive_dialog: ^1.2.0
   
-
   package_info_plus: ^1.0.0
   
   minestrix_chat:

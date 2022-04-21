@@ -791,10 +791,19 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "830df1574eb566743d6e65d30ddae1c6ada95d36"
+      resolved-ref: "99357da2e5db92af088f7db05e9562d38b54299b"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.1"
+  native_imaging:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "8c6a5afe2c965b79b5959bb4b49c4aad020cb980"
+      url: "https://gitlab.com/famedly/company/frontend/libraries/native_imaging.git"
+    source: git
+    version: "0.1.0"
   nested:
     dependency: transitive
     description:
@@ -1283,15 +1292,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
-  tree_view:
-    dependency: transitive
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "862b4014f413b79803db6eb545ed858d61464687"
-      url: "https://github.com/ajilo297/flutter_tree_view.git"
-    source: git
-    version: "0.0.5"
   typed_data:
     dependency: transitive
     description:

@@ -4,9 +4,8 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:logging/logging.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
@@ -16,10 +15,11 @@ import 'package:minestrix_chat/utils/database/fluffybox_database.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:minestrix/utils/minestrix/minestrixFriendsSuggestions.dart';
-import 'package:minestrix/utils/minestrix/minestrixNotifications.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
-import 'package:minestrix/utils/platforms_info.dart';
+import '../custom_image_resizer.dart';
+import '../minestrix/minestrixFriendsSuggestions.dart';
+import '../minestrix/minestrixNotifications.dart';
+import '../minestrix/minestrixRoom.dart';
+import '../platforms_info.dart';
 
 class MinestrixClient extends Client {
   final log = Logger("MinestrixClient");
@@ -66,8 +66,11 @@ class MinestrixClient extends Client {
 
   MinestrixClient(String clientName,
       {Set<KeyVerificationMethod>? verificationMethods})
-      : super(clientName, verificationMethods: verificationMethods,
-            databaseBuilder: (Client client) async {
+      : super(clientName,
+            verificationMethods: verificationMethods,
+            customImageResizer: PlatformInfos.isMobile
+                ? customImageResizer
+                : null, databaseBuilder: (Client client) async {
           return await FlutterFluffyBoxDatabase.databaseBuilder(client);
         }, legacyDatabaseBuilder: (Client client) async {
           if (PlatformInfos.isBetaDesktop) {
