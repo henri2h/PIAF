@@ -1,19 +1,18 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:matrix/src/utils/space_child.dart';
-import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/profile_space.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
-
 import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/utils/profile_space.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
+
 import '../../partials/components/buttons/customFutureButton.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
@@ -26,9 +25,9 @@ class AccountsDetailsPage extends StatefulWidget {
 class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).client;
 
-    ProfileSpace? profile = ProfileSpace.getProfileSpace(sclient);
+    ProfileSpace? profile = ProfileSpace.getProfileSpace(client);
 
     return ListView(
       children: [
@@ -76,7 +75,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: CustomFutureButton(
                         onPressed: () async {
-                          await ProfileSpace.createProfileSpace(sclient);
+                          await ProfileSpace.createProfileSpace(client);
                           setState(() {});
                         },
                         children: [
@@ -168,7 +167,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     if (s.roomId == null) return Icon(Icons.error);
 
                     return Builder(builder: (context) {
-                      Room? r = sclient.getRoomById(s.roomId!);
+                      Room? r = client.getRoomById(s.roomId!);
                       if (r == null)
                         return ListTile(
                             leading: Icon(Icons.error),
@@ -188,25 +187,25 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                 ),
             ],
           ),
-        for (MinestrixRoom sroom in sclient.srooms.values.where((sroom) =>
-            sroom.userID == sclient.userID &&
+        for (Room room in client.srooms.where((sroom) =>
+            sroom.userID == client.userID &&
             sroom.type == FeedRoomType.user &&
             (profile == null ||
-                profile.r.spaceChildren.indexWhere(
-                        (SpaceChild sc) => sc.roomId == sroom.room.id) ==
+                profile.r.spaceChildren
+                        .indexWhere((SpaceChild sc) => sc.roomId == sroom.id) ==
                     -1)))
           Column(
             children: [
-              RoomProfileListTile(sroom.room, onLeave: () => setState(() {})),
+              RoomProfileListTile(room, onLeave: () => setState(() {})),
               if (profile != null &&
-                  profile.r.spaceChildren.contains(
-                          (SpaceChild sc) => sc.roomId == sroom.room.id) ==
+                  profile.r.spaceChildren
+                          .contains((SpaceChild sc) => sc.roomId == room.id) ==
                       false)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CustomTextFutureButton(
                       onPressed: () async {
-                        await profile.r.setSpaceChild(sroom.room.id);
+                        await profile.r.setSpaceChild(room.id);
                         setState(() {});
                       },
                       text: "Add to " + profile.r.name,
@@ -344,7 +343,6 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
             onSelected: _updating
                 ? null
                 : (String action) async {
-                    MinestrixClient sclient = Matrix.of(context).sclient!;
                     switch (action) {
                       case "settings":
                         await showDialog(
@@ -360,10 +358,7 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
                           _updating = true;
                         });
                         await r.leave();
-                        /* await r.client.onSync.stream.firstWhere((sync) =>
-                            sync.rooms?.join?.containsKey(r.id) ?? false);*/
 
-                        await sclient.updateAll();
                         setState(() {
                           _updating = false;
                         });
@@ -373,9 +368,7 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
                     }
                   }),
         onTap: () {
-          MinestrixClient sclient = Matrix.of(context).sclient!;
-          MinestrixRoom? _r = sclient.srooms[r.id];
-          if (_r != null) context.navigateTo(UserViewRoute(mroom: _r));
+          context.navigateTo(UserViewRoute(mroom: r));
         });
   }
 }

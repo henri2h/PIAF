@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
-import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
-
+import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 
 class QuickLinksBar extends StatefulWidget {
   @override
@@ -16,7 +14,7 @@ class _QuickLinksBarState extends State<QuickLinksBar>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client sclient = Matrix.of(context).client;
     return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Column(
         children: [
@@ -33,14 +31,14 @@ class _QuickLinksBarState extends State<QuickLinksBar>
               onPressed: () async {
                 await context.navigateTo(AppWrapperRoute());
                 await context.navigateTo(
-                    UserViewRoute(userID: Matrix.of(context).sclient!.userID));
+                    UserViewRoute(userID: Matrix.of(context).client.userID));
               }),
           QuickLinkButton(
               name: "Chats",
               icon: Icons.chat,
               onPressed: () async {
                 await context.navigateTo(MatrixChatsRoute(
-                    client: Matrix.of(context).sclient!, enableStories: true));
+                    client: Matrix.of(context).client, enableStories: true));
               }),
           QuickLinkButton(
               name: "Search",

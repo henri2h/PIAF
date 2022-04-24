@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 class ContactView extends StatelessWidget {
@@ -35,7 +37,7 @@ class ContactView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       MatrixImageAvatar(
-                        client: Matrix.of(context).sclient,
+                        client: Matrix.of(context).client,
                         url: sroom.avatar,
                         width: 32,
                         height: 32,
@@ -82,22 +84,22 @@ class ContactView extends StatelessWidget {
 class MinestrixRoomTile extends StatelessWidget {
   const MinestrixRoomTile({
     Key? key,
-    required this.sroom,
+    required this.room,
   }) : super(key: key);
-  final MinestrixRoom sroom;
+  final Room room;
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient? client = Matrix.of(context).sclient;
+    final Client? client = Matrix.of(context).client;
 
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
-          if (sroom.type == FeedRoomType.group) {
-            await context.navigateTo(GroupRoute(sroom: sroom));
+          if (room.type == FeedRoomType.group) {
+            await context.navigateTo(GroupRoute(room: room));
           } else {
-            context.navigateTo(UserViewRoute(userID: sroom.userID));
+            context.navigateTo(UserViewRoute(userID: room.userID));
           }
         },
         child: Padding(
@@ -110,9 +112,9 @@ class MinestrixRoomTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       MatrixImageAvatar(
-                        url: sroom.avatar,
+                        url: room.avatar,
                         fit: true,
-                        defaultText: sroom.name,
+                        defaultText: room.name,
                         backgroundColor: Theme.of(context).primaryColor,
                         thumnail: true,
                         width: 46,
@@ -126,12 +128,12 @@ class MinestrixRoomTile extends StatelessWidget {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(sroom.name,
+                                Text(room.name,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                     )),
                                 Text(
-                                  sroom.room.topic,
+                                  room.topic,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(),
                                 )
@@ -141,10 +143,10 @@ class MinestrixRoomTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (sroom.room.encrypted)
+                if (room.encrypted)
                   Icon(Icons.verified_user,
                       color: Theme.of(context).textTheme.bodyText1!.color),
-                if (!sroom.room.encrypted)
+                if (!room.encrypted)
                   Icon(Icons.no_encryption,
                       color: Theme.of(context).textTheme.bodyText1!.color)
               ]),

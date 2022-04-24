@@ -1,17 +1,7 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/stories/stories_list.dart';
-import 'package:minestrix_chat/utils/matrix/client_extension.dart';
-import 'package:minestrix_chat/utils/profile_space.dart';
-import 'package:minestrix_chat/utils/spaces/space_extension.dart';
-import 'package:minestrix_chat/view/matrix_chat_page.dart';
-import 'package:minestrix_chat/view/matrix_chats_page.dart';
-
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
@@ -19,9 +9,18 @@ import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/partials/users/userFriendsCard.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/partials/users/userProfileSelection.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/custom_list_view.dart';
+import 'package:minestrix_chat/partials/stories/stories_list.dart';
+import 'package:minestrix_chat/utils/matrix/client_extension.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/utils/profile_space.dart';
+import 'package:minestrix_chat/utils/spaces/space_extension.dart';
+import 'package:minestrix_chat/view/matrix_chat_page.dart';
+import 'package:minestrix_chat/view/matrix_chats_page.dart';
+
 import '../../../partials/components/buttons/customFutureButton.dart';
 import '../../../partials/feed/minestrixProfileNotCreated.dart';
 
@@ -30,7 +29,7 @@ import '../../../partials/feed/minestrixProfileNotCreated.dart';
 /// a way to select which one to display
 class UserViewPage extends StatefulWidget {
   final String? userID;
-  final MinestrixRoom? mroom;
+  final Room? mroom;
   const UserViewPage({Key? key, this.userID, this.mroom})
       : assert(userID == null || mroom == null),
         super(key: key);
@@ -40,17 +39,43 @@ class UserViewPage extends StatefulWidget {
 }
 
 class _UserViewPageState extends State<UserViewPage> {
-  MinestrixRoom? mroom;
+  Room? mroom;
 
   String? userId;
   bool _requestingHistory = false;
 
   ScrollController _controller = new ScrollController();
 
+  Future<Timeline>? futureTimeline;
+
   @override
   void initState() {
     super.initState();
     _controller.addListener(scrollListener);
+
+    // if we navigate to an other user
+    if (userId != (widget.userID ?? widget.mroom?.creatorId)) {
+      userId = null;
+      mroom = null;
+    }
+
+    mroom ??= widget.mroom;
+
+    Client client = Matrix.of(context).client;
+
+    if (mroom == null) {
+      userId = widget.userID;
+      userId ??= client.userID;
+
+      //String? roomId = client.userIdToRoomId[userId!];
+      //if (roomId != null) mroom = client.srooms[roomId];
+      if (client.minestrixUserRoom.isNotEmpty)
+        mroom = client.minestrixUserRoom.first;
+    } else {
+      userId = mroom!.creatorId;
+    }
+
+    futureTimeline = mroom?.getTimeline();
   }
 
   @override
@@ -67,7 +92,7 @@ class _UserViewPageState extends State<UserViewPage> {
           _requestingHistory = true;
         });
         print("[ userFeedPage ] : update from scroll");
-        await mroom?.timeline?.requestHistory();
+        await (await futureTimeline)?.requestHistory();
         setState(() {
           _requestingHistory = false;
         });
@@ -77,43 +102,25 @@ class _UserViewPageState extends State<UserViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    // if we navigate to an other user
-    if (userId != (widget.userID ?? widget.mroom?.userID)) {
-      userId = null;
-      mroom = null;
-    }
+    Client client = Matrix.of(context).client;
 
-    MinestrixClient sclient = Matrix.of(context).sclient!;
-    mroom ??= widget.mroom;
+    // TODO: support for mulitple feeds
+    User? user_in = client.minestrixUserRoom.firstOrNull
+        ?.getParticipants()
+        .firstWhereOrNull(
+            (User u) => (u.id == userId)); // check if the user is following us
 
-    if (mroom == null) {
-      userId = widget.userID;
-      userId ??= sclient.userID;
+    return FutureBuilder<Timeline>(
+        future: futureTimeline,
+        builder: (context, snapshot) {
+          Timeline? timeline = snapshot.data;
 
-      String? roomId = sclient.userIdToRoomId[userId!];
-      if (roomId != null) mroom = sclient.srooms[roomId];
-    } else {
-      userId = mroom!.userID;
-    }
+          List<Event> events = [];
+          if (timeline != null)
+            events = client.getSRoomFilteredEvents(timeline).toList();
 
-    User? user_in = sclient.userRoom?.room.getParticipants().firstWhereOrNull(
-        (User u) => (u.id == userId)); // check if the user is following us
+          bool canRequestHistory = timeline?.canRequestHistory == true;
 
-    return FutureBuilder<Profile>(
-        future: sclient.getProfileFromUserId(userId!),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.hasData == false) {
-            return CircularProgressIndicator();
-          }
-          Profile p = snapshot.data;
-          p.userId = userId!; // fix a nasty bug :(
-
-          List<Event>? timeline;
-          if (mroom?.timeline != null)
-            timeline =
-                sclient.getSRoomFilteredEvents(mroom!.timeline!).toList();
-
-          bool canRequestHistory = mroom?.timeline?.canRequestHistory == true;
           return LayoutBuilder(builder: (context, constraints) {
             return Center(
               child: ConstrainedBox(
@@ -127,33 +134,30 @@ class _UserViewPageState extends State<UserViewPage> {
                           children: [
                             UserProfileSelection(
                                 userId: userId!,
-                                onRoomSelected: (MinestrixRoom r) {
+                                onRoomSelected: (Room r) {
                                   setState(() {
                                     mroom = r;
                                   });
                                 },
-                                roomSelectedId: mroom?.room.id),
+                                roomSelectedId: mroom?.id),
                             Padding(
                                 padding: const EdgeInsets.all(15),
-                                child: UserFriendsCard(sroom: mroom!)),
+                                child: UserFriendsCard(room: mroom!)),
                           ],
                         ),
                       ),
                     Flexible(
                       child: CustomListViewWithEmoji(
-                          key: Key(mroom?.room.id ?? "room"),
+                          key: Key(mroom?.id ?? "room"),
                           controller: _controller,
-                          itemCount: timeline?.length != null
-                              ? timeline!.length +
-                                  2 +
-                                  (canRequestHistory ? 1 : 0)
-                              : 2,
+                          itemCount:
+                              events.length + 2 + (canRequestHistory ? 1 : 0),
                           itemBuilder: (context, i,
                               void Function(Offset, Event) onReact) {
                             if (i == 0)
                               return Column(
                                 children: [
-                                  UserInfo(profile: p, room: mroom?.room),
+                                  if (mroom != null) UserInfo(room: mroom),
                                   SizedBox(
                                     height: 20,
                                   ),
@@ -173,24 +177,24 @@ class _UserViewPageState extends State<UserViewPage> {
                                       ),
                                     ),
                                     StoriesList(
-                                        client: sclient,
-                                        restrict: mroom!.userID,
+                                        client: client,
+                                        restrict: mroom?.creatorId,
                                         allowCreatingStory:
-                                            mroom!.userID == sclient.userID),
+                                            mroom?.creatorId == client.userID),
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: PostWriterModal(sroom: mroom),
+                                      child: PostWriterModal(room: mroom),
                                     )
                                   ],
                                 );
-                              } else if ((i - 2) < timeline.length) {
+                              } else if ((i - 2) < events.length) {
                                 return Padding(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 2, horizontal: 12),
                                     child: Post(
-                                        event: timeline[i - 2],
+                                        event: events[i - 2],
                                         onReact: (Offset e) =>
-                                            onReact(e, timeline![i - 2])));
+                                            onReact(e, events[i - 2])));
                               }
 
                               return Padding(
@@ -218,7 +222,7 @@ class _UserViewPageState extends State<UserViewPage> {
                                         setState(() {
                                           _requestingHistory = true;
                                         });
-                                        await mroom!.room.requestHistory();
+                                        await mroom!.requestHistory();
                                         setState(() {
                                           _requestingHistory = false;
                                         });
@@ -227,7 +231,9 @@ class _UserViewPageState extends State<UserViewPage> {
                               );
                             } else {
                               return UnknownUser(
-                                  user_in: user_in, sclient: sclient, p: p);
+                                  user_in: user_in,
+                                  client: client,
+                                  userId: userId);
                             }
                           }),
                     ),
@@ -242,10 +248,13 @@ class _UserViewPageState extends State<UserViewPage> {
 
 class UnknownUser extends StatelessWidget {
   final User? user_in;
-  final MinestrixClient sclient;
-  final Profile p;
+  final Client client;
+  final String? userId;
   const UnknownUser(
-      {Key? key, required this.user_in, required this.sclient, required this.p})
+      {Key? key,
+      required this.user_in,
+      required this.client,
+      required this.userId})
       : super(key: key);
 
   @override
@@ -272,9 +281,9 @@ class UnknownUser extends StatelessWidget {
                           for (SpaceRoom space in profiles)
                             if ([JoinRules.knock, JoinRules.public]
                                     .contains(space.joinRule) &&
-                                (sclient.getRoomById(space.id) == null ||
+                                (client.getRoomById(space.id) == null ||
                                     ![Membership.knock, Membership.join]
-                                        .contains(sclient
+                                        .contains(client
                                             .getRoomById(space.id)
                                             ?.membership)))
                               CustomFutureButton(
@@ -299,21 +308,21 @@ class UnknownUser extends StatelessWidget {
                                   onPressed: () async {
                                     switch (space.joinRule) {
                                       case JoinRules.public:
-                                        sclient.joinRoom(space
+                                        client.joinRoom(space
                                             .id); // TODO: update me to support joining over federation (need the via field)
-                                        await sclient
+                                        await client
                                             .waitForRoomInSync(space.id);
 
                                         break;
                                       case JoinRules.knock:
-                                        sclient.knockRoom(space.id);
-                                        await sclient
+                                        client.knockRoom(space.id);
+                                        await client
                                             .waitForRoomInSync(space.id);
 
                                         break;
                                       default:
                                     }
-                                    sclient.knockRoom(space.id);
+                                    client.knockRoom(space.id);
                                   },
                                   expanded: false),
                         ],
@@ -335,14 +344,14 @@ class UnknownUser extends StatelessWidget {
                   onPressed: null,
                 )),
               SizedBox(width: 30),
-              if (p.userId != sclient.userID)
+              if (userId != client.userID)
                 CustomFutureButton(
                     icon: Icon(Icons.message),
                     children: [Text("Send a message")],
                     expanded: false,
                     onPressed: () async {
-                      String? roomId =
-                          sclient.getDirectChatFromUserId(p.userId);
+                      if (userId == null) return;
+                      String? roomId = client.getDirectChatFromUserId(userId!);
                       if (roomId != null) {
                         await Navigator.push(
                             context,
@@ -350,7 +359,7 @@ class UnknownUser extends StatelessWidget {
                                 builder: (BuildContext context) =>
                                     MatrixChatPage(
                                         roomId: roomId,
-                                        client: sclient,
+                                        client: client,
                                         onBack: () => context.popRoute())));
                       } else {
                         await Navigator.push(
@@ -358,13 +367,13 @@ class UnknownUser extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (BuildContext context) => Scaffold(
                                     appBar: AppBar(title: Text("Start chat")),
-                                    body: MatrixChatsPage(client: sclient))));
+                                    body: MatrixChatsPage(client: client))));
                       }
                     }),
             ],
           ),
         ),
-        p.userId != sclient.userID
+        userId != client.userID
             ? Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 60, vertical: 100),
@@ -388,9 +397,12 @@ class UnknownUser extends StatelessWidget {
   }
 
   Future<List<SpaceRoom>?> getProfileSpaceContent() async {
-    var roomId =
-        await sclient.getRoomIdByAlias(ProfileSpace.getAliasName(p.userId));
-    if (roomId.roomId == null) return null;
-    return await sclient.getRoomHierarchy(roomId.roomId!);
+    if (userId != null) {
+      var roomId =
+          await client.getRoomIdByAlias(ProfileSpace.getAliasName(userId!));
+      if (roomId.roomId == null) return null;
+      return await client.getRoomHierarchy(roomId.roomId!);
+    }
+    return null;
   }
 }

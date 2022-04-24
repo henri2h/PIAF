@@ -5,8 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
 
 class SettingsAccountPage extends StatefulWidget {
   const SettingsAccountPage({Key? key}) : super(key: key);
@@ -21,7 +20,7 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client sclient = Matrix.of(context).client;
 
     return ListView(
       children: [
@@ -38,7 +37,7 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
                   leading: savingDisplayName
                       ? CircularProgressIndicator()
                       : MatrixImageAvatar(
-                          client: Matrix.of(context).sclient,
+                          client: Matrix.of(context).client,
                           url: p.data?.avatarUrl,
                           width: 48,
                           height: 48,

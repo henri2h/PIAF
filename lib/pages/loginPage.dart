@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-
+import 'package:matrix/matrix.dart';
+import 'package:minestrix/partials/minestrixTitle.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
 import 'package:minestrix_chat/partials/login/login_card.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'package:minestrix/partials/minestrixTitle.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key? key, this.title, this.onLogin}) : super(key: key);
@@ -29,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildDesktop() {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).client;
     return Scaffold(
       body: Row(
         children: [
@@ -79,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Expanded(child: LoginMatrixPage(client: sclient))
+                    Expanded(child: LoginMatrixPage(client: client))
                   ],
                 ),
               ),
@@ -91,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildMobile() {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).client;
 
     return Scaffold(
       body: Container(
@@ -106,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.white,
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(40))),
-                    child: LoginMatrixPage(client: sclient)))
+                    child: LoginMatrixPage(client: client)))
           ],
         ),
       ),

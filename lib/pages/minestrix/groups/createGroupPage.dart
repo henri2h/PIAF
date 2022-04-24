@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Visibility;
 
-import 'package:matrix/matrix.dart' as m;
+import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
 class CreateGroupPage extends StatefulWidget {
   @override
@@ -22,7 +22,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   String? errorText = null;
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? sclient = Matrix.of(context).client;
 
     return SafeArea(
       child: Column(
@@ -167,13 +167,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                           setState(() {
                             _creating = true;
                           });
-                          String roomId = await sclient!.createMinestrixGroup(
+                          String roomId = await sclient.createMinestrixGroup(
                               "#" + tName.text, tDesc.text,
                               visibility: _isPublicGroup
-                                  ? m.Visibility.public
-                                  : m.Visibility.private);
+                                  ? Visibility.public
+                                  : Visibility.private);
                           if (!_isPublicGroup && _isE2EEnabled) {
-                            m.Room? r = sclient.getRoomById(roomId);
+                            Room? r = sclient.getRoomById(roomId);
                             if (r != null) {
                               await r.enableEncryption();
                             }

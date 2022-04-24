@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-
 import 'package:matrix/matrix.dart';
-
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class DebugPage extends StatefulWidget {
   @override
@@ -14,52 +12,33 @@ class DebugPage extends StatefulWidget {
 }
 
 class _DebugPageState extends State<DebugPage> {
-  Future<void> loadElements(BuildContext context, MinestrixRoom sroom) async {
+  Future<void> loadElements(BuildContext context, Room room) async {
     setState(() {
       progressing = true;
     });
 
-    Timeline? t = sroom.timeline;
-    if (t != null) {
-      await t.requestHistory();
-      await sclient!.loadNewTimeline();
-      getTimelineLength();
-    } else {
-      print("error [debugVue] : timeline is null");
-    }
+    Timeline? t = await room.getTimeline();
+
+    await t.requestHistory();
+
     setState(() {
       progressing = false;
     });
   }
 
-  void getTimelineLength() {
-    timelineLength.clear();
-    for (var i = 0; i < srooms.length; i++) {
-      Timeline t = srooms[i].timeline!;
-
-      timelineLength.add(t.events.length);
-    }
-
-    if (this.mounted)
-      setState(() {
-        print("[ debug ] : State : " + timelineLength.length.toString());
-      });
-  }
-
   List<int> timelineLength = [];
-  List<MinestrixRoom> srooms = [];
-  MinestrixClient? sclient;
+  List<Room> rooms = [];
+  Client? client;
   bool init = false;
 
   bool progressing = false;
   @override
   Widget build(BuildContext context) {
-    sclient = Matrix.of(context).sclient;
+    client = Matrix.of(context).client;
 
-    srooms = sclient!.srooms.values.toList();
+    rooms = client!.srooms;
     if (init == false) {
       init = true;
-      getTimelineLength();
     }
 
     return ListView(children: [
@@ -74,10 +53,10 @@ class _DebugPageState extends State<DebugPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (srooms.length != 0)
-              for (var i = 0; i < srooms.length; i++)
+            if (rooms.length != 0)
+              for (var i = 0; i < rooms.length; i++)
                 ListTile(
-                    title: Text(srooms[i].room.name),
+                    title: Text(rooms[i].name),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 2.0),
                       child: Column(
@@ -87,12 +66,12 @@ class _DebugPageState extends State<DebugPage> {
                             children: [
                               Icon(Icons.person, size: 16),
                               SizedBox(width: 10),
-                              Text((srooms[i].user?.displayName ??
-                                  srooms[i].userID ??
+                              Text((rooms[i].creator?.displayName ??
+                                  rooms[i].creatorId ??
                                   "null")),
                             ],
                           ),
-                          Text(srooms[i].room.id),
+                          Text(rooms[i].id),
                         ],
                       ),
                     ),
@@ -105,59 +84,12 @@ class _DebugPageState extends State<DebugPage> {
                     trailing: IconButton(
                         icon: Icon(Icons.refresh),
                         onPressed: () async {
-                          await loadElements(context, srooms[i]);
+                          await loadElements(context, rooms[i]);
                         })),
-            if (sclient != null)
+            if (client != null)
               Text("MinesTRIX rooms length : " +
-                  sclient!.srooms.length.toString()),
+                  client!.sroomsByUserId.length.toString()),
             if (progressing) CircularProgressIndicator(),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                    child: Text("Load all more"),
-                    onPressed: () async {
-                      for (MinestrixRoom room in srooms) {
-                        await loadElements(context, room);
-                      }
-                    }),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                      child: Text("Load new timeline"),
-                      onPressed: () async {
-                        setState(() {
-                          progressing = true;
-                        });
-                        await sclient!.loadNewTimeline();
-                        getTimelineLength();
-                        setState(() {
-                          progressing = false;
-                        });
-                      }),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                      child: Text("Load srooms"),
-                      onPressed: () async {
-                        setState(() {
-                          progressing = true;
-                        });
-                        await sclient!.loadSRooms();
-                        getTimelineLength();
-                        setState(() {
-                          progressing = false;
-                        });
-                      }),
-                )
-              ],
-            ),
           ],
         ),
       ),

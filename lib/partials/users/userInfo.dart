@@ -7,25 +7,30 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/userAvatar.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class UserInfo extends StatelessWidget {
-  const UserInfo({Key? key, required this.profile, this.room})
-      : super(key: key);
+  const UserInfo({Key? key, this.room, this.profile})
+      : assert(profile != null || room != null),
+        super(key: key);
 
-  final Profile profile;
+  final Profile? profile;
   final Room? room;
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client sclient = Matrix.of(context).client;
     String? roomUrl = room?.avatar
         ?.getThumbnail(sclient,
             width: 1000, height: 800, method: ThumbnailMethod.scale)
         .toString();
+    User? u = room?.creator;
+    Profile p = profile ??
+        Profile(
+            userId: u!.id, displayName: u.displayName, avatarUrl: u.avatarUrl);
 
-    bool isUserPage = profile.userId == sclient.userID;
+    bool isUserPage = p.userId == sclient.userID;
     return Column(
       children: [
         Row(
@@ -67,7 +72,7 @@ class UserInfo extends StatelessWidget {
                     child: CachedNetworkImage(imageUrl: roomUrl),
                   ),
                 UserAvatar(
-                  p: profile,
+                  p: p,
                 ),
               ],
             );
@@ -85,10 +90,10 @@ class UserInfo extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 60.0, horizontal: 20),
                 child: Align(
-                    alignment: profile.avatarUrl != null
+                    alignment: p.avatarUrl != null
                         ? Alignment.centerLeft
                         : Alignment.center,
-                    child: UserAvatar(p: profile)),
+                    child: UserAvatar(p: p)),
               ));
         }),
       ],

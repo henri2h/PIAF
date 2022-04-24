@@ -10,8 +10,7 @@ import 'package:minestrix/pages/debugPage.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
 
-import '../../utils/matrixWidget.dart';
-import '../../utils/minestrix/minestrixClient.dart';
+import '../../utils/matrix_widget.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -23,7 +22,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient client = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).client;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: ListView(
@@ -37,7 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Column(
                     children: [
                       MatrixImageAvatar(
-                        client: Matrix.of(context).sclient,
+                        client: Matrix.of(context).client,
                         url: p.data?.avatarUrl,
                         width: 120,
                         height: 120,

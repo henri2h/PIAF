@@ -12,7 +12,6 @@ class MinestrixRoom {
   Uri? get avatar => room.feedAvatar;
 
   FeedRoomType? get type => room.feedType;
-  bool get isFeed => room.isFeed;
 
   User? get user => room.user;
   String? get userID => room.userID;

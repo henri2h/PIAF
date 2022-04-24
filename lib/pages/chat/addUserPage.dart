@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class AddUserPage extends StatefulWidget {
   AddUserPage(BuildContext context, {Key? key}) : super(key: key);
@@ -19,7 +17,7 @@ class _AddUserPageState extends State<AddUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? client = Matrix.of(context).client;
     return Scaffold(
         appBar: AppBar(
           title: Text("Add users"),
@@ -40,10 +38,10 @@ class _AddUserPageState extends State<AddUserPage> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                var ur = await sclient!.searchUserDirectory(pattern);
+                var ur = await client.searchUserDirectory(pattern);
                 List<User?> following = List<User?>.empty();
-                sclient.following.forEach((key, MinestrixRoom sroom) {
-                  following.add(sroom.user);
+                client.following.forEach((room) {
+                  following.add(room.creator);
                 });
 
                 return ur.results
@@ -60,7 +58,7 @@ class _AddUserPageState extends State<AddUserPage> {
                   leading: profile.avatarUrl == null
                       ? Icon(Icons.person)
                       : MatrixImageAvatar(
-                          client: sclient, url: profile.avatarUrl),
+                          client: client, url: profile.avatarUrl),
                   title: Text((profile.displayName ?? profile.userId)),
                   subtitle: Text(profile.userId),
                 );
@@ -77,7 +75,7 @@ class _AddUserPageState extends State<AddUserPage> {
             ListTile(
                 title: Text((p.displayName ?? p.userId)),
                 leading: MatrixImageAvatar(
-                    client: sclient, url: p.avatarUrl, thumnail: true),
+                    client: client, url: p.avatarUrl, thumnail: true),
                 subtitle: Text(p.userId)),
         ]));
   }

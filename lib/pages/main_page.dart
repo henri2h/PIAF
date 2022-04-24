@@ -1,12 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import '../partials/home/notificationView.dart';
 import '../router.gr.dart';
-import '../utils/matrixWidget.dart';
-import '../utils/minestrix/minestrixClient.dart';
+import '../utils/matrix_widget.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).client;
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 900;
       return isWideScreen
@@ -31,15 +31,15 @@ class _MainPageState extends State<MainPage> {
                 FeedRoute(),
                 ResearchRoute(),
                 MatrixChatsRoute(
-                    client: Matrix.of(context).sclient!,
+                    client: Matrix.of(context).client,
                     allowPop: false,
                     onSelection: (String roomId) {
                       context.navigateTo(MatrixChatRoute(
-                          client: Matrix.of(context).sclient!,
+                          client: Matrix.of(context).client,
                           roomId: roomId,
                           onBack: () => context.popRoute()));
                     }),
-                UserRoute(userID: sclient.userID),
+                UserRoute(userID: client.userID),
               ],
               bottomNavigationBuilder: (_, tabsRouter) {
                 return BottomNavigationBar(
@@ -53,9 +53,9 @@ class _MainPageState extends State<MainPage> {
                         icon: Icon(Icons.search), label: "Search"),
                     BottomNavigationBarItem(
                         icon: StreamBuilder(
-                            stream: sclient.onSync.stream,
+                            stream: client.onSync.stream,
                             builder: (context, _) {
-                              int notif = sclient.totalNotificationsCount;
+                              int notif = client.totalNotificationsCount;
                               if (notif == 0) {
                                 return Icon(Icons.message_outlined);
                               } else {
@@ -83,13 +83,13 @@ class _MainPageState extends State<MainPage> {
                           height: 30,
                           child: FutureBuilder(
                               future:
-                                  sclient.getProfileFromUserId(sclient.userID!),
+                                  client.getProfileFromUserId(client.userID!),
                               builder: (BuildContext context,
                                   AsyncSnapshot<Profile> p) {
                                 if (p.data?.avatarUrl == null)
                                   return Icon(Icons.person);
                                 return MatrixImageAvatar(
-                                    client: sclient,
+                                    client: client,
                                     url: p.data!.avatarUrl,
                                     fit: true,
                                     thumnail: true);

@@ -5,7 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
 
 class AccountCard extends StatelessWidget {
   AccountCard({Key? key, this.user, this.profile})
@@ -46,7 +46,7 @@ class AccountCard extends StatelessWidget {
         child: Column(
           children: [
             MatrixImageAvatar(
-              client: Matrix.of(context).sclient,
+              client: Matrix.of(context).client,
               url: avatarUrl,
               defaultText: displayName,
               width: 80,

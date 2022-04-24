@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-
+import 'package:matrix/matrix.dart';
 import 'package:matrix_api_lite/src/generated/model.dart' as model;
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
-
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class UserProfileSelection extends StatefulWidget {
   const UserProfileSelection(
@@ -18,7 +17,7 @@ class UserProfileSelection extends StatefulWidget {
       : super(key: key);
   final String userId;
   final String? roomSelectedId;
-  final void Function(MinestrixRoom r) onRoomSelected;
+  final void Function(Room r) onRoomSelected;
 
   @override
   _UserProfileSelectionState createState() => _UserProfileSelectionState();
@@ -28,10 +27,10 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
   bool _creatingAccount = false;
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client sclient = Matrix.of(context).client;
 
-    List<MinestrixRoom> _rooms = sclient.srooms.values
-        .where((MinestrixRoom r) =>
+    final _rooms = sclient.srooms
+        .where((final r) =>
             r.userID == widget.userId && r.type == FeedRoomType.user)
         .toList();
 
@@ -42,11 +41,11 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             H2Title("User profiles"),
-            for (MinestrixRoom r in _rooms)
+            for (final r in _rooms)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                 child: MaterialButton(
-                    color: r.room.id == widget.roomSelectedId
+                    color: r.id == widget.roomSelectedId
                         ? Theme.of(context).primaryColor
                         : null,
                     shape: RoundedRectangleBorder(
@@ -57,9 +56,9 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                         children: [
                           MatrixImageAvatar(
                             client: sclient,
-                            url: r.room.avatar,
+                            url: r.avatar,
                             thumnail: true,
-                            defaultText: r.room.topic,
+                            defaultText: r.topic,
                             backgroundColor: Theme.of(context).primaryColor,
                             width: 45,
                             height: 45,
@@ -69,11 +68,11 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                           ),
                           ConstrainedBox(
                             constraints: BoxConstraints(maxWidth: 100),
-                            child: Text(r.room.topic,
+                            child: Text(r.topic,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                    color: r.room.id == widget.roomSelectedId
+                                    color: r.id == widget.roomSelectedId
                                         ? Theme.of(context)
                                             .colorScheme
                                             .onPrimary

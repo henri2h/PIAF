@@ -9,8 +9,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:minestrix/partials/post/postDetails/postContent.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
 
 class RepliesVue extends StatefulWidget {
   final Event event;
@@ -37,8 +36,7 @@ class _RepliesVueState extends State<RepliesVue> {
 
   @override
   Widget build(BuildContext context) {
-    // get replies
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? client = Matrix.of(context).client;
 
     List<Event> directRepliesToEvent = widget.replies.where((element) {
       /*
@@ -80,7 +78,7 @@ class _RepliesVueState extends State<RepliesVue> {
         children: [
           if (widget.showEditBox == true)
             MatrixMessageComposer(
-                client: sclient!,
+                client: client,
                 room: widget.event.room,
                 onReplyTo: widget.event,
                 hintText: "Reply",
@@ -118,7 +116,7 @@ class _RepliesVueState extends State<RepliesVue> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 6),
                                 child: MatrixImageAvatar(
-                                  client: sclient,
+                                  client: client,
                                   url: revent.sender.avatarUrl,
                                   defaultText: revent.sender.calcDisplayname(),
                                   backgroundColor:

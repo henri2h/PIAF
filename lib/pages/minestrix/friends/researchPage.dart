@@ -1,17 +1,14 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/minestrixRoomTile.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 class ResearchPage extends StatefulWidget {
   @override
@@ -21,7 +18,7 @@ class ResearchPage extends StatefulWidget {
 class _ResearchPageState extends State<ResearchPage> {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? client = Matrix.of(context).client;
     return ListView(children: [
       CustomHeader("Search"),
       Padding(
@@ -32,7 +29,7 @@ class _ResearchPageState extends State<ResearchPage> {
               autofocus: false,
               decoration: InputDecoration(border: OutlineInputBorder())),
           suggestionsCallback: (pattern) async {
-            var ur = await sclient!.searchUserDirectory(pattern);
+            var ur = await client.searchUserDirectory(pattern);
             return ur.results.toList();
           },
           itemBuilder: (context, dynamic suggestion) {
@@ -40,7 +37,7 @@ class _ResearchPageState extends State<ResearchPage> {
             return ListTile(
               leading: profile.avatarUrl == null
                   ? Icon(Icons.person)
-                  : MatrixImageAvatar(client: sclient, url: profile.avatarUrl),
+                  : MatrixImageAvatar(client: client, url: profile.avatarUrl),
               title: Text((profile.displayName ?? profile.userId)),
               subtitle: Text(profile.userId),
             );
@@ -51,15 +48,13 @@ class _ResearchPageState extends State<ResearchPage> {
         ),
       ),
       StreamBuilder(
-        stream: sclient!.onSync.stream,
+        stream: client.onSync.stream,
         builder: (context, _) =>
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           H2Title("Contacts"),
-          for (MinestrixRoom r in sclient.sfriends.values)
-            MinestrixRoomTile(sroom: r),
+          for (Room r in client.sfriends) MinestrixRoomTile(room: r),
           H2Title("Groups"),
-          for (MinestrixRoom r in sclient.sgroups.values)
-            MinestrixRoomTile(sroom: r),
+          for (Room r in client.sgroups) MinestrixRoomTile(room: r),
         ]),
       )
     ]);

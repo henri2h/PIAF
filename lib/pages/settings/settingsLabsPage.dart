@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix/utils/matrix_widget.dart';
 
 class SettingsLabsPage extends StatefulWidget {
   const SettingsLabsPage({Key? key}) : super(key: key);

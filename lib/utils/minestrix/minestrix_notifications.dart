@@ -1,37 +1,40 @@
 import 'dart:async';
 
 import 'package:matrix/matrix.dart';
+import 'minestrix_client_extension.dart';
 
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-
-class MinestrixNotifications {
-  List<Notification> notifications = List.empty(growable: true);
-
-  MinestrixNotifications() {}
-
-  StreamController<String> onNotifications = StreamController.broadcast();
+extension MinestrixNotifications on Client {
+  Stream get onMinestrixUpdate => onSync.stream;
 
   /// This method should fetch all the user events and build the notification feed
   // TODO : add a way to check if the user has been mentionned or not.
   // May be we set the event as read or not.
-  void loadNotifications(MinestrixClient MinestrixClient) {
-    notifications.clear();
+  List<Notification> get notifications {
+    List<Notification> notifications = [];
 
     // load friend requests
-    MinestrixClient.minestrixInvites.forEach((key, value) {
+    minestrixInvites.forEach((room) {
       Notification n = Notification();
       n.body = "Friend request";
       n.type = NotificationType.FriendRequest;
       notifications.add(n);
     });
-
-    onNotifications.add("update");
+    return notifications;
   }
 
   get hasNotifications => _hasNotifications();
   bool _hasNotifications() {
     if (notifications.length == 0) return false;
     return true;
+  }
+
+  int get totalNotificationsCount {
+    int count = 0;
+
+    rooms.forEach((room) {
+      count += room.notificationCount;
+    });
+    return count;
   }
 }
 
