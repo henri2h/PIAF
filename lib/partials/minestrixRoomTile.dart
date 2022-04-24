@@ -87,6 +87,7 @@ class MinestrixRoomTile extends StatelessWidget {
     required this.room,
   }) : super(key: key);
   final Room room;
+
   @override
   Widget build(BuildContext context) {
     final Client? client = Matrix.of(context).client;
@@ -112,7 +113,7 @@ class MinestrixRoomTile extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       MatrixImageAvatar(
-                        url: room.avatar,
+                        url: room.creator?.avatarUrl,
                         fit: true,
                         defaultText: room.name,
                         backgroundColor: Theme.of(context).primaryColor,
