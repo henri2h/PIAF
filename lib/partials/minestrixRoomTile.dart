@@ -100,7 +100,7 @@ class MinestrixRoomTile extends StatelessWidget {
           if (room.type == FeedRoomType.group) {
             await context.navigateTo(GroupRoute(room: room));
           } else {
-            context.navigateTo(UserViewRoute(userID: room.userID));
+            context.navigateTo(UserViewRoute(mroom: room));
           }
         },
         child: Padding(
