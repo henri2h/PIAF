@@ -39,7 +39,7 @@ import 'pages/settings/settingsThemePage.dart';
     AutoRoute(path: '/', page: AppWrapperPage, children: [
       // nested routes defines the bottom navigation bar for mobile
 
-      AutoRoute(path: 'main', page: MainPage, initial: true, children: [
+      AutoRoute(path: '', page: MainPage, initial: true, children: [
         AutoRoute(path: 'feed', page: FeedPage, initial: true),
         AutoRoute(path: 'search', page: ResearchPage),
         AutoRoute(path: 'my_account', page: UserViewPage, name: "UserRoute"),
@@ -71,10 +71,11 @@ import 'pages/settings/settingsThemePage.dart';
         path: 'chats',
         page: MatrixChatsPage,
       ),
+      AutoRoute(path: 'login', page: LoginPage),
       RedirectRoute(path: '*', redirectTo: 'feed')
     ]),
 
-    AutoRoute(path: '/login', page: LoginPage)
+    AutoRoute(path: 'login', page: LoginPage)
   ],
 )
 class $AppRouter {}

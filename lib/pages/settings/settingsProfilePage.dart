@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
@@ -6,6 +7,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix/router.gr.dart';
 
 class SettingsAccountPage extends StatefulWidget {
   const SettingsAccountPage({Key? key}) : super(key: key);
@@ -21,6 +23,7 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
   @override
   Widget build(BuildContext context) {
     Client sclient = Matrix.of(context).client;
+    final m = Matrix.of(context);
 
     return ListView(
       children: [
@@ -72,6 +75,25 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
         ListTile(
             title: Text("Your user ID:"),
             subtitle: Text(sclient.userID ?? "null")),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Clients"),
+              Text("Multi account ${m.isMultiAccount}"),
+              for (final c in m.widget.clients)
+                ListTile(
+                    title: Text(c.clientName), subtitle: Text(c.userID ?? '')),
+              ListTile(
+                  title: Text("Add client"),
+                  trailing: Icon(Icons.add),
+                  onTap: () async {
+                    context.pushRoute(LoginRoute());
+                  }),
+            ],
+          ),
+        ),
       ],
     );
   }

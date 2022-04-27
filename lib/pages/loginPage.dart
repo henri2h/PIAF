@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildDesktop() {
-    Client client = Matrix.of(context).client;
+    Client client = Matrix.of(context).getLoginClient();
     return Scaffold(
       body: Row(
         children: [
@@ -56,12 +56,12 @@ class _LoginPageState extends State<LoginPage> {
                         }),
                     TextButton(
                       onPressed: () async =>
-                          await _launchURL("https://matrix.org"),
+                          await _launchURL(Uri.parse("https://matrix.org")),
                       child: new Text('The matrix protocol'),
                     ),
                     TextButton(
-                      onPressed: () async => await _launchURL(
-                          "https://gitlab.com/minestrix/minestrix-flutter"),
+                      onPressed: () async => await _launchURL(Uri.parse(
+                          "https://gitlab.com/minestrix/minestrix-flutter")),
                       child: new Text('MinesTRIX code'),
                     ),
                   ],
@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildMobile() {
-    Client client = Matrix.of(context).client;
+    Client client = Matrix.of(context).getLoginClient();
 
     return Scaffold(
       body: Container(
@@ -111,9 +111,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+  Future<void> _launchURL(Uri url) async {
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     } else {
       throw 'Could not launch $url';
     }
