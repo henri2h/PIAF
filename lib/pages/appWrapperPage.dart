@@ -32,15 +32,17 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     loadFuture ??= load();
 
     return Scaffold(
-      body: LayoutBuilder(builder: (context, constraints) {
-        bool isWideScreen = constraints.maxWidth > 900;
-        return Column(
-          children: [
-            if (isWideScreen) NavBarDesktop(),
-            Expanded(child: AutoRouter()),
-          ],
-        );
-      }),
+      body: SafeArea(
+        child: LayoutBuilder(builder: (context, constraints) {
+          bool isWideScreen = constraints.maxWidth > 900;
+          return Column(
+            children: [
+              if (isWideScreen) NavBarDesktop(),
+              Expanded(child: AutoRouter()),
+            ],
+          );
+        }),
+      ),
       endDrawer: NotificationView(),
     );
   }

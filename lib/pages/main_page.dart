@@ -39,7 +39,7 @@ class _MainPageState extends State<MainPage> {
                           roomId: roomId,
                           onBack: () => context.popRoute()));
                     }),
-                UserRoute(userID: client.userID),
+                UserRoute(userID: Matrix.of(context).client.userID),
               ],
               bottomNavigationBuilder: (_, tabsRouter) {
                 return BottomNavigationBar(
@@ -81,18 +81,12 @@ class _MainPageState extends State<MainPage> {
                     BottomNavigationBarItem(
                         icon: SizedBox(
                           height: 30,
-                          child: FutureBuilder(
-                              future:
-                                  client.getProfileFromUserId(client.userID!),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<Profile> p) {
-                                if (p.data?.avatarUrl == null)
-                                  return Icon(Icons.person);
-                                return MatrixImageAvatar(
-                                    client: client,
-                                    url: p.data!.avatarUrl,
-                                    fit: true,
-                                    thumnail: true);
+                          child: StreamBuilder(
+                              stream: client.onSync.stream,
+                              builder: (context, snapshot) {
+                                print("build ${client.userID}");
+                                return AvatarBottomBar(
+                                    key: Key(client.userID!));
                               }),
                         ),
                         label: "My account"),
@@ -101,5 +95,40 @@ class _MainPageState extends State<MainPage> {
               },
             );
     });
+  }
+}
+
+class AvatarBottomBar extends StatefulWidget {
+  const AvatarBottomBar({Key? key}) : super(key: key);
+
+  @override
+  State<AvatarBottomBar> createState() => _AvatarBottomBarState();
+}
+
+class _AvatarBottomBarState extends State<AvatarBottomBar> {
+  late Future<Profile> futureClient;
+  @override
+  void initState() {
+    print("set state");
+    futureClient = Matrix.of(context)
+        .client
+        .getProfileFromUserId(Matrix.of(context).client.userID!);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("build");
+    return FutureBuilder(
+        future: futureClient,
+        builder: (BuildContext context, AsyncSnapshot<Profile> p) {
+          return MatrixImageAvatar(
+              client: Matrix.of(context).client,
+              url: p.data?.avatarUrl,
+              defaultText:
+                  p.data?.displayName ?? Matrix.of(context).client.userID,
+              fit: true,
+              thumnail: true);
+        });
   }
 }
