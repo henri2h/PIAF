@@ -41,13 +41,15 @@ class UserViewPage extends StatefulWidget {
 }
 
 class _UserViewPageState extends State<UserViewPage> {
-  Room? mroom;
-
-  String? userId;
-  bool _requestingHistory = false;
-
   ScrollController _controller = new ScrollController();
 
+  Room? mroom;
+
+  // getter
+  String? get userId => widget.userID ?? mroom?.creatorId;
+
+  // status
+  bool _requestingHistory = false;
   Future<Timeline>? futureTimeline;
 
   @override
@@ -55,26 +57,18 @@ class _UserViewPageState extends State<UserViewPage> {
     super.initState();
     _controller.addListener(scrollListener);
 
-    // if we navigate to an other user
-    if (userId != (widget.userID ?? widget.mroom?.creatorId)) {
-      userId = null;
-      mroom = null;
-    }
-
     mroom ??= widget.mroom;
 
     Client client = Matrix.of(context).client;
 
-    if (mroom == null) {
-      userId = widget.userID;
-      userId ??= client.userID;
+    if (mroom == null && userId != null) {
+      mroom = client.sroomsByUserId[userId!]?.first;
 
-      //String? roomId = client.userIdToRoomId[userId!];
-      //if (roomId != null) mroom = client.srooms[roomId];
-      if (client.minestrixUserRoom.isNotEmpty)
+      // fallback
+      if (userId == null &&
+          mroom == null &&
+          client.minestrixUserRoom.isNotEmpty)
         mroom = client.minestrixUserRoom.first;
-    } else {
-      userId = mroom!.creatorId;
     }
 
     futureTimeline = mroom?.getTimeline();
