@@ -208,15 +208,6 @@ class _UserViewPageState extends State<UserViewPage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Center(
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 15,
-                                                      vertical: 8.0),
-                                              child: H2Title("Posts"),
-                                            ),
-                                          ),
                                           StoriesList(
                                               client: client,
                                               restrict: mroom?.creatorId,

@@ -19,33 +19,40 @@ class UserAvatar extends StatelessWidget {
           borderRadius: BorderRadius.circular(40.0),
         ),
         padding: const EdgeInsets.only(bottom: 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            MatrixImageAvatar(
-              client: Matrix.of(context).client,
-              url: p.avatarUrl,
-              width: 250,
-              height: 250,
-              shape: MatrixImageAvatarShape.none,
-              defaultIcon: Icon(Icons.person, size: 120),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(p.displayName ?? p.userId,
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            ),
-            if (p.displayName != null)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Text(p.userId,
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Theme.of(context).textTheme.caption!.color)),
+        child: SizedBox(
+          width: 180,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MatrixImageAvatar(
+                client: Matrix.of(context).client,
+                url: p.avatarUrl,
+                width: 180,
+                height: 180,
+                shape: MatrixImageAvatarShape.none,
+                defaultIcon: Icon(Icons.person,
+                    size: 100, color: Theme.of(context).colorScheme.onPrimary),
               ),
-          ],
+              SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(p.displayName ?? p.userId,
+                    style:
+                        TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+              ),
+              if (p.displayName != null)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Text(p.userId,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).textTheme.caption!.color)),
+                ),
+            ],
+          ),
         ),
       ),
     );
