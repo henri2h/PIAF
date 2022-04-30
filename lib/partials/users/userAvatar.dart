@@ -4,6 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 
 class UserAvatar extends StatelessWidget {
   final Profile p;
@@ -27,8 +28,8 @@ class UserAvatar extends StatelessWidget {
               MatrixImageAvatar(
                 client: Matrix.of(context).client,
                 url: p.avatarUrl,
-                width: 180,
-                height: 180,
+                width: MinestrixAvatarSizeConstants.big,
+                height: MinestrixAvatarSizeConstants.big,
                 shape: MatrixImageAvatarShape.none,
                 defaultIcon: Icon(Icons.person,
                     size: 100, color: Theme.of(context).colorScheme.onPrimary),

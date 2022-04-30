@@ -6,6 +6,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 
 class AccountCard extends StatelessWidget {
   AccountCard({Key? key, this.user, this.profile})
@@ -49,8 +50,8 @@ class AccountCard extends StatelessWidget {
               client: Matrix.of(context).client,
               url: avatarUrl,
               defaultText: displayName,
-              width: 80,
-              height: 80,
+              width: MinestrixAvatarSizeConstants.large,
+              height: MinestrixAvatarSizeConstants.large,
               shape: MatrixImageAvatarShape.none,
               backgroundColor: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.only(
@@ -62,7 +63,7 @@ class AccountCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 6, top: 5),
               child: SizedBox(
-                width: 80,
+                width: MinestrixAvatarSizeConstants.large,
                 height: 30,
                 child: Center(
                   child: Padding(
