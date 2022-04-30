@@ -22,47 +22,50 @@ class CustomHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                if (context.router.canPopSelfOrChildren)
-                  IconButton(
-                      onPressed: () {
-                        if (onBack != null) onBack!();
-                        context.router.pop();
-                      },
-                      icon: Icon(Icons.arrow_back)),
-                if (context.router.canPopSelfOrChildren == false &&
-                    drawerEnabled)
-                  IconButton(
-                      onPressed: () {
-                        if (onBack != null) onBack!();
-                        Scaffold.of(context).openDrawer();
-                      },
-                      icon: Icon(Icons.menu)),
-                if (child != null) child!,
-                if (title != null)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        title!,
+    return SizedBox(
+      height: 60,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  if (context.router.canPopSelfOrChildren)
+                    IconButton(
+                        onPressed: () {
+                          if (onBack != null) onBack!();
+                          context.router.pop();
+                        },
+                        icon: Icon(Icons.arrow_back)),
+                  if (context.router.canPopSelfOrChildren == false &&
+                      drawerEnabled)
+                    IconButton(
+                        onPressed: () {
+                          if (onBack != null) onBack!();
+                          Scaffold.of(context).openDrawer();
+                        },
+                        icon: Icon(Icons.menu)),
+                  if (child != null) child!,
+                  if (title != null)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(title!,
+                            style: TextStyle(
+                                fontSize: 26, fontWeight: FontWeight.bold)),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-          if (actionButton != null)
-            Row(
-              children: [for (Widget a in actionButton!) a],
-            )
-        ],
+            if (actionButton != null)
+              Row(
+                children: [for (Widget a in actionButton!) a],
+              )
+          ],
+        ),
       ),
     );
   }
