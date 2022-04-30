@@ -5,8 +5,6 @@ import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class UserProfileSelection extends StatefulWidget {
   const UserProfileSelection(
@@ -29,10 +27,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
   Widget build(BuildContext context) {
     Client sclient = Matrix.of(context).client;
 
-    final _rooms = sclient.srooms
-        .where((final r) =>
-            r.userID == widget.userId && r.type == FeedRoomType.user)
-        .toList();
+    final _rooms = sclient.sroomsByUserId[widget.userId]?.toList() ?? [];
 
     if (_rooms.length > 1 || widget.userId == sclient.userID) {
       return Padding(

@@ -7,12 +7,13 @@ import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 extension MinestrixClientExtension on Client {
   List<Room> get srooms => rooms.where((r) => r.isFeed).toList();
 
+  /// Return a map of all the user feed room for each user
   Map<String, List<Room>> get sroomsByUserId {
     Map<String, List<Room>> _srooms = {};
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
-      if (r.isFeed) {
+      if (r.isFeed && r.feedType == FeedRoomType.user) {
         print("feed: ${r.name} ${r.creatorId}");
 
         if (_srooms[r.creatorId ?? ''] == null) {
