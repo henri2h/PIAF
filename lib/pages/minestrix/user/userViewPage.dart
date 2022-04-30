@@ -34,6 +34,7 @@ class UserViewPage extends StatefulWidget {
   final Room? mroom;
   const UserViewPage({Key? key, this.userID, this.mroom})
       : assert(userID == null || mroom == null),
+        assert(!(userID == null && mroom == null)),
         super(key: key);
 
   @override
@@ -43,35 +44,51 @@ class UserViewPage extends StatefulWidget {
 class _UserViewPageState extends State<UserViewPage> {
   ScrollController _controller = new ScrollController();
 
+  String? _userId;
+
   Room? mroom;
 
   // getter
-  String? get userId => widget.userID ?? mroom?.creatorId;
+  String? get userId => _userId ?? mroom?.creatorId;
 
   // status
   bool _requestingHistory = false;
   Future<Timeline>? futureTimeline;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(scrollListener);
-
+  void init() {
     mroom ??= widget.mroom;
 
     Client client = Matrix.of(context).client;
 
     if (mroom == null && userId != null) {
       mroom = client.sroomsByUserId[userId!]?.first;
-
-      // fallback
-      if (userId == null &&
-          mroom == null &&
-          client.minestrixUserRoom.isNotEmpty)
-        mroom = client.minestrixUserRoom.first;
     }
 
+    // fallback
+    if (userId == null && mroom == null && client.minestrixUserRoom.isNotEmpty)
+      mroom = client.minestrixUserRoom.first;
+
     futureTimeline = mroom?.getTimeline();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(scrollListener);
+
+    Client client = Matrix.of(context).client;
+
+    if (widget.userID != client.userID)
+      _userId = widget
+          .userID; // only store the userId if a different user than the one currently logged in. So if we want to change the currently logged user, we can change the user displayed.
+
+    init();
+  }
+
+  /// Reset the local variable when we changed the view
+  void resetView() {
+    mroom = null;
+    _userId = null;
   }
 
   @override
@@ -148,7 +165,14 @@ class _UserViewPageState extends State<UserViewPage> {
                       child: Column(
                         children: [
                           CustomHeader(
-                              child: isUserPage ? ClientChooser() : null,
+                              child: isUserPage
+                                  ? ClientChooser(onUpdate: () {
+                                      resetView(); // we need to discard the previous data
+                                      init();
+
+                                      setState(() {});
+                                    })
+                                  : null,
                               title: isUserPage ? null : "User Feed",
                               actionButton: [
                                 if (isUserPage)

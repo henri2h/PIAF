@@ -76,8 +76,9 @@ class UserInfo extends StatelessWidget {
 }
 
 class ClientChooser extends StatefulWidget {
-  const ClientChooser({Key? key}) : super(key: key);
+  const ClientChooser({Key? key, required this.onUpdate}) : super(key: key);
 
+  final VoidCallback onUpdate;
   @override
   State<ClientChooser> createState() => _ClientChooserState();
 }
@@ -95,6 +96,8 @@ class _ClientChooserState extends State<ClientChooser> {
           setState(() {
             Matrix.of(context).setActiveClient(c);
           });
+
+          widget.onUpdate();
         }
       },
       items: Matrix.of(context)
