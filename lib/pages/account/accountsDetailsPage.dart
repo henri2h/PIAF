@@ -31,7 +31,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
 
     return ListView(
       children: [
-        CustomHeader("Profiles"),
+        CustomHeader(title: "Profiles"),
         if (profile == null)
           Padding(
             padding: const EdgeInsets.all(25),

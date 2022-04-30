@@ -18,7 +18,7 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
   Widget build(BuildContext context) {
     final Client sclient = Matrix.of(context).client;
     return ListView(children: [
-      CustomHeader("Calendar events"),
+      CustomHeader(title: "Calendar events"),
       for (Room room in sclient.calendarEvents)
         Padding(
           padding: const EdgeInsets.all(8.0),

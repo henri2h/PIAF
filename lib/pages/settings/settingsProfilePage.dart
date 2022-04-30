@@ -27,7 +27,7 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
 
     return ListView(
       children: [
-        CustomHeader("Account"),
+        CustomHeader(title: "Account"),
         FutureBuilder(
             future: sclient.getUserProfile(sclient.userID!),
             builder: (context, AsyncSnapshot<ProfileInformation> p) {
@@ -84,7 +84,16 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
               Text("Multi account ${m.isMultiAccount}"),
               for (final c in m.widget.clients)
                 ListTile(
-                    title: Text(c.clientName), subtitle: Text(c.userID ?? '')),
+                    title: Text(c.clientName),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(c.userID ?? ''),
+                      ],
+                    ),
+                    onTap: () async {
+                      m.setActiveClient(c);
+                    }),
               ListTile(
                   title: Text("Add client"),
                   trailing: Icon(Icons.add),

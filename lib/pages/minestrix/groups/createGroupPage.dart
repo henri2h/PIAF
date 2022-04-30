@@ -30,7 +30,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           Expanded(
             child: ListView(
               children: [
-                CustomHeader("Create MinesTRIX group"),
+                CustomHeader(title: "Create MinesTRIX group"),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(

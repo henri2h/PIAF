@@ -27,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: ListView(
         children: [
-          CustomHeader("Settings"),
+          CustomHeader(title: "Settings"),
           FutureBuilder(
               future: client.getUserProfile(client.userID!),
               builder: (context, AsyncSnapshot<ProfileInformation> p) {

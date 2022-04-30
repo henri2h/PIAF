@@ -42,7 +42,7 @@ class _DebugPageState extends State<DebugPage> {
     }
 
     return ListView(children: [
-      CustomHeader("Debug"),
+      CustomHeader(title: "Debug"),
       H2Title("Minestrix rooms"),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),

@@ -20,7 +20,7 @@ class _ResearchPageState extends State<ResearchPage> {
   Widget build(BuildContext context) {
     Client? client = Matrix.of(context).client;
     return ListView(children: [
-      CustomHeader("Search"),
+      CustomHeader(title: "Search"),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: TypeAheadField(

@@ -16,7 +16,7 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
     return SafeArea(
       child: ListView(
         children: [
-          CustomHeader("Labs"),
+          CustomHeader(title: "Labs"),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text("Experimental features, use with caution!"),

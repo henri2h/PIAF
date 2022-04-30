@@ -14,17 +14,13 @@ class NotificationBell extends StatelessWidget {
     return StreamBuilder(
         stream: client.onMinestrixUpdate,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          return Column(
-            children: [
-              IconButton(
-                  icon: client.notifications.length == 0
-                      ? Icon(Icons.notifications_none)
-                      : Icon(Icons.notifications_active),
-                  onPressed: () {
-                    Scaffold.of(context).openEndDrawer();
-                  }),
-            ],
-          );
+          return IconButton(
+              icon: client.notifications.length == 0
+                  ? Icon(Icons.notifications_none)
+                  : Icon(Icons.notifications_active),
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer();
+              });
         });
   }
 }

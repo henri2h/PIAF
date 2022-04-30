@@ -20,7 +20,7 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
 
     return ListView(
       children: [
-        CustomHeader("Security"),
+        CustomHeader(title: "Security"),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(

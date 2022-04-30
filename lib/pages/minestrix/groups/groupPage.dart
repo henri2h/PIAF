@@ -160,7 +160,7 @@ class _GroupPageState extends State<GroupPage> {
                               void Function(Offset, Event) onReact) {
                             if (i == 0) {
                               return Column(children: [
-                                CustomHeader(room.name),
+                                CustomHeader(title: room.name),
                                 if (room.avatar != null)
                                   Center(
                                       child: MatrixImageAvatar(

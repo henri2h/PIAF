@@ -48,7 +48,7 @@ class _CalendarEventPageState extends State<CalendarEventPage> {
                 builder: (context, snapshot) {
                   return ListView(
                     children: [
-                      CustomHeader("Event"),
+                      CustomHeader(title: "Event"),
                       MatrixImageAvatar(
                         client: room.client,
                         url: room.avatar,

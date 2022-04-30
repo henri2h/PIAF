@@ -20,7 +20,7 @@ class _SettingsThemePageState extends State<SettingsThemePage> {
     return Consumer<ThemeNotifier>(
       builder: (context, theme, _) => ListView(
         children: [
-          CustomHeader("Theme"),
+          CustomHeader(title: "Theme"),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(

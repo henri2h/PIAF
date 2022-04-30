@@ -18,6 +18,8 @@ import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrix_widget.dart';
 
+import '../components/layouts/customHeader.dart';
+
 class MinestrixFeed extends StatefulWidget {
   const MinestrixFeed({Key? key}) : super(key: key);
 
@@ -123,76 +125,71 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                           ],
                         );
 
-                      return CustomListViewWithEmoji(
-                          itemCount: events!.length + 1,
-                          itemBuilder: (BuildContext c, int i,
-                              void Function(Offset, Event) onReact) {
-                            if (i == 0) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      H1Title("Feed"),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Row(
-                                          children: [
-                                            IconButton(
-                                                icon: Icon(Icons.group_add),
-                                                onPressed: () {
-                                                  context.pushRoute(
-                                                      CreateGroupRoute());
-                                                }),
-                                            NotificationBell()
-                                          ],
+                      return Column(
+                        children: [
+                          CustomHeader(title: "Feed", actionButton: [
+                            IconButton(
+                                icon: Icon(Icons.group_add),
+                                onPressed: () {
+                                  context.pushRoute(CreateGroupRoute());
+                                }),
+                            NotificationBell()
+                          ]),
+                          Expanded(
+                            child: CustomListViewWithEmoji(
+                                itemCount: events!.length + 1,
+                                itemBuilder: (BuildContext c, int i,
+                                    void Function(Offset, Event) onReact) {
+                                  if (i == 0) {
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8.0),
+                                          child: StoriesList(client: client),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0),
-                                    child: StoriesList(client: client),
-                                  ),
-                                  if (client.minestrixUserRoom.isNotEmpty)
-                                    PostWriterModal(
-                                        room: client.minestrixUserRoom
-                                            .first), // TODO: set the actual rom we are displaying
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0, horizontal: 12),
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: FutureBuilder<List<Profile>>(
-                                          future:
-                                              client.getFriendsSuggestions(),
-                                          builder: (context, snap) {
-                                            if (snap.hasData == false)
-                                              return Text("Loading");
-                                            return Row(
-                                              children: [
-                                                for (Profile p in snap.data!)
-                                                  AccountCard(profile: p),
-                                              ],
-                                            );
-                                          }),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
+                                        if (client.minestrixUserRoom.isNotEmpty)
+                                          PostWriterModal(
+                                              room: client.minestrixUserRoom
+                                                  .first), // TODO: set the actual rom we are displaying
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8.0, horizontal: 12),
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: FutureBuilder<List<Profile>>(
+                                                future: client
+                                                    .getFriendsSuggestions(),
+                                                builder: (context, snap) {
+                                                  if (snap.hasData == false)
+                                                    return Text("Loading");
+                                                  return Row(
+                                                    children: [
+                                                      for (Profile p
+                                                          in snap.data!)
+                                                        AccountCard(profile: p),
+                                                    ],
+                                                  );
+                                                }),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
 
-                            return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 2, horizontal: 12),
-                                child: Post(
-                                    event: events[i - 1],
-                                    onReact: (Offset e) =>
-                                        onReact(e, events[i - 1])));
-                          });
+                                  return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 2, horizontal: 12),
+                                      child: Post(
+                                          event: events[i - 1],
+                                          onReact: (Offset e) =>
+                                              onReact(e, events[i - 1])));
+                                }),
+                          ),
+                        ],
+                      );
                     });
               });
         });
