@@ -157,11 +157,12 @@ class _UserViewPageState extends State<UserViewPage> {
                               child: isUserPage ? ClientChooser() : null,
                               title: isUserPage ? null : "User Feed",
                               actionButton: [
-                                IconButton(
-                                    icon: Icon(Icons.settings),
-                                    onPressed: () {
-                                      context.navigateTo(SettingsRoute());
-                                    }),
+                                if (isUserPage)
+                                  IconButton(
+                                      icon: Icon(Icons.settings),
+                                      onPressed: () {
+                                        context.navigateTo(SettingsRoute());
+                                      }),
                               ]),
                           Flexible(
                             child: CustomListViewWithEmoji(
