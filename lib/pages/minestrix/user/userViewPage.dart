@@ -22,7 +22,9 @@ import 'package:minestrix_chat/view/matrix_chat_page.dart';
 import 'package:minestrix_chat/view/matrix_chats_page.dart';
 
 import '../../../partials/components/buttons/customFutureButton.dart';
+import '../../../partials/components/layouts/customHeader.dart';
 import '../../../partials/feed/minestrixProfileNotCreated.dart';
+import '../../../router.gr.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display
@@ -121,6 +123,8 @@ class _UserViewPageState extends State<UserViewPage> {
 
           bool canRequestHistory = timeline?.canRequestHistory == true;
 
+          bool isUserPage = mroom?.creatorId == client.userID;
+
           return LayoutBuilder(builder: (context, constraints) {
             return Center(
               child: ConstrainedBox(
@@ -147,95 +151,118 @@ class _UserViewPageState extends State<UserViewPage> {
                         ),
                       ),
                     Flexible(
-                      child: CustomListViewWithEmoji(
-                          key: Key(mroom?.id ?? "room"),
-                          controller: _controller,
-                          itemCount:
-                              events.length + 2 + (canRequestHistory ? 1 : 0),
-                          itemBuilder: (context, i,
-                              void Function(Offset, Event) onReact) {
-                            if (i == 0)
-                              return Column(
-                                children: [
-                                  if (mroom != null) UserInfo(room: mroom),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                ],
-                              );
-
-                            if (timeline != null) {
-                              if (i == 1) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 15, vertical: 8.0),
-                                        child: H2Title("Posts"),
-                                      ),
-                                    ),
-                                    StoriesList(
-                                        client: client,
-                                        restrict: mroom?.creatorId,
-                                        allowCreatingStory:
-                                            mroom?.creatorId == client.userID),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: PostWriterModal(room: mroom),
-                                    )
-                                  ],
-                                );
-                              } else if ((i - 2) < events.length) {
-                                return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 2, horizontal: 12),
-                                    child: Post(
-                                        event: events[i - 2],
-                                        onReact: (Offset e) =>
-                                            onReact(e, events[i - 2])));
-                              }
-
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: MaterialButton(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          if (_requestingHistory)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 10),
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            ),
-                                          Text("Load more posts"),
-                                        ],
-                                      ),
-                                    ),
-                                    onPressed: () async {
-                                      if (_requestingHistory == false) {
-                                        setState(() {
-                                          _requestingHistory = true;
-                                        });
-                                        await mroom!.requestHistory();
-                                        setState(() {
-                                          _requestingHistory = false;
-                                        });
-                                      }
+                      child: Column(
+                        children: [
+                          CustomHeader(
+                              child: isUserPage ? ClientChooser() : null,
+                              title: isUserPage ? null : "User Feed",
+                              actionButton: [
+                                IconButton(
+                                    icon: Icon(Icons.settings),
+                                    onPressed: () {
+                                      context.navigateTo(SettingsRoute());
                                     }),
-                              );
-                            } else {
-                              return UnknownUser(
-                                  user_in: user_in,
-                                  client: client,
-                                  userId: userId);
-                            }
-                          }),
+                              ]),
+                          Flexible(
+                            child: CustomListViewWithEmoji(
+                                key: Key(mroom?.id ?? "room"),
+                                controller: _controller,
+                                itemCount: events.length +
+                                    2 +
+                                    (canRequestHistory ? 1 : 0),
+                                itemBuilder: (context, i,
+                                    void Function(Offset, Event) onReact) {
+                                  if (i == 0)
+                                    return Column(
+                                      children: [
+                                        if (mroom != null)
+                                          UserInfo(room: mroom),
+                                        SizedBox(
+                                          height: 20,
+                                        ),
+                                      ],
+                                    );
+
+                                  if (timeline != null) {
+                                    if (i == 1) {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 15,
+                                                      vertical: 8.0),
+                                              child: H2Title("Posts"),
+                                            ),
+                                          ),
+                                          StoriesList(
+                                              client: client,
+                                              restrict: mroom?.creatorId,
+                                              allowCreatingStory:
+                                                  mroom?.creatorId ==
+                                                      client.userID),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: PostWriterModal(room: mroom),
+                                          )
+                                        ],
+                                      );
+                                    } else if ((i - 2) < events.length) {
+                                      return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 2, horizontal: 12),
+                                          child: Post(
+                                              event: events[i - 2],
+                                              onReact: (Offset e) =>
+                                                  onReact(e, events[i - 2])));
+                                    }
+
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: MaterialButton(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                if (_requestingHistory)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 10),
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                                Text("Load more posts"),
+                                              ],
+                                            ),
+                                          ),
+                                          onPressed: () async {
+                                            if (_requestingHistory == false) {
+                                              setState(() {
+                                                _requestingHistory = true;
+                                              });
+                                              await mroom!.requestHistory();
+                                              setState(() {
+                                                _requestingHistory = false;
+                                              });
+                                            }
+                                          }),
+                                    );
+                                  } else {
+                                    return UnknownUser(
+                                        user_in: user_in,
+                                        client: client,
+                                        userId: userId);
+                                  }
+                                }),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

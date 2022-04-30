@@ -8,6 +8,7 @@ import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/userAvatar.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class UserInfo extends StatelessWidget {
@@ -30,35 +31,8 @@ class UserInfo extends StatelessWidget {
         Profile(
             userId: u!.id, displayName: u.displayName, avatarUrl: u.avatarUrl);
 
-    bool isUserPage = p.userId == sclient.userID;
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (AutoRouter.of(context).canNavigateBack)
-              IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () {
-                    AutoRouter.of(context).pop();
-                  }),
-            Expanded(child: H1Title(isUserPage ? "My account" : "User feed")),
-            if (isUserPage)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
-                child: Row(
-                  children: [
-                    IconButton(
-                        icon: Icon(Icons.settings),
-                        onPressed: () {
-                          context.navigateTo(SettingsRoute());
-                        }),
-                  ],
-                ),
-              ),
-          ],
-        ),
         LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
           // small screens
@@ -97,6 +71,50 @@ class UserInfo extends StatelessWidget {
               ));
         }),
       ],
+    );
+  }
+}
+
+class ClientChooser extends StatefulWidget {
+  const ClientChooser({Key? key}) : super(key: key);
+
+  @override
+  State<ClientChooser> createState() => _ClientChooserState();
+}
+
+class _ClientChooserState extends State<ClientChooser> {
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<Client>(
+      value: Matrix.of(context).client,
+      icon: const Icon(Icons.arrow_downward),
+      elevation: 16,
+      underline: Container(),
+      onChanged: (Client? c) {
+        if (c != null) {
+          setState(() {
+            Matrix.of(context).setActiveClient(c);
+          });
+        }
+      },
+      items: Matrix.of(context)
+          .widget
+          .clients
+          .map<DropdownMenuItem<Client>>((Client client) {
+        return DropdownMenuItem<Client>(
+            value: client,
+            child: SizedBox(
+              width: 300,
+              child: FutureBuilder<Profile>(
+                  future: client.getProfileFromUserId(client.userID!),
+                  builder: (context, snap) {
+                    return MatrixUserItem(
+                        name: snap.data?.displayName ?? client.userID!,
+                        avatarUrl: snap.data?.avatarUrl,
+                        client: client);
+                  }),
+            ));
+      }).toList(),
     );
   }
 }
