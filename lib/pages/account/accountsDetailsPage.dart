@@ -8,6 +8,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
@@ -150,13 +151,12 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                   trailing: IconButton(
                       icon: Icon(Icons.edit),
                       onPressed: () async {
-                        await showDialog(
+                        await AdaptativeDialogs.showAdaptativeDialog(
                             context: context,
-                            builder: (context) => Dialog(
-                                child: ConvSettingsCard(
-                                    room: profile.r,
-                                    onClose: () =>
-                                        Navigator.of(context).pop())));
+                            builder: (context) => ConvSettingsCard(
+                                room: profile.r,
+                                onClose: () => Navigator.of(context).pop()),
+                            title: '');
                       }),
                 ),
               ),

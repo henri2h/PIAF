@@ -112,9 +112,11 @@ class _ClientChooserState extends State<ClientChooser> {
                   future: client.getProfileFromUserId(client.userID!),
                   builder: (context, snap) {
                     return MatrixUserItem(
-                        name: snap.data?.displayName ?? client.userID!,
-                        avatarUrl: snap.data?.avatarUrl,
-                        client: client);
+                      name: snap.data?.displayName,
+                      userId: client.userID!,
+                      avatarUrl: snap.data?.avatarUrl,
+                      client: client,
+                    );
                   }),
             ));
       }).toList(),

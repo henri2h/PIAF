@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/view/matrix_chat_page.dart';
 
@@ -140,12 +141,11 @@ class _GroupPageState extends State<GroupPage> {
                                             .onPrimary)),
                             ],
                             onPressed: () async {
-                              showDialog(
+                              AdaptativeDialogs.showAdaptativeDialog(
                                   context: context,
-                                  builder: (context) => Dialog(
-                                      child: MatrixChatPage(
-                                          roomId: widget.room.id,
-                                          client: sclient)));
+                                  title: "Group",
+                                  builder: (context) => MatrixChatPage(
+                                      roomId: widget.room.id, client: sclient));
                             }),
                       ],
                     ),

@@ -5,6 +5,7 @@ import 'package:minestrix/partials/post/postDetails/postHeader.dart';
 import 'package:minestrix/partials/post/postDetails/postReactions.dart';
 import 'package:minestrix/partials/post/postDetails/postReplies.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
 class Post extends StatefulWidget {
@@ -108,21 +109,16 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                                           reactions:
                                                               reactions!),
                                                       onPressed: () async {
-                                                        await showDialog(
-                                                            context: context,
-                                                            builder: (context) =>
-                                                                Dialog(
-                                                                    child:
-                                                                        ConstrainedBox(
-                                                                  constraints: BoxConstraints(
-                                                                      maxWidth:
-                                                                          600,
-                                                                      maxHeight:
-                                                                          600),
-                                                                  child: EventReactionList(
-                                                                      reactions:
-                                                                          reactions!),
-                                                                )));
+                                                        await AdaptativeDialogs
+                                                            .showAdaptativeDialog(
+                                                                context:
+                                                                    context,
+                                                                builder: (context) =>
+                                                                    EventReactionList(
+                                                                        reactions:
+                                                                            reactions!),
+                                                                title:
+                                                                    "Reactions");
                                                       }),
                                                 ),
                                               ],

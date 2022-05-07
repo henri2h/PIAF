@@ -31,6 +31,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   Widget build(BuildContext context) {
     loadFuture ??= load();
 
+    Matrix.of(context).navigatorContext = context;
+
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(builder: (context, constraints) {

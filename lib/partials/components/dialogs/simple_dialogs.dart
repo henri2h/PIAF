@@ -22,7 +22,7 @@ class SimpleDialogs {
           (result) => Navigator.of(context).pop<dynamic>(result),
         );
         return AlertDialog(
-          title: Text("loadingPleaseWait"),
+          title: Text("loading please wait"),
           content: LinearProgressIndicator(),
         );
       },
