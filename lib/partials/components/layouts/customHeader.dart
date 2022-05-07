@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
-
-import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:flutter/material.dart';
 
 class CustomHeader extends StatelessWidget {
   const CustomHeader(

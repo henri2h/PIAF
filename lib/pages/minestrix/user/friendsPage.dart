@@ -75,7 +75,7 @@ class _FriendsPageState extends State<FriendsPage> {
             },
             onSuggestionSelected: (dynamic suggestion) async {
               Profile p = suggestion;
-              await sclient.addFriend(p.userId);
+              await sclient.inviteFriend(p.userId);
               setState(() {}); // update ui
             },
           ),

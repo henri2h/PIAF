@@ -86,9 +86,7 @@ extension MinestrixClientExtension on Client {
     return roomID;
   }
 
-  @Deprecated(
-      "Find a new way to invite friend. Mayme make Room pramater required")
-  Future<bool> addFriend(String userId,
+  Future<bool> inviteFriend(String userId,
       {Room? r, bool waitForInvite = true}) async {
     if (r == null) {
       r = minestrixUserRoom.firstOrNull;

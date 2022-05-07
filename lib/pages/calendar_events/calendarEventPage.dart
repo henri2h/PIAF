@@ -98,8 +98,9 @@ class _CalendarEventPageState extends State<CalendarEventPage> {
                                         data: room.topic,
                                         onTapLink: (text, href, title) async {
                                           if (href != null) {
-                                            if (await canLaunch(href)) {
-                                              await launch(href);
+                                            final url = Uri.parse(href);
+                                            if (await canLaunchUrl(url)) {
+                                              await launchUrl(url);
                                             } else {
                                               throw 'Could not launch $href';
                                             }
