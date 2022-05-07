@@ -22,7 +22,7 @@ enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
 
 class _PostState extends State<Post> with SingleTickerProviderStateMixin {
   final key = GlobalKey();
-  bool showReplyBox = false;
+  bool showReplyBox = true;
   bool showReplies = true;
 
   late Future<Timeline> futureTimeline;
