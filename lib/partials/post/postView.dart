@@ -206,15 +206,16 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                         ],
                       ),
 
-                      if ((replies?.isNotEmpty ?? false) && showReplies ||
-                          showReplyBox)
-                        Divider(),
+                      ((replies?.isNotEmpty ?? false) && showReplies ||
+                              showReplyBox)
+                          ? Divider()
+                          : SizedBox(height: 8),
                       if (showReplies)
                         Container(
                           child: Column(
                             children: [
-                              if ((replies?.isNotEmpty ??
-                                      false || showReplyBox) &&
+                              if (((replies?.isNotEmpty ?? false) ||
+                                      showReplyBox) &&
                                   t != null)
                                 RepliesVue(
                                     timeline: t,
