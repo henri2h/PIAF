@@ -26,6 +26,7 @@ class UserFriendsCard extends StatelessWidget {
         future: getUsers(),
         initialData: room.getParticipants(),
         builder: (context, snap) {
+          if (!snap.hasData) return CircularProgressIndicator();
           return Column(
             children: [
               Padding(
