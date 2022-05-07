@@ -10,7 +10,7 @@ import 'package:minestrix/pages/debugPage.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
 
-import '../../utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);

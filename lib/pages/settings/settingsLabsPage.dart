@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+
+import '../../utils/settings.dart';
 
 class SettingsLabsPage extends StatefulWidget {
   const SettingsLabsPage({Key? key}) : super(key: key);
@@ -22,9 +24,9 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
             child: Text("Experimental features, use with caution!"),
           ),
           SwitchListTile(
-              value: Matrix.of(context).settings.multipleFeedSupport,
+              value: Settings().multipleFeedSupport,
               onChanged: (value) {
-                Matrix.of(context).settings.multipleFeedSupport = value;
+                Settings().multipleFeedSupport = value;
                 setState(() {});
               },
               secondary: Icon(Icons.people),
@@ -39,9 +41,9 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
                 ],
               )),
           SwitchListTile(
-              value: Matrix.of(context).settings.calendarEventSupport,
+              value: Settings().calendarEventSupport,
               onChanged: (value) {
-                Matrix.of(context).settings.calendarEventSupport = value;
+                Settings().calendarEventSupport = value;
                 setState(() {});
               },
               secondary: Icon(Icons.calendar_today),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/friendsRequestList.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 
 class NotificationView extends StatelessWidget {

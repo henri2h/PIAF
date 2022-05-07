@@ -8,7 +8,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix/partials/components/account/accountCard.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
 class CreateGroupPage extends StatefulWidget {

@@ -4,8 +4,7 @@ import 'package:auto_route/auto_route.dart';
 
 import 'package:minestrix/partials/home/notificationView.dart';
 import 'package:minestrix/partials/navbar.dart';
-
-import '../utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class AppWrapperPage extends StatefulWidget {
   const AppWrapperPage({Key? key}) : super(key: key);

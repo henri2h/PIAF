@@ -7,7 +7,7 @@ import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 

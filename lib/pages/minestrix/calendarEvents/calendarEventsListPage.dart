@@ -4,7 +4,7 @@ import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_exte
 
 import '../../../partials/calendarEvents/calendarEventsCard.dart';
 import '../../../partials/components/layouts/customHeader.dart';
-import '../../../utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class CalendarEventListPage extends StatefulWidget {
   const CalendarEventListPage({Key? key}) : super(key: key);

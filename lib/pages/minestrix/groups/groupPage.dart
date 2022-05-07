@@ -15,7 +15,7 @@ import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/partials/users/MinesTrixUserSelection.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class GroupPage extends StatefulWidget {
   GroupPage({Key? key, required this.room}) : super(key: key);

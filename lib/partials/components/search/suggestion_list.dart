@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
-import '../../../utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../minestrixRoomTile.dart';
 import '../minesTrix/MinesTrixTitle.dart';
 

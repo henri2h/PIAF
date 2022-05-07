@@ -7,7 +7,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class PostWriterModal extends StatelessWidget {
   PostWriterModal({Key? key, required this.room}) : super(key: key);

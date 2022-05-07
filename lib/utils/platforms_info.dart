@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
-import '../config/app_config.dart';
-
 abstract class PlatformInfos {
   static bool get isWeb => kIsWeb;
   static bool get isLinux => !kIsWeb && Platform.isLinux;
@@ -22,7 +20,4 @@ abstract class PlatformInfos {
   static bool get isDesktop => isLinux || isWindows || isMacOS;
 
   static bool get usesTouchscreen => !isMobile;
-
-  static String get clientName =>
-      '${AppConfig.applicationName} ${isWeb ? 'web' : Platform.operatingSystem}${kReleaseMode ? '' : 'Debug'}';
 }

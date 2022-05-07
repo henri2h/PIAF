@@ -9,7 +9,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:minestrix/partials/post/postDetails/postContent.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class RepliesVue extends StatefulWidget {
   final Event event;

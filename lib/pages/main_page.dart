@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import '../partials/home/notificationView.dart';
 import '../router.gr.dart';
-import '../utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);

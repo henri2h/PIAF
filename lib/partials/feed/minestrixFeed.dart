@@ -16,7 +16,7 @@ import 'package:minestrix/partials/feed/notficationBell.dart';
 import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../components/layouts/customHeader.dart';
 

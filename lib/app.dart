@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/login/login_extension.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:provider/provider.dart';
 
 import 'router.gr.dart';
 import 'utils/managers/theme_manager.dart';
-import 'utils/matrix_widget.dart';
 
 class Minestrix extends StatefulWidget {
   Minestrix({Key? key, required this.clients}) : super(key: key);
@@ -35,6 +35,7 @@ class _MinestrixState extends State<Minestrix> {
   @override
   Widget build(BuildContext context) {
     return Matrix(
+      applicationName: 'MinesTRIX',
       context: context,
       clients: widget.clients,
       child: Builder(

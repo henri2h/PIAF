@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/quickLinksList.dart';
 import 'package:minestrix/partials/feed/minestrixFeed.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 
 class FeedPage extends StatefulWidget {

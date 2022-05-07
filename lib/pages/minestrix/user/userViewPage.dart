@@ -9,7 +9,7 @@ import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/partials/users/userFriendsCard.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix/partials/users/userProfileSelection.dart';
-import 'package:minestrix/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
