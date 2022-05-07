@@ -14,7 +14,7 @@ packages:
       name: adaptive_dialog
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.5.0+1"
+    version: "1.6.2+1"
   analyzer:
     dependency: transitive
     description:
@@ -203,7 +203,7 @@ packages:
       name: canonical_json
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   characters:
     dependency: transitive
     description:
@@ -322,7 +322,7 @@ packages:
       name: cross_file
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.2"
+    version: "0.3.3"
   crypto:
     dependency: transitive
     description:
@@ -441,14 +441,14 @@ packages:
       name: file_picker_cross
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.5.0"
+    version: "4.6.0"
   file_selector:
     dependency: transitive
     description:
       name: file_selector
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.2+1"
+    version: "0.8.4+1"
   file_selector_linux:
     dependency: transitive
     description:
@@ -462,7 +462,7 @@ packages:
       name: file_selector_macos
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.4+1"
+    version: "0.8.2"
   file_selector_platform_interface:
     dependency: transitive
     description:
@@ -483,7 +483,7 @@ packages:
       name: file_selector_windows
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.2+1"
+    version: "0.8.2"
   fixnum:
     dependency: transitive
     description:
@@ -531,6 +531,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  flutter_file_dialog:
+    dependency: transitive
+    description:
+      name: flutter_file_dialog
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.3.0"
   flutter_keyboard_visibility:
     dependency: transitive
     description:
@@ -814,6 +821,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.6.0"
+  intersperse:
+    dependency: transitive
+    description:
+      name: intersperse
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
   intl:
     dependency: transitive
     description:
@@ -848,7 +862,7 @@ packages:
       name: just_audio
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.20"
+    version: "0.9.21"
   just_audio_platform_interface:
     dependency: transitive
     description:
@@ -877,6 +891,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
+  macos_ui:
+    dependency: transitive
+    description:
+      name: macos_ui
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.16.0"
   markdown:
     dependency: transitive
     description:
@@ -904,7 +925,7 @@ packages:
       name: matrix
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.20"
+    version: "0.9.0"
   matrix_api_lite:
     dependency: transitive
     description:
@@ -925,13 +946,15 @@ packages:
       name: mime
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   minestrix_chat:
     dependency: "direct main"
     description:
-      path: "../minestrix-chat"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "949541237c197bedf89b4e92cdcebaa3fe18f53f"
+      url: "https://gitlab.com/minestrix/minestrix-chat.git"
+    source: git
     version: "0.0.1"
   native_imaging:
     dependency: "direct main"
@@ -981,13 +1004,6 @@ packages:
     dependency: transitive
     description:
       name: package_config
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.2"
-  package_info:
-    dependency: transitive
-    description:
-      name: package_info
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.2"
@@ -1194,13 +1210,48 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.5.1"
-  share:
+  share_plus:
     dependency: transitive
     description:
-      name: share
+      name: share_plus
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.4"
+    version: "4.0.4"
+  share_plus_linux:
+    dependency: transitive
+    description:
+      name: share_plus_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
+  share_plus_macos:
+    dependency: transitive
+    description:
+      name: share_plus_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
+  share_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: share_plus_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.2"
+  share_plus_web:
+    dependency: transitive
+    description:
+      name: share_plus_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
+  share_plus_windows:
+    dependency: transitive
+    description:
+      name: share_plus_windows
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
   shared_preferences:
     dependency: transitive
     description:
@@ -1625,7 +1676,7 @@ packages:
       name: webkit_inspection_protocol
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   webrtc_interface:
     dependency: transitive
     description:
@@ -1646,7 +1697,7 @@ packages:
       name: webview_flutter_android
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.8.5"
+    version: "2.8.6"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
@@ -1660,7 +1711,7 @@ packages:
       name: webview_flutter_wkwebview
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.7.2"
+    version: "2.7.3"
   win32:
     dependency: transitive
     description:
