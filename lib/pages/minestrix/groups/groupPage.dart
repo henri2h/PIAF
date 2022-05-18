@@ -141,7 +141,7 @@ class _GroupPageState extends State<GroupPage> {
                                             .onPrimary)),
                             ],
                             onPressed: () async {
-                              AdaptativeDialogs.showAdaptativeDialog(
+                              AdaptativeDialogs.show(
                                   context: context,
                                   title: "Group",
                                   builder: (context) => MatrixChatPage(

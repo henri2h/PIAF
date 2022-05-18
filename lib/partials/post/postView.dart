@@ -109,16 +109,13 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                                           reactions:
                                                               reactions!),
                                                       onPressed: () async {
-                                                        await AdaptativeDialogs
-                                                            .showAdaptativeDialog(
-                                                                context:
-                                                                    context,
-                                                                builder: (context) =>
-                                                                    EventReactionList(
-                                                                        reactions:
-                                                                            reactions!),
-                                                                title:
-                                                                    "Reactions");
+                                                        await AdaptativeDialogs.show(
+                                                            context: context,
+                                                            builder: (context) =>
+                                                                EventReactionList(
+                                                                    reactions:
+                                                                        reactions!),
+                                                            title: "Reactions");
                                                       }),
                                                 ),
                                               ],

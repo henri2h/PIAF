@@ -152,7 +152,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                   trailing: IconButton(
                       icon: Icon(Icons.edit),
                       onPressed: () async {
-                        await AdaptativeDialogs.showAdaptativeDialog(
+                        await AdaptativeDialogs.show(
                             context: context,
                             builder: (context) => ConvSettingsCard(
                                 room: profile.r,

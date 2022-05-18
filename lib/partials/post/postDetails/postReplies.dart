@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/chat/matrix_message_composer.dart';
+import 'package:minestrix_chat/partials/chat/message_composer/matrix_message_composer.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
