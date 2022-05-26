@@ -30,11 +30,11 @@ class _MainPageState extends State<MainPage> {
               routes: [
                 FeedRoute(),
                 ResearchRoute(),
-                MatrixChatsRoute(
+                RoomsListRoute(
                     client: Matrix.of(context).client,
                     allowPop: false,
                     onSelection: (String roomId) {
-                      context.navigateTo(MatrixChatRoute(
+                      context.navigateTo(RoomRoute(
                           client: Matrix.of(context).client,
                           roomId: roomId,
                           onBack: () => context.popRoute()));

@@ -41,7 +41,7 @@ class NavBarDesktop extends StatelessWidget {
                   name: "Chats",
                   icon: Icons.chat,
                   onPressed: () async {
-                    await context.navigateTo(MatrixChatsRoute(
+                    await context.navigateTo(RoomsListRoute(
                         client: Matrix.of(context).client,
                         enableStories: true));
                   }),
