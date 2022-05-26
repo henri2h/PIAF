@@ -17,8 +17,8 @@ import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
-import 'package:minestrix_chat/view/matrix_chat_page.dart';
-import 'package:minestrix_chat/view/matrix_chats_page.dart';
+import 'package:minestrix_chat/view/room_list_page.dart';
+import 'package:minestrix_chat/view/room_page.dart';
 
 import '../../../partials/components/buttons/customFutureButton.dart';
 import '../../../partials/components/layouts/customHeader.dart';
@@ -393,7 +393,7 @@ class UnknownUser extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (BuildContext context) =>
-                                    MatrixChatPage(
+                                    RoomPage(
                                         roomId: roomId,
                                         client: client,
                                         onBack: () => context.popRoute())));
@@ -403,7 +403,7 @@ class UnknownUser extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (BuildContext context) => Scaffold(
                                     appBar: AppBar(title: Text("Start chat")),
-                                    body: MatrixChatsPage(client: client))));
+                                    body: RoomsListPage(client: client))));
                       }
                     }),
             ],

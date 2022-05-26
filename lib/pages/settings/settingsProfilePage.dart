@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/router.gr.dart';
+
+import '../loginPage.dart';
 
 class SettingsAccountPage extends StatefulWidget {
   const SettingsAccountPage({Key? key}) : super(key: key);
@@ -98,7 +101,10 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
                   title: Text("Add client"),
                   trailing: Icon(Icons.add),
                   onTap: () async {
-                    context.pushRoute(LoginRoute());
+                    AdaptativeDialogs.show(
+                        context: context,
+                        builder: (context) => LoginPage(
+                            popOnLogin: true, title: "Add a new account"));
                   }),
             ],
           ),

@@ -4,8 +4,8 @@
 
 import 'package:auto_route/auto_route.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix_chat/view/matrix_chat_page.dart';
-import 'package:minestrix_chat/view/matrix_chats_page.dart';
+import 'package:minestrix_chat/view/room_list_page.dart';
+import 'package:minestrix_chat/view/room_page.dart';
 
 import 'pages/account/accountsDetailsPage.dart';
 import 'pages/appWrapperPage.dart';
@@ -45,7 +45,7 @@ import 'pages/settings/settingsThemePage.dart';
         AutoRoute(path: 'my_account', page: UserViewPage, name: "UserRoute"),
         AutoRoute(
           path: 'chats',
-          page: MatrixChatsPage,
+          page: RoomsListPage,
         ),
       ]),
       AutoRoute(path: 'feed', page: FeedPage),
@@ -66,10 +66,10 @@ import 'pages/settings/settingsThemePage.dart';
       AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
       AutoRoute(path: 'settings/labs', page: SettingsLabsPage),
       // chats
-      AutoRoute(path: ':roomId', page: MatrixChatPage),
+      AutoRoute(path: ':roomId', page: RoomPage),
       AutoRoute(
         path: 'chats',
-        page: MatrixChatsPage,
+        page: RoomsListPage,
       ),
       AutoRoute(path: 'login', page: LoginPage),
       RedirectRoute(path: '*', redirectTo: 'feed')

@@ -5,7 +5,6 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/view/matrix_chat_page.dart';
 
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
@@ -16,6 +15,7 @@ import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix/partials/post/postWriterModal.dart';
 import 'package:minestrix/partials/users/MinesTrixUserSelection.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/view/room_page.dart';
 
 class GroupPage extends StatefulWidget {
   GroupPage({Key? key, required this.room}) : super(key: key);
@@ -144,7 +144,7 @@ class _GroupPageState extends State<GroupPage> {
                               AdaptativeDialogs.show(
                                   context: context,
                                   title: "Group",
-                                  builder: (context) => MatrixChatPage(
+                                  builder: (context) => RoomPage(
                                       roomId: widget.room.id, client: sclient));
                             }),
                       ],
