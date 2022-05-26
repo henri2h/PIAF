@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
 import 'package:minestrix/utils/minestrix/minestrix_friends_suggestions.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 
 import 'package:minestrix/partials/components/account/accountCard.dart';
@@ -107,7 +109,10 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                         icon: Icon(Icons.group_add),
                                         text: "Create a group",
                                         onPressed: () async {
-                                          context.pushRoute(CreateGroupRoute());
+                                          AdaptativeDialogs.show(
+                                              context: context,
+                                              builder: (BuildContext) =>
+                                                  CreateGroupPage());
                                         }),
                                   ),
                                 ],
@@ -131,7 +136,10 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                             IconButton(
                                 icon: Icon(Icons.group_add),
                                 onPressed: () {
-                                  context.pushRoute(CreateGroupRoute());
+                                  AdaptativeDialogs.show(
+                                      context: context,
+                                      builder: (BuildContext) =>
+                                          CreateGroupPage());
                                 }),
                             NotificationBell()
                           ]),
