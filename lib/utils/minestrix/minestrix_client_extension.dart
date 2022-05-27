@@ -115,7 +115,7 @@ extension MinestrixClientExtension on Client {
               RelationshipTypes.edit,
               RelationshipTypes.reaction,
               RelationshipTypes.reply,
-              MatrixTypes.elementThreadEventType
+              MatrixTypes.threadRelation
             }.contains(e.relationshipType) &&
             eventTypesFilter.contains(e.type) &&
             !e.redacted)
@@ -125,6 +125,14 @@ extension MinestrixClientExtension on Client {
     }
     return filteredEvents;
   }
+
+  Iterable<Event> getPostReactions(Set<Event> events) => events
+      .where((e) =>
+          {MatrixTypes.threadRelation}.contains(e.relationshipType) &&
+          [MatrixTypes.post, EventTypes.Message, EventTypes.Encrypted]
+              .contains(e.type) &&
+          !e.redacted)
+      .toList();
 
   Future<List<Event>> getMinestrixEvents() async {
     List<Event> events = [];

@@ -13,7 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix/partials/post/post.dart';
 
 class CalendarEventPage extends StatefulWidget {
   final Room room;

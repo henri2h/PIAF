@@ -15,8 +15,8 @@ import 'package:minestrix/partials/components/buttons/customTextFutureButton.dar
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/feed/minestrixProfileNotCreated.dart';
 import 'package:minestrix/partials/feed/notficationBell.dart';
-import 'package:minestrix/partials/post/postView.dart';
-import 'package:minestrix/partials/post/postWriterModal.dart';
+import 'package:minestrix/partials/post/post.dart';
+import 'package:minestrix/partials/post/post_writer_modal.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
@@ -186,7 +186,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                       ],
                                     );
                                   }
-
+ 
                                   return Padding(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 2, horizontal: 12),

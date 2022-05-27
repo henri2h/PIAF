@@ -1,51 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/src/foundation/key.dart';
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/post/postDetails/postContent.dart';
-import 'package:minestrix/partials/post/postDetails/postHeader.dart';
-import 'package:minestrix/partials/post/postDetails/postReactions.dart';
-import 'package:minestrix/partials/post/postDetails/postReplies.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
-class Post extends StatefulWidget {
-  final Event event;
-  final void Function(Offset) onReact;
-  final Timeline? timeline;
-  Post({Key? key, required this.event, required this.onReact, this.timeline})
-      : super(key: key);
+import 'post.dart';
+import 'postDetails/post_content.dart';
+import 'postDetails/post_header.dart';
+import 'postDetails/post_eactions.dart';
+import 'postDetails/post_replies.dart';
 
-  @override
-  _PostState createState() => _PostState();
-}
-
-enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
-
-class _PostState extends State<Post> with SingleTickerProviderStateMixin {
-  final key = GlobalKey();
-  bool showReplyBox = true;
-  bool showReplies = true;
-
-  late Future<Timeline> futureTimeline;
-
-  @override
-  void initState() {
-    if (widget.timeline == null) {
-      futureTimeline = widget.event.room.getTimeline();
-    } else {
-      futureTimeline = () async {
-        return widget.timeline!;
-      }();
-    }
-    super.initState();
-  }
+class PostView extends StatelessWidget {
+  final PostState controller;
+  const PostView({Key? key, required this.controller}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Event e = widget.event;
+    Event e = controller.event;
 
     return FutureBuilder<Timeline?>(
-        future: futureTimeline,
+        future: controller.futureTimeline,
         builder: (context, snap) {
           Timeline? t = snap.data;
 
@@ -58,12 +34,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                 Set<Event>? replies;
 
                 if (t != null) {
-                  replies =
-                      e.aggregatedEvents(t, MatrixTypes.elementThreadEventType);
-
-                  // TODO: remove me, this was when replies as thread was not supported
-                  replies
-                      .addAll(e.aggregatedEvents(t, RelationshipTypes.reply));
+                  replies = e.aggregatedEvents(t, MatrixTypes.threadRelation);
                   reactions = e.aggregatedEvents(t, RelationshipTypes.reaction);
                 }
                 return Card(
@@ -124,16 +95,13 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                         ),
                                       if (replies?.isNotEmpty ?? false)
                                         MaterialButton(
-                                            child: Text((showReplies
+                                            child: Text((controller.showReplies
                                                     ? "Hide "
                                                     : "Show ") +
                                                 replies!.length.toString() +
                                                 " comments"),
-                                            onPressed: () {
-                                              setState(() {
-                                                showReplies = !showReplies;
-                                              });
-                                            }),
+                                            onPressed:
+                                                controller.toggleReplyView),
                                     ],
                                   ),
                                 ),
@@ -165,7 +133,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                       ),
                                       onPressed: () {}),
                                   onTapDown: (TapDownDetails detail) async {
-                                    widget.onReact(detail.globalPosition);
+                                    controller.onReact(detail.globalPosition);
                                   },
                                 ),
                                 SizedBox(width: 9),
@@ -191,7 +159,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                                   .onPrimary))
                                     ],
                                   ),
-                                  onPressed: replyButtonClick,
+                                  onPressed: controller.replyButtonClick,
                                 ),
                               ],
                             ),
@@ -199,26 +167,25 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                         ],
                       ),
 
-                      ((replies?.isNotEmpty ?? false) && showReplies ||
-                              showReplyBox)
+                      ((replies?.isNotEmpty ?? false) &&
+                                  controller.showReplies ||
+                              controller.showReplyBox)
                           ? Divider()
                           : SizedBox(height: 8),
-                      if (showReplies)
+                      if (controller.showReplies)
                         Container(
                           child: Column(
                             children: [
                               if (((replies?.isNotEmpty ?? false) ||
-                                      showReplyBox) &&
+                                      controller.showReplyBox) &&
                                   t != null)
                                 RepliesVue(
                                     timeline: t,
                                     event: e,
                                     replies: replies ?? Set<Event>(),
-                                    showEditBox: showReplyBox,
-                                    setReplyVisibility: (bool value) =>
-                                        setState(() {
-                                          showReplyBox = value;
-                                        })),
+                                    showEditBox: controller.showReplyBox,
+                                    setReplyVisibility:
+                                        controller.setReplyVisibility),
                             ],
                           ),
                         ),
@@ -227,11 +194,5 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                 );
               });
         });
-  }
-
-  void replyButtonClick() {
-    setState(() {
-      showReplyBox = !showReplyBox;
-    });
   }
 }

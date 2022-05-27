@@ -4,7 +4,7 @@ import 'package:minestrix_chat/utils/social/posts/model/json/social_image_item.d
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
 
 import '../../../partials/post/gallery/post_gallery_nav_button.dart';
-import '../../../partials/post/postDetails/postHeader.dart';
+import '../../../partials/post/postDetails/post_header.dart';
 
 class PostGalleryPage extends StatefulWidget {
   final SocialImageItem image;
