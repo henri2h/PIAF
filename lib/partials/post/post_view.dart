@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
+import 'details/post_content.dart';
+import 'details/post_eactions.dart';
+import 'details/post_header.dart';
+import 'details/post_replies.dart';
 import 'post.dart';
-import 'postDetails/post_content.dart';
-import 'postDetails/post_header.dart';
-import 'postDetails/post_eactions.dart';
-import 'postDetails/post_replies.dart';
 
 class PostView extends StatelessWidget {
   final PostState controller;

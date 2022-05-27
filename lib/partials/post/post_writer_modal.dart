@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/components/fake_text_field.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
-
-import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class PostWriterModal extends StatelessWidget {
