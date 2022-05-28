@@ -4,8 +4,9 @@ import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 
 class MatrixLoadingPage extends StatefulWidget {
   const MatrixLoadingPage({Key? key}) : super(key: key);
@@ -16,7 +17,7 @@ class MatrixLoadingPage extends StatefulWidget {
 
 class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
   bool running = false;
-  Future<bool> waitForRoomsLoading(MinestrixClient sclient) async {
+  Future<bool> waitForRoomsLoading(Client sclient) async {
     if (sclient.roomsLoading != null) {
       await sclient.roomsLoading;
       await sclient.accountDataLoading;
@@ -30,11 +31,11 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client sclient = Matrix.of(context).client;
 
     return Scaffold(
-      body: StreamBuilder<String>(
-          stream: sclient.onSRoomsUpdate.stream,
+      body: StreamBuilder(
+          stream: sclient.onMinestrixUpdate,
           builder: (context, _) {
             return StreamBuilder<SyncStatusUpdate>(
                 stream: sclient.onSyncStatus.stream,
@@ -52,8 +53,7 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
                                 (snapLoading.data?.toString() ?? 'null'));
 
                             if (!snapLoading.hasData ||
-                                sclient.userRoomCreated ||
-                                !sclient.sroomsLoaded) {
+                                sclient.userRoomCreated) {
                               if (snap.data!.status != SyncStatus.finished)
                                 return Padding(
                                   padding: const EdgeInsets.all(20),
@@ -102,11 +102,6 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
                                         },
                                         label: "Create my account",
                                         icon: Icons.send));
-                          }),
-                      MaterialButton(
-                          child: Text("Load all rooms"),
-                          onPressed: () async {
-                            await sclient.loadSRooms();
                           }),
                       if (running) LinearProgressIndicator(),
                     ],

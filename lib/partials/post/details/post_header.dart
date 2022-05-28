@@ -1,23 +1,22 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/router.gr.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
-import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
 
 class PostHeader extends StatelessWidget {
   final Event event;
   const PostHeader({Key? key, required this.event}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient sclient = Matrix.of(context).sclient!;
-    MinestrixRoom? sroom = sclient.srooms[event.roomId!];
+    final Client sclient = Matrix.of(context).client;
+    Room? room = event.room;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -38,7 +37,7 @@ class PostHeader extends StatelessWidget {
                       thumnail: true,
                       defaultIcon: Icon(Icons.person, size: 48)),
                 ),
-                if (sroom?.type != FeedRoomType.group)
+                if (room.type != FeedRoomType.group)
                   Flexible(
                     child: Builder(builder: (BuildContext context) {
                       User? feedOwner =
@@ -110,7 +109,7 @@ class PostHeader extends StatelessWidget {
                       );
                     }),
                   ),
-                if (sroom?.type == FeedRoomType.group)
+                if (room.type == FeedRoomType.group)
                   Flexible(
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,10 +140,7 @@ class PostHeader extends StatelessWidget {
                                       .color)),
                           TextButton(
                             onPressed: () {
-                              MinestrixRoom? sroom =
-                                  sclient.srooms[event.roomId];
-                              if (sroom != null)
-                                context.navigateTo(GroupRoute(sroom: sroom));
+                              context.navigateTo(GroupRoute(room: room));
                             },
                             child: Text(event.room.name,
                                 style: TextStyle(

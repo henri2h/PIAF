@@ -1,29 +1,25 @@
 import 'package:collection/src/iterable_extensions.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-
-class MinestrixFriendsSugestion {
-  final MinestrixClient client;
-  MinestrixFriendsSugestion(this.client);
-
+extension MinestrixFriendsSugestion on Client {
   /// Add a simple way to display friend suggestions
   Future<List<Profile>> getSuggestionsSimple() async {
     SearchUserDirectoryResponse search =
-        await client.searchUserDirectory("", limit: 50);
+        await searchUserDirectory("", limit: 50);
 
     search.results.removeWhere((profile) =>
-        client.sfriends.values
-            .firstWhereOrNull((element) => element.userID == profile.userId) !=
+        sfriends.firstWhereOrNull((Room r) => r.creatorId == profile.userId) !=
         null);
     return search.results;
   }
 
   /// Get friend suggestions by looking in smatrix rooms
-  Future<List<Profile>> getSuggestions() async {
+  Future<List<Profile>> getFriendsSuggestions() async {
     Map<String, ProfileCount> profiles = Map<String, ProfileCount>();
 
-    for (Room r in client.rooms) {
+    for (Room r in rooms) {
       //await r.requestParticipants();
       for (User u in r.getParticipants()) {
         String id = u.id;
@@ -41,9 +37,11 @@ class MinestrixFriendsSugestion {
     List<ProfileCount> ps = profiles.values
         .sorted((ProfileCount a, ProfileCount b) => b.pos.compareTo(a.pos))
         .toList();
-    if (client.userRoom != null)
+
+    // TODO: find which room we may use. Maybe define a main room.
+    if (minestrixUserRoom.isNotEmpty)
       ps.removeWhere((ProfileCount profile) =>
-          client.userRoom!.room.getParticipants().firstWhereOrNull(
+          minestrixUserRoom.first.getParticipants().firstWhereOrNull(
               (User element) => element.id == profile.p.userId) !=
           null);
 

@@ -1,12 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import '../partials/home/notificationView.dart';
 import '../router.gr.dart';
-import '../utils/matrixWidget.dart';
-import '../utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).client;
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 900;
       return isWideScreen
@@ -30,16 +30,16 @@ class _MainPageState extends State<MainPage> {
               routes: [
                 FeedRoute(),
                 ResearchRoute(),
-                MatrixChatsRoute(
-                    client: Matrix.of(context).sclient!,
+                RoomsListRoute(
+                    client: Matrix.of(context).client,
                     allowPop: false,
                     onSelection: (String roomId) {
-                      context.navigateTo(MatrixChatRoute(
-                          client: Matrix.of(context).sclient!,
+                      context.navigateTo(RoomRoute(
+                          client: Matrix.of(context).client,
                           roomId: roomId,
                           onBack: () => context.popRoute()));
                     }),
-                UserRoute(userID: sclient.userID),
+                UserRoute(userID: Matrix.of(context).client.userID),
               ],
               bottomNavigationBuilder: (_, tabsRouter) {
                 return BottomNavigationBar(
@@ -53,9 +53,9 @@ class _MainPageState extends State<MainPage> {
                         icon: Icon(Icons.search), label: "Search"),
                     BottomNavigationBarItem(
                         icon: StreamBuilder(
-                            stream: sclient.onSync.stream,
+                            stream: client.onSync.stream,
                             builder: (context, _) {
-                              int notif = sclient.totalNotificationsCount;
+                              int notif = client.totalNotificationsCount;
                               if (notif == 0) {
                                 return Icon(Icons.message_outlined);
                               } else {
@@ -81,18 +81,12 @@ class _MainPageState extends State<MainPage> {
                     BottomNavigationBarItem(
                         icon: SizedBox(
                           height: 30,
-                          child: FutureBuilder(
-                              future:
-                                  sclient.getProfileFromUserId(sclient.userID!),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<Profile> p) {
-                                if (p.data?.avatarUrl == null)
-                                  return Icon(Icons.person);
-                                return MatrixImageAvatar(
-                                    client: sclient,
-                                    url: p.data!.avatarUrl,
-                                    fit: true,
-                                    thumnail: true);
+                          child: StreamBuilder(
+                              stream: client.onSync.stream,
+                              builder: (context, snapshot) {
+                                print("build ${client.userID}");
+                                return AvatarBottomBar(
+                                    key: Key(client.userID!));
                               }),
                         ),
                         label: "My account"),
@@ -101,5 +95,40 @@ class _MainPageState extends State<MainPage> {
               },
             );
     });
+  }
+}
+
+class AvatarBottomBar extends StatefulWidget {
+  const AvatarBottomBar({Key? key}) : super(key: key);
+
+  @override
+  State<AvatarBottomBar> createState() => _AvatarBottomBarState();
+}
+
+class _AvatarBottomBarState extends State<AvatarBottomBar> {
+  late Future<Profile> futureClient;
+  @override
+  void initState() {
+    print("set state");
+    futureClient = Matrix.of(context)
+        .client
+        .getProfileFromUserId(Matrix.of(context).client.userID!);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("build");
+    return FutureBuilder(
+        future: futureClient,
+        builder: (BuildContext context, AsyncSnapshot<Profile> p) {
+          return MatrixImageAvatar(
+              client: Matrix.of(context).client,
+              url: p.data?.avatarUrl,
+              defaultText:
+                  p.data?.displayName ?? Matrix.of(context).client.userID,
+              fit: true,
+              thumnail: true);
+        });
   }
 }

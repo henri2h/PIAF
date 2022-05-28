@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class MinesTrixUserSelection extends StatefulWidget {
   MinesTrixUserSelection(
@@ -25,7 +23,7 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? sclient = Matrix.of(context).client;
 
     return Scaffold(
         appBar: AppBar(
@@ -47,15 +45,18 @@ class _MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
-                var ur = await sclient!.searchUserDirectory(pattern, limit: 20);
+                var ur = await sclient.searchUserDirectory(pattern, limit: 20);
                 if (participants == null) participants = widget.participants;
 
                 if (participants == null) participants = List<User>.empty();
 
                 if (widget.ignoreUserFollowingUser) {
                   // add the user following the user in the ignore list
-                  sclient.following.forEach((key, MinestrixRoom sroom) {
-                    participants!.add(sroom.user!);
+                  sclient.following.forEach((room) {
+                    final creator = room.creator;
+                    if (creator != null) {
+                      participants!.add(creator);
+                    }
                   });
                 }
 

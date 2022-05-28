@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class SettingsSecurityPage extends StatefulWidget {
   const SettingsSecurityPage({Key? key}) : super(key: key);
@@ -16,31 +16,31 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).client;
 
     return ListView(
       children: [
-        CustomHeader("Security"),
+        CustomHeader(title: "Security"),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Device name : " + sclient.deviceName!),
-              Text("Device ID : " + sclient.deviceID!),
+              Text("Device name : " + client.deviceName!),
+              Text("Device ID : " + client.deviceID!),
             ],
           ),
         ),
-        sclient.encryptionEnabled
+        client.encryptionEnabled
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (sclient.encryption!.crossSigning.enabled == false)
+                  if (client.encryption!.crossSigning.enabled == false)
                     Text("❌ Cross signing is not enabled"),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
-                      children: sclient.isUnknownSession == false
+                      children: client.isUnknownSession == false
                           ? [
                               Icon(Icons.check, size: 32),
                               SizedBox(width: 10),
@@ -58,7 +58,7 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                             ],
                     ),
                   ),
-                  if (sclient.encryptionEnabled && sclient.isUnknownSession)
+                  if (client.encryptionEnabled && client.isUnknownSession)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
                       child: ElevatedButton(
@@ -87,7 +87,7 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                                         ElevatedButton(
                                             child: Text("Get keys"),
                                             onPressed: () async {
-                                              await sclient
+                                              await client
                                                   .encryption!.crossSigning
                                                   .selfSign(
                                                       passphrase:

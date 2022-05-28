@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
-import 'package:minestrix/partials/post/postView.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_content.dart';
@@ -13,23 +12,13 @@ class PostContent extends StatelessWidget {
   final Event event;
   final double? imageMaxHeight;
   final double? imageMaxWidth;
+  final bool disablePadding;
   const PostContent(this.event,
-      {Key? key, this.imageMaxHeight, this.imageMaxWidth})
+      {Key? key,
+      this.imageMaxHeight,
+      this.imageMaxWidth,
+      this.disablePadding = false})
       : super(key: key);
-
-  PostTypeUpdate getPostTypeUpdate(Event e) {
-    if (e.prevContent?["avatar_url"] != null &&
-        e.prevContent!["avatar_url"] != e.content["avatar_url"])
-      return PostTypeUpdate.ProfilePicture;
-    else if (e.prevContent?["displayname"] != null &&
-        e.prevContent!["displayname"] != e.content["displayname"])
-      return PostTypeUpdate.DisplayName;
-    else if (e.prevContent?["membership"] != e.content["membership"])
-      return PostTypeUpdate
-          .Membership; // by default, if prevContent == null, the owner joined the room or was invited
-
-    return PostTypeUpdate.None;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +29,12 @@ class PostContent extends StatelessWidget {
             event: event,
             imageMaxHeight: imageMaxHeight,
             imageMaxWidth: imageMaxWidth,
+            disablePadding: disablePadding,
             onImagePressed: (image, post) {
               context.pushRoute(PostGalleryRoute(image: image, post: post));
             });
-      case EventTypes.Encrypted:
+
+      case EventTypes.Message:
         switch (event.messageType) {
           case MessageTypes.Text:
           case MessageTypes.Emote:
@@ -99,47 +90,11 @@ class PostContent extends StatelessWidget {
           ],
         );
     }
-    PostTypeUpdate pUp = getPostTypeUpdate(event);
-    Widget update;
-    switch (pUp) {
-      case PostTypeUpdate.DisplayName:
-        update = Text("Display name update " +
-            event.getLocalizedBody(const MatrixDefaultLocalizations()));
 
-        break;
-      case PostTypeUpdate.ProfilePicture:
-        update = Text("Profile picture update " +
-            event.getLocalizedBody(const MatrixDefaultLocalizations()));
-
-        break;
-      case PostTypeUpdate.Membership:
-        update = Text("Joined " +
-            event.getLocalizedBody(const MatrixDefaultLocalizations()));
-
-        break;
-      default:
-        update = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Default : "),
-            Text(event.getLocalizedBody(const MatrixDefaultLocalizations())),
-            Text(event.content.toString()),
-            Text(event.prevContent.toString())
-            /*
-           // Debug :
-            Text(event.content.toString()),
-            SizedBox(height: 10),
-            Text(event.prevContent.toString()),
-            Text(event.toJson().toString())
-            */
-          ],
-        );
-    }
     return Container(
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            update,
             Text(event.type),
           ]),
     );

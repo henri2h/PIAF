@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/partials/components/account/accountCard.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({Key? key}) : super(key: key);
@@ -21,8 +22,8 @@ class FriendsPage extends StatefulWidget {
 class _FriendsPageState extends State<FriendsPage> {
   @override
   Widget build(BuildContext context) {
-    final MinestrixClient sclient = Matrix.of(context).sclient!;
-    List<User> users = sclient.userRoom!.room
+    final Client sclient = Matrix.of(context).client;
+    List<User> users = sclient.minestrixUserRoom.first
         .getParticipants()
         .where((User u) => u.membership == Membership.join)
         .toList();
@@ -49,8 +50,8 @@ class _FriendsPageState extends State<FriendsPage> {
               var ur = await sclient.searchUserDirectory(pattern);
 
               List<User?> following = [];
-              sclient.following.forEach((key, MinestrixRoom sroom) {
-                following.add(sroom.user);
+              sclient.following.forEach((room) {
+                following.add(room.creator);
               });
 
               return ur.results
@@ -74,7 +75,7 @@ class _FriendsPageState extends State<FriendsPage> {
             },
             onSuggestionSelected: (dynamic suggestion) async {
               Profile p = suggestion;
-              await sclient.addFriend(p.userId);
+              await sclient.inviteFriend(p.userId);
               setState(() {}); // update ui
             },
           ),
@@ -86,19 +87,19 @@ class _FriendsPageState extends State<FriendsPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: H2Title("Friend requests : "),
+                      child: H2Title("Friend requests : "),
                     ),
-                    for (MinestrixRoom sm in sclient.minestrixInvites.values)
+                    for (Room sm in sclient.minestrixInvites)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
                               MatrixImageAvatar(
-                                  client: sclient, url: sm.user?.avatarUrl),
+                                  client: sclient, url: sm.creator?.avatarUrl),
                               SizedBox(width: 10),
-                              Text((sm.user?.displayName ??
-                                  sm.userID ??
+                              Text((sm.creator?.displayName ??
+                                  sm.creatorId ??
                                   "null")),
                             ],
                           ),
@@ -107,12 +108,12 @@ class _FriendsPageState extends State<FriendsPage> {
                               IconButton(
                                   icon: Icon(Icons.check, color: Colors.green),
                                   onPressed: () async {
-                                    await sm.room.join();
+                                    await sm.join();
                                   }),
                               IconButton(
                                   icon: Icon(Icons.delete, color: Colors.red),
                                   onPressed: () async {
-                                    await sm.room.leave();
+                                    await sm.leave();
                                   }),
                             ],
                           ),

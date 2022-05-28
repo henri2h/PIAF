@@ -3,7 +3,7 @@ import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/feed/notficationBell.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class NavBarDesktop extends StatelessWidget {
   const NavBarDesktop({Key? key}) : super(key: key);
@@ -35,14 +35,14 @@ class NavBarDesktop extends StatelessWidget {
                   onPressed: () async {
                     await context.navigateTo(AppWrapperRoute());
                     await context.navigateTo(UserViewRoute(
-                        userID: Matrix.of(context).sclient!.userID));
+                        userID: Matrix.of(context).client.userID));
                   }),
               NavBarButton(
                   name: "Chats",
                   icon: Icons.chat,
                   onPressed: () async {
-                    await context.navigateTo(MatrixChatsRoute(
-                        client: Matrix.of(context).sclient!,
+                    await context.navigateTo(RoomsListRoute(
+                        client: Matrix.of(context).client,
                         enableStories: true));
                   }),
               NavBarButton(

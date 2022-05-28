@@ -5,23 +5,22 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/accountCard.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 class UserFriendsPage extends StatelessWidget {
-  const UserFriendsPage({Key? key, required this.sroom}) : super(key: key);
+  const UserFriendsPage({Key? key, required this.room}) : super(key: key);
 
-  final MinestrixRoom sroom;
+  final Room room;
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? sclient = Matrix.of(context).client;
     return ListView(
       children: [
-        if (sroom.userID != null)
+        if (room.creatorId != null)
           FutureBuilder<Profile>(
-              future: sroom.room.client.getProfileFromUserId(sroom.userID!),
+              future: room.client.getProfileFromUserId(room.creatorId!),
               builder: (context, snap) {
                 if (!snap.hasData) return CircularProgressIndicator();
                 return UserInfo(profile: snap.data!);
@@ -29,13 +28,14 @@ class UserFriendsPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: H2Title(
-              (sroom.user?.displayName ?? sroom.userID ?? "null") + " friends"),
+              (room.creator?.displayName ?? room.creatorId ?? "null") +
+                  " friends"),
         ),
         Wrap(alignment: WrapAlignment.center, children: [
-          for (User user in sroom.room.getParticipants().where((User u) =>
+          for (User user in room.getParticipants().where((User u) =>
               u.membership == Membership.join &&
-              u.id != sclient!.userID &&
-              u.id != sroom.userID))
+              u.id != sclient.userID &&
+              u.id != room.creatorId))
             AccountCard(user: user),
         ]),
       ],

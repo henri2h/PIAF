@@ -19,7 +19,7 @@ class Settings {
     saveData();
   }
 
-  Map<String, dynamic> _settings = {};
+  static Map<String, dynamic> _settings = {};
 
   Future<void> loadAllValues() async {
     _settings = jsonDecode(await StorageManager.readData("settings") ?? "{}");
@@ -29,7 +29,14 @@ class Settings {
     StorageManager.saveData("settings", jsonEncode(_settings));
   }
 
-  Settings() {
-    loadAllValues();
+  static bool _loaded = false;
+
+  Future<void> loadGuarded() async {
+    if (!_loaded) {
+      await loadAllValues();
+      _loaded = true;
+    }
   }
+
+  Settings() {}
 }

@@ -4,8 +4,7 @@ import 'package:auto_route/auto_route.dart';
 
 import 'package:minestrix/partials/home/notificationView.dart';
 import 'package:minestrix/partials/navbar.dart';
-
-import '../utils/matrixWidget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class AppWrapperPage extends StatefulWidget {
   const AppWrapperPage({Key? key}) : super(key: key);
@@ -18,9 +17,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   Future<void>? loadFuture;
 
   Future<void> load() async {
-    final m = Matrix.of(context).sclient!;
+    final m = Matrix.of(context).client;
     await m.roomsLoading;
-    await m.updateAll(); // load all minestrix rooms and build timeline
   }
 
   @override
@@ -32,16 +30,20 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   Widget build(BuildContext context) {
     loadFuture ??= load();
 
+    Matrix.of(context).navigatorContext = context;
+
     return Scaffold(
-      body: LayoutBuilder(builder: (context, constraints) {
-        bool isWideScreen = constraints.maxWidth > 900;
-        return Column(
-          children: [
-            if (isWideScreen) NavBarDesktop(),
-            Expanded(child: AutoRouter()),
-          ],
-        );
-      }),
+      body: SafeArea(
+        child: LayoutBuilder(builder: (context, constraints) {
+          bool isWideScreen = constraints.maxWidth > 900;
+          return Column(
+            children: [
+              if (isWideScreen) NavBarDesktop(),
+              Expanded(child: AutoRouter()),
+            ],
+          );
+        }),
+      ),
       endDrawer: NotificationView(),
     );
   }

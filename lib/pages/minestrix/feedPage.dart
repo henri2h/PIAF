@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/quickLinksList.dart';
 import 'package:minestrix/partials/feed/minestrixFeed.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({Key? key}) : super(key: key);
@@ -16,11 +17,11 @@ class FeedPage extends StatefulWidget {
 class _FeedPageState extends State<FeedPage> {
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client client = Matrix.of(context).client;
 
     return LayoutBuilder(builder: (context, constraints) {
       return StreamBuilder(
-        stream: sclient!.onTimelineUpdate.stream,
+        stream: client.onMinestrixUpdate,
         builder: (context, _) {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
-import 'package:minestrix/utils/matrixWidget.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 
 class UserAvatar extends StatelessWidget {
   final Profile p;
@@ -19,33 +20,40 @@ class UserAvatar extends StatelessWidget {
           borderRadius: BorderRadius.circular(40.0),
         ),
         padding: const EdgeInsets.only(bottom: 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            MatrixImageAvatar(
-              client: Matrix.of(context).sclient,
-              url: p.avatarUrl,
-              width: 250,
-              height: 250,
-              shape: MatrixImageAvatarShape.none,
-              defaultIcon: Icon(Icons.person, size: 120),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(p.displayName ?? p.userId,
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-            ),
-            if (p.displayName != null)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Text(p.userId,
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Theme.of(context).textTheme.caption!.color)),
+        child: SizedBox(
+          width: 180,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MatrixImageAvatar(
+                client: Matrix.of(context).client,
+                url: p.avatarUrl,
+                width: MinestrixAvatarSizeConstants.big,
+                height: MinestrixAvatarSizeConstants.big,
+                shape: MatrixImageAvatarShape.none,
+                defaultIcon: Icon(Icons.person,
+                    size: 100, color: Theme.of(context).colorScheme.onPrimary),
               ),
-          ],
+              SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(p.displayName ?? p.userId,
+                    style:
+                        TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+              ),
+              if (p.displayName != null)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Text(p.userId,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).textTheme.caption!.color)),
+                ),
+            ],
+          ),
         ),
       ),
     );

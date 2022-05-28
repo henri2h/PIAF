@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+
+import '../loginPage.dart';
 
 class SettingsAccountPage extends StatefulWidget {
   const SettingsAccountPage({Key? key}) : super(key: key);
@@ -21,11 +21,12 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client sclient = Matrix.of(context).client;
+    final m = Matrix.of(context);
 
     return ListView(
       children: [
-        CustomHeader("Account"),
+        CustomHeader(title: "Account"),
         FutureBuilder(
             future: sclient.getUserProfile(sclient.userID!),
             builder: (context, AsyncSnapshot<ProfileInformation> p) {
@@ -38,7 +39,7 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
                   leading: savingDisplayName
                       ? CircularProgressIndicator()
                       : MatrixImageAvatar(
-                          client: Matrix.of(context).sclient,
+                          client: Matrix.of(context).client,
                           url: p.data?.avatarUrl,
                           width: 48,
                           height: 48,
@@ -73,6 +74,37 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
         ListTile(
             title: Text("Your user ID:"),
             subtitle: Text(sclient.userID ?? "null")),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Clients"),
+              Text("Multi account ${m.isMultiAccount}"),
+              for (final c in m.widget.clients)
+                ListTile(
+                    title: Text(c.clientName),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(c.userID ?? ''),
+                      ],
+                    ),
+                    onTap: () async {
+                      m.setActiveClient(c);
+                    }),
+              ListTile(
+                  title: Text("Add client"),
+                  trailing: Icon(Icons.add),
+                  onTap: () async {
+                    AdaptativeDialogs.show(
+                        context: context,
+                        builder: (context) => LoginPage(
+                            popOnLogin: true, title: "Add a new account"));
+                  }),
+            ],
+          ),
+        ),
       ],
     );
   }

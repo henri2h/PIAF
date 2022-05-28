@@ -13,7 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
-import 'package:minestrix/partials/post/postView.dart';
+import 'package:minestrix/partials/post/post.dart';
 
 class CalendarEventPage extends StatefulWidget {
   final Room room;
@@ -48,7 +48,7 @@ class _CalendarEventPageState extends State<CalendarEventPage> {
                 builder: (context, snapshot) {
                   return ListView(
                     children: [
-                      CustomHeader("Event"),
+                      CustomHeader(title: "Event"),
                       MatrixImageAvatar(
                         client: room.client,
                         url: room.avatar,
@@ -98,8 +98,9 @@ class _CalendarEventPageState extends State<CalendarEventPage> {
                                         data: room.topic,
                                         onTapLink: (text, href, title) async {
                                           if (href != null) {
-                                            if (await canLaunch(href)) {
-                                              await launch(href);
+                                            final url = Uri.parse(href);
+                                            if (await canLaunchUrl(url)) {
+                                              await launchUrl(url);
                                             } else {
                                               throw 'Could not launch $href';
                                             }

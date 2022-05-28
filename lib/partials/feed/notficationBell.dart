@@ -1,31 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 
 class NotificationBell extends StatelessWidget {
   const NotificationBell({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? client = Matrix.of(context).client;
 
-    return sclient == null
-        ? Icon(Icons.error)
-        : StreamBuilder(
-            stream: sclient.notifications.onNotifications.stream,
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              return Column(
-                children: [
-                  IconButton(
-                      icon: sclient.notifications.notifications.length == 0
-                          ? Icon(Icons.notifications_none)
-                          : Icon(Icons.notifications_active),
-                      onPressed: () {
-                        Scaffold.of(context).openEndDrawer();
-                      }),
-                ],
-              );
-            });
+    return StreamBuilder(
+        stream: client.onMinestrixUpdate,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          return IconButton(
+              icon: client.notifications.length == 0
+                  ? Icon(Icons.notifications_none)
+                  : Icon(Icons.notifications_active),
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer();
+              });
+        });
   }
 }

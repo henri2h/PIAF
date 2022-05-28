@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-
+import 'package:matrix/matrix.dart';
+import 'package:minestrix/partials/minestrixTitle.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/partials/login/login_card.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:minestrix/partials/minestrixTitle.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
-
 class LoginPage extends StatefulWidget {
-  LoginPage({Key? key, this.title, this.onLogin}) : super(key: key);
+  LoginPage({Key? key, this.title, this.onLogin, this.popOnLogin = false})
+      : super(key: key);
   final String? title;
   final Function(bool isLoggedIn)? onLogin;
+
+  final bool popOnLogin;
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -29,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildDesktop() {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).getLoginClient();
     return Scaffold(
       body: Row(
         children: [
@@ -58,12 +59,12 @@ class _LoginPageState extends State<LoginPage> {
                         }),
                     TextButton(
                       onPressed: () async =>
-                          await _launchURL("https://matrix.org"),
+                          await _launchURL(Uri.parse("https://matrix.org")),
                       child: new Text('The matrix protocol'),
                     ),
                     TextButton(
-                      onPressed: () async => await _launchURL(
-                          "https://gitlab.com/minestrix/minestrix-flutter"),
+                      onPressed: () async => await _launchURL(Uri.parse(
+                          "https://gitlab.com/minestrix/minestrix-flutter")),
                       child: new Text('MinesTRIX code'),
                     ),
                   ],
@@ -79,7 +80,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Expanded(child: LoginMatrixPage(client: sclient))
+                    Expanded(
+                        child: LoginMatrixPage(
+                            client: client, popOnLogin: widget.popOnLogin))
                   ],
                 ),
               ),
@@ -91,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget buildMobile() {
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    Client client = Matrix.of(context).getLoginClient();
 
     return Scaffold(
       body: Container(
@@ -106,16 +109,16 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.white,
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(40))),
-                    child: LoginMatrixPage(client: sclient)))
+                    child: LoginMatrixPage(client: client)))
           ],
         ),
       ),
     );
   }
 
-  Future<void> _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+  Future<void> _launchURL(Uri url) async {
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     } else {
       throw 'Could not launch $url';
     }

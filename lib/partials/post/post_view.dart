@@ -1,56 +1,25 @@
 import 'package:flutter/material.dart';
-
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
-import 'package:minestrix/partials/post/postDetails/postContent.dart';
-import 'package:minestrix/partials/post/postDetails/postHeader.dart';
-import 'package:minestrix/partials/post/postDetails/postReactions.dart';
-import 'package:minestrix/partials/post/postDetails/postReplies.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'details/post_content.dart';
+import 'details/post_eactions.dart';
+import 'details/post_header.dart';
+import 'details/post_replies.dart';
+import 'post.dart';
 
-class Post extends StatefulWidget {
-  final Event event;
-  final void Function(Offset) onReact;
-  final Timeline? timeline;
-  Post({Key? key, required this.event, required this.onReact, this.timeline})
-      : super(key: key);
-
-  @override
-  _PostState createState() => _PostState();
-}
-
-enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
-
-class _PostState extends State<Post> with SingleTickerProviderStateMixin {
-  final key = GlobalKey();
-  bool showReplyBox = false;
-  bool showReplies = true;
+class PostView extends StatelessWidget {
+  final PostState controller;
+  const PostView({Key? key, required this.controller}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Event e = widget.event;
-    MinestrixClient sclient = Matrix.of(context).sclient!;
+    return FutureBuilder<Timeline?>(
+        future: controller.futureTimeline,
+        builder: (context, snap) {
+          Timeline? t = snap.data;
 
-    Timeline? t = sclient.srooms[e.roomId!]?.timeline ?? widget.timeline;
-    if (t == null) {
-      return CircularProgressIndicator();
-    }
-
-    return StreamBuilder<Object>(
-        stream: e.room.onUpdate.stream,
-        builder: (context, snapshot) {
-          // support for threaded replies
-          Set<Event> replies =
-              e.aggregatedEvents(t, MatrixTypes.elementThreadEventType);
-
-          // TODO: remove me after in next update
-          replies.addAll(e.aggregatedEvents(t, RelationshipTypes.reply));
-
-          Set<Event> reactions =
-              e.aggregatedEvents(t, RelationshipTypes.reaction);
           return Card(
             key: key,
             shape: RoundedRectangleBorder(
@@ -63,9 +32,9 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    PostHeader(event: e),
+                    PostHeader(event: controller.post.event!),
                     PostContent(
-                      e,
+                      controller.post.event!,
                       imageMaxHeight: 300,
                     ),
                     Padding(
@@ -78,7 +47,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                if (reactions.isNotEmpty)
+                                if (controller.reactions?.isNotEmpty ?? false)
                                   Flexible(
                                     child: SingleChildScrollView(
                                       scrollDirection: Axis.horizontal,
@@ -89,42 +58,33 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                                 horizontal: 8.0),
                                             child: MaterialButton(
                                                 child: PostReactions(
-                                                    event: e,
-                                                    reactions: reactions),
+                                                    event:
+                                                        controller.post.event!,
+                                                    reactions:
+                                                        controller.reactions!),
                                                 onPressed: () async {
-                                                  await showDialog(
+                                                  await AdaptativeDialogs.show(
                                                       context: context,
                                                       builder: (context) =>
-                                                          Dialog(
-                                                              child:
-                                                                  ConstrainedBox(
-                                                            constraints:
-                                                                BoxConstraints(
-                                                                    maxWidth:
-                                                                        600,
-                                                                    maxHeight:
-                                                                        600),
-                                                            child: EventReactionList(
-                                                                reactions:
-                                                                    reactions),
-                                                          )));
+                                                          EventReactionList(
+                                                              reactions: controller
+                                                                  .reactions!),
+                                                      title: "Reactions");
                                                 }),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                if (replies.isNotEmpty)
+                                if (controller.replies?.isNotEmpty ?? false)
                                   MaterialButton(
-                                      child: Text(
-                                          (showReplies ? "Hide " : "Show ") +
-                                              replies.length.toString() +
-                                              " comments"),
-                                      onPressed: () {
-                                        setState(() {
-                                          showReplies = !showReplies;
-                                        });
-                                      }),
+                                      child: Text((controller.showReplies
+                                              ? "Hide "
+                                              : "Show ") +
+                                          controller.replies!.length
+                                              .toString() +
+                                          " comments"),
+                                      onPressed: controller.toggleReplyView),
                               ],
                             ),
                           ),
@@ -154,7 +114,7 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                 ),
                                 onPressed: () {}),
                             onTapDown: (TapDownDetails detail) async {
-                              widget.onReact(detail.globalPosition);
+                              controller.onReact(detail.globalPosition);
                             },
                           ),
                           SizedBox(width: 9),
@@ -180,41 +140,41 @@ class _PostState extends State<Post> with SingleTickerProviderStateMixin {
                                             .onPrimary))
                               ],
                             ),
-                            onPressed: replyButtonClick,
+                            onPressed: controller.replyButtonClick,
                           ),
                         ],
                       ),
                     )
                   ],
                 ),
-
-                if (replies.isNotEmpty && showReplies || showReplyBox)
-                  Divider(),
-                if (showReplies)
-                  Container(
-                    child: Column(
-                      children: [
-                        if (replies.isNotEmpty || showReplyBox)
-                          RepliesVue(
-                              timeline: t,
-                              event: e,
-                              replies: replies,
-                              showEditBox: showReplyBox,
-                              setReplyVisibility: (bool value) => setState(() {
-                                    showReplyBox = value;
-                                  })),
-                      ],
-                    ),
-                  ),
+                (controller.replyToMessageId != null ||
+                            controller.showReplies) &&
+                        t != null
+                    ? Container(
+                        child: Column(
+                          children: [
+                            Divider(),
+                            if (controller.replyToMessageId != null ||
+                                controller.showReplies)
+                              RepliesVue(
+                                  timeline: t,
+                                  event: controller.post.event!,
+                                  postEvent: controller.post.event!,
+                                  replies: (controller.showReplies &&
+                                          controller.replies?.isNotEmpty ==
+                                              true)
+                                      ? controller.nestedReplies
+                                      : null,
+                                  replyToMessageId: controller.replyToMessageId,
+                                  setRepliedMessage:
+                                      controller.setRepliedMessage),
+                          ],
+                        ),
+                      )
+                    : SizedBox(height: 8),
               ],
             ),
           );
         });
-  }
-
-  void replyButtonClick() {
-    setState(() {
-      showReplyBox = !showReplyBox;
-    });
   }
 }

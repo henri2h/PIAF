@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
-import 'package:minestrix/utils/matrixWidget.dart';
-import 'package:minestrix/utils/minestrix/minestrixClient.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
 class MinestrixProfileNotCreated extends StatelessWidget {
   const MinestrixProfileNotCreated({
@@ -11,7 +12,7 @@ class MinestrixProfileNotCreated extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MinestrixClient? sclient = Matrix.of(context).sclient;
+    Client? sclient = Matrix.of(context).client;
 
     return CustomFutureButton(
         icon: Icon(Icons.skateboarding_outlined,
@@ -28,6 +29,6 @@ class MinestrixProfileNotCreated extends StatelessWidget {
                   fontSize: 14,
                   color: Theme.of(context).colorScheme.onPrimary)),
         ],
-        onPressed: sclient?.createSMatrixUserProfile);
+        onPressed: sclient.createSMatrixUserProfile);
   }
 }
