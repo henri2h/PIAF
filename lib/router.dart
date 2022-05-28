@@ -21,7 +21,7 @@ import 'pages/minestrix/groups/groupPage.dart';
 import 'pages/minestrix/image/post_gallery_page.dart';
 import 'pages/minestrix/user/friendsPage.dart';
 import 'pages/minestrix/user/userFriendsPage.dart';
-import 'pages/minestrix/user/userViewPage.dart';
+import 'pages/minestrix/user/user_view_page.dart';
 import 'pages/settings/settingsLabsPage.dart';
 import 'pages/settings/settingsPage.dart';
 import 'pages/settings/settingsProfilePage.dart';

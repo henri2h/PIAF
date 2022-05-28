@@ -41,6 +41,7 @@ class UserViewPage extends StatefulWidget {
 }
 
 class _UserViewPageState extends State<UserViewPage> {
+  late Client client;
   ScrollController _controller = new ScrollController();
 
   String? _userId;
@@ -53,6 +54,14 @@ class _UserViewPageState extends State<UserViewPage> {
   // status
   bool _requestingHistory = false;
   Future<Timeline>? futureTimeline;
+
+  Future<Timeline> getTimeline(Room room) async {
+    final t = await room.getTimeline();
+    while (getEvents(t).length < 3 && t.canRequestHistory) {
+      await t.requestHistory();
+    }
+    return t;
+  }
 
   void init() {
     mroom ??= widget.mroom;
@@ -67,15 +76,18 @@ class _UserViewPageState extends State<UserViewPage> {
     if (userId == null && mroom == null && client.minestrixUserRoom.isNotEmpty)
       mroom = client.minestrixUserRoom.first;
 
-    futureTimeline = mroom?.getTimeline();
+    if (mroom != null) {
+      futureTimeline = getTimeline(mroom!);
+    }
   }
 
   @override
   void initState() {
     super.initState();
+
     _controller.addListener(scrollListener);
 
-    Client client = Matrix.of(context).client;
+    client = Matrix.of(context).client;
 
     if (widget.userID != client.userID)
       _userId = widget
@@ -112,6 +124,13 @@ class _UserViewPageState extends State<UserViewPage> {
     }
   }
 
+  List<Event> getEvents(Timeline timeline) =>
+      client.getSRoomFilteredEvents(timeline, eventTypesFilter: [
+        MatrixTypes.post,
+        EventTypes.Encrypted,
+        EventTypes.RoomCreate
+      ]).toList();
+
   @override
   Widget build(BuildContext context) {
     Client client = Matrix.of(context).client;
@@ -128,8 +147,7 @@ class _UserViewPageState extends State<UserViewPage> {
           Timeline? timeline = snapshot.data;
 
           List<Event> events = [];
-          if (timeline != null)
-            events = client.getSRoomFilteredEvents(timeline).toList();
+          if (timeline != null) events = getEvents(timeline);
 
           bool canRequestHistory = timeline?.canRequestHistory == true;
 
