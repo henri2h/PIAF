@@ -19,7 +19,7 @@ enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
 
 class PostState extends State<Post> with SingleTickerProviderStateMixin {
   final key = GlobalKey();
-  bool showReplyBox = true;
+  String? replyToMessageId = null;
   bool showReplies = true;
 
   Set<Event>? reactions;
@@ -28,8 +28,8 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
 
   late Future<Timeline> futureTimeline;
 
-  void setEditBoxVisibility(bool value) => setState(() {
-        showReplyBox = value;
+  void setRepliedMessage(String? value) => setState(() {
+        replyToMessageId = value;
       });
 
   late SocialItem post;
@@ -53,6 +53,9 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
   void initState() {
     post = SocialItem.fromEvent(e: widget.event);
 
+    // by default we let the user repsond to the actual matrix message
+    replyToMessageId = widget.event.eventId;
+
     futureTimeline = getTimeline();
     super.initState();
   }
@@ -70,7 +73,11 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
 
   void replyButtonClick() {
     setState(() {
-      showReplyBox = !showReplyBox;
+      if (replyToMessageId != widget.event.eventId) {
+        replyToMessageId = widget.event.eventId;
+      } else {
+        replyToMessageId = null;
+      }
     });
   }
 

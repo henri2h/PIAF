@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
@@ -148,24 +147,27 @@ class PostView extends StatelessWidget {
                     )
                   ],
                 ),
-                (controller.showReplyBox || controller.showReplies) && t != null
+                (controller.replyToMessageId != null ||
+                            controller.showReplies) &&
+                        t != null
                     ? Container(
                         child: Column(
                           children: [
                             Divider(),
-                            if (controller.showReplyBox ||
+                            if (controller.replyToMessageId != null ||
                                 controller.showReplies)
                               RepliesVue(
                                   timeline: t,
                                   event: controller.post.event!,
+                                  postEvent: controller.post.event!,
                                   replies: (controller.showReplies &&
                                           controller.replies?.isNotEmpty ==
                                               true)
                                       ? controller.nestedReplies
                                       : null,
-                                  showEditBox: controller.showReplyBox,
-                                  setEditBoxVisibility:
-                                      controller.setEditBoxVisibility),
+                                  replyToMessageId: controller.replyToMessageId,
+                                  setRepliedMessage:
+                                      controller.setRepliedMessage),
                           ],
                         ),
                       )

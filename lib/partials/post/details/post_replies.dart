@@ -14,18 +14,20 @@ import 'post_content.dart';
 
 class RepliesVue extends StatefulWidget {
   final Event event;
+  final Event postEvent;
   final Timeline timeline;
   final Map<Event, dynamic>? replies;
-  final bool showEditBox;
+  final String? replyToMessageId;
 
-  final void Function(bool value)? setEditBoxVisibility;
+  final void Function(String? value) setRepliedMessage;
   RepliesVue({
     Key? key,
     required this.event,
+    required this.postEvent,
     required this.replies,
     required this.timeline,
-    this.showEditBox = false,
-    this.setEditBoxVisibility,
+    required this.replyToMessageId,
+    required this.setRepliedMessage,
   }) : super(key: key);
 
   @override
@@ -35,7 +37,7 @@ class RepliesVue extends StatefulWidget {
 class RepliesVueState extends State<RepliesVue> {
   int tMax = 2;
 
-  Future<void> overrideTextSending(String text) async {
+  Future<void> overrideTextSending(String text, {Event? replyTo}) async {
     final sp = SocialItem();
     sp.postText = text;
 
@@ -43,7 +45,8 @@ class RepliesVueState extends State<RepliesVue> {
       ..addAll({
         "m.relates_to": {
           "rel_type": MatrixTypes.threadRelation,
-          "event_id": widget.event.eventId
+          "event_id": widget.postEvent.eventId,
+          "m.in_reply_to": {if (replyTo != null) "event_id": replyTo.eventId}
         }
       });
 
@@ -54,18 +57,9 @@ class RepliesVueState extends State<RepliesVue> {
   Widget build(BuildContext context) {
     Client? client = Matrix.of(context).client;
 
-    if (widget.replies == null)
-      return MatrixMessageComposer(
-          client: client,
-          room: widget.event.room,
-          onReplyTo: widget.event,
-          hintText: "Reply",
-          allowSendingPictures: false,
-          overrideSending: overrideTextSending,
-          onSend: () => widget.setEditBoxVisibility?.call(false));
-
-    List<Event> directRepliesToEvent =
-        client.getPostReactions(widget.replies!.keys).toList();
+    List<Event> directRepliesToEvent = widget.replies != null
+        ? client.getPostReactions(widget.replies!.keys).toList()
+        : [];
 
     int max = min(directRepliesToEvent.length, tMax);
 
@@ -73,15 +67,15 @@ class RepliesVueState extends State<RepliesVue> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.showEditBox == true)
+          if (widget.replyToMessageId == widget.event.eventId)
             MatrixMessageComposer(
                 client: client,
                 room: widget.event.room,
-                onReplyTo: widget.event,
                 hintText: "Reply",
                 allowSendingPictures: false,
-                overrideSending: overrideTextSending,
-                onSend: () => widget.setEditBoxVisibility?.call(false)),
+                overrideSending: (String text) =>
+                    overrideTextSending(text, replyTo: widget.event),
+                onSend: () => widget.setRepliedMessage(null)),
           for (Event revent
               in directRepliesToEvent.take(max).toList()
                 ..sort((a, b) => b.originServerTs.compareTo(a.originServerTs)))
@@ -133,10 +127,16 @@ class RepliesVueState extends State<RepliesVue> {
                                     ),
                                     SizedBox(height: 5),
                                     PostContent(
-                                      
                                         revent.getDisplayEvent(widget.timeline),
                                         disablePadding: true,
                                         imageMaxHeight: 200),
+                                    if (widget.replyToMessageId !=
+                                        revent.eventId)
+                                      TextButton(
+                                          onPressed: () =>
+                                              widget.setRepliedMessage(
+                                                  revent.eventId),
+                                          child: Text("Reply"))
                                   ],
                                 ),
                               ),
@@ -146,14 +146,18 @@ class RepliesVueState extends State<RepliesVue> {
                       ),
                     ],
                   ),
-                  if (widget.replies![revent] != null)
+                  if (widget.replies![revent] != null ||
+                      widget.replyToMessageId == revent.eventId)
                     Padding(
                       padding: const EdgeInsets.only(left: 20.0),
                       child: RepliesVue(
                           event: revent,
+                          postEvent: widget.postEvent,
                           timeline: widget.timeline,
-                          replies: widget.replies![revent]),
-                    )
+                          replies: widget.replies![revent],
+                          setRepliedMessage: widget.setRepliedMessage,
+                          replyToMessageId: widget.replyToMessageId),
+                    ),
                 ],
               ),
             ),
