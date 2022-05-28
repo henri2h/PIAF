@@ -7,6 +7,7 @@ import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/chat/message_composer/matrix_message_composer.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'post_content.dart';
@@ -14,17 +15,17 @@ import 'post_content.dart';
 class RepliesVue extends StatefulWidget {
   final Event event;
   final Timeline timeline;
-  final Set<Event> replies;
+  final Map<Event, dynamic>? replies;
   final bool showEditBox;
 
-  final void Function(bool value)? setReplyVisibility;
+  final void Function(bool value)? setEditBoxVisibility;
   RepliesVue({
     Key? key,
     required this.event,
     required this.replies,
     required this.timeline,
     this.showEditBox = false,
-    this.setReplyVisibility,
+    this.setEditBoxVisibility,
   }) : super(key: key);
 
   @override
@@ -35,23 +36,36 @@ class RepliesVueState extends State<RepliesVue> {
   int tMax = 2;
 
   Future<void> overrideTextSending(String text) async {
-    Map<String, dynamic> content = {
-      "msgtype": MessageTypes.Text,
-      "body": text,
-      "m.relates_to": {
-        "rel_type": MatrixTypes.threadRelation,
-        "event_id": widget.event.eventId
-      }
-    };
-    await widget.event.room.sendEvent(content);
+    final sp = SocialItem();
+    sp.postText = text;
+
+    final result = sp.toJson()
+      ..addAll({
+        "m.relates_to": {
+          "rel_type": MatrixTypes.threadRelation,
+          "event_id": widget.event.eventId
+        }
+      });
+
+    await widget.event.room.sendEvent(result, type: MatrixTypes.post);
   }
 
   @override
   Widget build(BuildContext context) {
     Client? client = Matrix.of(context).client;
 
+    if (widget.replies == null)
+      return MatrixMessageComposer(
+          client: client,
+          room: widget.event.room,
+          onReplyTo: widget.event,
+          hintText: "Reply",
+          allowSendingPictures: false,
+          overrideSending: overrideTextSending,
+          onSend: () => widget.setEditBoxVisibility?.call(false));
+
     List<Event> directRepliesToEvent =
-        client.getPostReactions(widget.replies).toList();
+        client.getPostReactions(widget.replies!.keys).toList();
 
     int max = min(directRepliesToEvent.length, tMax);
 
@@ -67,7 +81,7 @@ class RepliesVueState extends State<RepliesVue> {
                 hintText: "Reply",
                 allowSendingPictures: false,
                 overrideSending: overrideTextSending,
-                onSend: () => widget.setReplyVisibility?.call(false)),
+                onSend: () => widget.setEditBoxVisibility?.call(false)),
           for (Event revent
               in directRepliesToEvent.take(max).toList()
                 ..sort((a, b) => b.originServerTs.compareTo(a.originServerTs)))
@@ -119,7 +133,9 @@ class RepliesVueState extends State<RepliesVue> {
                                     ),
                                     SizedBox(height: 5),
                                     PostContent(
+                                      
                                         revent.getDisplayEvent(widget.timeline),
+                                        disablePadding: true,
                                         imageMaxHeight: 200),
                                   ],
                                 ),
@@ -130,13 +146,13 @@ class RepliesVueState extends State<RepliesVue> {
                       ),
                     ],
                   ),
-                  if (false)
+                  if (widget.replies![revent] != null)
                     Padding(
                       padding: const EdgeInsets.only(left: 20.0),
                       child: RepliesVue(
                           event: revent,
                           timeline: widget.timeline,
-                          replies: widget.replies),
+                          replies: widget.replies![revent]),
                     )
                 ],
               ),

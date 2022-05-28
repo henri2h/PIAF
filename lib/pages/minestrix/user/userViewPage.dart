@@ -392,11 +392,10 @@ class UnknownUser extends StatelessWidget {
                         await Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    RoomPage(
-                                        roomId: roomId,
-                                        client: client,
-                                        onBack: () => context.popRoute())));
+                                builder: (BuildContext context) => RoomPage(
+                                    roomId: roomId,
+                                    client: client,
+                                    onBack: () => context.popRoute())));
                       } else {
                         await Navigator.push(
                             context,

@@ -12,8 +12,12 @@ class PostContent extends StatelessWidget {
   final Event event;
   final double? imageMaxHeight;
   final double? imageMaxWidth;
+  final bool disablePadding;
   const PostContent(this.event,
-      {Key? key, this.imageMaxHeight, this.imageMaxWidth})
+      {Key? key,
+      this.imageMaxHeight,
+      this.imageMaxWidth,
+      this.disablePadding = false})
       : super(key: key);
 
   @override
@@ -25,10 +29,12 @@ class PostContent extends StatelessWidget {
             event: event,
             imageMaxHeight: imageMaxHeight,
             imageMaxWidth: imageMaxWidth,
+            disablePadding: disablePadding,
             onImagePressed: (image, post) {
               context.pushRoute(PostGalleryRoute(image: image, post: post));
             });
-      case EventTypes.Encrypted:
+
+      case EventTypes.Message:
         switch (event.messageType) {
           case MessageTypes.Text:
           case MessageTypes.Emote:

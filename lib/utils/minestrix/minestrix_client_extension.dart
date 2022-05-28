@@ -126,7 +126,7 @@ extension MinestrixClientExtension on Client {
     return filteredEvents;
   }
 
-  Iterable<Event> getPostReactions(Set<Event> events) => events
+  Iterable<Event> getPostReactions(Iterable<Event> events) => events
       .where((e) =>
           {MatrixTypes.threadRelation}.contains(e.relationshipType) &&
           [MatrixTypes.post, EventTypes.Message, EventTypes.Encrypted]
