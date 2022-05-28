@@ -186,7 +186,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                       ],
                                     );
                                   }
- 
+
                                   return Padding(
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 2, horizontal: 12),

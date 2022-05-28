@@ -7,7 +7,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key? key, this.title, this.onLogin, this.popOnLogin = false}) : super(key: key);
+  LoginPage({Key? key, this.title, this.onLogin, this.popOnLogin = false})
+      : super(key: key);
   final String? title;
   final Function(bool isLoggedIn)? onLogin;
 
@@ -79,7 +80,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Expanded(child: LoginMatrixPage(client: client, popOnLogin: widget.popOnLogin))
+                    Expanded(
+                        child: LoginMatrixPage(
+                            client: client, popOnLogin: widget.popOnLogin))
                   ],
                 ),
               ),
