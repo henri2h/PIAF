@@ -1,16 +1,7 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/minestrix/groups/createGroupPage.dart';
-import 'package:minestrix/utils/minestrix/minestrix_friends_suggestions.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix_chat/partials/stories/stories_list.dart';
-
-import 'package:minestrix/partials/components/account/accountCard.dart';
 import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/feed/minestrixProfileNotCreated.dart';
@@ -18,8 +9,14 @@ import 'package:minestrix/partials/feed/notficationBell.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
 import 'package:minestrix/router.gr.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
+import 'package:minestrix_chat/partials/custom_list_view.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
+import '../components/friend_suggestion_list.dart';
 import '../components/layouts/customHeader.dart';
 
 class MinestrixFeed extends StatefulWidget {
@@ -162,27 +159,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                           PostWriterModal(
                                               room: client.minestrixUserRoom
                                                   .first), // TODO: set the actual rom we are displaying
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8.0, horizontal: 12),
-                                          child: SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: FutureBuilder<List<Profile>>(
-                                                future: client
-                                                    .getFriendsSuggestions(),
-                                                builder: (context, snap) {
-                                                  if (snap.hasData == false)
-                                                    return Text("Loading");
-                                                  return Row(
-                                                    children: [
-                                                      for (Profile p
-                                                          in snap.data!)
-                                                        AccountCard(profile: p),
-                                                    ],
-                                                  );
-                                                }),
-                                          ),
-                                        ),
+                                        FriendSuggestionsList(),
                                       ],
                                     );
                                   }
