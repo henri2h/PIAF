@@ -159,13 +159,13 @@ class _LogLevelState extends State<LogLevel> {
             groupValue: Logs().level,
             onChanged: changeLogLevel),
         RadioListTile(
-            title: const Text("Info"),
-            value: Level.info,
+            title: const Text("Verbose"),
+            value: Level.verbose,
             groupValue: Logs().level,
             onChanged: changeLogLevel),
         RadioListTile(
-            title: const Text("Verbose"),
-            value: Level.verbose,
+            title: const Text("Info"),
+            value: Level.info,
             groupValue: Logs().level,
             onChanged: changeLogLevel),
         RadioListTile(

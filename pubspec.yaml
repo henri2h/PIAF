@@ -26,7 +26,11 @@ dependencies:
 
 
   # Matrix
-  matrix: ^0.9.0
+  matrix:
+    git:
+      url: https://gitlab.com/minestrix/famedlysdk.git
+      ref: henri2h/index-events-by-event-type
+
   flutter_olm: ^1.1.2
   flutter_openssl_crypto: ^0.1.0
 
@@ -87,9 +91,9 @@ dependencies:
   package_info_plus: ^1.0.0
   
   minestrix_chat:
-    #path: ../minestrix-chat
-    git:
-      url: https://gitlab.com/minestrix/minestrix-chat.git
+    path: ../minestrix-chat
+    # git:
+    #   url: https://gitlab.com/minestrix/minestrix-chat.git
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
   desktop_notifications: ^0.6.3
