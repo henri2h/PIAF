@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:minestrix/pages/account/accountsDetailsPage.dart';
-import 'package:minestrix/pages/debugPage.dart';
+import 'package:minestrix/pages/debug_page.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
 

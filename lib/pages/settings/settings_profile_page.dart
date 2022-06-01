@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../loginPage.dart';
+import '../login_page.dart';
 
 class SettingsAccountPage extends StatefulWidget {
   const SettingsAccountPage({Key? key}) : super(key: key);
