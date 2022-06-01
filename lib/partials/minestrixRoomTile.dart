@@ -97,7 +97,7 @@ class MinestrixRoomTile extends StatelessWidget {
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
-          if (room.type == FeedRoomType.group) {
+          if (room.feedType == FeedRoomType.group) {
             await context.navigateTo(GroupRoute(room: room));
           } else {
             context.navigateTo(UserViewRoute(mroom: room));
