@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'minestrix_client_extension.dart';
 
 extension MinestrixNotifications on Client {
-  Stream get onMinestrixUpdate => onSync.stream;
+  Stream get onMinestrixUpdate => onSync.stream.where((up) => up.hasRoomUpdate);
 
   /// This method should fetch all the user events and build the notification feed
   // TODO : add a way to check if the user has been mentionned or not.
