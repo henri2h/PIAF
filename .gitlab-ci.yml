@@ -84,7 +84,7 @@ deploy_web:
   script:
   - rsync -az build/web/ $USER@$HOST:app --delete
   only:
-  - master
+  - main
 deploy_android_fdroid:
   image: debian:buster
   stage: deploy
@@ -104,7 +104,7 @@ deploy_android_fdroid:
   - rsync -raz  ./ $USER@$HOST:fdroid/repo
   - ssh $USER@$HOST -t '/bin/bash -i -l -c  "cd fdroid && fdroid update"'
   only:
-  - master
+  - main
 analyze:
   stage: analyze
   script:
