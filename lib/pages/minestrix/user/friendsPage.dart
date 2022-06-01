@@ -5,7 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
-import 'package:minestrix/partials/components/account/accountCard.dart';
+import 'package:minestrix/partials/components/account/account_card.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/userInfo.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
