@@ -9,7 +9,7 @@ import 'package:minestrix_chat/view/room_page.dart';
 
 import 'pages/account/accountsDetailsPage.dart';
 import 'pages/app_wrapper_page.dart';
-import 'pages/calendar_events/calendarEventPage.dart';
+import 'pages/calendar_events/calendar_event_page.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
 import 'pages/matrix_loading_page.dart';

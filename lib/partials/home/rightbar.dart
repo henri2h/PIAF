@@ -5,7 +5,6 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 
-import 'package:minestrix/partials/calendarEvents/calendarEventsCard.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/feed/minestrixProfileNotCreated.dart';
 import 'package:minestrix/partials/minestrixRoomTile.dart';
@@ -13,6 +12,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../utils/settings.dart';
+import '../calendar_events/calendar_events_card.dart';
 
 class RightBar extends StatelessWidget {
   const RightBar({Key? key}) : super(key: key);
