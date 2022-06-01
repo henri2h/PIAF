@@ -5,9 +5,11 @@ import 'package:minestrix_chat/helpers/storage_manager.dart';
 class Settings {
   final _calendar = "calendar";
   final _multipleFeed = "multiple_feed";
+  final _optimizedFeed = "optimized_feed";
 
   bool get multipleFeedSupport => _settings[_multipleFeed] ?? false;
   bool get calendarEventSupport => _settings[_calendar] ?? false;
+  bool get optimizedFeed => _settings[_optimizedFeed] ?? false;
 
   set calendarEventSupport(bool value) {
     _settings[_calendar] = value;
@@ -16,6 +18,11 @@ class Settings {
 
   set multipleFeedSupport(bool value) {
     _settings[_multipleFeed] = value;
+    saveData();
+  }
+
+  set optimizedFeed(bool value) {
+    _settings[_optimizedFeed] = value;
     saveData();
   }
 
