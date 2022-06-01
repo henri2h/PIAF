@@ -23,7 +23,14 @@ class _DebugPageState extends State<DebugPage> {
     Logs().w("Clearing cache");
     await client?.database?.clearCache();
     Logs().w("Sync");
-    await client?.handleSync(await client!.sync());
+
+    try {
+      await client?.handleSync(await client!
+          .sync()); // Wait long for the response, can take several dozen of minutes}
+    } catch (e, s) {
+      Logs().e("Could not sync", e, s);
+      await client?.handleSync(await client!.sync());
+    }
     Logs().w("Sync done");
   }
 
