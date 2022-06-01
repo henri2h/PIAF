@@ -37,7 +37,7 @@ class PostHeader extends StatelessWidget {
                       thumnail: true,
                       defaultIcon: Icon(Icons.person, size: 48)),
                 ),
-                if (room.type != FeedRoomType.group)
+                if (room.feedType != FeedRoomType.group)
                   Flexible(
                     child: Builder(builder: (BuildContext context) {
                       User? feedOwner =
@@ -109,7 +109,7 @@ class PostHeader extends StatelessWidget {
                       );
                     }),
                   ),
-                if (room.type == FeedRoomType.group)
+                if (room.feedType == FeedRoomType.group)
                   Flexible(
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

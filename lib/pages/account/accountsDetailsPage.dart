@@ -190,7 +190,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
           ),
         for (Room room in client.srooms.where((sroom) =>
             sroom.userID == client.userID &&
-            sroom.type == FeedRoomType.user &&
+            sroom.feedType == FeedRoomType.user &&
             (profile == null ||
                 profile.r.spaceChildren
                         .indexWhere((SpaceChild sc) => sc.roomId == sroom.id) ==
