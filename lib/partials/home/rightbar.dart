@@ -90,7 +90,8 @@ class RightBar extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (client.userRoomCreated != true)
+                        if (client.userRoomCreated != true &&
+                            client.prevBatch != null)
                           MinestrixProfileNotCreated(),
                       ],
                     );
