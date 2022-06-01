@@ -8,25 +8,25 @@ import 'package:minestrix_chat/view/room_list_page.dart';
 import 'package:minestrix_chat/view/room_page.dart';
 
 import 'pages/account/accountsDetailsPage.dart';
-import 'pages/appWrapperPage.dart';
+import 'pages/app_wrapper_page.dart';
 import 'pages/calendar_events/calendarEventPage.dart';
-import 'pages/loginPage.dart';
+import 'pages/login_page.dart';
 import 'pages/main_page.dart';
-import 'pages/matrixLoadingPage.dart';
-import 'pages/minestrix/calendarEvents/calendarEventsListPage.dart';
-import 'pages/minestrix/feedPage.dart';
-import 'pages/minestrix/friends/researchPage.dart';
-import 'pages/minestrix/groups/createGroupPage.dart';
-import 'pages/minestrix/groups/groupPage.dart';
+import 'pages/matrix_loading_page.dart';
+import 'pages/minestrix/calendar_events/calendar_events_list_page.dart';
+import 'pages/minestrix/feed_page.dart';
+import 'pages/minestrix/friends/research_page.dart';
+import 'pages/minestrix/groups/create_group_page.dart';
+import 'pages/minestrix/groups/group_page.dart';
 import 'pages/minestrix/image/post_gallery_page.dart';
-import 'pages/minestrix/user/friendsPage.dart';
-import 'pages/minestrix/user/userFriendsPage.dart';
+import 'pages/minestrix/user/friends_page.dart';
+import 'pages/minestrix/user/user_friends_page.dart';
 import 'pages/minestrix/user/user_view_page.dart';
-import 'pages/settings/settingsLabsPage.dart';
-import 'pages/settings/settingsPage.dart';
-import 'pages/settings/settingsProfilePage.dart';
-import 'pages/settings/settingsSecurityPage.dart';
-import 'pages/settings/settingsThemePage.dart';
+import 'pages/settings/settings_labs_page.dart';
+import 'pages/settings/settings_page.dart';
+import 'pages/settings/settings_profile_page.dart';
+import 'pages/settings/settings_security_page.dart';
+import 'pages/settings/settings_theme_page.dart';
 
 @AdaptiveAutoRouter(
   replaceInRouteName: 'Page,Route',
