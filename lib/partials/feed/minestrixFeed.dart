@@ -101,7 +101,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
 
   Future<void> onScroll() async {
     if (controller.position.maxScrollExtent - controller.position.pixels <
-        200) {
+        800) {
       if (!Settings().optimizedFeed) return;
 
       await requestEvents();
