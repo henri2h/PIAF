@@ -110,7 +110,7 @@ class ThemeNotifier with ChangeNotifier {
         _themeData = _blackTheme;
         break;
       default:
-        _themeData = _lightTheme;
+        _themeData = _blackTheme;
     }
 
     notifyListeners();
