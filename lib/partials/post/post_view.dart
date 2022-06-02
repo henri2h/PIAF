@@ -4,7 +4,7 @@ import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
 import 'details/post_content.dart';
-import 'details/post_eactions.dart';
+import 'details/post_reactions.dart';
 import 'details/post_header.dart';
 import 'details/post_replies.dart';
 import 'post.dart';
