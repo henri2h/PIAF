@@ -211,7 +211,8 @@ class _UserViewPageState extends State<UserViewPage> {
                                 void Function(Offset, Event) onReact) {
                               if (i == 0)
                                 return Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 16.0),
                                   child: Row(
                                     children: [
                                       Expanded(
@@ -248,6 +249,12 @@ class _UserViewPageState extends State<UserViewPage> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      if (mroom?.topic != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 8, bottom: 24.0),
+                                          child: Text(mroom!.topic),
+                                        ),
                                       StoriesList(
                                           client: client,
                                           restrict: mroom?.creatorId,

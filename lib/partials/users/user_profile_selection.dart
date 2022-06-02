@@ -64,7 +64,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                           ),
                           ConstrainedBox(
                             constraints: BoxConstraints(maxWidth: 100),
-                            child: Text(r.topic,
+                            child: Text(r.displayname,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
