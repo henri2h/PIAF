@@ -17,9 +17,9 @@ class SuggestionList extends StatelessWidget {
       builder: (context, _) =>
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         H2Title("Contacts"),
-        for (Room r in client.sfriends) MinestrixRoomTile(room: r),
+        for (Room r in client.sfriends) MinestrixRoomTileNavigator(room: r),
         H2Title("Groups"),
-        for (Room r in client.sgroups) MinestrixRoomTile(room: r),
+        for (Room r in client.sgroups) MinestrixRoomTileNavigator(room: r),
       ]),
     );
   }
