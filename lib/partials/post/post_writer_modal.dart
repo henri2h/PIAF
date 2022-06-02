@@ -40,6 +40,7 @@ class PostWriterModal extends StatelessWidget {
             onPressed: () {
               AdaptativeDialogs.show(
                   context: context,
+                  title: "Create post",
                   builder: (BuildContext) => PostEditorPage(
                       room: room != null ? [room!] : client.minestrixUserRoom));
             },
