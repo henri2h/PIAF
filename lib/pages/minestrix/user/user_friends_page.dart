@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/account/account_card.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/partials/users/userInfo.dart';
+import 'package:minestrix/partials/users/user_info.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 

@@ -27,6 +27,16 @@ class UserFriendsCard extends StatelessWidget {
         initialData: room.getParticipants(),
         builder: (context, snap) {
           if (!snap.hasData) return CircularProgressIndicator();
+
+          final usersSelection = snap.data!
+              .where((User u) =>
+                  u.membership == Membership.join &&
+                  u.id != sclient.userID &&
+                  u.id != room.userID)
+              .take(12);
+
+          // When there is no follower, hide the follower panel.
+          if (usersSelection.isEmpty) return Container();
           return Column(
             children: [
               Padding(
@@ -43,13 +53,7 @@ class UserFriendsCard extends StatelessWidget {
                 ),
               ),
               Wrap(alignment: WrapAlignment.spaceBetween, children: [
-                for (User user in snap.data!
-                    .where((User u) =>
-                        u.membership == Membership.join &&
-                        u.id != sclient.userID &&
-                        u.id != room.userID)
-                    .take(12))
-                  AccountCard(user: user),
+                for (User user in usersSelection) AccountCard(user: user),
               ]),
             ],
           );

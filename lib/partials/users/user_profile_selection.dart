@@ -55,6 +55,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                             thumnail: true,
                             defaultText: r.topic,
                             backgroundColor: Theme.of(context).primaryColor,
+                            shape: MatrixImageAvatarShape.rounded,
                             width: 45,
                             height: 45,
                           ),

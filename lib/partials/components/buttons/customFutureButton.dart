@@ -7,6 +7,7 @@ class CustomFutureButton extends StatefulWidget {
   final List<Widget> children;
   final Color? color;
   final bool expanded;
+  final EdgeInsets? padding;
 
   const CustomFutureButton(
       {Key? key,
@@ -14,6 +15,7 @@ class CustomFutureButton extends StatefulWidget {
       required this.children,
       required this.icon,
       this.expanded = true,
+      this.padding,
       this.color})
       : super(key: key);
 
@@ -27,10 +29,12 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
+        minWidth: 0,
+        padding: EdgeInsets.zero,
         child: Card(
           color: widget.color,
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: widget.padding ?? const EdgeInsets.all(14),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

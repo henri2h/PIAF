@@ -150,14 +150,9 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                   ),
                   trailing: IconButton(
                       icon: Icon(Icons.edit),
-                      onPressed: () async {
-                        await AdaptativeDialogs.show(
-                            context: context,
-                            builder: (context) => ConvSettingsCard(
-                                room: profile.r,
-                                onClose: () => Navigator.of(context).pop()),
-                            title: '');
-                      }),
+                      onPressed: () => ConvSettingsCard.show(context: context,
+                                room: profile.r)
+                      ),
                 ),
               ),
               for (SpaceChild s in profile.r.spaceChildren)
