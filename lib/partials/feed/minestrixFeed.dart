@@ -226,9 +226,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                     child: StoriesList(client: client),
                                   ),
                                   if (client.minestrixUserRoom.isNotEmpty)
-                                    PostWriterModal(
-                                        room: client.minestrixUserRoom
-                                            .first), // TODO: set the actual rom we are displaying
+                                    PostWriterModal(), // TODO: set the actual rom we are displaying
                                   FriendSuggestionsList(),
                                 ],
                               );

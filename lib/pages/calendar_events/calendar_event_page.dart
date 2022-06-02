@@ -130,7 +130,7 @@ class _CalendarEventPageState extends State<CalendarEventPage> {
                                                 context: context,
                                                 builder: ((context) => Dialog(
                                                     child: PostEditorPage(
-                                                        room: room))));
+                                                        room: [room]))));
                                           })
                                     ],
                                   )),
