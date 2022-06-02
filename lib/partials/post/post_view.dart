@@ -39,7 +39,9 @@ class PostView extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    PostHeader(event: controller.post.event!),
+                    PostHeader(
+                        eventToEdit: controller.post.event!,
+                        event: displayEvent),
                     PostContent(
                       displayEvent,
                       imageMaxHeight: 300,

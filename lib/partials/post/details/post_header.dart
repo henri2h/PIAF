@@ -11,7 +11,9 @@ import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
   final Event event;
-  const PostHeader({Key? key, required this.event}) : super(key: key);
+  final Event? eventToEdit;
+  const PostHeader({Key? key, required this.event, this.eventToEdit})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +205,9 @@ class PostHeader extends StatelessWidget {
 
                         case "edit":
                           await PostEditorPage.showEditModalAndEdit(
-                              context: context, event: event);
+                              context: context,
+                              eventToEdit: eventToEdit,
+                              event: event);
 
                           break;
                         default:
