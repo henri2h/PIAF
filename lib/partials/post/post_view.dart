@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
+import 'package:minestrix_chat/utils/events/event_extension.dart';
 
 import 'details/post_content.dart';
 import 'details/post_reactions.dart';
@@ -20,6 +22,11 @@ class PostView extends StatelessWidget {
         builder: (context, snap) {
           Timeline? t = snap.data;
 
+          final displayEvent = t != null
+              ? controller.post.event!
+                  .getDisplayEventWithType(t, MatrixTypes.post)
+              : controller.post.event!;
+
           return Card(
             key: key,
             shape: RoundedRectangleBorder(
@@ -34,7 +41,7 @@ class PostView extends StatelessWidget {
                   children: [
                     PostHeader(event: controller.post.event!),
                     PostContent(
-                      controller.post.event!,
+                      displayEvent,
                       imageMaxHeight: 300,
                     ),
                     Padding(
