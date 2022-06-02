@@ -18,14 +18,22 @@ class PostWriterModal extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
       child: Row(
         children: [
-          MatrixImageAvatar(
-              client: client,
-              url: room?.creator?.avatarUrl,
-              height: 48,
-              width: 48,
-              defaultText: room?.creator?.displayName ?? client.userID,
-              backgroundColor: Theme.of(context).primaryColor,
-              thumnail: true),
+          FutureBuilder<Profile>(
+              future: room == null
+                  ? client.getProfileFromUserId(client.userID!)
+                  : null,
+              builder: (context, snap) {
+                return MatrixImageAvatar(
+                    client: client,
+                    url: room?.creator?.avatarUrl ?? snap.data?.avatarUrl,
+                    height: 48,
+                    width: 48,
+                    defaultText: room?.creator?.displayName ??
+                        snap.data?.displayName ??
+                        client.userID,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    thumnail: true);
+              }),
           SizedBox(width: 20),
           Expanded(
               child: FakeTextField(
@@ -36,7 +44,7 @@ class PostWriterModal extends StatelessWidget {
                       room: room != null ? [room!] : client.minestrixUserRoom));
             },
             icon: Icons.edit,
-            text: "Write a post on " + (room?.name ?? ""),
+            text: "Write a post on " + (room?.name ?? "your timeline"),
           )),
         ],
       ),
