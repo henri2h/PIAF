@@ -5,7 +5,6 @@ import 'package:minestrix_chat/partials/components/fake_text_field.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class PostWriterModal extends StatelessWidget {
@@ -19,18 +18,14 @@ class PostWriterModal extends StatelessWidget {
       child: Row(
         children: [
           FutureBuilder<Profile>(
-              future: room == null
-                  ? client.getProfileFromUserId(client.userID!)
-                  : null,
+              future: client.getProfileFromUserId(client.userID!),
               builder: (context, snap) {
                 return MatrixImageAvatar(
                     client: client,
-                    url: room?.creator?.avatarUrl ?? snap.data?.avatarUrl,
+                    url: snap.data?.avatarUrl,
                     height: 48,
                     width: 48,
-                    defaultText: room?.creator?.displayName ??
-                        snap.data?.displayName ??
-                        client.userID,
+                    defaultText: snap.data?.displayName ?? client.userID,
                     backgroundColor: Theme.of(context).primaryColor,
                     thumnail: true);
               }),
