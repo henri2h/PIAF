@@ -1,15 +1,12 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
-
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
-
 import 'package:minestrix/utils/minestrix/minestrixRoom.dart';
+import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class ContactView extends StatelessWidget {
   const ContactView({
@@ -81,8 +78,8 @@ class ContactView extends StatelessWidget {
   }
 }
 
-class MinestrixRoomTile extends StatelessWidget {
-  const MinestrixRoomTile({
+class MinestrixRoomTileNavigator extends StatelessWidget {
+  const MinestrixRoomTileNavigator({
     Key? key,
     required this.room,
   }) : super(key: key);
@@ -90,68 +87,18 @@ class MinestrixRoomTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Client? client = Matrix.of(context).client;
-
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
-          if (room.type == FeedRoomType.group) {
+          if (room.feedType == FeedRoomType.group) {
             await context.navigateTo(GroupRoute(room: room));
           } else {
             context.navigateTo(UserViewRoute(mroom: room));
           }
         },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Flexible(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      MatrixImageAvatar(
-                        url: room.creator?.avatarUrl,
-                        fit: true,
-                        defaultText: room.name,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        thumnail: true,
-                        width: 46,
-                        height: 46,
-                        client: client,
-                      ),
-                      Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0, vertical: 2),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(room.name,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                                Text(
-                                  room.topic,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(),
-                                )
-                              ]),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (room.encrypted)
-                  Icon(Icons.verified_user,
-                      color: Theme.of(context).textTheme.bodyText1!.color),
-                if (!room.encrypted)
-                  Icon(Icons.no_encryption,
-                      color: Theme.of(context).textTheme.bodyText1!.color)
-              ]),
-        ),
+        child: MinestrixRoomTile(room: room),
       ),
     );
   }

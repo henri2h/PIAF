@@ -2,15 +2,18 @@ import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
   final Event event;
-  const PostHeader({Key? key, required this.event}) : super(key: key);
+  final Event? eventToEdit;
+  const PostHeader({Key? key, required this.event, this.eventToEdit})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +40,7 @@ class PostHeader extends StatelessWidget {
                       thumnail: true,
                       defaultIcon: Icon(Icons.person, size: 48)),
                 ),
-                if (room.type != FeedRoomType.group)
+                if (room.feedType != FeedRoomType.group)
                   Flexible(
                     child: Builder(builder: (BuildContext context) {
                       User? feedOwner =
@@ -109,7 +112,7 @@ class PostHeader extends StatelessWidget {
                       );
                     }),
                   ),
-                if (room.type == FeedRoomType.group)
+                if (room.feedType == FeedRoomType.group)
                   Flexible(
                       child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +174,7 @@ class PostHeader extends StatelessWidget {
               children: [
                 PopupMenuButton<String>(
                     itemBuilder: (_) => [
-                          /*if (event!.canRedact)
+                          if (event.canRedact)
                             PopupMenuItem(
                                 child: Row(
                                   children: [
@@ -180,8 +183,8 @@ class PostHeader extends StatelessWidget {
                                     Text("Edit post"),
                                   ],
                                 ),
-                                value: "edit"),*/ // TODO : implement post editing
-                          if (event.canRedact)
+                                value: "edit"),
+                          if (event.canRedact && event.type == MatrixTypes.post)
                             PopupMenuItem(
                                 child: Row(
                                   children: [
@@ -198,6 +201,14 @@ class PostHeader extends StatelessWidget {
                       switch (action) {
                         case "delete":
                           await event.redactEvent();
+                          break;
+
+                        case "edit":
+                          await PostEditorPage.showEditModalAndEdit(
+                              context: context,
+                              eventToEdit: eventToEdit,
+                              event: event);
+
                           break;
                         default:
                       }

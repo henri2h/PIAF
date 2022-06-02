@@ -10,25 +10,35 @@ class MinestrixProfileNotCreated extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  Future<bool> getRoomStatus(Client client) async {
+    await client.roomsLoading;
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    Client? sclient = Matrix.of(context).client;
+    final sclient = Matrix.of(context).client;
 
-    return CustomFutureButton(
-        icon: Icon(Icons.skateboarding_outlined,
-            color: Theme.of(context).colorScheme.onPrimary),
-        color: Theme.of(context).primaryColor,
-        children: [
-          Text("Create your account",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Theme.of(context).colorScheme.onPrimary)),
-          Text("No profile was found",
-              style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onPrimary)),
-        ],
-        onPressed: sclient.createSMatrixUserProfile);
+    return FutureBuilder(
+        future: getRoomStatus(sclient),
+        builder: (context, snap) {
+          if (!snap.hasData) return Container();
+          return CustomFutureButton(
+              icon: Icon(Icons.skateboarding_outlined,
+                  color: Theme.of(context).colorScheme.onPrimary),
+              color: Theme.of(context).primaryColor,
+              children: [
+                Text("Create your account",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.onPrimary)),
+                Text("No profile was found",
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onPrimary)),
+              ],
+              onPressed: sclient.createSMatrixUserProfile);
+        });
   }
 }

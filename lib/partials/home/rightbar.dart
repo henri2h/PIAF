@@ -52,13 +52,13 @@ class RightBar extends StatelessWidget {
                                 if (i <= sfriends.length) {
                                   return Padding(
                                     padding: const EdgeInsets.all(2.0),
-                                    child: MinestrixRoomTile(
+                                    child: MinestrixRoomTileNavigator(
                                         room: sfriends[i - 1]),
                                   );
                                 } else {
                                   return Padding(
                                     padding: const EdgeInsets.all(2.0),
-                                    child: MinestrixRoomTile(
+                                    child: MinestrixRoomTileNavigator(
                                         room: sgroups[i - 2 - sfriends.length]),
                                   );
                                 }
@@ -90,7 +90,8 @@ class RightBar extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (client.userRoomCreated != true)
+                        if (client.userRoomCreated != true &&
+                            client.prevBatch != null)
                           MinestrixProfileNotCreated(),
                       ],
                     );

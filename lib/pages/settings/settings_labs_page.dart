@@ -34,10 +34,11 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
                 children: [
                   Text(
                       "Want to share post with a subset of you friends ? Then multiple feed support is the solution."),
-                  InfoBadge(text: "Not ready"),
+                  InfoBadge(text: "WIP"),
                   InfoBadge(color: Colors.blue, text: "UI")
                 ],
               )),
+          SizedBox(height: 8),
           SwitchListTile(
               value: Settings().calendarEventSupport,
               onChanged: (value) {
@@ -51,8 +52,28 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
                 children: [
                   Text("Allow creating calendar events."),
                   InfoBadge(
+                    text: "WIP",
+                  ),
+                  InfoBadge(
                     text: "Read only",
                   )
+                ],
+              )),
+          SizedBox(height: 8),
+          SwitchListTile(
+              value: Settings().optimizedFeed,
+              onChanged: (value) {
+                Settings().optimizedFeed = value;
+                setState(() {});
+              },
+              secondary: Icon(Icons.list),
+              title: Text("Optimized feed"),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Restart to reload the feed correctly"),
+                  InfoBadge(text: "WIP"),
+                  InfoBadge(text: "Need restart", color: Colors.orange),
                 ],
               ))
         ],
