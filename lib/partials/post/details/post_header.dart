@@ -5,6 +5,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -43,8 +44,7 @@ class PostHeader extends StatelessWidget {
                 if (room.feedType != FeedRoomType.group)
                   Flexible(
                     child: Builder(builder: (BuildContext context) {
-                      User? feedOwner =
-                          event.room.getState("m.room.create")?.sender;
+                      User? feedOwner = event.room.creator;
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +60,7 @@ class PostHeader extends StatelessWidget {
                                         .color),
                                 onPressed: () {
                                   context.navigateTo(
-                                      UserViewRoute(userID: event.senderId));
+                                      UserViewRoute(mroom: event.room));
                                 },
                                 child: Text(
                                     (event.sender.displayName ??
