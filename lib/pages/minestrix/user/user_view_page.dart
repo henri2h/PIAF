@@ -21,7 +21,6 @@ import 'package:minestrix_chat/view/room_page.dart';
 
 import '../../../partials/components/buttons/customFutureButton.dart';
 import '../../../partials/components/layouts/customHeader.dart';
-import '../../../partials/components/minesTrix/MinesTrixTitle.dart';
 import '../../../router.gr.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
@@ -48,17 +47,22 @@ class _UserViewPageState extends State<UserViewPage> {
   Room? mroom;
 
   // getter
-  String? get userId => _userId ?? mroom?.creatorId;
+  String? get userId => mroom?.creatorId ?? _userId;
 
   // status
   bool _requestingHistory = false;
-  Future<Timeline>? futureTimeline;
 
-  Future<Timeline> getTimeline(Room room) async {
-    final t = await room.getTimeline();
+  Timeline? timeline;
+  Future<Timeline?> getTimeline() async {
+    if (timeline != null && timeline?.room == mroom) return timeline!;
+    final t = await mroom?.getTimeline();
+
+    if (t == null) return null;
+
     while (getEvents(t).length < 3 && t.canRequestHistory) {
       await t.requestHistory();
     }
+    timeline = t;
     return t;
   }
 
@@ -74,10 +78,6 @@ class _UserViewPageState extends State<UserViewPage> {
     // fallback
     if (userId == null && mroom == null && client.minestrixUserRoom.isNotEmpty)
       mroom = client.minestrixUserRoom.first;
-
-    if (mroom != null) {
-      futureTimeline = getTimeline(mroom!);
-    }
   }
 
   @override
@@ -114,8 +114,7 @@ class _UserViewPageState extends State<UserViewPage> {
         setState(() {
           _requestingHistory = true;
         });
-        print("[ userFeedPage ] : update from scroll");
-        await (await futureTimeline)?.requestHistory();
+        await timeline?.requestHistory();
         setState(() {
           _requestingHistory = false;
         });
@@ -123,7 +122,12 @@ class _UserViewPageState extends State<UserViewPage> {
     }
   }
 
-  void editRoom() {}
+  void selectRoom(Room r) {
+    if (mroom == r) return;
+    timeline = null;
+    mroom = r;
+    setState(() {});
+  }
 
   List<Event> getEvents(Timeline timeline) =>
       client.getSRoomFilteredEvents(timeline, eventTypesFilter: [
@@ -142,20 +146,18 @@ class _UserViewPageState extends State<UserViewPage> {
         .firstWhereOrNull(
             (User u) => (u.id == userId)); // check if the user is following us
 
-    return FutureBuilder<Timeline>(
-        future: futureTimeline,
+    return FutureBuilder<Timeline?>(
+        future: getTimeline(),
         builder: (context, snapshot) {
           Timeline? timeline = snapshot.data;
 
-          List<Event> events = [];
-          if (timeline != null) events = getEvents(timeline);
-
+          List<Event> events = timeline != null ? getEvents(timeline) : [];
           bool canRequestHistory = timeline?.canRequestHistory == true;
-
           bool isUserPage = mroom?.creatorId == client.userID;
 
           return LayoutBuilder(builder: (context, constraints) {
             return ListView(
+              controller: _controller,
               children: [
                 CustomHeader(
                     child: isUserPage
@@ -187,11 +189,7 @@ class _UserViewPageState extends State<UserViewPage> {
                           children: [
                             UserProfileSelection(
                                 userId: userId!,
-                                onRoomSelected: (Room r) {
-                                  setState(() {
-                                    mroom = r;
-                                  });
-                                },
+                                onRoomSelected: selectRoom,
                                 roomSelectedId: mroom?.id),
                             Padding(
                                 padding: const EdgeInsets.all(15),
@@ -204,7 +202,6 @@ class _UserViewPageState extends State<UserViewPage> {
                         constraints: BoxConstraints(maxWidth: 680),
                         child: CustomListViewWithEmoji(
                             key: Key(mroom?.id ?? "room"),
-                            controller: _controller,
                             itemCount:
                                 events.length + 2 + (canRequestHistory ? 1 : 0),
                             itemBuilder: (context, i,
@@ -272,6 +269,7 @@ class _UserViewPageState extends State<UserViewPage> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 2, horizontal: 12),
                                       child: Post(
+                                          key: Key(events[i - 2].eventId),
                                           event: events[i - 2],
                                           onReact: (Offset e) =>
                                               onReact(e, events[i - 2])));
