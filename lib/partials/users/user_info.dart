@@ -14,6 +14,16 @@ class UserInfo extends StatelessWidget {
   final Profile? profile;
   final Room? room;
 
+  BoxDecoration noImageBoxDecoration(BuildContext context) => BoxDecoration(
+          gradient: LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [
+          Theme.of(context).primaryColor,
+          Colors.grey.shade800,
+        ],
+      ));
+
   @override
   Widget build(BuildContext context) {
     Client sclient = Matrix.of(context).client;
@@ -31,15 +41,23 @@ class UserInfo extends StatelessWidget {
         LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
           // small screens
-          if (constraints.maxWidth < 800 || room?.avatar == null)
+          if (constraints.maxWidth < 800)
             return Stack(
               alignment: Alignment.bottomCenter,
               children: [
-                if (roomUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 180),
-                    child: CachedNetworkImage(imageUrl: roomUrl),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 180),
+                  child: roomUrl != null
+                      ? CachedNetworkImage(imageUrl: roomUrl)
+                      : Container(
+                          decoration: noImageBoxDecoration(context),
+                          child: SizedBox(
+                            height: 300,
+                            child: Row(
+                              children: [],
+                            ),
+                          )),
+                ),
                 UserAvatar(
                   p: p,
                 ),
@@ -54,7 +72,7 @@ class UserInfo extends StatelessWidget {
                           image: CachedNetworkImageProvider(roomUrl),
                           fit: BoxFit.cover),
                     )
-                  : null,
+                  : noImageBoxDecoration(context),
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 60.0, horizontal: 20),
