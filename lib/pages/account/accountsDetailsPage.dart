@@ -150,9 +150,8 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                   ),
                   trailing: IconButton(
                       icon: Icon(Icons.edit),
-                      onPressed: () => ConvSettingsCard.show(context: context,
-                                room: profile.r)
-                      ),
+                      onPressed: () => ConvSettingsCard.show(
+                          context: context, room: profile.r)),
                 ),
               ),
               for (SpaceChild s in profile.r.spaceChildren)

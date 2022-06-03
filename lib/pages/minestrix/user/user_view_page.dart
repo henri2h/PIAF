@@ -159,25 +159,34 @@ class _UserViewPageState extends State<UserViewPage> {
             return ListView(
               controller: _controller,
               children: [
-                CustomHeader(
-                    child: isUserPage
-                        ? ClientChooser(onUpdate: () {
-                            resetView(); // we need to discard the previous data
-                            init();
+                Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 1020),
+                    child: Column(
+                      children: [
+                        CustomHeader(
+                            child: isUserPage
+                                ? ClientChooser(onUpdate: () {
+                                    resetView(); // we need to discard the previous data
+                                    init();
 
-                            setState(() {});
-                          })
-                        : null,
-                    title: isUserPage ? null : "User Feed",
-                    actionButton: [
-                      if (isUserPage)
-                        IconButton(
-                            icon: Icon(Icons.settings),
-                            onPressed: () {
-                              context.navigateTo(SettingsRoute());
-                            }),
-                    ]),
-                if (mroom != null) UserInfo(room: mroom),
+                                    setState(() {});
+                                  })
+                                : null,
+                            title: isUserPage ? null : "User Feed",
+                            actionButton: [
+                              if (isUserPage)
+                                IconButton(
+                                    icon: Icon(Icons.settings),
+                                    onPressed: () {
+                                      context.navigateTo(SettingsRoute());
+                                    }),
+                            ]),
+                        if (mroom != null) UserInfo(room: mroom),
+                      ],
+                    ),
+                  ),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,

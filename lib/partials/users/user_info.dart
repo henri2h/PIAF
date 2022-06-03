@@ -14,15 +14,14 @@ class UserInfo extends StatelessWidget {
   final Profile? profile;
   final Room? room;
 
-  BoxDecoration noImageBoxDecoration(BuildContext context) => BoxDecoration(
-          gradient: LinearGradient(
+  Gradient noImageBoxDecoration(BuildContext context) => LinearGradient(
         begin: Alignment.topRight,
         end: Alignment.bottomLeft,
         colors: [
           Theme.of(context).primaryColor,
           Colors.grey.shade800,
         ],
-      ));
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -40,46 +39,27 @@ class UserInfo extends StatelessWidget {
       children: [
         LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
-          // small screens
-          if (constraints.maxWidth < 800)
-            return Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 180),
-                  child: roomUrl != null
-                      ? CachedNetworkImage(imageUrl: roomUrl)
-                      : Container(
-                          decoration: noImageBoxDecoration(context),
-                          child: SizedBox(
-                            height: 300,
-                            child: Row(
-                              children: [],
-                            ),
-                          )),
-                ),
-                UserAvatar(
-                  p: p,
-                ),
-              ],
-            );
+          final smallScreen = constraints.maxWidth < 800;
 
           // big screens
           return Container(
-              decoration: roomUrl != null
-                  ? BoxDecoration(
-                      image: DecorationImage(
-                          image: CachedNetworkImageProvider(roomUrl),
-                          fit: BoxFit.cover),
-                    )
-                  : noImageBoxDecoration(context),
+              decoration: BoxDecoration(
+                borderRadius: smallScreen ? null : BorderRadius.circular(8),
+                image: roomUrl != null
+                    ? DecorationImage(
+                        image: CachedNetworkImageProvider(roomUrl),
+                        fit: BoxFit.cover)
+                    : null,
+                gradient:
+                    roomUrl != null ? null : noImageBoxDecoration(context),
+              ),
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 60.0, horizontal: 20),
                 child: Align(
-                    alignment: p.avatarUrl != null
-                        ? Alignment.centerLeft
-                        : Alignment.center,
+                    alignment: smallScreen
+                        ? Alignment.bottomCenter
+                        : Alignment.centerLeft,
                     child: UserAvatar(p: p)),
               ));
         }),
