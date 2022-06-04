@@ -30,13 +30,14 @@ class SettingsPageState extends State<SettingsPage> {
     return Provider(
       create: (_) => this,
       child: LayoutBuilder(builder: (context, constraints) {
-        smallScreen = constraints.maxWidth < 900;
+        smallScreen = constraints.maxWidth < 800;
         return Row(
           children: [
             if (!smallScreen)
               ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 400),
-                child: Card(
+                constraints: BoxConstraints(maxWidth: 360),
+                child: Container(
+                  color: Theme.of(context).cardColor,
                   child: SettingsPanel(),
                 ),
               ),
