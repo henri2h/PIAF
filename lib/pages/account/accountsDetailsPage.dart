@@ -83,8 +83,12 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                     value: hasBeenAdded,
                     title: Column(
                       children: [
-                        RoomProfileListTile(room,
-                            onLeave: () => setState(() {})),
+                        RoomProfileListTile(room, onLeave: () async {
+                          if (hasBeenAdded) {
+                            await profile?.r.removeSpaceChild(room.id);
+                          }
+                          setState(() {});
+                        }),
                       ],
                     ),
                   );
@@ -110,7 +114,11 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: CustomTextFutureButton(
-                            onPressed: client.createPublicMinestrixProfile,
+                            onPressed: () async {
+                              final roomId =
+                                  await client.createPrivateMinestrixProfile();
+                              await profile?.r.setSpaceChild(roomId);
+                            },
                             text: "Create a private MinesTRIX room",
                             expanded: false,
                             icon: Icon(Icons.person_add)),
@@ -119,7 +127,11 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: CustomTextFutureButton(
-                            onPressed: client.createPublicMinestrixProfile,
+                            onPressed: () async {
+                              final roomId =
+                                  await client.createPublicMinestrixProfile();
+                              await profile?.r.setSpaceChild(roomId);
+                            },
                             text: "Create a public MinesTRIX room",
                             expanded: false,
                             icon: Icon(Icons.public)),
@@ -271,28 +283,20 @@ class NoProfileSpaceFound extends StatelessWidget {
   }
 }
 
-class RoomProfileListTile extends StatefulWidget {
+class RoomProfileListTile extends StatelessWidget {
   const RoomProfileListTile(this.r, {Key? key, required this.onLeave})
       : super(key: key);
   final Room r;
   final VoidCallback onLeave;
-  @override
-  _RoomProfileListTileState createState() => _RoomProfileListTileState();
-}
-
-class _RoomProfileListTileState extends State<RoomProfileListTile> {
-  bool _updating = false;
 
   @override
   Widget build(BuildContext context) {
-    Room r = widget.r;
     return ListTile(
         title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text((r.name), style: TextStyle(fontWeight: FontWeight.bold))
             ]),
-        leading: _updating ? CircularProgressIndicator() : null,
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -307,6 +311,14 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
                   Icon(Icons.person),
                   SizedBox(width: 10),
                   Text("Private"),
+                ],
+              ),
+            if (r.joinRules == JoinRules.knock)
+              Row(
+                children: [
+                  Icon(Icons.person),
+                  SizedBox(width: 10),
+                  Text("Knock"),
                 ],
               ),
             if (r.joinRules == JoinRules.public)
@@ -364,33 +376,23 @@ class _RoomProfileListTileState extends State<RoomProfileListTile> {
                       value: "leave")
                 ],
             icon: Icon(Icons.more_horiz),
-            onSelected: _updating
-                ? null
-                : (String action) async {
-                    switch (action) {
-                      case "settings":
-                        await showDialog(
-                            context: context,
-                            builder: (context) => Dialog(
-                                child: ConvSettingsCard(
-                                    room: r,
-                                    onClose: () =>
-                                        Navigator.of(context).pop())));
-                        break;
-                      case "leave":
-                        setState(() {
-                          _updating = true;
-                        });
-                        await r.leave();
-
-                        setState(() {
-                          _updating = false;
-                        });
-                        widget.onLeave();
-                        break;
-                      default:
-                    }
-                  }),
+            onSelected: (String action) async {
+              switch (action) {
+                case "settings":
+                  await showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                          child: ConvSettingsCard(
+                              room: r,
+                              onClose: () => Navigator.of(context).pop())));
+                  break;
+                case "leave":
+                  await r.leave();
+                  onLeave();
+                  break;
+                default:
+              }
+            }),
         onTap: () {
           context.navigateTo(UserViewRoute(mroom: r));
         });
