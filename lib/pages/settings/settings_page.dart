@@ -1,17 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-
-import 'package:minestrix/pages/account/accountsDetailsPage.dart';
-import 'package:minestrix/pages/debug_page.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
-
+import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {

@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/minestrix/user/unknown_user.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
 import 'package:minestrix/partials/users/user_friends_card.dart';
@@ -12,16 +11,14 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/view/room_list_page.dart';
-import 'package:minestrix_chat/view/room_page.dart';
 
-import '../../../partials/components/buttons/customFutureButton.dart';
 import '../../../partials/components/layouts/customHeader.dart';
+import '../../../partials/minestrixTitle.dart';
 import '../../../router.gr.dart';
+import 'follow_button.dart';
+import 'message_button.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display
@@ -43,7 +40,7 @@ class _UserViewPageState extends State<UserViewPage> {
 
   String? _userId;
 
-  Room? mroom;
+  RoomWithSpace? mroom;
 
   // getter
   String? get userId => mroom?.creatorId ?? _userId;
@@ -54,7 +51,7 @@ class _UserViewPageState extends State<UserViewPage> {
   Timeline? timeline;
   Future<Timeline?> getTimeline() async {
     if (timeline != null && timeline?.room == mroom) return timeline!;
-    final t = await mroom?.getTimeline();
+    final t = await mroom?.room?.getTimeline();
 
     if (t == null) return null;
 
@@ -65,18 +62,26 @@ class _UserViewPageState extends State<UserViewPage> {
     return t;
   }
 
+  void setRoom(Room? room) {
+    if (room != null) {
+      mroom = RoomWithSpace(room: room);
+    } else {
+      mroom = null;
+    }
+  }
+
   void init() {
     final client = Matrix.of(context).client;
 
     if (mroom == null &&
         userId != null &&
         client.sroomsByUserId[userId!]?.isNotEmpty == true) {
-      mroom = client.sroomsByUserId[userId!]?.first;
+      setRoom(client.sroomsByUserId[userId!]?.first);
     }
 
     // fallback
     if (userId == null && mroom == null && client.minestrixUserRoom.isNotEmpty)
-      mroom = client.minestrixUserRoom.first;
+      setRoom(client.minestrixUserRoom.first);
 
     if (userId == null) {
       _userId = client.userID;
@@ -88,8 +93,7 @@ class _UserViewPageState extends State<UserViewPage> {
     super.initState();
 
     _controller.addListener(scrollListener);
-
-    mroom ??= widget.mroom;
+    if (mroom == null) setRoom(widget.mroom);
     _userId ??= widget.userID;
 
     init();
@@ -122,7 +126,7 @@ class _UserViewPageState extends State<UserViewPage> {
     }
   }
 
-  void selectRoom(Room r) {
+  void selectRoom(RoomWithSpace? r) {
     if (mroom == r) return;
     timeline = null;
     mroom = r;
@@ -205,7 +209,8 @@ class _UserViewPageState extends State<UserViewPage> {
                                                 }),
                                         ]),
                                     UserInfo(
-                                        room: mroom, profile: snapProfile.data),
+                                        room: mroom?.room,
+                                        profile: snapProfile.data),
                                   ],
                                 ),
                               ),
@@ -224,11 +229,11 @@ class _UserViewPageState extends State<UserViewPage> {
                                               userId: userId!,
                                               onRoomSelected: selectRoom,
                                               roomSelectedId: mroom?.id),
-                                        if (mroom != null)
+                                        if (mroom?.room != null)
                                           Padding(
                                               padding: const EdgeInsets.all(15),
                                               child: UserFriendsCard(
-                                                  room: mroom!)),
+                                                  room: mroom!.room!)),
                                       ],
                                     ),
                                   ),
@@ -254,7 +259,7 @@ class _UserViewPageState extends State<UserViewPage> {
                                                   Expanded(
                                                       child: Text(
                                                           mroom?.displayname ??
-                                                              'No profile found',
+                                                              '',
                                                           maxLines: 1,
                                                           style: TextStyle(
                                                               fontSize: 24,
@@ -270,11 +275,14 @@ class _UserViewPageState extends State<UserViewPage> {
                                                               ConvSettingsCard.show(
                                                                   context:
                                                                       context,
-                                                                  room: mroom!))
+                                                                  room: mroom!
+                                                                      .room!))
                                                       : Row(
                                                           children: [
                                                             if (mroom != null)
-                                                              FollowingIndicator(),
+                                                              FollowingIndicator(
+                                                                room: mroom!,
+                                                              ),
                                                             if (userId !=
                                                                     null &&
                                                                 userId !=
@@ -315,7 +323,7 @@ class _UserViewPageState extends State<UserViewPage> {
                                                         const EdgeInsets.all(
                                                             8.0),
                                                     child: PostWriterModal(
-                                                        room: mroom),
+                                                        room: mroom?.room),
                                                   )
                                                 ],
                                               );
@@ -368,8 +376,8 @@ class _UserViewPageState extends State<UserViewPage> {
                                                         _requestingHistory =
                                                             true;
                                                       });
-                                                      await mroom!
-                                                          .requestHistory();
+                                                      await mroom?.room
+                                                          ?.requestHistory();
                                                       setState(() {
                                                         _requestingHistory =
                                                             false;
@@ -377,11 +385,11 @@ class _UserViewPageState extends State<UserViewPage> {
                                                     }
                                                   }),
                                             );
+                                          } else if (mroom != null) {
+                                            return MinestrixTitle();
+                                            // Room
                                           } else {
-                                            return UnknownUser(
-                                                user_in: user_in,
-                                                client: client,
-                                                userId: userId);
+                                            return MinestrixTitle();
                                           }
                                         }),
                                   ),
@@ -393,51 +401,6 @@ class _UserViewPageState extends State<UserViewPage> {
                       });
                     });
               });
-        });
-  }
-}
-
-class FollowingIndicator extends StatelessWidget {
-  const FollowingIndicator({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomFutureButton(
-        expanded: false,
-        color: Theme.of(context).primaryColor,
-        padding: EdgeInsets.all(6),
-        icon:
-            Icon(Icons.person, color: Theme.of(context).colorScheme.onPrimary),
-        onPressed: null,
-        children: [
-          Text("Following",
-              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))
-        ]);
-  }
-}
-
-class MessageButton extends StatelessWidget {
-  final String userId;
-  const MessageButton({Key? key, required this.userId}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final client = Matrix.of(context).client;
-    return CustomFutureButton(
-        icon: Icon(Icons.message),
-        children: [Text("Message")],
-        padding: EdgeInsets.all(6),
-        expanded: false,
-        onPressed: () async {
-          String? roomId = await client.startDirectChat(userId);
-          AdaptativeDialogs.show(
-              context: context,
-              builder: (BuildContext context) => RoomPage(
-                  roomId: roomId,
-                  client: client,
-                  onBack: () => context.popRoute()));
         });
   }
 }
