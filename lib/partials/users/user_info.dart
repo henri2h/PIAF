@@ -7,9 +7,7 @@ import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class UserInfo extends StatelessWidget {
-  const UserInfo({Key? key, this.room, this.profile})
-      : assert(profile != null || room != null),
-        super(key: key);
+  const UserInfo({Key? key, this.room, this.profile}) : super(key: key);
 
   final Profile? profile;
   final Room? room;
@@ -30,10 +28,11 @@ class UserInfo extends StatelessWidget {
         ?.getThumbnail(sclient,
             width: 1000, height: 800, method: ThumbnailMethod.scale)
         .toString();
-    User? u = room?.creator;
-    Profile p = profile ??
-        Profile(
-            userId: u!.id, displayName: u.displayName, avatarUrl: u.avatarUrl);
+    final u = room?.creator;
+    final p = (u != null
+        ? Profile(
+            userId: u.id, displayName: u.displayName, avatarUrl: u.avatarUrl)
+        : (profile ?? Profile(userId: 'fake user')));
 
     return Column(
       children: [

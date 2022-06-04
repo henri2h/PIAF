@@ -39,7 +39,6 @@ class UserViewPage extends StatefulWidget {
 }
 
 class _UserViewPageState extends State<UserViewPage> {
-  late Client client;
   ScrollController _controller = new ScrollController();
 
   String? _userId;
@@ -67,17 +66,21 @@ class _UserViewPageState extends State<UserViewPage> {
   }
 
   void init() {
-    mroom ??= widget.mroom;
+    final client = Matrix.of(context).client;
 
-    Client client = Matrix.of(context).client;
-
-    if (mroom == null && userId != null) {
+    if (mroom == null &&
+        userId != null &&
+        client.sroomsByUserId[userId!]?.isNotEmpty == true) {
       mroom = client.sroomsByUserId[userId!]?.first;
     }
 
     // fallback
     if (userId == null && mroom == null && client.minestrixUserRoom.isNotEmpty)
       mroom = client.minestrixUserRoom.first;
+
+    if (userId == null) {
+      _userId = client.userID;
+    }
   }
 
   @override
@@ -86,11 +89,8 @@ class _UserViewPageState extends State<UserViewPage> {
 
     _controller.addListener(scrollListener);
 
-    client = Matrix.of(context).client;
-
-    if (widget.userID != client.userID)
-      _userId = widget
-          .userID; // only store the userId if a different user than the one currently logged in. So if we want to change the currently logged user, we can change the user displayed.
+    mroom ??= widget.mroom;
+    _userId ??= widget.userID;
 
     init();
   }
@@ -130,7 +130,7 @@ class _UserViewPageState extends State<UserViewPage> {
   }
 
   List<Event> getEvents(Timeline timeline) =>
-      client.getSRoomFilteredEvents(timeline, eventTypesFilter: [
+      timeline.room.client.getSRoomFilteredEvents(timeline, eventTypesFilter: [
         MatrixTypes.post,
         EventTypes.Encrypted,
         EventTypes.RoomCreate
@@ -138,7 +138,7 @@ class _UserViewPageState extends State<UserViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    Client client = Matrix.of(context).client;
+    final client = Matrix.of(context).client;
 
     // TODO: support for mulitple feeds
     User? user_in = client.minestrixUserRoom.firstOrNull
@@ -153,183 +153,201 @@ class _UserViewPageState extends State<UserViewPage> {
 
           List<Event> events = timeline != null ? getEvents(timeline) : [];
           bool canRequestHistory = timeline?.canRequestHistory == true;
-          bool isUserPage = mroom?.creatorId == client.userID;
+          bool isUserPage = userId == client.userID;
 
-          return LayoutBuilder(builder: (context, constraints) {
-            return ListView(
-              controller: _controller,
-              children: [
-                Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 1020),
-                    child: Column(
-                      children: [
-                        CustomHeader(
-                            child: isUserPage
-                                ? ClientChooser(onUpdate: () {
-                                    resetView(); // we need to discard the previous data
-                                    init();
+          return FutureBuilder<Profile>(
+              future:
+                  userId != null ? client.getProfileFromUserId(userId!) : null,
+              builder: (context, snapProfile) {
+                return LayoutBuilder(builder: (context, constraints) {
+                  return ListView(
+                    controller: _controller,
+                    children: [
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 1020),
+                          child: Column(
+                            children: [
+                              CustomHeader(
+                                  child: isUserPage
+                                      ? ClientChooser(onUpdate: () {
+                                          resetView(); // we need to discard the previous data
+                                          final client =
+                                              Matrix.of(context).client;
+                                          _userId = client.userID;
+                                          init();
 
-                                    setState(() {});
-                                  })
-                                : null,
-                            title: isUserPage ? null : "User Feed",
-                            actionButton: [
-                              if (isUserPage)
-                                IconButton(
-                                    icon: Icon(Icons.settings),
-                                    onPressed: () {
-                                      context.navigateTo(SettingsRoute());
-                                    }),
-                            ]),
-                        if (mroom != null) UserInfo(room: mroom),
-                      ],
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (constraints.maxWidth > 900 && mroom != null)
-                      SizedBox(
-                        width: 300,
-                        child: Column(
-                          children: [
-                            UserProfileSelection(
-                                userId: userId!,
-                                onRoomSelected: selectRoom,
-                                roomSelectedId: mroom?.id),
-                            Padding(
-                                padding: const EdgeInsets.all(15),
-                                child: UserFriendsCard(room: mroom!)),
-                          ],
+                                          setState(() {});
+                                        })
+                                      : null,
+                                  title: isUserPage ? null : "User Feed",
+                                  actionButton: [
+                                    if (isUserPage)
+                                      IconButton(
+                                          icon: Icon(Icons.settings),
+                                          onPressed: () {
+                                            context.navigateTo(SettingsRoute());
+                                          }),
+                                  ]),
+                              UserInfo(room: mroom, profile: snapProfile.data),
+                            ],
+                          ),
                         ),
                       ),
-                    Flexible(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 680),
-                        child: CustomListViewWithEmoji(
-                            key: Key(mroom?.id ?? "room"),
-                            itemCount:
-                                events.length + 2 + (canRequestHistory ? 1 : 0),
-                            itemBuilder: (context, i,
-                                void Function(Offset, Event) onReact) {
-                              if (i == 0)
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 16.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                          child: Text(mroom?.displayname ?? '',
-                                              maxLines: 1,
-                                              style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontWeight:
-                                                      FontWeight.w600))),
-                                      if (mroom != null)
-                                        mroom!.creatorId == client.userID
-                                            ? IconButton(
-                                                icon: Icon(Icons.edit),
-                                                onPressed: () =>
-                                                    ConvSettingsCard.show(
-                                                        context: context,
-                                                        room: mroom!))
-                                            : Row(
-                                                children: [
-                                                  FollowingIndicator(),
-                                                  if (mroom!.creatorId != null)
-                                                    MessageButton(
-                                                        userId:
-                                                            mroom!.creatorId!)
-                                                ],
-                                              )
-                                    ],
-                                  ),
-                                );
-
-                              if (timeline != null) {
-                                if (i == 1) {
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      if (mroom?.topic != null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 8, bottom: 24.0),
-                                          child: Text(mroom!.topic),
-                                        ),
-                                      StoriesList(
-                                          client: client,
-                                          restrict: mroom?.creatorId,
-                                          allowCreatingStory:
-                                              mroom?.creatorId ==
-                                                  client.userID),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: PostWriterModal(room: mroom),
-                                      )
-                                    ],
-                                  );
-                                } else if ((i - 2) < events.length) {
-                                  return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 2, horizontal: 12),
-                                      child: Post(
-                                          key: Key(events[i - 2].eventId),
-                                          event: events[i - 2],
-                                          onReact: (Offset e) =>
-                                              onReact(e, events[i - 2])));
-                                }
-
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: MaterialButton(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (constraints.maxWidth > 900)
+                            SizedBox(
+                              width: 300,
+                              child: Column(
+                                children: [
+                                  if (userId != null)
+                                    UserProfileSelection(
+                                        userId: userId!,
+                                        onRoomSelected: selectRoom,
+                                        roomSelectedId: mroom?.id),
+                                  if (mroom != null)
+                                    Padding(
+                                        padding: const EdgeInsets.all(15),
+                                        child: UserFriendsCard(room: mroom!)),
+                                ],
+                              ),
+                            ),
+                          Flexible(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 680),
+                              child: CustomListViewWithEmoji(
+                                  key: Key(mroom?.id ?? "room"),
+                                  itemCount: events.length +
+                                      2 +
+                                      (canRequestHistory ? 1 : 0),
+                                  itemBuilder: (context, i,
+                                      void Function(Offset, Event) onReact) {
+                                    if (i == 0)
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16.0),
                                         child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
                                           children: [
-                                            if (_requestingHistory)
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 10),
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                            Text("Load more posts"),
+                                            Expanded(
+                                                child: Text(
+                                                    mroom?.displayname ??
+                                                        'No profile found',
+                                                    maxLines: 1,
+                                                    style: TextStyle(
+                                                        fontSize: 24,
+                                                        fontWeight:
+                                                            FontWeight.w600))),
+                                            mroom?.creatorId == client.userID
+                                                ? IconButton(
+                                                    icon: Icon(Icons.edit),
+                                                    onPressed: () =>
+                                                        ConvSettingsCard.show(
+                                                            context: context,
+                                                            room: mroom!))
+                                                : Row(
+                                                    children: [
+                                                      if (mroom != null)
+                                                        FollowingIndicator(),
+                                                      if (userId != null &&
+                                                          userId !=
+                                                              client.userID)
+                                                        MessageButton(
+                                                            userId: userId!)
+                                                    ],
+                                                  )
                                           ],
                                         ),
-                                      ),
-                                      onPressed: () async {
-                                        if (_requestingHistory == false) {
-                                          setState(() {
-                                            _requestingHistory = true;
-                                          });
-                                          await mroom!.requestHistory();
-                                          setState(() {
-                                            _requestingHistory = false;
-                                          });
-                                        }
-                                      }),
-                                );
-                              } else {
-                                return UnknownUser(
-                                    user_in: user_in,
-                                    client: client,
-                                    userId: userId);
-                              }
-                            }),
+                                      );
+
+                                    if (timeline != null) {
+                                      if (i == 1) {
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if (mroom?.topic != null)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 8, bottom: 24.0),
+                                                child: Text(mroom!.topic),
+                                              ),
+                                            StoriesList(
+                                                client: client,
+                                                restrict: mroom?.creatorId,
+                                                allowCreatingStory:
+                                                    mroom?.creatorId ==
+                                                        client.userID),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child:
+                                                  PostWriterModal(room: mroom),
+                                            )
+                                          ],
+                                        );
+                                      } else if ((i - 2) < events.length) {
+                                        return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 2, horizontal: 12),
+                                            child: Post(
+                                                key: Key(events[i - 2].eventId),
+                                                event: events[i - 2],
+                                                onReact: (Offset e) =>
+                                                    onReact(e, events[i - 2])));
+                                      }
+
+                                      return Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: MaterialButton(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  if (_requestingHistory)
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              right: 10),
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                  Text("Load more posts"),
+                                                ],
+                                              ),
+                                            ),
+                                            onPressed: () async {
+                                              if (_requestingHistory == false) {
+                                                setState(() {
+                                                  _requestingHistory = true;
+                                                });
+                                                await mroom!.requestHistory();
+                                                setState(() {
+                                                  _requestingHistory = false;
+                                                });
+                                              }
+                                            }),
+                                      );
+                                    } else {
+                                      return UnknownUser(
+                                          user_in: user_in,
+                                          client: client,
+                                          userId: userId);
+                                    }
+                                  }),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          });
+                    ],
+                  );
+                });
+              });
         });
   }
 }
@@ -368,15 +386,13 @@ class MessageButton extends StatelessWidget {
         padding: EdgeInsets.all(6),
         expanded: false,
         onPressed: () async {
-          String? roomId = client.getDirectChatFromUserId(userId);
-          await AdaptativeDialogs.show(
+          String? roomId = await client.startDirectChat(userId);
+          AdaptativeDialogs.show(
               context: context,
-              builder: (BuildContext context) => roomId != null
-                  ? RoomPage(
-                      roomId: roomId,
-                      client: client,
-                      onBack: () => context.popRoute())
-                  : RoomsListPage(client: client));
+              builder: (BuildContext context) => RoomPage(
+                  roomId: roomId,
+                  client: client,
+                  onBack: () => context.popRoute()));
         });
   }
 }
