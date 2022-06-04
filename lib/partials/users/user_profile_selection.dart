@@ -51,7 +51,8 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
               res.space = space;
             } else {
               if (space.roomType == MatrixTypes.account) {
-                results.add(RoomWithSpace(space: space));
+                results
+                    .add(RoomWithSpace(space: space, creator: widget.userId));
               }
             }
           });
@@ -156,12 +157,17 @@ class RoomWithSpace {
   Room? room;
   SpaceRoom? space;
 
+  /// Save the creator of the room in the case where we only have the space result
+  String? _creator;
+
   String get id => room?.id ?? space!.id;
   String get displayname => room?.displayname ?? space?.name ?? '';
   String get topic => room?.topic ?? space?.topic ?? '';
-  String? get creatorId => room?.creatorId;
+  String? get creatorId => room?.creatorId ?? _creator;
 
   Uri? get avatar => room?.avatar;
 
-  RoomWithSpace({this.room, this.space});
+  RoomWithSpace({this.room, this.space, String? creator}) {
+    _creator = creator;
+  }
 }
