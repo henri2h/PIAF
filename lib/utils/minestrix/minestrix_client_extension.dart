@@ -45,6 +45,20 @@ extension MinestrixClientExtension on Client {
 
   bool get userRoomCreated => minestrixUserRoom.length > 0;
 
+  Future<String> createPrivateMinestrixProfile() async {
+    final p = await getProfileFromUserId(userID!);
+    return await createMinestrixAccount(
+        "${p.displayName ?? userID!}'s public timeline", "My public profile",
+        visibility: Visibility.public);
+  }
+
+  Future<String> createPublicMinestrixProfile() async {
+    final p = await getProfileFromUserId(userID!);
+    return await createMinestrixAccount(
+        "${p.displayName ?? userID!}'s private timeline", "My private profile",
+        visibility: Visibility.private);
+  }
+
   Future<String> createMinestrixAccount(String name, String desc,
       {bool waitForCreation = true,
       Visibility visibility = Visibility.private}) async {
@@ -60,12 +74,6 @@ extension MinestrixClientExtension on Client {
     }
 
     return roomID;
-  }
-
-  Future<void> createSMatrixUserProfile() async {
-    String name = userID! + " timeline";
-    await createMinestrixAccount(name, "Private MinesTRIX profile",
-        waitForCreation: true);
   }
 
   Future<String> createMinestrixGroup(String name, String desc,

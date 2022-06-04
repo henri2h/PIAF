@@ -38,7 +38,7 @@ class MinestrixProfileNotCreated extends StatelessWidget {
                         fontSize: 14,
                         color: Theme.of(context).colorScheme.onPrimary)),
               ],
-              onPressed: sclient.createSMatrixUserProfile);
+              onPressed: sclient.createPrivateMinestrixProfile);
         });
   }
 }

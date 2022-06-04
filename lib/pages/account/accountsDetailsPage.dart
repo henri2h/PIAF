@@ -110,14 +110,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: CustomTextFutureButton(
-                            onPressed: () async {
-                              final p = await client
-                                  .getProfileFromUserId(client.userID!);
-                              await client.createMinestrixAccount(
-                                  "${p.displayName ?? client.userID!}'s timeline",
-                                  "My public profile",
-                                  visibility: Visibility.public);
-                            },
+                            onPressed: client.createPublicMinestrixProfile,
                             text: "Create a private MinesTRIX room",
                             expanded: false,
                             icon: Icon(Icons.person_add)),
@@ -126,14 +119,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: CustomTextFutureButton(
-                            onPressed: () async {
-                              final p = await client
-                                  .getProfileFromUserId(client.userID!);
-                              await client.createMinestrixAccount(
-                                  "${p.displayName ?? client.userID!}'s timeline",
-                                  "My private profile",
-                                  visibility: Visibility.private);
-                            },
+                            onPressed: client.createPublicMinestrixProfile,
                             text: "Create a public MinesTRIX room",
                             expanded: false,
                             icon: Icon(Icons.public)),

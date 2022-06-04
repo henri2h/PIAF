@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-
 import 'package:matrix/matrix.dart';
-
-import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/minestrixTitle.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
+
+import '../partials/feed/minestrixProfileNotCreated.dart';
 
 class MatrixLoadingPage extends StatefulWidget {
   const MatrixLoadingPage({Key? key}) : super(key: key);
@@ -86,22 +85,7 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
                                 );
                               return Container();
                             }
-
-                            return Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: running
-                                    ? null
-                                    : MinesTrixButton(
-                                        onPressed: () async {
-                                          setState(() {
-                                            running = true;
-                                          });
-
-                                          await sclient
-                                              .createSMatrixUserProfile();
-                                        },
-                                        label: "Create my account",
-                                        icon: Icons.send));
+                            return MinestrixProfileNotCreated();
                           }),
                       if (running) LinearProgressIndicator(),
                     ],
