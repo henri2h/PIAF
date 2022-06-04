@@ -5,7 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/minestrix/user/unknown_user.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
-import 'package:minestrix/partials/users/userFriendsCard.dart';
+import 'package:minestrix/partials/users/user_friends_card.dart';
 import 'package:minestrix/partials/users/user_info.dart';
 import 'package:minestrix/partials/users/user_profile_selection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';

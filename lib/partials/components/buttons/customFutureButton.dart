@@ -39,21 +39,24 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 10.0),
+                  padding: const EdgeInsets.only(right: 2),
                   child: loading
                       ? CircularProgressIndicator(color: Colors.white)
                       : widget.icon,
                 ),
-                widget.expanded
-                    ? Expanded(
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [...widget.children],
-                      ))
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [...widget.children],
-                      )
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                  child: widget.expanded
+                      ? Expanded(
+                          child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [...widget.children],
+                        ))
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [...widget.children],
+                        ),
+                )
               ],
             ),
           ),
