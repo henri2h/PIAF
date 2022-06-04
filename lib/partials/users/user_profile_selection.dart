@@ -1,12 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:matrix_api_lite/src/generated/model.dart' as model;
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 
 class UserProfileSelection extends StatefulWidget {
@@ -25,8 +24,6 @@ class UserProfileSelection extends StatefulWidget {
 }
 
 class _UserProfileSelectionState extends State<UserProfileSelection> {
-  bool _creatingAccount = false;
-
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
@@ -108,52 +105,6 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                       });
                     }),
               ),
-            if (widget.userId == client.userID)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: MaterialButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                            height: 45,
-                            child: _creatingAccount
-                                ? Center(
-                                    child: CircularProgressIndicator(
-                                        color: Colors.white),
-                                  )
-                                : Icon(Icons.add, size: 36)),
-                        SizedBox(
-                          width: 8,
-                        ),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 110),
-                          child: Text("Create a new profile",
-                              maxLines: 2,
-                              style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w600)),
-                        )
-                      ],
-                    ),
-                  ),
-                  onPressed: _creatingAccount
-                      ? null
-                      : () async {
-                          setState(() {
-                            _creatingAccount = true;
-                          });
-                          await client.createMinestrixAccount(
-                              client.userID! + " timeline", "public account",
-                              visibility: model.Visibility.public);
-                          setState(() {
-                            _creatingAccount = false;
-                          });
-                        },
-                ),
-              )
           ],
         ),
       );
