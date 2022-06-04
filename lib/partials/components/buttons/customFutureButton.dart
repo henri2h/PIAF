@@ -69,9 +69,10 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
                 try {
                   if (widget.onPressed != null) await widget.onPressed!();
                 } finally {
-                  setState(() {
-                    loading = false;
-                  });
+                  if (mounted)
+                    setState(() {
+                      loading = false;
+                    });
                 }
               }
             : null);
