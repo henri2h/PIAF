@@ -1,10 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:matrix_api_lite/src/generated/model.dart' as model;
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/profile_space.dart';
 
 class UserProfileSelection extends StatefulWidget {
   const UserProfileSelection(
@@ -23,19 +26,41 @@ class UserProfileSelection extends StatefulWidget {
 
 class _UserProfileSelectionState extends State<UserProfileSelection> {
   bool _creatingAccount = false;
+
   @override
   Widget build(BuildContext context) {
-    Client sclient = Matrix.of(context).client;
+    final client = Matrix.of(context).client;
 
-    final _rooms = sclient.sroomsByUserId[widget.userId]?.toList() ?? [];
+    final _rooms = client.sroomsByUserId[widget.userId]?.toList() ?? [];
 
-    if (_rooms.length > 1 || widget.userId == sclient.userID) {
+    bool isOurProfile = widget.userId == client.userID;
+
+    ProfileSpace? profile = ProfileSpace.getProfileSpace(client);
+
+    if (_rooms.length > 1 || isOurProfile) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            H2Title("User profiles"),
+            Row(
+              children: [
+                Expanded(child: H2Title("User profiles")),
+                if (isOurProfile)
+                  IconButton(
+                      icon: Icon(Icons.settings),
+                      onPressed: () {
+                        context.pushRoute(AccountsDetailsRoute());
+                      })
+              ],
+            ),
+            if (profile == null && isOurProfile)
+              Card(
+                child: ListTile(
+                    leading: Icon(Icons.create_new_folder),
+                    title: Text("No profile space found"),
+                    subtitle: Text("Go to settings to create one")),
+              ),
             for (final r in _rooms)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
@@ -50,7 +75,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                       child: Row(
                         children: [
                           MatrixImageAvatar(
-                            client: sclient,
+                            client: client,
                             url: r.avatar,
                             thumnail: true,
                             defaultText: r.topic,
@@ -85,7 +110,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                       });
                     }),
               ),
-            if (widget.userId == sclient.userID)
+            if (widget.userId == client.userID)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: MaterialButton(
@@ -122,8 +147,8 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                           setState(() {
                             _creatingAccount = true;
                           });
-                          await sclient.createMinestrixAccount(
-                              sclient.userID! + " timeline", "public account",
+                          await client.createMinestrixAccount(
+                              client.userID! + " timeline", "public account",
                               visibility: model.Visibility.public);
                           setState(() {
                             _creatingAccount = false;

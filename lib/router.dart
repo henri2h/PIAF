@@ -10,6 +10,7 @@ import 'package:minestrix_chat/view/room_page.dart';
 import 'pages/account/accountsDetailsPage.dart';
 import 'pages/app_wrapper_page.dart';
 import 'pages/calendar_events/calendar_event_page.dart';
+import 'pages/debug_page.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
 import 'pages/matrix_loading_page.dart';
@@ -60,11 +61,16 @@ import 'pages/settings/settings_theme_page.dart';
       AutoRoute(path: 'calendar_events/list', page: CalendarEventListPage),
       AutoRoute(path: 'search', page: ResearchPage),
       AutoRoute(path: 'accounts', page: AccountsDetailsPage),
-      AutoRoute(path: 'settings', page: SettingsPage),
-      AutoRoute(path: 'settings/account', page: SettingsAccountPage),
-      AutoRoute(path: 'settings/theme', page: SettingsThemePage),
-      AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
-      AutoRoute(path: 'settings/labs', page: SettingsLabsPage),
+      AutoRoute(path: 'settings', page: SettingsPage, children: [
+        AutoRoute(
+            path: 'settings/home', page: SettingsPanelInnerPage, initial: true),
+        AutoRoute(path: 'settings/account', page: SettingsAccountPage),
+        AutoRoute(path: 'settings/theme', page: SettingsThemePage),
+        AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
+        AutoRoute(path: 'settings/labs', page: SettingsLabsPage),
+        AutoRoute(path: 'accounts', page: AccountsDetailsPage),
+        AutoRoute(path: 'settings/debug', page: DebugPage)
+      ]),
       // chats
       AutoRoute(path: ':roomId', page: RoomPage),
       AutoRoute(

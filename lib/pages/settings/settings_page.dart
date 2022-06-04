@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'package:auto_route/src/router/auto_router_x.dart';
@@ -11,23 +12,68 @@ import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
 
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
+  static SettingsPageState of(BuildContext context) =>
+      Provider.of<SettingsPageState>(context, listen: false);
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  SettingsPageState createState() => SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class SettingsPageState extends State<SettingsPage> {
+  bool smallScreen = false;
   @override
   Widget build(BuildContext context) {
-    Client client = Matrix.of(context).client;
+    return Provider(
+      create: (_) => this,
+      child: LayoutBuilder(builder: (context, constraints) {
+        smallScreen = constraints.maxWidth < 900;
+        return Row(
+          children: [
+            if (!smallScreen)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 400),
+                child: Card(
+                  child: SettingsPanel(),
+                ),
+              ),
+            Expanded(child: AutoRouter())
+          ],
+        );
+      }),
+    );
+  }
+}
+
+class SettingsPanelInnerPage extends StatelessWidget {
+  const SettingsPanelInnerPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      if (SettingsPage.of(context).smallScreen) return SettingsPanel();
+      return Center(child: Icon(Icons.settings_accessibility, size: 80));
+    });
+  }
+}
+
+class SettingsPanel extends StatelessWidget {
+  const SettingsPanel({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: ListView(
         children: [
-          CustomHeader(title: "Settings"),
+          CustomHeader(title: "Settings", overrideCanPop: true),
           FutureBuilder(
               future: client.getUserProfile(client.userID!),
               builder: (context, AsyncSnapshot<ProfileInformation> p) {
@@ -56,7 +102,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             title: Text("Account"),
             subtitle: Text("Change display name..."),
-            trailing: Icon(Icons.arrow_forward),
             leading: Icon(Icons.person),
             onTap: () {
               context.navigateTo(SettingsAccountRoute());
@@ -64,8 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ListTile(
             title: Text("Theme"),
-            subtitle: Text("Customize the app."),
-            trailing: Icon(Icons.arrow_forward),
+            subtitle: Text("Customize the app"),
             leading: Icon(Icons.color_lens),
             onTap: () {
               context.navigateTo(SettingsThemeRoute());
@@ -73,20 +117,15 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ListTile(
             title: Text("Profiles"),
-            subtitle: Text("Control your accounts."),
-            trailing: Icon(Icons.arrow_forward),
+            subtitle: Text("Control your profiles"),
             leading: Icon(Icons.people),
             onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => Scaffold(body: AccountsDetailsPage())));
+              context.navigateTo(AccountsDetailsRoute());
             },
           ),
           ListTile(
             title: Text("Security"),
             subtitle: Text("Encryption, verify your devices..."),
-            trailing: Icon(Icons.arrow_forward),
             leading: Icon(Icons.lock),
             onTap: () {
               context.navigateTo(SettingsSecurityRoute());
@@ -94,8 +133,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ListTile(
               title: Text("Labs"),
-              subtitle: Text("Experimental features, use with caution."),
-              trailing: Icon(Icons.arrow_forward),
+              subtitle: Text("Experimental features, use with caution"),
               leading: Icon(Icons.warning),
               onTap: () {
                 context.navigateTo(SettingsLabsRoute());
@@ -103,13 +141,9 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             title: Text("Debug"),
             subtitle: Text("Oups, something went wrong ?"),
-            trailing: Icon(Icons.arrow_forward),
             leading: Icon(Icons.bug_report),
             onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => Scaffold(body: DebugPage())));
+              context.navigateTo(DebugRoute());
             },
           ),
           SizedBox(height: 40),
