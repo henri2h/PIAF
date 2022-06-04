@@ -43,17 +43,15 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(child: H2Title("User profiles")),
-                if (isOurProfile)
-                  IconButton(
-                      icon: Icon(Icons.settings),
-                      onPressed: () {
+            MaterialButton(
+                padding: EdgeInsets.all(2),
+                disabledTextColor: Theme.of(context).colorScheme.onBackground,
+                onPressed: isOurProfile
+                    ? () {
                         context.pushRoute(AccountsDetailsRoute());
-                      })
-              ],
-            ),
+                      }
+                    : null,
+                child: H2Title("User profiles")),
             if (profile == null && isOurProfile)
               Card(
                 child: ListTile(

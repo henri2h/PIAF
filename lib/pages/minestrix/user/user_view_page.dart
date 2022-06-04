@@ -231,7 +231,7 @@ class _UserViewPageState extends State<UserViewPage> {
                                       if (mroom != null)
                                         mroom!.creatorId == client.userID
                                             ? IconButton(
-                                                icon: Icon(Icons.settings),
+                                                icon: Icon(Icons.edit),
                                                 onPressed: () =>
                                                     ConvSettingsCard.show(
                                                         context: context,
