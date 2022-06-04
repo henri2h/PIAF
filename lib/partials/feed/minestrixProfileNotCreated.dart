@@ -28,12 +28,12 @@ class MinestrixProfileNotCreated extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onPrimary),
               color: Theme.of(context).primaryColor,
               children: [
-                Text("Create your account",
+                Text("Create your private MinesTRIX profile",
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Theme.of(context).colorScheme.onPrimary)),
-                Text("No profile was found",
+                Text("Start posting",
                     style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(context).colorScheme.onPrimary)),
