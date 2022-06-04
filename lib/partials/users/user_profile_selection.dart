@@ -49,17 +49,16 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                     disabledTextColor:
                         Theme.of(context).colorScheme.onBackground,
                     onPressed: isOurProfile
-                        ? () {
-                            context.pushRoute(AccountsDetailsRoute());
-                          }
+                        ? () => context.pushRoute(AccountsDetailsRoute())
                         : null,
                     child: H2Title("User profiles")),
                 if (profile == null && isOurProfile)
                   Card(
                     child: ListTile(
                         leading: Icon(Icons.create_new_folder),
-                        title: Text("No profile space found"),
-                        subtitle: Text("Go to settings to create one")),
+                        title: Text("No user space found"),
+                        subtitle: Text("Go to settings to create one"),
+                        onTap: () => context.pushRoute(AccountsDetailsRoute())),
                   ),
                 for (final r in _rooms)
                   Padding(
