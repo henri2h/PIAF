@@ -55,7 +55,7 @@ extension MinestrixClientExtension on Client {
   Future<String> createPublicMinestrixProfile() async {
     final p = await getProfileFromUserId(userID!);
     return await createMinestrixAccount(
-        "${p.displayName ?? userID!}'s private timeline", "My private profile",
+        "${p.displayName ?? userID!}'s public timeline", "My private profile",
         visibility: Visibility.private);
   }
 
