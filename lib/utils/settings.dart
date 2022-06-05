@@ -6,10 +6,12 @@ class Settings {
   final _calendar = "calendar";
   final _multipleFeed = "multiple_feed";
   final _optimizedFeed = "optimized_feed";
+  final _shareEnabled = "share_enabled";
 
   bool get multipleFeedSupport => _settings[_multipleFeed] ?? false;
   bool get calendarEventSupport => _settings[_calendar] ?? false;
   bool get optimizedFeed => _settings[_optimizedFeed] ?? false;
+  bool get shareEnabled => _settings[_shareEnabled] ?? false;
 
   set calendarEventSupport(bool value) {
     _settings[_calendar] = value;
@@ -23,6 +25,11 @@ class Settings {
 
   set optimizedFeed(bool value) {
     _settings[_optimizedFeed] = value;
+    saveData();
+  }
+
+  set shareEnabled(bool value) {
+    _settings[_shareEnabled] = value;
     saveData();
   }
 

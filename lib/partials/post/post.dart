@@ -6,6 +6,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
 import 'package:minestrix_chat/utils/matrix/client_extension.dart';
 import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
+import '../../utils/settings.dart';
 import 'post_view.dart';
 
 class Post extends StatefulWidget {
@@ -33,6 +34,11 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
   late Future<Timeline> futureTimeline;
 
   Future<Event?>? shareEvent;
+
+  bool get canShare =>
+      Settings().shareEnabled &&
+      widget.event.room.historyVisibility == HistoryVisibility.worldReadable &&
+      widget.event.room.client.minestrixUserRoom.isNotEmpty;
 
   void setRepliedMessage(String? value) => setState(() {
         replyToMessageId = value;

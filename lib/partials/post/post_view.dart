@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
@@ -209,10 +208,7 @@ class PostView extends StatelessWidget {
                             ),
                             onPressed: controller.replyButtonClick,
                           ),
-                          if (displayEvent.room.historyVisibility ==
-                                  HistoryVisibility.worldReadable &&
-                              displayEvent
-                                  .room.client.minestrixUserRoom.isNotEmpty)
+                          if (controller.canShare)
                             Padding(
                               padding: const EdgeInsets.only(left: 9.0),
                               child: MaterialButton(
