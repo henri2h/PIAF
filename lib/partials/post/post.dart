@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
-
+import 'package:minestrix_chat/utils/matrix/client_extension.dart';
 import 'post_view.dart';
 
 class Post extends StatefulWidget {
@@ -28,6 +31,8 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
 
   late Future<Timeline> futureTimeline;
 
+  Future<Event?>? shareEvent;
+
   void setRepliedMessage(String? value) => setState(() {
         replyToMessageId = value;
       });
@@ -52,6 +57,11 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     post = SocialItem.fromEvent(e: widget.event);
+
+    if (post.shareEventId != null && post.shareEventRoomId != null) {
+      shareEvent = widget.event.room.client.getEventFromArbitraryRoomById(
+          post.shareEventId!, post.shareEventRoomId!);
+    }
 
     // by default we let the user repsond to the actual matrix message
     replyToMessageId = widget.event.eventId;
@@ -89,5 +99,12 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
 
   void onReact(Offset globalPosition) {
     widget.onReact(globalPosition);
+  }
+
+  Future<void> share() async {
+    await PostEditorPage.show(
+        context: context,
+        shareEvent: widget.event,
+        rooms: Matrix.of(context).client.minestrixUserRoom);
   }
 }

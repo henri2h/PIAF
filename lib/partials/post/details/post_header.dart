@@ -13,7 +13,12 @@ import 'package:timeago/timeago.dart' as timeago;
 class PostHeader extends StatelessWidget {
   final Event event;
   final Event? eventToEdit;
-  const PostHeader({Key? key, required this.event, this.eventToEdit})
+  final bool allowContext; // allow context menu
+  const PostHeader(
+      {Key? key,
+      required this.event,
+      this.eventToEdit,
+      this.allowContext = true})
       : super(key: key);
 
   @override
@@ -169,7 +174,7 @@ class PostHeader extends StatelessWidget {
             ),
           ),
         ),
-        if (event.canRedact)
+        if (event.canRedact && allowContext)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -202,7 +207,11 @@ class PostHeader extends StatelessWidget {
                     onSelected: (String action) async {
                       switch (action) {
                         case "delete":
-                          await event.redactEvent();
+                          if (event.status != EventStatus.sent) {
+                            event.remove();
+                          } else {
+                            await event.redactEvent();
+                          }
                           break;
 
                         case "edit":
