@@ -177,7 +177,9 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                             width: 340,
                             child: ListView(
                               children: [
-                                PostHeader(event: widget.post.event!),
+                                PostHeader(
+                                    event: widget.post.event!,
+                                    allowContext: false),
                                 if (event != null)
                                   RepliesVue(
                                       timeline: t,
