@@ -34,9 +34,6 @@ class UserFriendsCard extends StatelessWidget {
                   u.id != room.userID)
               .take(12);
 
-          snap.data!.forEach((element) {
-            print("user ${element.displayName} ${element.membership}");
-          });
           final knockingUsers =
               snap.data!.where((u) => u.membership == Membership.knock);
 
