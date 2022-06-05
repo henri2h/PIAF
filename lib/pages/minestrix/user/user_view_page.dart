@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/post/post.dart';
@@ -155,12 +154,6 @@ class _UserViewPageState extends State<UserViewPage> {
           }
 
           if (mroom == null) init();
-
-          // TODO: support for mulitple feeds
-          User? user_in = client.minestrixUserRoom.firstOrNull
-              ?.getParticipants()
-              .firstWhereOrNull((User u) =>
-                  (u.id == userId)); // check if the user is following us
 
           return FutureBuilder<Timeline?>(
               future: getTimeline(),
