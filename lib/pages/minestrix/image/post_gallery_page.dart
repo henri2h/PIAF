@@ -181,8 +181,8 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                                 if (event != null)
                                   RepliesVue(
                                       timeline: t,
+                                      enableMore: false,
                                       event: event!,
-                                      postEvent: event!,
                                       replies: nestedReplies,
                                       replyToMessageId: replyToMessageId,
                                       setRepliedMessage: setRepliedMessage),

@@ -257,7 +257,6 @@ class PostView extends StatelessWidget {
                               RepliesVue(
                                   timeline: t,
                                   event: controller.post.event!,
-                                  postEvent: controller.post.event!,
                                   replies: (controller.showReplies &&
                                           controller.replies?.isNotEmpty ==
                                               true)

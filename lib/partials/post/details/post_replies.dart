@@ -12,29 +12,63 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'post_content.dart';
 
-class RepliesVue extends StatefulWidget {
+class RepliesVue extends StatelessWidget {
   final Event event;
+  final bool enableMore;
+  final Timeline? timeline;
+  final Map<Event, dynamic>? replies;
+  final String? replyToMessageId;
+
+  final void Function(String? value) setRepliedMessage;
+  RepliesVue(
+      {Key? key,
+      required this.event,
+      required this.replies,
+      required this.timeline,
+      required this.replyToMessageId,
+      required this.setRepliedMessage,
+      this.enableMore = true})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return RepliesVueRecursive(
+      timeline: timeline,
+      event: event,
+      postEvent: event,
+      enableMore: enableMore,
+      replyToMessageId: replyToMessageId,
+      replies: replies,
+      setRepliedMessage: setRepliedMessage,
+    );
+  }
+}
+
+class RepliesVueRecursive extends StatefulWidget {
+  final Event event;
+  final bool enableMore;
   final Event postEvent;
   final Timeline? timeline;
   final Map<Event, dynamic>? replies;
   final String? replyToMessageId;
 
   final void Function(String? value) setRepliedMessage;
-  RepliesVue({
-    Key? key,
-    required this.event,
-    required this.postEvent,
-    required this.replies,
-    required this.timeline,
-    required this.replyToMessageId,
-    required this.setRepliedMessage,
-  }) : super(key: key);
+  RepliesVueRecursive(
+      {Key? key,
+      required this.event,
+      required this.postEvent,
+      required this.replies,
+      required this.timeline,
+      required this.replyToMessageId,
+      required this.setRepliedMessage,
+      this.enableMore = true})
+      : super(key: key);
 
   @override
-  RepliesVueState createState() => RepliesVueState();
+  RepliesVueRecursiveState createState() => RepliesVueRecursiveState();
 }
 
-class RepliesVueState extends State<RepliesVue> {
+class RepliesVueRecursiveState extends State<RepliesVueRecursive> {
   int tMax = 2;
 
   Future<void> overrideTextSending(String text, {Event? replyTo}) async {
@@ -61,7 +95,9 @@ class RepliesVueState extends State<RepliesVue> {
         ? client.getPostReactions(widget.replies!.keys).toList()
         : [];
 
-    int max = min(directRepliesToEvent.length, tMax);
+    int max = widget.enableMore
+        ? min(directRepliesToEvent.length, tMax)
+        : directRepliesToEvent.length;
 
     return Container(
       child: Column(
@@ -154,10 +190,11 @@ class RepliesVueState extends State<RepliesVue> {
                       widget.replyToMessageId == revent.eventId)
                     Padding(
                       padding: const EdgeInsets.only(left: 20.0),
-                      child: RepliesVue(
+                      child: RepliesVueRecursive(
                           event: revent,
                           postEvent: widget.postEvent,
                           timeline: widget.timeline,
+                          enableMore: widget.enableMore,
                           replies: widget.replies![revent],
                           setRepliedMessage: widget.setRepliedMessage,
                           replyToMessageId: widget.replyToMessageId),
