@@ -1,28 +1,23 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/buttons/MinesTrixButton.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
-import 'package:minestrix/partials/users/userFriendsCard.dart';
-import 'package:minestrix/partials/users/userInfo.dart';
-import 'package:minestrix/partials/users/userProfileSelection.dart';
+import 'package:minestrix/partials/users/user_friends_card.dart';
+import 'package:minestrix/partials/users/user_info.dart';
+import 'package:minestrix/partials/users/user_profile_selection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/profile_space.dart';
-import 'package:minestrix_chat/utils/spaces/space_extension.dart';
-import 'package:minestrix_chat/view/room_list_page.dart';
-import 'package:minestrix_chat/view/room_page.dart';
 
-import '../../../partials/components/buttons/customFutureButton.dart';
 import '../../../partials/components/layouts/customHeader.dart';
-import '../../../partials/feed/minestrixProfileNotCreated.dart';
+import '../../../partials/minestrixTitle.dart';
 import '../../../router.gr.dart';
+import 'follow_button.dart';
+import 'message_button.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display
@@ -40,43 +35,56 @@ class UserViewPage extends StatefulWidget {
 }
 
 class _UserViewPageState extends State<UserViewPage> {
-  late Client client;
   ScrollController _controller = new ScrollController();
 
   String? _userId;
 
-  Room? mroom;
+  RoomWithSpace? mroom;
 
   // getter
-  String? get userId => _userId ?? mroom?.creatorId;
+  String? get userId => mroom?.creatorId ?? _userId;
 
   // status
   bool _requestingHistory = false;
-  Future<Timeline>? futureTimeline;
 
-  Future<Timeline> getTimeline(Room room) async {
-    final t = await room.getTimeline();
+  Timeline? timeline;
+  Future<Timeline?> getTimeline() async {
+    if (timeline != null && timeline?.room == mroom?.room) return timeline!;
+
+    final t = await mroom?.room?.getTimeline();
+
+    if (t == null) return null;
+
     while (getEvents(t).length < 3 && t.canRequestHistory) {
       await t.requestHistory();
     }
+    timeline = t;
     return t;
   }
 
+  void setRoom(Room? room) {
+    if (room != null) {
+      mroom = RoomWithSpace(room: room);
+    } else {
+      mroom = null;
+    }
+  }
+
   void init() {
-    mroom ??= widget.mroom;
+    final client = Matrix.of(context).client;
 
-    Client client = Matrix.of(context).client;
-
-    if (mroom == null && userId != null) {
-      mroom = client.sroomsByUserId[userId!]?.first;
+    if (mroom == null &&
+        userId != null &&
+        client.sroomsByUserId[userId!]?.isNotEmpty == true) {
+      setRoom(client.sroomsByUserId[userId!]?.first);
     }
 
     // fallback
     if (userId == null && mroom == null && client.minestrixUserRoom.isNotEmpty)
-      mroom = client.minestrixUserRoom.first;
+      setRoom(client.minestrixUserRoom.first);
 
-    if (mroom != null) {
-      futureTimeline = getTimeline(mroom!);
+    if (userId == null) {
+      _userId = client.userID;
     }
   }
 
@@ -85,12 +93,8 @@ class _UserViewPageState extends State<UserViewPage> {
     super.initState();
 
     _controller.addListener(scrollListener);
-
-    client = Matrix.of(context).client;
-
-    if (widget.userID != client.userID)
-      _userId = widget
-          .userID; // only store the userId if a different user than the one currently logged in. So if we want to change the currently logged user, we can change the user displayed.
+    if (mroom == null) setRoom(widget.mroom);
+    _userId ??= widget.userID;
 
     init();
   }
@@ -114,8 +118,7 @@ class _UserViewPageState extends State<UserViewPage> {
         setState(() {
           _requestingHistory = true;
         });
-        print("[ userFeedPage ] : update from scroll");
-        await (await futureTimeline)?.requestHistory();
+        await timeline?.requestHistory();
         setState(() {
           _requestingHistory = false;
         });
@@ -123,8 +126,15 @@ class _UserViewPageState extends State<UserViewPage> {
     }
   }
 
+  void selectRoom(RoomWithSpace? r) {
+    if (mroom == r) return;
+    timeline = null;
+    mroom = r;
+    setState(() {});
+  }
+
   List<Event> getEvents(Timeline timeline) =>
-      client.getSRoomFilteredEvents(timeline, eventTypesFilter: [
+      timeline.room.client.getSRoomFilteredEvents(timeline, eventTypesFilter: [
         MatrixTypes.post,
         EventTypes.Encrypted,
         EventTypes.RoomCreate
@@ -132,329 +142,259 @@ class _UserViewPageState extends State<UserViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    Client client = Matrix.of(context).client;
+    final client = Matrix.of(context).client;
 
-    // TODO: support for mulitple feeds
-    User? user_in = client.minestrixUserRoom.firstOrNull
-        ?.getParticipants()
-        .firstWhereOrNull(
-            (User u) => (u.id == userId)); // check if the user is following us
+    return StreamBuilder<SyncUpdate>(
+        stream: client.onSync.stream.where((up) => up.hasRoomUpdate),
+        builder: (context, up) {
+          // Discard the room if we left it.
+          if (mroom != null &&
+              up.data?.rooms?.leave?.containsKey(mroom!.id) == true) {
+            mroom = null;
+            timeline = null;
+          }
 
-    return FutureBuilder<Timeline>(
-        future: futureTimeline,
-        builder: (context, snapshot) {
-          Timeline? timeline = snapshot.data;
+          if (mroom == null) init();
 
-          List<Event> events = [];
-          if (timeline != null) events = getEvents(timeline);
+          return FutureBuilder<Timeline?>(
+              future: getTimeline(),
+              builder: (context, snapshot) {
+                Timeline? timeline = snapshot.data;
 
-          bool canRequestHistory = timeline?.canRequestHistory == true;
+                List<Event> events =
+                    timeline != null ? getEvents(timeline) : [];
+                bool canRequestHistory = timeline?.canRequestHistory == true;
+                bool isUserPage = userId == client.userID;
 
-          bool isUserPage = mroom?.creatorId == client.userID;
-
-          return LayoutBuilder(builder: (context, constraints) {
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 1200),
-                child: Row(
-                  children: [
-                    if (constraints.maxWidth > 900 && mroom != null)
-                      SizedBox(
-                        width: 300,
-                        child: ListView(
+                return FutureBuilder<Profile>(
+                    future: userId != null
+                        ? client.getProfileFromUserId(userId!)
+                        : null,
+                    builder: (context, snapProfile) {
+                      return LayoutBuilder(builder: (context, constraints) {
+                        return ListView(
+                          controller: _controller,
                           children: [
-                            UserProfileSelection(
-                                userId: userId!,
-                                onRoomSelected: (Room r) {
-                                  setState(() {
-                                    mroom = r;
-                                  });
-                                },
-                                roomSelectedId: mroom?.id),
-                            Padding(
-                                padding: const EdgeInsets.all(15),
-                                child: UserFriendsCard(room: mroom!)),
-                          ],
-                        ),
-                      ),
-                    Flexible(
-                      child: Column(
-                        children: [
-                          CustomHeader(
-                              child: isUserPage
-                                  ? ClientChooser(onUpdate: () {
-                                      resetView(); // we need to discard the previous data
-                                      init();
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: 1020),
+                                child: Column(
+                                  children: [
+                                    CustomHeader(
+                                        child: isUserPage
+                                            ? ClientChooser(onUpdate: () {
+                                                resetView(); // we need to discard the previous data
+                                                final client =
+                                                    Matrix.of(context).client;
+                                                _userId = client.userID;
+                                                init();
 
-                                      setState(() {});
-                                    })
-                                  : null,
-                              title: isUserPage ? null : "User Feed",
-                              actionButton: [
-                                if (isUserPage)
-                                  IconButton(
-                                      icon: Icon(Icons.settings),
-                                      onPressed: () {
-                                        context.navigateTo(SettingsRoute());
-                                      }),
-                              ]),
-                          Flexible(
-                            child: CustomListViewWithEmoji(
-                                key: Key(mroom?.id ?? "room"),
-                                controller: _controller,
-                                itemCount: events.length +
-                                    2 +
-                                    (canRequestHistory ? 1 : 0),
-                                itemBuilder: (context, i,
-                                    void Function(Offset, Event) onReact) {
-                                  if (i == 0)
-                                    return Column(
+                                                setState(() {});
+                                              })
+                                            : null,
+                                        title: isUserPage ? null : "User Feed",
+                                        actionButton: [
+                                          if (isUserPage)
+                                            IconButton(
+                                                icon: Icon(Icons.settings),
+                                                onPressed: () {
+                                                  context.navigateTo(
+                                                      SettingsRoute());
+                                                }),
+                                        ]),
+                                    UserInfo(
+                                        room: mroom?.room,
+                                        profile: snapProfile.data),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (constraints.maxWidth > 900)
+                                  SizedBox(
+                                    width: 300,
+                                    child: Column(
                                       children: [
-                                        if (mroom != null)
-                                          UserInfo(room: mroom),
-                                        SizedBox(
-                                          height: 20,
-                                        ),
-                                      ],
-                                    );
-
-                                  if (timeline != null) {
-                                    if (i == 1) {
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          StoriesList(
-                                              client: client,
-                                              restrict: mroom?.creatorId,
-                                              allowCreatingStory:
-                                                  mroom?.creatorId ==
-                                                      client.userID),
+                                        if (userId != null)
+                                          UserProfileSelection(
+                                              userId: userId!,
+                                              onRoomSelected: selectRoom,
+                                              roomSelectedId: mroom?.id),
+                                        if (mroom?.room != null)
                                           Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: PostWriterModal(room: mroom),
-                                          )
-                                        ],
-                                      );
-                                    } else if ((i - 2) < events.length) {
-                                      return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 2, horizontal: 12),
-                                          child: Post(
-                                              event: events[i - 2],
-                                              onReact: (Offset e) =>
-                                                  onReact(e, events[i - 2])));
-                                    }
+                                              padding: const EdgeInsets.all(15),
+                                              child: UserFriendsCard(
+                                                  room: mroom!.room!)),
+                                      ],
+                                    ),
+                                  ),
+                                Flexible(
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(maxWidth: 680),
+                                    child: CustomListViewWithEmoji(
+                                        key: Key(mroom?.id ?? "room"),
+                                        itemCount: events.length +
+                                            2 +
+                                            (canRequestHistory ? 1 : 0),
+                                        itemBuilder: (context,
+                                            i,
+                                            void Function(Offset, Event)
+                                                onReact) {
+                                          if (i == 0)
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 16.0),
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                      child: Text(
+                                                          mroom?.displayname ??
+                                                              '',
+                                                          maxLines: 1,
+                                                          style: TextStyle(
+                                                              fontSize: 24,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600))),
+                                                  mroom?.creatorId ==
+                                                          client.userID
+                                                      ? IconButton(
+                                                          icon:
+                                                              Icon(Icons.edit),
+                                                          onPressed: () =>
+                                                              ConvSettingsCard.show(
+                                                                  context:
+                                                                      context,
+                                                                  room: mroom!
+                                                                      .room!))
+                                                      : Row(
+                                                          children: [
+                                                            if (mroom != null)
+                                                              FollowingIndicator(
+                                                                room: mroom!,
+                                                              ),
+                                                            if (userId !=
+                                                                    null &&
+                                                                userId !=
+                                                                    client
+                                                                        .userID)
+                                                              MessageButton(
+                                                                  userId:
+                                                                      userId!)
+                                                          ],
+                                                        )
+                                                ],
+                                              ),
+                                            );
 
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: MaterialButton(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                if (_requestingHistory)
+                                          if (timeline != null) {
+                                            if (i == 1) {
+                                              return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  if (mroom?.topic != null)
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8,
+                                                              bottom: 24.0),
+                                                      child: Text(mroom!.topic),
+                                                    ),
+                                                  StoriesList(
+                                                      client: client,
+                                                      restrict:
+                                                          mroom?.creatorId,
+                                                      allowCreatingStory:
+                                                          mroom?.creatorId ==
+                                                              client.userID),
                                                   Padding(
                                                     padding:
-                                                        const EdgeInsets.only(
-                                                            right: 10),
-                                                    child:
-                                                        CircularProgressIndicator(),
-                                                  ),
-                                                Text("Load more posts"),
-                                              ],
-                                            ),
-                                          ),
-                                          onPressed: () async {
-                                            if (_requestingHistory == false) {
-                                              setState(() {
-                                                _requestingHistory = true;
-                                              });
-                                              await mroom!.requestHistory();
-                                              setState(() {
-                                                _requestingHistory = false;
-                                              });
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: PostWriterModal(
+                                                        room: mroom?.room),
+                                                  )
+                                                ],
+                                              );
+                                            } else if ((i - 2) <
+                                                events.length) {
+                                              return Padding(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      vertical: 2,
+                                                      horizontal: 12),
+                                                  child: Post(
+                                                      key: Key(events[i - 2]
+                                                          .eventId),
+                                                      event: events[i - 2],
+                                                      onReact: (Offset e) =>
+                                                          onReact(e,
+                                                              events[i - 2])));
                                             }
-                                          }),
-                                    );
-                                  } else {
-                                    return UnknownUser(
-                                        user_in: user_in,
-                                        client: client,
-                                        userId: userId);
-                                  }
-                                }),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          });
+
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: MaterialButton(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        if (_requestingHistory)
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    right: 10),
+                                                            child:
+                                                                CircularProgressIndicator(),
+                                                          ),
+                                                        Text("Load more posts"),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onPressed: () async {
+                                                    if (_requestingHistory ==
+                                                        false) {
+                                                      setState(() {
+                                                        _requestingHistory =
+                                                            true;
+                                                      });
+                                                      await mroom?.room
+                                                          ?.requestHistory();
+                                                      setState(() {
+                                                        _requestingHistory =
+                                                            false;
+                                                      });
+                                                    }
+                                                  }),
+                                            );
+                                          } else if (mroom != null) {
+                                            return MinestrixTitle();
+                                            // Room
+                                          } else {
+                                            return MinestrixTitle();
+                                          }
+                                        }),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      });
+                    });
+              });
         });
-  }
-}
-
-class UnknownUser extends StatelessWidget {
-  final User? user_in;
-  final Client client;
-  final String? userId;
-  const UnknownUser(
-      {Key? key,
-      required this.user_in,
-      required this.client,
-      required this.userId})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: FutureBuilder<List<SpaceRoom>?>(
-                    future: getProfileSpaceContent(),
-                    builder: (context, snapshot) {
-                      List<SpaceRoom> profiles = (snapshot.data ?? [])
-                          .where((SpaceRoom room) =>
-                              room.roomType == MatrixTypes.account)
-                          .toList();
-// we ignore generated by getProfileSpaceContent when the space doesn't exist
-                      return Column(
-                        children: [
-                          for (SpaceRoom space in profiles)
-                            if ([JoinRules.knock, JoinRules.public]
-                                    .contains(space.joinRule) &&
-                                (client.getRoomById(space.id) == null ||
-                                    ![Membership.knock, Membership.join]
-                                        .contains(client
-                                            .getRoomById(space.id)
-                                            ?.membership)))
-                              CustomFutureButton(
-                                  icon: Icon(Icons.person_add,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary),
-                                  color: Theme.of(context).primaryColor,
-                                  children: [
-                                    Text(space.name,
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary)),
-                                    Text("Follow",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary))
-                                  ],
-                                  onPressed: () async {
-                                    switch (space.joinRule) {
-                                      case JoinRules.public:
-                                        client.joinRoom(space
-                                            .id); // TODO: update me to support joining over federation (need the via field)
-                                        await client
-                                            .waitForRoomInSync(space.id);
-
-                                        break;
-                                      case JoinRules.knock:
-                                        client.knockRoom(space.id);
-                                        await client
-                                            .waitForRoomInSync(space.id);
-
-                                        break;
-                                      default:
-                                    }
-                                    client.knockRoom(space.id);
-                                  },
-                                  expanded: false),
-                        ],
-                      );
-                    }),
-              ),
-              if (user_in != null && user_in?.membership == Membership.invite)
-                Flexible(
-                    child: MinesTrixButton(
-                  icon: Icons.send,
-                  label: "Friend request sent",
-                  onPressed: null,
-                )),
-              if (user_in != null && user_in?.membership == Membership.join)
-                Flexible(
-                    child: MinesTrixButton(
-                  icon: Icons.person,
-                  label: "Friend",
-                  onPressed: null,
-                )),
-              SizedBox(width: 30),
-              if (userId != client.userID)
-                CustomFutureButton(
-                    icon: Icon(Icons.message),
-                    children: [Text("Send a message")],
-                    expanded: false,
-                    onPressed: () async {
-                      if (userId == null) return;
-                      String? roomId = client.getDirectChatFromUserId(userId!);
-                      if (roomId != null) {
-                        await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) => RoomPage(
-                                    roomId: roomId,
-                                    client: client,
-                                    onBack: () => context.popRoute())));
-                      } else {
-                        await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) => Scaffold(
-                                    appBar: AppBar(title: Text("Start chat")),
-                                    body: RoomsListPage(client: client))));
-                      }
-                    }),
-            ],
-          ),
-        ),
-        userId != client.userID
-            ? Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 60, vertical: 100),
-                child: Column(
-                  children: [
-                    Text("Your are not in this user friend list",
-                        style: TextStyle(fontSize: 40)),
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text("😧", style: TextStyle(fontSize: 40)),
-                    ),
-                    Text(
-                        "Or he/she may not have a MINESTRIX account (yet), send him a message ;)",
-                        style: TextStyle(fontSize: 20))
-                  ],
-                ),
-              )
-            : MinestrixProfileNotCreated()
-      ],
-    );
-  }
-
-  Future<List<SpaceRoom>?> getProfileSpaceContent() async {
-    if (userId != null) {
-      var roomId =
-          await client.getRoomIdByAlias(ProfileSpace.getAliasName(userId!));
-      if (roomId.roomId == null) return null;
-      return await client.getRoomHierarchy(roomId.roomId!);
-    }
-    return null;
   }
 }

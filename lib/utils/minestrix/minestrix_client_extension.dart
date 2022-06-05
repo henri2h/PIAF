@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/utils/matrix/power_levels_extension.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
@@ -14,8 +15,6 @@ extension MinestrixClientExtension on Client {
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
       if (r.isFeed && r.feedType == FeedRoomType.user) {
-        print("feed: ${r.name} ${r.creatorId}");
-
         if (_srooms[r.creatorId ?? ''] == null) {
           _srooms[r.creatorId ?? ''] = [r];
         } else {
@@ -45,13 +44,27 @@ extension MinestrixClientExtension on Client {
 
   bool get userRoomCreated => minestrixUserRoom.length > 0;
 
+  Future<String> createPrivateMinestrixProfile() async {
+    final p = await getProfileFromUserId(userID!);
+    return await createMinestrixAccount(
+        "${p.displayName ?? userID!}'s private timeline", "",
+        public: false);
+  }
+
+  Future<String> createPublicMinestrixProfile() async {
+    final p = await getProfileFromUserId(userID!);
+    return await createMinestrixAccount(
+        "${p.displayName ?? userID!}'s public timeline", "",
+        public: true);
+  }
+
   Future<String> createMinestrixAccount(String name, String desc,
-      {bool waitForCreation = true,
-      Visibility visibility = Visibility.private}) async {
+      {bool waitForCreation = true, bool public = true}) async {
     String roomID = await createRoom(
         name: name,
         topic: desc,
-        visibility: visibility,
+        preset:
+            public ? CreateRoomPreset.publicChat : CreateRoomPreset.privateChat,
         creationContent: {"type": MatrixTypes.account});
     if (waitForCreation) {
       // Wait for room actually appears in sync and update all
@@ -59,13 +72,18 @@ extension MinestrixClientExtension on Client {
           .firstWhere((sync) => sync.rooms?.join?.containsKey(roomID) ?? false);
     }
 
-    return roomID;
-  }
+    final room = getRoomById(roomID);
+    if (room != null) {
+      if (!public) {
+        await room.setJoinRules(JoinRules.knock);
+        await room.setPowerLevels({"invite": 50});
+      } else {
+        await room.setJoinRules(JoinRules.public);
+        await room.setHistoryVisibility(HistoryVisibility.shared);
+      }
+    }
 
-  Future<void> createSMatrixUserProfile() async {
-    String name = userID! + " timeline";
-    await createMinestrixAccount(name, "Private MinesTRIX profile",
-        waitForCreation: true);
+    return roomID;
   }
 
   Future<String> createMinestrixGroup(String name, String desc,

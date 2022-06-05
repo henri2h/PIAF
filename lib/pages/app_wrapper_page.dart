@@ -35,7 +35,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(builder: (context, constraints) {
-          bool isWideScreen = constraints.maxWidth > 900;
+          bool isWideScreen = constraints.maxWidth > 800;
           return Column(
             children: [
               if (isWideScreen) NavBarDesktop(),

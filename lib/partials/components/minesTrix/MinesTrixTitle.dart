@@ -19,7 +19,7 @@ class H2Title extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Text(title,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
     );

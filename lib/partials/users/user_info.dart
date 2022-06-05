@@ -1,18 +1,25 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/users/userAvatar.dart';
+import 'package:minestrix/partials/users/user_avatar.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class UserInfo extends StatelessWidget {
-  const UserInfo({Key? key, this.room, this.profile})
-      : assert(profile != null || room != null),
-        super(key: key);
+  const UserInfo({Key? key, this.room, this.profile}) : super(key: key);
 
   final Profile? profile;
   final Room? room;
+
+  Gradient noImageBoxDecoration(BuildContext context) => LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: [
+          Theme.of(context).primaryColor,
+          Colors.grey.shade800,
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -21,47 +28,37 @@ class UserInfo extends StatelessWidget {
         ?.getThumbnail(sclient,
             width: 1000, height: 800, method: ThumbnailMethod.scale)
         .toString();
-    User? u = room?.creator;
-    Profile p = profile ??
-        Profile(
-            userId: u!.id, displayName: u.displayName, avatarUrl: u.avatarUrl);
+    final u = room?.creator;
+    final p = (u != null
+        ? Profile(
+            userId: u.id, displayName: u.displayName, avatarUrl: u.avatarUrl)
+        : (profile ?? Profile(userId: 'fake user')));
 
     return Column(
       children: [
         LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
-          // small screens
-          if (constraints.maxWidth < 800 || room?.avatar == null)
-            return Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                if (roomUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 180),
-                    child: CachedNetworkImage(imageUrl: roomUrl),
-                  ),
-                UserAvatar(
-                  p: p,
-                ),
-              ],
-            );
+          final smallScreen = constraints.maxWidth < 800;
 
           // big screens
           return Container(
-              decoration: roomUrl != null
-                  ? BoxDecoration(
-                      image: DecorationImage(
-                          image: CachedNetworkImageProvider(roomUrl),
-                          fit: BoxFit.cover),
-                    )
-                  : null,
+              decoration: BoxDecoration(
+                borderRadius: smallScreen ? null : BorderRadius.circular(8),
+                image: roomUrl != null
+                    ? DecorationImage(
+                        image: CachedNetworkImageProvider(roomUrl),
+                        fit: BoxFit.cover)
+                    : null,
+                gradient:
+                    roomUrl != null ? null : noImageBoxDecoration(context),
+              ),
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 60.0, horizontal: 20),
                 child: Align(
-                    alignment: p.avatarUrl != null
-                        ? Alignment.centerLeft
-                        : Alignment.center,
+                    alignment: smallScreen
+                        ? Alignment.bottomCenter
+                        : Alignment.centerLeft,
                     child: UserAvatar(p: p)),
               ));
         }),

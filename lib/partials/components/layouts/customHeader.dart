@@ -7,6 +7,7 @@ class CustomHeader extends StatelessWidget {
       this.actionButton,
       this.onBack,
       this.drawerEnabled = false,
+      this.overrideCanPop = false,
       this.child,
       this.title})
       : super(key: key);
@@ -15,7 +16,8 @@ class CustomHeader extends StatelessWidget {
   final Widget? child;
   final List<Widget>? actionButton;
   final Future<void> Function()? onBack;
-  final drawerEnabled;
+  final bool overrideCanPop;
+  final bool drawerEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class CustomHeader extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  if (context.router.canPopSelfOrChildren)
+                  if (context.router.canPopSelfOrChildren || overrideCanPop)
                     IconButton(
                         onPressed: () {
                           if (onBack != null) onBack!();

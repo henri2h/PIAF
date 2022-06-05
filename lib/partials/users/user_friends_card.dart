@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-
 import 'package:minestrix/partials/components/account/account_card.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/users/user_room_knock_item.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
@@ -27,6 +26,17 @@ class UserFriendsCard extends StatelessWidget {
         initialData: room.getParticipants(),
         builder: (context, snap) {
           if (!snap.hasData) return CircularProgressIndicator();
+
+          final usersSelection = snap.data!
+              .where((User u) =>
+                  u.membership == Membership.join &&
+                  u.id != sclient.userID &&
+                  u.id != room.userID)
+              .take(12);
+
+          final knockingUsers =
+              snap.data!.where((u) => u.membership == Membership.knock);
+
           return Column(
             children: [
               Padding(
@@ -43,14 +53,13 @@ class UserFriendsCard extends StatelessWidget {
                 ),
               ),
               Wrap(alignment: WrapAlignment.spaceBetween, children: [
-                for (User user in snap.data!
-                    .where((User u) =>
-                        u.membership == Membership.join &&
-                        u.id != sclient.userID &&
-                        u.id != room.userID)
-                    .take(12))
-                  AccountCard(user: user),
+                for (User user in usersSelection) AccountCard(user: user),
               ]),
+              if (room.canInvite && knockingUsers.isNotEmpty)
+                H2Title("Follow request"),
+              if (room.canInvite)
+                for (User user in knockingUsers)
+                  UserRoomKnockItem(user: user, room: room)
             ],
           );
         });

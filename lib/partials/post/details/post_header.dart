@@ -5,6 +5,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -12,7 +13,12 @@ import 'package:timeago/timeago.dart' as timeago;
 class PostHeader extends StatelessWidget {
   final Event event;
   final Event? eventToEdit;
-  const PostHeader({Key? key, required this.event, this.eventToEdit})
+  final bool allowContext; // allow context menu
+  const PostHeader(
+      {Key? key,
+      required this.event,
+      this.eventToEdit,
+      this.allowContext = true})
       : super(key: key);
 
   @override
@@ -43,8 +49,7 @@ class PostHeader extends StatelessWidget {
                 if (room.feedType != FeedRoomType.group)
                   Flexible(
                     child: Builder(builder: (BuildContext context) {
-                      User? feedOwner =
-                          event.room.getState("m.room.create")?.sender;
+                      User? feedOwner = event.room.creator;
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,12 +71,13 @@ class PostHeader extends StatelessWidget {
                                     (event.sender.displayName ??
                                         event.sender.id),
                                     style: TextStyle(
-                                        fontSize: 20,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.bold)),
                               ),
                               if (event.sender.id != feedOwner?.id)
                                 Text("to",
                                     style: TextStyle(
+                                        fontSize: 18,
                                         color: Theme.of(context)
                                             .textTheme
                                             .bodyText1!
@@ -85,7 +91,7 @@ class PostHeader extends StatelessWidget {
                                           .color),
                                   onPressed: () {
                                     context.navigateTo(
-                                        UserViewRoute(userID: feedOwner?.id));
+                                        UserViewRoute(mroom: event.room));
                                   },
                                   child: Text(
                                       (feedOwner?.displayName ??
@@ -93,7 +99,7 @@ class PostHeader extends StatelessWidget {
                                           "null"),
                                       overflow: TextOverflow.clip,
                                       style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w400)),
                                 ),
                             ],
@@ -132,11 +138,12 @@ class PostHeader extends StatelessWidget {
                                         .textTheme
                                         .bodyText1!
                                         .color,
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold)),
                           ),
                           Text("to",
                               style: TextStyle(
+                                  fontSize: 18,
                                   color: Theme.of(context)
                                       .textTheme
                                       .bodyText1!
@@ -151,7 +158,7 @@ class PostHeader extends StatelessWidget {
                                         .textTheme
                                         .bodyText1!
                                         .color,
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w400)),
                           ),
                         ],
@@ -167,7 +174,7 @@ class PostHeader extends StatelessWidget {
             ),
           ),
         ),
-        if (event.canRedact)
+        if (event.canRedact && allowContext)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -200,7 +207,11 @@ class PostHeader extends StatelessWidget {
                     onSelected: (String action) async {
                       switch (action) {
                         case "delete":
-                          await event.redactEvent();
+                          if (event.status != EventStatus.sent) {
+                            event.remove();
+                          } else {
+                            await event.redactEvent();
+                          }
                           break;
 
                         case "edit":
