@@ -49,7 +49,8 @@ class _UserViewPageState extends State<UserViewPage> {
 
   Timeline? timeline;
   Future<Timeline?> getTimeline() async {
-    if (timeline != null && timeline?.room == mroom) return timeline!;
+    if (timeline != null && timeline?.room == mroom?.room) return timeline!;
+
     final t = await mroom?.room?.getTimeline();
 
     if (t == null) return null;
