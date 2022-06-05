@@ -5,6 +5,7 @@ import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
 import 'package:minestrix_chat/utils/matrix/client_extension.dart';
+import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 import 'post_view.dart';
 
 class Post extends StatefulWidget {
@@ -76,9 +77,9 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
   }
 
   void loadPost(Timeline t) {
-    reactions = post.getReactions(t);
-    replies = post.getReplies(t);
-    if (replies != null) nestedReplies = post.getNestedReplies(replies!);
+    reactions = post.event!.getReactions(t);
+    replies = post.event!.getReplies(t);
+    if (replies != null) nestedReplies = post.event!.getNestedReplies(replies!);
   }
 
   void replyButtonClick() {
