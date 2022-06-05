@@ -15,7 +15,7 @@ import 'post_content.dart';
 class RepliesVue extends StatefulWidget {
   final Event event;
   final Event postEvent;
-  final Timeline timeline;
+  final Timeline? timeline;
   final Map<Event, dynamic>? replies;
   final String? replyToMessageId;
 
@@ -71,6 +71,7 @@ class RepliesVueState extends State<RepliesVue> {
             MatrixMessageComposer(
                 client: client,
                 room: widget.event.room,
+                enableAutoFocusOnDesktop: false,
                 hintText: "Reply",
                 allowSendingPictures: false,
                 overrideSending: (String text) =>
@@ -127,7 +128,10 @@ class RepliesVueState extends State<RepliesVue> {
                                     ),
                                     SizedBox(height: 5),
                                     PostContent(
-                                        revent.getDisplayEvent(widget.timeline),
+                                        widget.timeline != null
+                                            ? revent.getDisplayEvent(
+                                                widget.timeline!)
+                                            : revent,
                                         disablePadding: true,
                                         imageMaxHeight: 200),
                                     if (widget.replyToMessageId !=
