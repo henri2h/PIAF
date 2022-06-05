@@ -9,24 +9,27 @@ import '../../../partials/post/gallery/post_gallery_nav_button.dart';
 import '../../../partials/post/details/post_header.dart';
 
 class PostGalleryPage extends StatefulWidget {
-  final SocialImageItem image;
   final SocialItem post;
-  const PostGalleryPage({Key? key, required this.post, required this.image})
-      : super(key: key);
+  final SocialImageItem? image;
+  final String? selectedImageEventId;
+  const PostGalleryPage(
+      {Key? key, required this.post, this.image, this.selectedImageEventId})
+      : assert(image == null || selectedImageEventId == null),
+        super(key: key);
 
   @override
   State<PostGalleryPage> createState() => _PostGalleryPageState();
 }
 
 class _PostGalleryPageState extends State<PostGalleryPage> {
-  late SocialImageItem image;
   Timeline? timeline;
 
   Set<Event>? reactions;
   Set<Event>? replies;
   Map<Event, dynamic>? nestedReplies;
 
-  String? replyToMessageId = null;
+  String? _replyToMessageId = null;
+  String? get replyToMessageId => selectedImageEventId ?? _replyToMessageId;
 
   Future<Timeline> getTimeline() async {
     timeline = await widget.post.event?.room.getTimeline(onUpdate: () {
@@ -47,17 +50,56 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
   }
 
   void setRepliedMessage(String? value) => setState(() {
-        replyToMessageId = value ?? widget.post.event?.eventId;
+        _replyToMessageId = value ?? widget.post.event?.eventId;
       });
+
+  String? selectedImageEventId;
+  SocialImageItem? selectedImage;
+  Event? _event;
+  Future<SocialImageItem?>? futureImage;
+  Future<SocialImageItem?> getImage() async {
+    if (selectedImage != null) return selectedImage;
+
+    if (selectedImageEventId != null) {
+      _event =
+          await widget.post.event!.room.getEventById(selectedImageEventId!);
+      if (_event != null) {
+        return SocialImageItem.fromJson(_event!.content);
+      }
+    }
+
+    return null;
+  }
 
   @override
   void initState() {
-    image = widget.image;
-    replyToMessageId = widget.post.event?.eventId;
+    selectedImage = widget.image;
+    selectedImageEventId = widget.selectedImageEventId;
+    _replyToMessageId = widget.post.event?.eventId;
+
+    futureImage = getImage();
+
     super.initState();
   }
 
-  int get pos => widget.post.images.indexOf(image);
+  void selectImage(int pos) {
+    if (selectedImage != null) {
+      selectedImage = widget.post.images[pos];
+    } else {
+      selectedImageEventId = widget.post.imagesRefEventId[pos];
+    }
+    futureImage = getImage();
+    setState(() {});
+  }
+
+  int get imgCount => selectedImage != null
+      ? widget.post.images.length
+      : widget.post.imagesRefEventId.length;
+
+  int get pos => selectedImage != null
+      ? widget.post.images.indexOf(selectedImage!)
+      : widget.post.imagesRefEventId.indexOf(selectedImageEventId!);
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Timeline>(
@@ -72,27 +114,31 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                     alignment: Alignment.center,
                     fit: StackFit.expand,
                     children: [
-                      MatrixImage(
-                          key: Key(image.file?.url ?? pos.toString()),
-                          event: widget.post.event!,
-                          image: image,
-                          boxfit: BoxFit.cover,
-                          borderRadius: BorderRadius.zero),
+                      FutureBuilder<SocialImageItem?>(
+                          future: futureImage,
+                          builder: (context, snap) {
+                            if (!snap.hasData)
+                              return CircularProgressIndicator();
+                            final image = snap.data!;
+
+                            return MatrixImage.fromImage(
+                                key: Key(image.file?.url ?? pos.toString()),
+                                room: widget.post.event!.room,
+                                image: image,
+                                boxfit: BoxFit.cover,
+                                borderRadius: BorderRadius.zero);
+                          }),
                       PostGalleryNavButton(
                           alignment: Alignment.centerLeft,
                           icon: Icons.keyboard_arrow_left,
                           onPressed: pos > 0
-                              ? () => setState(() {
-                                    image = widget.post.images[pos - 1];
-                                  })
+                              ? () => selectImage(pos - 1)
                               : () => null),
                       PostGalleryNavButton(
                           alignment: Alignment.centerRight,
                           icon: Icons.keyboard_arrow_right,
-                          onPressed: (pos + 1) < widget.post.images.length
-                              ? () => setState(() {
-                                    image = widget.post.images[pos + 1];
-                                  })
+                          onPressed: (pos + 1) < imgCount
+                              ? () => selectImage(pos + 1)
                               : () => null),
                       if (Navigator.of(context).canPop())
                         Positioned(
@@ -109,9 +155,7 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                           bottom: 12,
                           right: 12,
                           child: Text(
-                            (pos + 1).toString() +
-                                "/" +
-                                widget.post.images.length.toString(),
+                            (pos + 1).toString() + "/" + imgCount.toString(),
                             style: TextStyle(
                                 fontSize: 26,
                                 color: Colors.white,
@@ -126,14 +170,13 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                       child: ListView(
                         children: [
                           PostHeader(event: widget.post.event!),
-                        
-                            RepliesVue(
-                                timeline: t,
-                                event: widget.post.event!,
-                                postEvent: widget.post.event!,
-                                replies: nestedReplies,
-                                replyToMessageId: replyToMessageId,
-                                setRepliedMessage: setRepliedMessage),
+                          RepliesVue(
+                              timeline: t,
+                              event: widget.post.event!,
+                              postEvent: widget.post.event!,
+                              replies: nestedReplies,
+                              replyToMessageId: replyToMessageId,
+                              setRepliedMessage: setRepliedMessage),
                         ],
                       )),
               ],

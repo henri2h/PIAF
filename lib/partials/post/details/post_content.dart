@@ -7,6 +7,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_content.dart';
 import 'package:minestrix_chat/partials/matrix_images.dart';
+import 'package:minestrix_chat/utils/social/posts/model/json/social_image_item.dart';
 
 class PostContent extends StatelessWidget {
   final Event event;
@@ -30,8 +31,9 @@ class PostContent extends StatelessWidget {
             imageMaxHeight: imageMaxHeight,
             imageMaxWidth: imageMaxWidth,
             disablePadding: disablePadding,
-            onImagePressed: (image, post) {
-              context.pushRoute(PostGalleryRoute(image: image, post: post));
+            onImagePressed: (post, {SocialImageItem? image, String? ref}) {
+              context.pushRoute(PostGalleryRoute(
+                  image: image, post: post, selectedImageEventId: ref));
             });
 
       case EventTypes.Message:
