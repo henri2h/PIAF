@@ -111,7 +111,7 @@ class RepliesVueState extends State<RepliesVue> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
+                                    Wrap(
                                       children: [
                                         Text(
                                             revent.sender.asUser.displayName
