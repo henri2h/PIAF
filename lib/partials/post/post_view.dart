@@ -50,7 +50,7 @@ class PostView extends StatelessWidget {
                             Text("Not sent ${controller.post.event!.status}"),
                       ),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: PostContent(
                         displayEvent,
                         imageMaxHeight: 300,

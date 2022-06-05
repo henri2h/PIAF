@@ -40,9 +40,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
 
     final client = Matrix.of(context).client;
 
-    client.onMinestrixUpdate.listen((event) {
-      Logs().w("On new event");
-    });
+    client.onMinestrixUpdate.listen((event) {});
 
     controller = ScrollController();
     controller.addListener(onScroll);
