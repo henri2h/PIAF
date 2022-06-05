@@ -3,6 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/event/matrix_image.dart';
 import 'package:minestrix_chat/utils/social/posts/model/json/social_image_item.dart';
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
+import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 
 import '../../../partials/post/details/post_replies.dart';
 import '../../../partials/post/gallery/post_gallery_nav_button.dart';
@@ -22,6 +23,7 @@ class PostGalleryPage extends StatefulWidget {
 }
 
 class _PostGalleryPageState extends State<PostGalleryPage> {
+  bool get modeRef => widget.selectedImageEventId != null;
   Timeline? timeline;
 
   Set<Event>? reactions;
@@ -29,9 +31,13 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
   Map<Event, dynamic>? nestedReplies;
 
   String? _replyToMessageId = null;
-  String? get replyToMessageId => selectedImageEventId ?? _replyToMessageId;
+  String? get replyToMessageId =>
+      _replyToMessageId ??
+      (modeRef ? selectedImageEventId : widget.post.event?.eventId);
+  Event? get event => modeRef ? _event : widget.post.event;
 
   Future<Timeline> getTimeline() async {
+    if (timeline != null) return timeline!;
     timeline = await widget.post.event?.room.getTimeline(onUpdate: () {
       if (timeline != null) {
         loadPost(timeline!);
@@ -39,18 +45,18 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
       }
     });
 
-    loadPost(timeline!); // TODO: hook load post to refresh
+    loadPost(timeline!);
     return timeline!;
   }
 
   void loadPost(Timeline t) {
-    reactions = widget.post.getReactions(t);
-    replies = widget.post.getReplies(t);
-    if (replies != null) nestedReplies = widget.post.getNestedReplies(replies!);
+    reactions = event?.getReactions(t);
+    replies = event?.getReplies(t);
+    if (replies != null) nestedReplies = event?.getNestedReplies(replies!);
   }
 
   void setRepliedMessage(String? value) => setState(() {
-        _replyToMessageId = value ?? widget.post.event?.eventId;
+        _replyToMessageId = value;
       });
 
   String? selectedImageEventId;
@@ -64,6 +70,7 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
       _event =
           await widget.post.event!.room.getEventById(selectedImageEventId!);
       if (_event != null) {
+        if (timeline != null) loadPost(timeline!);
         return SocialImageItem.fromJson(_event!.content);
       }
     }
@@ -75,7 +82,6 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
   void initState() {
     selectedImage = widget.image;
     selectedImageEventId = widget.selectedImageEventId;
-    _replyToMessageId = widget.post.event?.eventId;
 
     futureImage = getImage();
 
@@ -83,10 +89,11 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
   }
 
   void selectImage(int pos) {
-    if (selectedImage != null) {
+    if (!modeRef) {
       selectedImage = widget.post.images[pos];
     } else {
       selectedImageEventId = widget.post.imagesRefEventId[pos];
+      _replyToMessageId = null;
     }
     futureImage = getImage();
     setState(() {});
@@ -102,10 +109,9 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Timeline>(
-        future: getTimeline(),
-        builder: (context, snapshot) {
-          final t = snapshot.data;
+    return FutureBuilder<SocialImageItem?>(
+        future: futureImage,
+        builder: (context, snap) {
           return LayoutBuilder(builder: (context, constraints) {
             return Row(
               children: [
@@ -114,20 +120,18 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                     alignment: Alignment.center,
                     fit: StackFit.expand,
                     children: [
-                      FutureBuilder<SocialImageItem?>(
-                          future: futureImage,
-                          builder: (context, snap) {
-                            if (!snap.hasData)
-                              return CircularProgressIndicator();
-                            final image = snap.data!;
+                      Builder(builder: (context) {
+                        if (!snap.hasData)
+                          return Center(child: CircularProgressIndicator());
+                        final image = snap.data!;
 
-                            return MatrixImage.fromImage(
-                                key: Key(image.file?.url ?? pos.toString()),
-                                room: widget.post.event!.room,
-                                image: image,
-                                boxfit: BoxFit.cover,
-                                borderRadius: BorderRadius.zero);
-                          }),
+                        return MatrixImage.fromImage(
+                            key: Key(image.file?.url ?? pos.toString()),
+                            room: widget.post.event!.room,
+                            image: image,
+                            boxfit: BoxFit.cover,
+                            borderRadius: BorderRadius.zero);
+                      }),
                       PostGalleryNavButton(
                           alignment: Alignment.centerLeft,
                           icon: Icons.keyboard_arrow_left,
@@ -165,20 +169,26 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                   ),
                 ),
                 if (constraints.maxWidth > 1000)
-                  SizedBox(
-                      width: 340,
-                      child: ListView(
-                        children: [
-                          PostHeader(event: widget.post.event!),
-                          RepliesVue(
-                              timeline: t,
-                              event: widget.post.event!,
-                              postEvent: widget.post.event!,
-                              replies: nestedReplies,
-                              replyToMessageId: replyToMessageId,
-                              setRepliedMessage: setRepliedMessage),
-                        ],
-                      )),
+                  FutureBuilder<Timeline>(
+                      future: getTimeline(),
+                      builder: (context, snapshot) {
+                        final t = snapshot.data;
+                        return SizedBox(
+                            width: 340,
+                            child: ListView(
+                              children: [
+                                PostHeader(event: widget.post.event!),
+                                if (event != null)
+                                  RepliesVue(
+                                      timeline: t,
+                                      event: event!,
+                                      postEvent: event!,
+                                      replies: nestedReplies,
+                                      replyToMessageId: replyToMessageId,
+                                      setRepliedMessage: setRepliedMessage),
+                              ],
+                            ));
+                      }),
               ],
             );
           });
