@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
@@ -6,6 +7,9 @@ import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/utils/sentry_controller.dart';
+
+import 'settings/settings_labs_page.dart';
 
 class DebugPage extends StatefulWidget {
   @override
@@ -20,12 +24,25 @@ class _DebugPageState extends State<DebugPage> {
   bool progressing = false;
 
   void _clearCacheAndResync() async {
+    final res = await showOkCancelAlertDialog(
+        context: context,
+        title: "Clear cache",
+        message:
+            "This will clear your cache and start a new sync to get your messages. This will take a long time. Are you sure ?",
+        okLabel: "Yes");
+
+    if (res != OkCancelResult.ok) {
+      return;
+    }
+
+    if (client == null) return;
     Logs().w("Clearing cache");
-    await client?.database?.clearCache();
+    await client!.abortSync();
+    await client!.database?.clearCache();
     Logs().w("Sync");
 
     try {
-      await client?.handleSync(await client!
+      await client!.handleSync(await client!
           .sync()); // Wait long for the response, can take several dozen of minutes}
     } catch (e, s) {
       Logs().e("Could not sync", e, s);
@@ -61,15 +78,42 @@ class _DebugPageState extends State<DebugPage> {
       CustomHeader(title: "Debug"),
       Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            ElevatedButton(
-                child: Text("Clear cache and resync"),
-                onPressed: _clearCacheAndResync),
-          ],
-        ),
+        child: FutureBuilder<bool>(
+            future: SentryController.getSentryStatus(),
+            builder: (context, snap) {
+              if (!snap.hasData)
+                return ListTile(
+                    title: Text("Sentry logging"),
+                    subtitle: Text("Loading"),
+                    trailing: CircularProgressIndicator());
+              final sentryEnabled = snap.data!;
+              return SwitchListTile(
+                  value: sentryEnabled,
+                  onChanged: (value) async {
+                    await SentryController.toggleSentryAction(context, value);
+                    setState(() {});
+                  },
+                  secondary: Icon(Icons.list),
+                  title: Text("Sentry logging"),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Restart to enable sentry logging"),
+                      InfoBadge(text: "Need restart", color: Colors.orange),
+                    ],
+                  ));
+            }),
       ),
       const LogLevel(),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListTile(
+            title: Text("Clear cache and resync"),
+            leading: Icon(Icons.new_releases),
+            subtitle: Text("Use with caution, this make take a long time"),
+            trailing: Icon(Icons.refresh),
+            onTap: _clearCacheAndResync),
+      ),
       H2Title("Minestrix rooms"),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
