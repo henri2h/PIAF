@@ -78,15 +78,6 @@ class _DebugPageState extends State<DebugPage> {
       CustomHeader(title: "Debug"),
       Padding(
         padding: const EdgeInsets.all(8.0),
-        child: ListTile(
-            title: Text("Clear cache and resync"),
-            leading: Icon(Icons.new_releases),
-            subtitle: Text("Use with caution, this make take a long time"),
-            trailing: Icon(Icons.refresh),
-            onTap: _clearCacheAndResync),
-      ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
         child: FutureBuilder<bool>(
             future: SentryController.getSentryStatus(),
             builder: (context, snap) {
@@ -114,6 +105,15 @@ class _DebugPageState extends State<DebugPage> {
             }),
       ),
       const LogLevel(),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListTile(
+            title: Text("Clear cache and resync"),
+            leading: Icon(Icons.new_releases),
+            subtitle: Text("Use with caution, this make take a long time"),
+            trailing: Icon(Icons.refresh),
+            onTap: _clearCacheAndResync),
+      ),
       H2Title("Minestrix rooms"),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
