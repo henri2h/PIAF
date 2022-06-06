@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
@@ -147,6 +148,16 @@ class SettingsPanel extends StatelessWidget {
               title: Text("Logout"),
               trailing: Icon(Icons.logout),
               onTap: () async {
+                final res = await showOkCancelAlertDialog(
+                    context: context,
+                    title: "Logout",
+                    message: "Are you sure ?",
+                    okLabel: "Yes");
+
+                if (res != OkCancelResult.ok) {
+                  return;
+                }
+
                 await client.logout();
                 if (Navigator.of(context).canPop()) Navigator.of(context).pop();
               }),
