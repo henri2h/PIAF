@@ -64,9 +64,6 @@ class _MinestrixState extends State<Minestrix> {
                         routerDelegate: AutoRouterDelegate.declarative(
                           _appRouter,
                           routes: (_) {
-                            print("route up ${snap.data}");
-                            print("state ${state.data}");
-
                             final isLogged = client.isLogged();
                             return [
                               //if (state.hasData == false)
