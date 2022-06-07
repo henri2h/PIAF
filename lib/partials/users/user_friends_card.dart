@@ -36,19 +36,20 @@ class UserFriendsCard extends StatelessWidget {
 
           return Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: MaterialButton(
-                  onPressed: () {
-                    if (room.isFeed) {
-                      context.navigateTo(FriendsRoute());
-                    } else {
-                      context.navigateTo(UserFriendsRoute(room: room));
-                    }
-                  },
-                  child: H2Title("Followers"),
+              if (usersSelection.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: MaterialButton(
+                    onPressed: () {
+                      if (room.isFeed) {
+                        context.navigateTo(FriendsRoute());
+                      } else {
+                        context.navigateTo(UserFriendsRoute(room: room));
+                      }
+                    },
+                    child: H2Title("Followers"),
+                  ),
                 ),
-              ),
               Wrap(alignment: WrapAlignment.spaceBetween, children: [
                 for (User user in usersSelection) AccountCard(user: user),
               ]),
