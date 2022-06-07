@@ -12,6 +12,9 @@ import 'package:minestrix_chat/style/constants.dart';
 import '../../../partials/components/search/suggestion_list.dart';
 
 class ResearchPage extends StatefulWidget {
+  ResearchPage({Key? key, this.isPopup = false}) : super(key: key);
+
+  final bool isPopup;
   @override
   _ResearchPageState createState() => _ResearchPageState();
 }
@@ -44,38 +47,48 @@ class _ResearchPageState extends State<ResearchPage> {
   @override
   Widget build(BuildContext context) {
     Client? client = Matrix.of(context).client;
-    return ListView(children: [
-      CustomHeader(title: "Search"),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: TextField(
-            controller: c,
-            onChanged: _onSearchChanged,
-            decoration: Constants.kTextFieldInputDecoration),
-      ),
-      StreamBuilder<SearchUserDirectoryResponse>(
-          stream: discoveryStream.stream,
-          builder: (context, snap) {
-            if (!snap.hasData || c.text == "") return SuggestionList();
+    return Column(
+      children: [
+        if (!widget.isPopup) CustomHeader(title: "Search"),
+        Expanded(
+          child: ListView(children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                  controller: c,
+                  autofocus: true,
+                  onChanged: _onSearchChanged,
+                  decoration: Constants.kTextFieldInputDecoration),
+            ),
+            StreamBuilder<SearchUserDirectoryResponse>(
+                stream: discoveryStream.stream,
+                builder: (context, snap) {
+                  if (!snap.hasData || c.text == "")
+                    return SuggestionList(shouldPop: widget.isPopup);
 
-            final list = snap.data!.results.toList();
-            return Column(
-              children: [
-                for (final profile in list)
-                  ListTile(
-                    leading: profile.avatarUrl == null
-                        ? Icon(Icons.person)
-                        : MatrixImageAvatar(
-                            client: client, url: profile.avatarUrl),
-                    title: Text((profile.displayName ?? profile.userId)),
-                    subtitle: Text(profile.userId),
-                    onTap: () {
-                      context.navigateTo(UserViewRoute(userID: profile.userId));
-                    },
-                  ),
-              ],
-            );
-          })
-    ]);
+                  final list = snap.data!.results.toList();
+                  return Column(
+                    children: [
+                      for (final profile in list)
+                        ListTile(
+                          leading: profile.avatarUrl == null
+                              ? Icon(Icons.person)
+                              : MatrixImageAvatar(
+                                  client: client, url: profile.avatarUrl),
+                          title: Text((profile.displayName ?? profile.userId)),
+                          subtitle: Text(profile.userId),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            context.navigateTo(
+                                UserViewRoute(userID: profile.userId));
+                          },
+                        ),
+                    ],
+                  );
+                })
+          ]),
+        ),
+      ],
+    );
   }
 }
