@@ -217,6 +217,8 @@ class _UserViewPageState extends State<UserViewPage> {
                                   SizedBox(
                                     width: 300,
                                     child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         if (userId != null)
                                           UserProfileSelection(

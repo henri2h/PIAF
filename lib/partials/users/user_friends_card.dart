@@ -35,22 +35,21 @@ class UserFriendsCard extends StatelessWidget {
               snap.data!.where((u) => u.membership == Membership.knock);
 
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (usersSelection.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: MaterialButton(
-                    onPressed: () {
-                      if (room.isFeed) {
-                        context.navigateTo(FriendsRoute());
-                      } else {
-                        context.navigateTo(UserFriendsRoute(room: room));
-                      }
-                    },
-                    child: H2Title("Followers"),
-                  ),
+                MaterialButton(
+                  padding: EdgeInsets.all(2),
+                  onPressed: () {
+                    if (room.isFeed) {
+                      context.navigateTo(FriendsRoute());
+                    } else {
+                      context.navigateTo(UserFriendsRoute(room: room));
+                    }
+                  },
+                  child: H2Title("Followers"),
                 ),
-              Wrap(alignment: WrapAlignment.spaceBetween, children: [
+              Wrap(children: [
                 for (User user in usersSelection) AccountCard(user: user),
               ]),
               if (room.canInvite && knockingUsers.isNotEmpty)
