@@ -12,6 +12,7 @@ import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
 import '../../../partials/components/layouts/customHeader.dart';
 import '../../../partials/minestrixTitle.dart';
@@ -217,6 +218,8 @@ class _UserViewPageState extends State<UserViewPage> {
                                   SizedBox(
                                     width: 300,
                                     child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         if (userId != null)
                                           UserProfileSelection(
@@ -244,51 +247,72 @@ class _UserViewPageState extends State<UserViewPage> {
                                             void Function(Offset, Event)
                                                 onReact) {
                                           if (i == 0)
-                                            return Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 16.0),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                      child: Text(
-                                                          mroom?.displayname ??
-                                                              '',
-                                                          maxLines: 1,
-                                                          style: TextStyle(
-                                                              fontSize: 24,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600))),
-                                                  mroom?.creatorId ==
-                                                          client.userID
-                                                      ? IconButton(
-                                                          icon:
-                                                              Icon(Icons.edit),
-                                                          onPressed: () =>
-                                                              ConvSettingsCard.show(
-                                                                  context:
-                                                                      context,
-                                                                  room: mroom!
-                                                                      .room!))
-                                                      : Row(
-                                                          children: [
-                                                            if (mroom != null)
-                                                              FollowingIndicator(
-                                                                room: mroom!,
-                                                              ),
-                                                            if (userId !=
-                                                                    null &&
-                                                                userId !=
-                                                                    client
-                                                                        .userID)
-                                                              MessageButton(
+                                            return Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      vertical: 16.0,
+                                                      horizontal: 8),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                          child: constraints.maxWidth <=
+                                                                      900 &&
+                                                                  userId != null
+                                                              ? UserProfileSelection(
                                                                   userId:
-                                                                      userId!)
-                                                          ],
-                                                        )
-                                                ],
-                                              ),
+                                                                      userId!,
+                                                                  dense: true,
+                                                                  onRoomSelected:
+                                                                      selectRoom,
+                                                                  roomSelectedId:
+                                                                      mroom?.id)
+                                                              : Text(
+                                                                  mroom?.displayname ??
+                                                                      '',
+                                                                  maxLines: 1,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          24,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600))),
+                                                      mroom?.creatorId ==
+                                                              client.userID
+                                                          ? IconButton(
+                                                              icon: Icon(
+                                                                  Icons.edit),
+                                                              onPressed: () =>
+                                                                  ConvSettingsCard.show(
+                                                                      context:
+                                                                          context,
+                                                                      room: mroom!
+                                                                          .room!))
+                                                          : Row(
+                                                              children: [
+                                                                if (mroom !=
+                                                                    null)
+                                                                  FollowingIndicator(
+                                                                    room:
+                                                                        mroom!,
+                                                                  ),
+                                                                if (userId !=
+                                                                        null &&
+                                                                    userId !=
+                                                                        client
+                                                                            .userID)
+                                                                  MessageButton(
+                                                                      userId:
+                                                                          userId!)
+                                                              ],
+                                                            )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                             );
 
                                           if (timeline != null) {
@@ -297,7 +321,7 @@ class _UserViewPageState extends State<UserViewPage> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  if (mroom?.topic != null)
+                                                  if (mroom?.topic != "")
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.only(

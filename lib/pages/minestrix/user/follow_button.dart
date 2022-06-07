@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
 import '../../../partials/components/buttons/customFutureButton.dart';
-import '../../../partials/users/user_profile_selection.dart';
 
 class FollowingIndicator extends StatelessWidget {
   const FollowingIndicator({Key? key, required this.room}) : super(key: key);

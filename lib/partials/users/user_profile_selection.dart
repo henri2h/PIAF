@@ -1,13 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
@@ -17,9 +15,11 @@ class UserProfileSelection extends StatefulWidget {
       {Key? key,
       required this.userId,
       required this.onRoomSelected,
-      required this.roomSelectedId})
+      required this.roomSelectedId,
+      this.dense = false})
       : super(key: key);
   final String userId;
+  final bool dense;
   final String? roomSelectedId;
   final void Function(RoomWithSpace? r) onRoomSelected;
 
@@ -28,6 +28,12 @@ class UserProfileSelection extends StatefulWidget {
 }
 
 class _UserProfileSelectionState extends State<UserProfileSelection> {
+  void selectRoom(RoomWithSpace? r) {
+    setState(() {
+      widget.onRoomSelected(r);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
@@ -57,117 +63,87 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
             }
           });
 
-          return Column(
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    MaterialButton(
-                        padding: EdgeInsets.all(2),
-                        disabledTextColor:
-                            Theme.of(context).colorScheme.onBackground,
-                        onPressed: isOurProfile
-                            ? () => context.pushRoute(AccountsDetailsRoute())
-                            : null,
-                        child: H2Title("User profiles")),
-                    if (profile == null && isOurProfile)
-                      Card(
-                        child: ListTile(
-                            leading: Icon(Icons.create_new_folder),
-                            title: Text("No user space found"),
-                            subtitle: Text("Go to settings to create one"),
-                            onTap: () =>
-                                context.pushRoute(AccountsDetailsRoute())),
-                      ),
-                    if (results.isEmpty && !isOurProfile)
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListTile(
-                              leading: Icon(Icons.question_mark),
-                              title: Text("No profile found"),
-                              subtitle: Text(
-                                  "We weren't able to found a MinesTRIX profile related to this user. ")),
-                        ),
-                      ),
-                    for (final r in results)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 2, vertical: 2),
-                        child: MaterialButton(
-                            color: r.id == widget.roomSelectedId
-                                ? Theme.of(context).primaryColor
-                                : null,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Row(
-                                children: [
-                                  MatrixImageAvatar(
-                                    client: client,
-                                    url: r.avatar,
-                                    thumnail: true,
-                                    defaultText: r.displayname,
-                                    backgroundColor:
-                                        Theme.of(context).primaryColor,
-                                    shape: MatrixImageAvatarShape.rounded,
-                                    width: 45,
-                                    height: 45,
-                                  ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: 100),
-                                    child: Text(r.displayname,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            color: r.id == widget.roomSelectedId
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary
-                                                : null,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600)),
-                                  ),
-                                ],
-                              ),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!widget.dense)
+                  MaterialButton(
+                      padding: EdgeInsets.all(2),
+                      disabledTextColor:
+                          Theme.of(context).colorScheme.onBackground,
+                      onPressed: isOurProfile
+                          ? () => context.pushRoute(AccountsDetailsRoute())
+                          : null,
+                      child: H2Title("User profiles")),
+                if (profile == null && isOurProfile)
+                  Card(
+                    child: ListTile(
+                        leading: Icon(Icons.create_new_folder),
+                        title: Text("No user space found"),
+                        subtitle: Text("Go to settings to create one"),
+                        onTap: () => context.pushRoute(AccountsDetailsRoute())),
+                  ),
+                if (results.isEmpty && !isOurProfile)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                          leading: Icon(Icons.question_mark),
+                          title: Text("No profile found"),
+                          subtitle: Text(
+                              "We weren't able to found a MinesTRIX profile related to this user. ")),
+                    ),
+                  ),
+                widget.dense
+                    ? DropdownButton<RoomWithSpace>(
+                        isExpanded: true,
+                        value: results.firstWhereOrNull(
+                            (element) => element.id == widget.roomSelectedId),
+                        icon: const Icon(Icons.arrow_downward),
+                        itemHeight: 52,
+                        underline: Container(),
+                        onChanged: (RoomWithSpace? c) {
+                          selectRoom(c);
+                        },
+                        items: results.map<DropdownMenuItem<RoomWithSpace>>(
+                            (RoomWithSpace room) {
+                          return DropdownMenuItem<RoomWithSpace>(
+                              value: room,
+                              child: MinestrixRoomTile(
+                                roomWithSpace: room,
+                                client: client,
+                                selected: room.id == widget.roomSelectedId,
+                              ));
+                        }).toList())
+                    : Column(
+                        children: [
+                          for (final room in results)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 2, vertical: 2),
+                              child: MaterialButton(
+                                  color: room.id == widget.roomSelectedId
+                                      ? Theme.of(context).primaryColor
+                                      : null,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: MinestrixRoomTile(
+                                        roomWithSpace: room,
+                                        client: client,
+                                        selected:
+                                            room.id == widget.roomSelectedId,
+                                      )),
+                                  onPressed: () => selectRoom(room)),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                widget.onRoomSelected(r);
-                              });
-                            }),
-                      ),
-                  ],
-                ),
-              ),
-            ],
+                        ],
+                      )
+              ],
+            ),
           );
         });
-  }
-}
-
-class RoomWithSpace {
-  Room? room;
-  SpaceRoom? space;
-
-  /// Save the creator of the room in the case where we only have the space result
-  String? _creator;
-
-  String get id => room?.id ?? space!.id;
-  String get displayname => room?.displayname ?? space?.name ?? '';
-  String get topic => room?.topic ?? space?.topic ?? '';
-  String? get creatorId => room?.creatorId ?? _creator;
-
-  Uri? get avatar => room?.avatar;
-
-  RoomWithSpace({this.room, this.space, String? creator}) {
-    _creator = creator;
   }
 }
