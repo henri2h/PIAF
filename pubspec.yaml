@@ -51,7 +51,7 @@ dependencies:
   
   # Post formating
   flutter_markdown:
-  emoji_picker_flutter: ^1.0.7
+  emoji_picker_flutter: ^1.2.1
 
   # images
   image_picker:
@@ -91,12 +91,12 @@ dependencies:
   package_info_plus: ^1.0.0
   
   minestrix_chat:
+    #path: ../minestrix-chat
     git:
       url: https://gitlab.com/minestrix/minestrix-chat.git
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
   desktop_notifications: ^0.6.3
-  flutter_app_lock: ^2.0.0
   flutter_local_notifications: ^9.4.0
   unifiedpush: ^4.0.0
   connectivity_plus: ^2.3.0
@@ -105,7 +105,6 @@ dependencies:
   sentry: ^6.5.1
   desktop_lifecycle: ^0.1.0
   callkeep: ^0.3.2
-  wakelock: ^0.6.1+2
   flutter_webrtc: ^0.8.5
 
       
@@ -123,6 +122,7 @@ flutter:
   assets:
       - assets/verification.png
       - assets/sas-emoji.json
+      - assets/icon_512.png
   
 
   fonts:
