@@ -201,6 +201,12 @@ class RoomResult extends StatelessWidget {
             ],
           ),
         ),
+        if (r.room != null && r.room?.joinRules == JoinRules.public)
+          Icon(Icons.public),
+        if (r.room?.encrypted != true &&
+            r.room != null &&
+            r.room?.joinRules != JoinRules.public)
+          Icon(Icons.no_encryption)
       ],
     );
   }
