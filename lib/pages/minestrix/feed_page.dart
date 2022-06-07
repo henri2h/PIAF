@@ -23,10 +23,11 @@ class _FeedPageState extends State<FeedPage> {
       return StreamBuilder(
         stream: client.onMinestrixUpdate,
         builder: (context, _) {
+          final feedOnly = constraints.maxWidth < 860;
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (constraints.maxWidth > 900)
+              if (constraints.maxWidth > 1300)
                 Flexible(
                     flex: 4,
                     child: Padding(
@@ -46,15 +47,21 @@ class _FeedPageState extends State<FeedPage> {
                     )),
               Flexible(
                 flex: 12,
-                child: Container(
-                    constraints: BoxConstraints(maxWidth: 680),
-                    child: MinestrixFeed()),
+                child: !feedOnly
+                    ? Center(
+                        child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 680),
+                            child: MinestrixFeed()),
+                      )
+                    : MinestrixFeed(),
               ),
-              if (constraints.maxWidth > 900)
+              if (!feedOnly)
                 Flexible(
-                  flex: 4,
+                  flex: 6,
                   fit: FlexFit.loose,
-                  child: RightBar(),
+                  child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 340),
+                      child: RightBar()),
                 ),
             ],
           );
