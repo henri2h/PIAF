@@ -14,6 +14,6 @@ class MinestrixRoom {
 
   FeedRoomType? get type => room.feedType;
 
-  User? get user => room.user;
+  User? get user => room.creator;
   String? get userID => room.creatorId;
 }
