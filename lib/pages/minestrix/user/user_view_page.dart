@@ -12,6 +12,7 @@ import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
 import '../../../partials/components/layouts/customHeader.dart';
 import '../../../partials/minestrixTitle.dart';
