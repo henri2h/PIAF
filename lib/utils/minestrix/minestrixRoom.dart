@@ -1,4 +1,5 @@
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class MinestrixRoom {
@@ -14,5 +15,5 @@ class MinestrixRoom {
   FeedRoomType? get type => room.feedType;
 
   User? get user => room.user;
-  String? get userID => room.userID;
+  String? get userID => room.creatorId;
 }
