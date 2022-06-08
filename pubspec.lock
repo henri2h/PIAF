@@ -952,9 +952,11 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
-      path: "../minestrix-chat"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "506f74242587d10316ee14067da027cd62bdbec9"
+      url: "https://gitlab.com/minestrix/minestrix-chat.git"
+    source: git
     version: "0.0.1"
   modal_bottom_sheet:
     dependency: transitive
