@@ -79,11 +79,11 @@ class ContactView extends StatelessWidget {
 }
 
 class MinestrixRoomTileNavigator extends StatelessWidget {
-  const MinestrixRoomTileNavigator({
-    Key? key,
-    required this.room,
-  }) : super(key: key);
+  const MinestrixRoomTileNavigator(
+      {Key? key, required this.room, this.shouldPop: false})
+      : super(key: key);
   final Room room;
+  final bool shouldPop;
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +92,7 @@ class MinestrixRoomTileNavigator extends StatelessWidget {
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
+          if (shouldPop) Navigator.of(context).pop();
           if (room.feedType == FeedRoomType.group) {
             await context.navigateTo(GroupRoute(room: room));
           } else {

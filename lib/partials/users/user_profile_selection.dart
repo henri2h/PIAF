@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -44,7 +45,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
 
     ProfileSpace? profile = ProfileSpace.getProfileSpace(client);
 
-    return FutureBuilder<List<SpaceRoom>?>(
+    return FutureBuilder<List<SpaceRoomsChunk>?>(
         future: ProfileSpace.getProfileSpaceHierarchy(client, widget.userId),
         builder: (context, snap) {
           final results = _rooms.map((e) => RoomWithSpace(room: e)).toList();
@@ -52,7 +53,7 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
 
           discoveredRooms?.forEach((space) {
             final res =
-                results.firstWhereOrNull((item) => item.room?.id == space.id);
+                results.firstWhereOrNull((item) => item.room?.id == space.roomId);
             if (res != null) {
               res.space = space;
             } else {

@@ -39,8 +39,8 @@ class RightBar extends StatelessWidget {
                               itemBuilder: (BuildContext context, int i) {
                                 if (i == 0)
                                   return rightbarHeader(
-                                      header: "Followers",
-                                      noItemText: "No followers found",
+                                      header: "Following",
+                                      noItemText: "Following no one",
                                       hasItems: sfriends.isEmpty);
 
                                 if (i == sfriends.length + 1)

@@ -12,13 +12,13 @@ class FollowingIndicator extends StatelessWidget {
 
   Future<void> follow(Client client) async {
     if (room.space == null) return;
-    switch (room.space!.joinRule) {
-      case JoinRules.public:
+    switch (room.space!.joinRule ?? '') {
+      case "public":
         await client.joinRoom(room.space!
-            .id); // TODO: update me to support joining over federation (need the via field)
+            .roomId); // TODO: update me to support joining over federation (need the via field)
         break;
-      case JoinRules.knock:
-        await client.knockRoom(room.space!.id);
+      case "knock":
+        await client.knockRoom(room.space!.roomId);
         break;
       default:
     }

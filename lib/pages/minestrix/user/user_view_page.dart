@@ -89,13 +89,34 @@ class _UserViewPageState extends State<UserViewPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
+  void updateIfWidgetArgumentChanged() {
+    final updated =
+        widget.userID != _prevUserId || widget.mroom?.id != _prevRoomId;
+
+    if (updated) {
+      resetView();
+      setVariable();
+      init();
+    }
+  }
+
+  String? _prevRoomId;
+  String? _prevUserId;
+
+  void setVariable() {
+    _prevRoomId = widget.mroom?.id;
+    _prevUserId = widget.userID;
 
     _controller.addListener(scrollListener);
     if (mroom == null) setRoom(widget.mroom);
     _userId ??= widget.userID;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    setVariable();
 
     init();
   }
@@ -143,6 +164,8 @@ class _UserViewPageState extends State<UserViewPage> {
 
   @override
   Widget build(BuildContext context) {
+    updateIfWidgetArgumentChanged();
+
     final client = Matrix.of(context).client;
 
     return StreamBuilder<SyncUpdate>(

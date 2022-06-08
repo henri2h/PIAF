@@ -7,7 +7,9 @@ import '../../minestrixRoomTile.dart';
 import '../minesTrix/MinesTrixTitle.dart';
 
 class SuggestionList extends StatelessWidget {
-  const SuggestionList({Key? key}) : super(key: key);
+  const SuggestionList({Key? key, required this.shouldPop}) : super(key: key);
+
+  final bool shouldPop;
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +19,11 @@ class SuggestionList extends StatelessWidget {
       builder: (context, _) =>
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         H2Title("Contacts"),
-        for (Room r in client.sfriends) MinestrixRoomTileNavigator(room: r),
+        for (Room r in client.sfriends)
+          MinestrixRoomTileNavigator(room: r, shouldPop: shouldPop),
         H2Title("Groups"),
-        for (Room r in client.sgroups) MinestrixRoomTileNavigator(room: r),
+        for (Room r in client.sgroups)
+          MinestrixRoomTileNavigator(room: r, shouldPop: shouldPop),
       ]),
     );
   }
