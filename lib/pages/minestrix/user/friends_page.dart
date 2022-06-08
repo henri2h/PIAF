@@ -33,7 +33,7 @@ class _FriendsPageState extends State<FriendsPage> {
     return ListView(
       children: [
         FutureBuilder<Profile>(
-            future: sclient.ownProfile,
+            future: sclient.fetchOwnProfile(),
             builder: (context, snap) {
               if (!snap.hasData) return CircularProgressIndicator();
               return UserInfo(profile: snap.data!);

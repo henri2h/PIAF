@@ -40,9 +40,15 @@ class PostContent extends StatelessWidget {
         switch (event.messageType) {
           case MessageTypes.Text:
           case MessageTypes.Emote:
-            return MarkdownBody(
-              data: event.getLocalizedBody(const MatrixDefaultLocalizations()),
-            );
+            return FutureBuilder<String>(
+                future:
+                    event.calcLocalizedBody(const MatrixDefaultLocalizations()),
+                builder: (context, snap) {
+                  final text = snap.data ?? event.body;
+                  return MarkdownBody(
+                    data: text,
+                  );
+                });
 
           case MessageTypes.Image:
             return Column(
@@ -66,31 +72,42 @@ class PostContent extends StatelessWidget {
             return Text("other message type : " + event.type);
         }
       case EventTypes.RoomCreate:
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                  "✨ " + event.sender.calcDisplayname() + " Joined MinesTRIX ✨",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w400)),
-            ),
-            MinestrixTitle()
-          ],
-        );
+        return FutureBuilder<User?>(
+            future: event.fetchSenderUser(),
+            builder: (context, snap) {
+              final sender = snap.data ?? event.senderFromMemoryOrFallback;
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                        "✨ " + sender.calcDisplayname() + " Joined MinesTRIX ✨",
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.w400)),
+                  ),
+                  MinestrixTitle()
+                ],
+              );
+            });
 
       case EventTypes.RoomAvatar:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                  event.sender.calcDisplayname() + " Changed page picture",
-                  style: TextStyle()),
-            ),
-            MImage(event: event),
-          ],
-        );
+        return FutureBuilder<User?>(
+            future: event.fetchSenderUser(),
+            builder: (context, snap) {
+              final sender = snap.data ?? event.senderFromMemoryOrFallback;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                        sender.calcDisplayname() + " Changed page picture",
+                        style: TextStyle()),
+                  ),
+                  MImage(event: event),
+                ],
+              );
+            });
     }
 
     return Container(

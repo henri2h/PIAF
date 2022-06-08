@@ -44,7 +44,7 @@ class _CalendarEventCardState extends State<CalendarEventCard> {
                       children: [
                         Text("Created by ", style: TextStyle(fontSize: 14)),
                         Text(
-                            widget.room.createEvent?.sender.displayName ??
+                            widget.room.createEvent?.senderFromMemoryOrFallback.displayName ??
                                 widget.room.createEvent?.senderId ??
                                 "",
                             style: TextStyle(fontWeight: FontWeight.bold))
