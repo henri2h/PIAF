@@ -52,8 +52,8 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
           final discoveredRooms = snap.data;
 
           discoveredRooms?.forEach((space) {
-            final res =
-                results.firstWhereOrNull((item) => item.room?.id == space.roomId);
+            final res = results
+                .firstWhereOrNull((item) => item.room?.id == space.roomId);
             if (res != null) {
               res.space = space;
             } else {
