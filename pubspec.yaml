@@ -91,9 +91,9 @@ dependencies:
   package_info_plus: ^1.0.0
   
   minestrix_chat:
-    #path: ../minestrix-chat
-    git:
-      url: https://gitlab.com/minestrix/minestrix-chat.git
+    path: ../minestrix-chat
+    #git:
+    #  url: https://gitlab.com/minestrix/minestrix-chat.git
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
   desktop_notifications: ^0.6.3
@@ -123,6 +123,7 @@ flutter:
       - assets/verification.png
       - assets/sas-emoji.json
       - assets/icon_512.png
+      - assets/bg_paris.jpg
   
 
   fonts:
