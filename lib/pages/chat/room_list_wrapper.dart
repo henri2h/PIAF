@@ -30,7 +30,8 @@ class RoomListWrapperState extends State<RoomListWrapper> {
         client: Matrix.of(context).client,
         allowPop: false,
         onSelection: (String roomId) async {
-          await context.navigateTo(RoomListRoomRoute());
+          await context
+              .navigateTo(RoomListRoomRoute(displaySettingsOnDesktop: true));
         },
         child: Scaffold(
             body: LayoutBuilder(builder: (context, constraints) {
