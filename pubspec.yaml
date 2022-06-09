@@ -123,6 +123,7 @@ flutter:
       - assets/verification.png
       - assets/sas-emoji.json
       - assets/icon_512.png
+      - assets/bg_paris.jpg
   
 
   fonts:

@@ -21,7 +21,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../utils/settings.dart';
 import '../components/friend_suggestion_list.dart';
 import '../components/layouts/customHeader.dart';
-import '../minestrixTitle.dart';
+import '../minestrix_title.dart';
 
 class MinestrixFeed extends StatefulWidget {
   const MinestrixFeed({Key? key}) : super(key: key);

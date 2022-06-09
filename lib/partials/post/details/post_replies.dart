@@ -138,8 +138,7 @@ class RepliesVueRecursiveState extends State<RepliesVueRecursive> {
                                       child: MatrixImageAvatar(
                                         client: client,
                                         url: sender.avatarUrl,
-                                        defaultText:
-                                            sender.calcDisplayname(),
+                                        defaultText: sender.calcDisplayname(),
                                         backgroundColor:
                                             Theme.of(context).primaryColor,
                                         width: 32,
