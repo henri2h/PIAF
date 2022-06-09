@@ -27,6 +27,7 @@ class _MainPageState extends State<MainPage> {
               endDrawer: NotificationView(),
             )
           : AutoTabsScaffold(
+              extendBody: true,
               routes: [
                 FeedRoute(),
                 ResearchRoute(),
@@ -43,6 +44,8 @@ class _MainPageState extends State<MainPage> {
               ],
               bottomNavigationBuilder: (_, tabsRouter) {
                 return BottomNavigationBar(
+                  backgroundColor:
+                      Theme.of(context).scaffoldBackgroundColor.withAlpha(230),
                   currentIndex: tabsRouter.activeIndex,
                   onTap: tabsRouter.setActiveIndex,
                   type: BottomNavigationBarType.fixed,
