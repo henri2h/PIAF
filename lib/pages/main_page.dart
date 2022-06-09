@@ -31,15 +31,7 @@ class _MainPageState extends State<MainPage> {
               routes: [
                 FeedRoute(),
                 ResearchRoute(),
-                RoomsListRoute(
-                    client: Matrix.of(context).client,
-                    allowPop: false,
-                    onSelection: (String roomId) {
-                      context.navigateTo(RoomRoute(
-                          client: Matrix.of(context).client,
-                          roomId: roomId,
-                          onBack: () => context.popRoute()));
-                    }),
+                RoomListWrapper(),
                 UserRoute(userID: Matrix.of(context).client.userID),
               ],
               bottomNavigationBuilder: (_, tabsRouter) {

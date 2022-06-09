@@ -3,13 +3,15 @@
 // @CustomAutoRouter
 
 import 'package:auto_route/auto_route.dart';
+import 'package:minestrix/pages/chat/room_list_wrapper.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix_chat/view/room_list_page.dart';
+import 'package:minestrix_chat/view/room_list/room_list_room.dart';
 import 'package:minestrix_chat/view/room_page.dart';
 
 import 'pages/account/accountsDetailsPage.dart';
 import 'pages/app_wrapper_page.dart';
 import 'pages/calendar_events/calendar_event_page.dart';
+import 'pages/chat/room_list_page.dart';
 import 'pages/debug_page.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
@@ -29,6 +31,11 @@ import 'pages/settings/settings_profile_page.dart';
 import 'pages/settings/settings_security_page.dart';
 import 'pages/settings/settings_theme_page.dart';
 
+const chatsWrapper = AutoRoute(path: 'rooms', page: RoomListWrapper, children: [
+  AutoRoute(path: '', page: RoomListPage, initial: true),
+  AutoRoute(path: ':roomId', name: 'RoomListRoomRoute', page: RoomListRoom),
+]);
+
 @AdaptiveAutoRouter(
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
@@ -44,11 +51,9 @@ import 'pages/settings/settings_theme_page.dart';
         AutoRoute(path: 'feed', page: FeedPage, initial: true),
         AutoRoute(path: 'search', page: ResearchPage),
         AutoRoute(path: 'my_account', page: UserViewPage, name: "UserRoute"),
-        AutoRoute(
-          path: 'chats',
-          page: RoomsListPage,
-        ),
+        chatsWrapper,
       ]),
+
       AutoRoute(path: 'feed', page: FeedPage),
       AutoRoute(path: 'group', page: GroupPage),
       AutoRoute(path: 'group/create', page: CreateGroupPage),
@@ -73,10 +78,7 @@ import 'pages/settings/settings_theme_page.dart';
       ]),
       // chats
       AutoRoute(path: ':roomId', page: RoomPage),
-      AutoRoute(
-        path: 'chats',
-        page: RoomsListPage,
-      ),
+      chatsWrapper,
       AutoRoute(path: 'login', page: LoginPage),
       RedirectRoute(path: '*', redirectTo: 'feed')
     ]),
