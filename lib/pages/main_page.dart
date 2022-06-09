@@ -27,22 +27,17 @@ class _MainPageState extends State<MainPage> {
               endDrawer: NotificationView(),
             )
           : AutoTabsScaffold(
+              extendBody: true,
               routes: [
                 FeedRoute(),
                 ResearchRoute(),
-                RoomsListRoute(
-                    client: Matrix.of(context).client,
-                    allowPop: false,
-                    onSelection: (String roomId) {
-                      context.navigateTo(RoomRoute(
-                          client: Matrix.of(context).client,
-                          roomId: roomId,
-                          onBack: () => context.popRoute()));
-                    }),
+                RoomListWrapper(),
                 UserRoute(userID: Matrix.of(context).client.userID),
               ],
               bottomNavigationBuilder: (_, tabsRouter) {
                 return BottomNavigationBar(
+                  backgroundColor:
+                      Theme.of(context).scaffoldBackgroundColor.withAlpha(230),
                   currentIndex: tabsRouter.activeIndex,
                   onTap: tabsRouter.setActiveIndex,
                   type: BottomNavigationBarType.fixed,

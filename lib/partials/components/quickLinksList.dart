@@ -37,8 +37,7 @@ class _QuickLinksBarState extends State<QuickLinksBar>
               name: "Chats",
               icon: Icons.chat,
               onPressed: () async {
-                await context.navigateTo(RoomsListRoute(
-                    client: Matrix.of(context).client, enableStories: true));
+                await context.navigateTo(RoomListWrapper());
               }),
           QuickLinkButton(
               name: "Search",
