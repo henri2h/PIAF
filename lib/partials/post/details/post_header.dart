@@ -5,6 +5,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
@@ -35,9 +36,10 @@ class PostHeader extends StatelessWidget {
             children: [
               Flexible(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 12.0, horizontal: 12),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -46,9 +48,8 @@ class PostHeader extends StatelessWidget {
                             url: sender.avatarUrl,
                             defaultText: sender.displayName ?? sender.id,
                             backgroundColor: Theme.of(context).primaryColor,
-                            width: 48,
-                            height: 48,
-                            thumnail: true,
+                            width: MinestrixAvatarSizeConstants.small,
+                            height: MinestrixAvatarSizeConstants.small,
                             defaultIcon: Icon(Icons.person, size: 48)),
                       ),
                       if (room.feedType != FeedRoomType.group)

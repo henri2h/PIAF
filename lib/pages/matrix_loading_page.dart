@@ -21,7 +21,7 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
       await sclient.roomsLoading;
       await sclient.accountDataLoading;
       if (sclient.prevBatch?.isEmpty ?? true) {
-        await sclient.onFirstSync.stream.first;
+        await sclient.onSync.stream.first;
       }
     } else
       print("Can't wait for rooms loading");

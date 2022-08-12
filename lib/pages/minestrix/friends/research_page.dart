@@ -10,6 +10,7 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/style/constants.dart';
 
 import '../../../partials/components/search/suggestion_list.dart';
+import '../../../utils/platforms_info.dart';
 
 class ResearchPage extends StatefulWidget {
   ResearchPage({Key? key, this.isPopup = false}) : super(key: key);
@@ -56,7 +57,7 @@ class _ResearchPageState extends State<ResearchPage> {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                   controller: c,
-                  autofocus: true,
+                  autofocus: !PlatformInfos.isMobile,
                   onChanged: _onSearchChanged,
                   decoration: Constants.kTextFieldInputDecoration),
             ),

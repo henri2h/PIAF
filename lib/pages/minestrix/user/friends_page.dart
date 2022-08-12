@@ -7,7 +7,6 @@ import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 
 import 'package:minestrix/partials/components/account/account_card.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/partials/users/user_info.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
@@ -36,7 +35,7 @@ class _FriendsPageState extends State<FriendsPage> {
             future: sclient.fetchOwnProfile(),
             builder: (context, snap) {
               if (!snap.hasData) return CircularProgressIndicator();
-              return UserInfo(profile: snap.data!);
+              return Container(); //UserInfo(profile: snap.data!);
             }),
         H1Title("Following"),
         Padding(

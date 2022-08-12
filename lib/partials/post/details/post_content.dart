@@ -5,8 +5,8 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrix_title.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/partials/event/matrix_image.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_content.dart';
-import 'package:minestrix_chat/partials/matrix_images.dart';
 import 'package:minestrix_chat/utils/social/posts/model/json/social_image_item.dart';
 
 class PostContent extends StatelessWidget {
@@ -61,8 +61,8 @@ class PostContent extends StatelessWidget {
                         constraints: BoxConstraints(
                             maxHeight: imageMaxHeight!,
                             minHeight: imageMaxHeight ?? 400),
-                        child: MImage(event: event))
-                    : MImage(event: event),
+                        child: MatrixEventImage(event: event))
+                    : MatrixEventImage(event: event),
               ],
             );
           case MessageTypes.Video:
@@ -104,7 +104,7 @@ class PostContent extends StatelessWidget {
                         sender.calcDisplayname() + " Changed page picture",
                         style: TextStyle()),
                   ),
-                  MImage(event: event),
+                  MatrixEventImage(event: event),
                 ],
               );
             });

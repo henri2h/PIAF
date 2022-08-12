@@ -75,7 +75,7 @@ class _AddUserPageState extends State<AddUserPage> {
             ListTile(
                 title: Text((p.displayName ?? p.userId)),
                 leading: MatrixImageAvatar(
-                    client: client, url: p.avatarUrl, thumnail: true),
+                    client: client, url: p.avatarUrl, thumnailOnly: true),
                 subtitle: Text(p.userId)),
         ]));
   }

@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix_chat/utils/matrix_sdk_extension/device_extensions.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+
+import 'package:timeago/timeago.dart' as timeago;
+
+import '../../partials/components/minesTrix/MinesTrixTitle.dart';
 
 class SettingsSecurityPage extends StatefulWidget {
   const SettingsSecurityPage({Key? key}) : super(key: key);
@@ -21,13 +26,20 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
     return ListView(
       children: [
         CustomHeader(title: "Security"),
+        H1Title("This session"),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Device name : " + client.deviceName!),
-              Text("Device ID : " + client.deviceID!),
+              ListTile(
+                  leading: Icon(Icons.title),
+                  title: Text("Device name"),
+                  subtitle: Text(client.deviceName!)),
+              ListTile(
+                  leading: Icon(Icons.perm_device_info),
+                  title: Text("Device id"),
+                  subtitle: Text(client.deviceID!)),
             ],
           ),
         ),
@@ -37,26 +49,16 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                 children: [
                   if (client.encryption!.crossSigning.enabled == false)
                     Text("❌ Cross signing is not enabled"),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: client.isUnknownSession == false
-                          ? [
-                              Icon(Icons.check, size: 32),
-                              SizedBox(width: 10),
-                              Flexible(
-                                  child: Text(
-                                      "Verified session, you're good to go !!",
-                                      style: TextStyle(fontSize: 18)))
-                            ]
-                          : [
-                              Icon(Icons.error, size: 32),
-                              SizedBox(width: 10),
-                              Flexible(
-                                  child: Text("Not verified session",
-                                      style: TextStyle(fontSize: 18)))
-                            ],
-                    ),
+                  ListTile(
+                    leading: client.isUnknownSession == false
+                        ? Icon(Icons.check, size: 32, color: Colors.green)
+                        : Icon(Icons.error, size: 32),
+                    title: Text("Session status"),
+                    subtitle: client.isUnknownSession == false
+                        ? Text("Verified")
+                        : Text(
+                            "Not verified",
+                          ),
                   ),
                   if (client.encryptionEnabled && client.isUnknownSession)
                     Padding(
@@ -105,6 +107,47 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text("Encryption disabled ❌"),
               ),
+        FutureBuilder<List<Device>?>(
+            future: client.getDevices(),
+            builder: (context, snap) {
+              if (!snap.hasData) return Container();
+
+              final devices = snap.data;
+
+              devices!.sort(((a, b) {
+                final da = a.lastSeenTs == null
+                    ? null
+                    : DateTime.fromMillisecondsSinceEpoch(a.lastSeenTs!);
+                final db = b.lastSeenTs == null
+                    ? null
+                    : DateTime.fromMillisecondsSinceEpoch(b.lastSeenTs!);
+
+                if (da == null || db == null) return 0;
+
+                return db.compareTo(da);
+              }));
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  H1Title("Devices"),
+                  for (final device in devices)
+                    Builder(builder: (context) {
+                      final dt = device.lastSeenTs != null
+                          ? DateTime.fromMillisecondsSinceEpoch(
+                              device.lastSeenTs!)
+                          : null;
+
+                      return ListTile(
+                        leading: Icon(device.icon),
+                        title: Text(device.displayname.toString()),
+                        subtitle: Text(
+                            "Last seen ${dt != null ? timeago.format(dt) : "some time ago"}"),
+                      );
+                    })
+                ],
+              );
+            }),
       ],
     );
   }

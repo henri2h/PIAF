@@ -25,7 +25,7 @@ enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
 class PostState extends State<Post> with SingleTickerProviderStateMixin {
   final key = GlobalKey();
   String? replyToMessageId = null;
-  bool showReplies = true;
+  bool showReplies = false;
 
   Set<Event>? reactions;
   Set<Event>? replies;
@@ -69,9 +69,6 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
       shareEvent = widget.event.room.client.getEventFromArbitraryRoomById(
           post.shareEventId!, post.shareEventRoomId!);
     }
-
-    // by default we let the user repsond to the actual matrix message
-    replyToMessageId = widget.event.eventId;
 
     futureTimeline = getTimeline();
     super.initState();

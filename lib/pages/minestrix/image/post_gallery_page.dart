@@ -125,11 +125,11 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                           return Center(child: CircularProgressIndicator());
                         final image = snap.data!;
 
-                        return MatrixImage.fromImage(
+                        return MatrixSocialImage(
                             key: Key(image.file?.url ?? pos.toString()),
                             room: widget.post.event!.room,
                             image: image,
-                            boxfit: BoxFit.cover,
+                            fit: BoxFit.cover,
                             borderRadius: BorderRadius.zero);
                       }),
                       PostGalleryNavButton(

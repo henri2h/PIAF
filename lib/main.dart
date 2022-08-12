@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
@@ -13,8 +14,12 @@ import 'app.dart';
 import 'utils/managers/theme_manager.dart';
 import 'utils/platforms_info.dart';
 
-void main() async {
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (runWebViewTitleBarWidget(args)) {
+    return;
+  }
 
   await Settings().loadGuarded(); // load the settings
 

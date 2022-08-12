@@ -5,7 +5,10 @@ import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:provider/provider.dart';
 
+import '../../partials/components/minesTrix/MinesTrixTitle.dart';
+import '../../utils/managers/theme_manager.dart';
 import '../login_page.dart';
 
 class SettingsAccountPage extends StatefulWidget {
@@ -43,7 +46,6 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
                           url: p.data?.avatarUrl,
                           width: 48,
                           height: 48,
-                          thumnail: true,
                           defaultIcon: Icon(Icons.person, size: 32),
                         ),
                   title: Text("Edit display name"),
@@ -79,11 +81,20 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Clients"),
-              Text("Multi account ${m.isMultiAccount}"),
+              H2Title("Accounts"),
               for (final c in m.widget.clients)
                 ListTile(
                     title: Text(c.clientName),
+                    leading: FutureBuilder<Profile>(
+                        future: c.fetchOwnProfile(),
+                        builder: (context, snap) {
+                          return MatrixImageAvatar(
+                            url: snap.data?.avatarUrl,
+                            client: c,
+                            defaultText: snap.data?.displayName,
+                            backgroundColor: Theme.of(context).primaryColor,
+                          );
+                        }),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -92,13 +103,20 @@ class _SettingsAccountPageState extends State<SettingsAccountPage> {
                     ),
                     onTap: () async {
                       m.setActiveClient(c);
+
+                      // forcing rebuilding the client
+                      context.read<ThemeNotifier>().setPrimaryColor(
+                          context.read<ThemeNotifier>().primaryColor);
+
+                      setState(() {});
                     }),
               ListTile(
-                  title: Text("Add client"),
+                  title: Text("Add an account"),
                   trailing: Icon(Icons.add),
                   onTap: () async {
                     AdaptativeDialogs.show(
                         context: context,
+                        bottomSheet: true,
                         builder: (context) => LoginPage(
                             popOnLogin: true, title: "Add a new account"));
                   }),
