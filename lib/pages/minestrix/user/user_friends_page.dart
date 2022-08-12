@@ -4,7 +4,6 @@ import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/account/account_card.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix/partials/users/user_info.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
@@ -23,7 +22,8 @@ class UserFriendsPage extends StatelessWidget {
               future: room.client.getProfileFromUserId(room.creatorId!),
               builder: (context, snap) {
                 if (!snap.hasData) return CircularProgressIndicator();
-                return UserInfo(profile: snap.data!);
+                return Container();
+                //UserInfo(profile: snap.data!);
               }),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),

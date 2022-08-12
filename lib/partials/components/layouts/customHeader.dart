@@ -46,7 +46,7 @@ class CustomHeader extends StatelessWidget {
                           Scaffold.of(context).openDrawer();
                         },
                         icon: Icon(Icons.menu)),
-                  if (child != null) child!,
+                  if (child != null) Flexible(child: child!),
                   if (title != null)
                     Expanded(
                       child: Padding(

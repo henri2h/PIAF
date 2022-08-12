@@ -35,7 +35,6 @@ class MinesTrixContactView extends StatelessWidget {
                             client: Matrix.of(context).client,
                             url: user.avatarUrl,
                             width: 48,
-                            thumnail: true,
                             height: 48),
                         Expanded(
                           child: Padding(

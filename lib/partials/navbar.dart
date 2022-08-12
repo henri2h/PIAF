@@ -8,6 +8,7 @@ import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../pages/minestrix/friends/research_page.dart';
+import '../utils/settings.dart';
 
 class NavBarDesktop extends StatelessWidget {
   const NavBarDesktop({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class NavBarDesktop extends StatelessWidget {
   void displaySearch(BuildContext context) async =>
       await AdaptativeDialogs.show(
           title: 'Search',
-          builder: (BuildContext) => ResearchPage(isPopup: true),
+          builder: (context) => ResearchPage(isPopup: true),
           context: context);
   @override
   Widget build(BuildContext context) {
@@ -67,8 +68,15 @@ class NavBarDesktop extends StatelessWidget {
                       name: "Chats",
                       icon: Icons.chat,
                       onPressed: () async {
-                        await context.navigateTo(RoomListWrapper());
+                        await context.navigateTo(RoomListWrapperRoute());
                       }),
+                  if (Settings().calendarEventSupport)
+                    NavBarButton(
+                        name: "Events",
+                        icon: Icons.event,
+                        onPressed: () async {
+                          await context.navigateTo(CalendarEventListRoute());
+                        })
                 ],
               ),
             ),

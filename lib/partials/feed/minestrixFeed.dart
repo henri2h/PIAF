@@ -18,6 +18,7 @@ import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
+import '../../pages/app_wrapper_page.dart';
 import '../../utils/settings.dart';
 import '../components/friend_suggestion_list.dart';
 import '../components/layouts/customHeader.dart';
@@ -185,7 +186,11 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.only(
+                          bottom: 50,
+                          left: 8.0,
+                          right: 8,
+                        ),
                         child: CustomTextFutureButton(
                             icon: Icon(Icons.refresh),
                             text: "Refresh rooms",
@@ -198,16 +203,27 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
 
                 return Column(
                   children: [
-                    CustomHeader(title: "Feed", actionButton: [
-                      IconButton(
-                          icon: Icon(Icons.group_add),
-                          onPressed: () {
-                            AdaptativeDialogs.show(
-                                context: context,
-                                builder: (BuildContext) => CreateGroupPage());
-                          }),
-                      NotificationBell()
-                    ]),
+                    CustomHeader(
+                        title: "Feed",
+                        child: MaterialButton(
+                            minWidth: 0,
+                            shape: CircleBorder(),
+                            child: AvatarBottomBar(key: Key(client.userID!)),
+                            onPressed: () {
+                              context.pushRoute(UserViewRoute(
+                                  userID: Matrix.of(context).client.userID));
+                            }),
+                        actionButton: [
+                          IconButton(
+                              icon: Icon(Icons.group_add),
+                              onPressed: () {
+                                AdaptativeDialogs.show(
+                                    context: context,
+                                    builder: (BuildContext) =>
+                                        CreateGroupPage());
+                              }),
+                          NotificationBell()
+                        ]),
                     Expanded(
                       child: CustomListViewWithEmoji(
                           itemCount: events!.length + 1,
@@ -232,7 +248,8 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
 
                             return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 2, horizontal: 12),
+                                  vertical: 2,
+                                ),
                                 child: Post(
                                     event: events[i - 1],
                                     onReact: (Offset e) =>

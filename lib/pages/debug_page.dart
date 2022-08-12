@@ -128,44 +128,40 @@ class _DebugPageState extends State<DebugPage> {
               for (var i = 0; i < rooms.length; i++)
                 Padding(
                   padding: const EdgeInsets.all(4.0),
-                  child: ListTile(
-                      title: Row(
-                        children: [
-                          Flexible(
-                            child: Text(rooms[i].name),
-                          ),
-                          Text(" - " + rooms[i].id,
-                              style: TextStyle(fontWeight: FontWeight.normal)),
-                        ],
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 2.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: MatrixUserItem(
-                                client: client,
-                                name: rooms[i].creator?.displayName,
-                                userId: rooms[i].creatorId ?? '',
-                                avatarUrl: rooms[i].creator?.avatarUrl,
-                              ),
+                  child: Column(
+                    children: [
+                      ListTile(
+                          title: Text(rooms[i].name),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(rooms[i].id,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal)),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          leading: (timelineLength.length > i)
+                              ? Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(timelineLength[i].toString()),
+                                )
+                              : null,
+                          trailing: IconButton(
+                              icon: Icon(Icons.refresh),
+                              onPressed: () async {
+                                await loadElements(context, rooms[i]);
+                              })),
+                      MatrixUserItem(
+                        client: client,
+                        name: rooms[i].creator?.displayName,
+                        userId: rooms[i].creatorId ?? '',
+                        avatarUrl: rooms[i].creator?.avatarUrl,
                       ),
-                      leading: (timelineLength.length > i)
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(timelineLength[i].toString()),
-                            )
-                          : null,
-                      trailing: IconButton(
-                          icon: Icon(Icons.refresh),
-                          onPressed: () async {
-                            await loadElements(context, rooms[i]);
-                          })),
+                    ],
+                  ),
                 ),
             if (client != null)
               Text("MinesTRIX rooms length : " +

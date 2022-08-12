@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 import 'package:minestrix_chat/utils/events/event_extension.dart';
 
 import 'details/post_content.dart';
 import 'details/post_header.dart';
-import 'details/post_reactions.dart';
 import 'details/post_replies.dart';
 import 'post.dart';
+import 'details/post_reaction_bar.dart';
 
 class PostView extends StatelessWidget {
   final PostState controller;
@@ -27,21 +25,21 @@ class PostView extends StatelessWidget {
                   .getDisplayEventWithType(t, MatrixTypes.post)
               : controller.post.event!;
 
-          return Card(
-            key: key,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
+          return LayoutBuilder(builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 500;
+
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // post content
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Divider(),
                     PostHeader(
                         eventToEdit: controller.post.event!,
                         event: displayEvent),
+                    Divider(),
                     if (controller.post.event!.status != EventStatus.synced)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -103,142 +101,8 @@ class PostView extends StatelessWidget {
                               ],
                             );
                           }),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0, vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Flexible(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                if (controller.reactions?.isNotEmpty ?? false)
-                                  Flexible(
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Row(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
-                                            child: MaterialButton(
-                                                child: PostReactions(
-                                                    event:
-                                                        controller.post.event!,
-                                                    reactions:
-                                                        controller.reactions!),
-                                                onPressed: () async {
-                                                  await AdaptativeDialogs.show(
-                                                      context: context,
-                                                      builder: (context) =>
-                                                          EventReactionList(
-                                                              reactions: controller
-                                                                  .reactions!),
-                                                      title: "Reactions");
-                                                }),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                if (controller.replies?.isNotEmpty ?? false)
-                                  MaterialButton(
-                                      child: Text((controller.showReplies
-                                              ? "Hide "
-                                              : "Show ") +
-                                          controller.replies!.length
-                                              .toString() +
-                                          " comments"),
-                                      onPressed: controller.toggleReplyView),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            child: MaterialButton(
-                                elevation: 0,
-                                color: Theme.of(context).primaryColor,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 2),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.insert_emoticon_rounded,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary),
-                                    SizedBox(width: 5),
-                                    Text("Reaction",
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary))
-                                  ],
-                                ),
-                                onPressed: () {}),
-                            onTapDown: (TapDownDetails detail) async {
-                              controller.onReact(detail.globalPosition);
-                            },
-                          ),
-                          SizedBox(width: 9),
-                          MaterialButton(
-                            elevation: 0,
-                            color: Theme.of(context).primaryColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 2),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.reply,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimary),
-                                SizedBox(width: 5),
-                                Text("Comment",
-                                    style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary))
-                              ],
-                            ),
-                            onPressed: controller.replyButtonClick,
-                          ),
-                          if (controller.canShare)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 9.0),
-                              child: MaterialButton(
-                                elevation: 0,
-                                color: Theme.of(context).primaryColor,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 2),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.share,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary),
-                                    SizedBox(width: 5),
-                                    Text("Share",
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary))
-                                  ],
-                                ),
-                                onPressed: controller.share,
-                              ),
-                            ),
-                        ],
-                      ),
-                    )
+                    Divider(),
+                    ReactionBar(controller: controller, isMobile: isMobile),
                   ],
                 ),
                 (controller.replyToMessageId != null ||
@@ -250,24 +114,28 @@ class PostView extends StatelessWidget {
                             Divider(),
                             if (controller.replyToMessageId != null ||
                                 controller.showReplies)
-                              RepliesVue(
-                                  timeline: t,
-                                  event: controller.post.event!,
-                                  replies: (controller.showReplies &&
-                                          controller.replies?.isNotEmpty ==
-                                              true)
-                                      ? controller.nestedReplies
-                                      : null,
-                                  replyToMessageId: controller.replyToMessageId,
-                                  setRepliedMessage:
-                                      controller.setRepliedMessage),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: RepliesVue(
+                                    timeline: t,
+                                    event: controller.post.event!,
+                                    replies: (controller.showReplies &&
+                                            controller.replies?.isNotEmpty ==
+                                                true)
+                                        ? controller.nestedReplies
+                                        : null,
+                                    replyToMessageId:
+                                        controller.replyToMessageId,
+                                    setRepliedMessage:
+                                        controller.setRepliedMessage),
+                              ),
                           ],
                         ),
                       )
                     : SizedBox(height: 8),
               ],
-            ),
-          );
+            );
+          });
         });
   }
 }

@@ -29,9 +29,16 @@ class RoomListWrapperState extends State<RoomListWrapper> {
       child: RoomList(
         client: Matrix.of(context).client,
         allowPop: false,
-        onSelection: (String roomId) async {
+        onRoomSelection: (String roomId) async {
           await context
               .navigateTo(RoomListRoomRoute(displaySettingsOnDesktop: true));
+        },
+        onSpaceSelection: (String spaceId) async {
+          if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
+            await context.navigateTo(RoomListSpaceRoute());
+          } else {
+            await context.navigateTo(RoomListRoute());
+          }
         },
         child: Scaffold(
             body: LayoutBuilder(builder: (context, constraints) {
@@ -46,11 +53,18 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                                 mobile: false,
                                 scrollController: scrollControllerSpaces))),
                   if (!mobile)
-                    ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 360),
-                        child: RoomListBuilder(
-                          scrollController: scrollControllerRoomList,
-                        )),
+                    Container(
+                      color: Theme.of(context).cardColor,
+                      child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 350),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: RoomListBuilder(
+                              scrollController: scrollControllerRoomList,
+                            ),
+                          )),
+                    ),
                   Expanded(child: AutoRouter()),
                 ],
               );

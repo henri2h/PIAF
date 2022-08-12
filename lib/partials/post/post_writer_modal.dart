@@ -26,8 +26,7 @@ class PostWriterModal extends StatelessWidget {
                     height: 48,
                     width: 48,
                     defaultText: snap.data?.displayName ?? client.userID,
-                    backgroundColor: Theme.of(context).primaryColor,
-                    thumnail: true);
+                    backgroundColor: Theme.of(context).primaryColor);
               }),
           SizedBox(width: 20),
           Expanded(

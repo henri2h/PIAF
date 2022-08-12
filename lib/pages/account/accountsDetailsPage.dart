@@ -166,7 +166,6 @@ class ProfileSpaceCard extends StatelessWidget {
               child: MatrixImageAvatar(
                   url: profile.r.avatar,
                   client: profile.r.client,
-                  thumnail: true,
                   backgroundColor: Theme.of(context).primaryColor,
                   defaultText: profile.r.name,
                   width: 80,

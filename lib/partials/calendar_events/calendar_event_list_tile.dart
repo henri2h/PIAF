@@ -7,15 +7,15 @@ import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
 import 'package:minestrix/router.gr.dart';
 
-class CalendarEventCard extends StatefulWidget {
+class CalendarEventListTile extends StatefulWidget {
   final Room room;
-  const CalendarEventCard({Key? key, required this.room}) : super(key: key);
+  const CalendarEventListTile({Key? key, required this.room}) : super(key: key);
 
   @override
-  State<CalendarEventCard> createState() => _CalendarEventCardState();
+  State<CalendarEventListTile> createState() => _CalendarEventListTileState();
 }
 
-class _CalendarEventCardState extends State<CalendarEventCard> {
+class _CalendarEventListTileState extends State<CalendarEventListTile> {
   Future<void>? getState;
   @override
   void initState() {
@@ -56,7 +56,6 @@ class _CalendarEventCardState extends State<CalendarEventCard> {
                 trailing: Icon(Icons.navigate_next),
                 leading: MatrixImageAvatar(
                     client: widget.room.client,
-                    thumnail: true,
                     url: widget.room.avatar,
                     defaultText: widget.room.name,
                     backgroundColor: Theme.of(context).primaryColor),

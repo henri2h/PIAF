@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/minestrix_title.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/partials/login/login_card.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -75,10 +74,17 @@ class _LoginPageState extends State<LoginPage> {
                                         Text("MinesTRIX",
                                             style: TextStyle(
                                                 fontSize: 22,
-                                                fontWeight: FontWeight.w800)),
+                                                fontWeight: FontWeight.w800,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimary)),
                                         Text(
                                             "A privacy focused social media based on MATRIX",
-                                            style: TextStyle(fontSize: 14))
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimary))
                                       ],
                                     ),
                                   ),
@@ -98,7 +104,8 @@ class _LoginPageState extends State<LoginPage> {
                                 padding: const EdgeInsets.all(20.0),
                                 child: Container(
                                   child: ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: 450),
+                                    constraints: BoxConstraints(
+                                        maxWidth: 450, minHeight: 200),
                                     child: LoginMatrixCard(
                                         client: client,
                                         popOnLogin: widget.popOnLogin),
@@ -157,18 +164,53 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       body: Container(
-        color: Colors.grey[200],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            MinestrixTitle(),
-            Expanded(
-                child: Container(
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(40))),
-                    child: LoginMatrixCard(client: client)))
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset("assets/bg_paris.jpg", fit: BoxFit.cover),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(50),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Row(
+                      children: [
+                        Image.asset("assets/icon_512.png",
+                            width: 72, height: 72, cacheWidth: 140),
+                        SizedBox(width: 28),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("MinesTRIX",
+                                  style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white)),
+                              Text(
+                                  "A privacy focused social media based on MATRIX",
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.white))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ]),
+                ),
+                Flexible(
+                  child: Container(
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(30))),
+                      child: ListView(shrinkWrap: true, children: <Widget>[
+                        LoginMatrixCard(client: client),
+                      ])),
+                ),
+              ],
+            ),
           ],
         ),
       ),
