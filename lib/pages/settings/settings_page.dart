@@ -31,13 +31,13 @@ class SettingsPageState extends State<SettingsPage> {
           children: [
             if (!smallScreen)
               ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 360),
+                constraints: const BoxConstraints(maxWidth: 360),
                 child: Container(
                   color: Theme.of(context).scaffoldBackgroundColor,
-                  child: SettingsPanel(),
+                  child: const SettingsPanel(),
                 ),
               ),
-            Expanded(child: AutoRouter())
+            const Expanded(child: AutoRouter())
           ],
         );
       }),
@@ -51,8 +51,8 @@ class SettingsPanelInnerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      if (SettingsPage.of(context).smallScreen) return SettingsPanel();
-      return Center(child: Icon(Icons.settings_accessibility, size: 80));
+      if (SettingsPage.of(context).smallScreen) return const SettingsPanel();
+      return const Center(child: Icon(Icons.settings_accessibility, size: 80));
     });
   }
 }
@@ -68,7 +68,7 @@ class SettingsPanel extends StatelessWidget {
 
     return Column(
       children: [
-        CustomHeader(title: "Settings", overrideCanPop: true),
+        const CustomHeader(title: "Settings", overrideCanPop: true),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -87,83 +87,96 @@ class SettingsPanel extends StatelessWidget {
                               width: 120,
                               height: 120,
                               defaultText: p.data?.displayname ?? client.userID,
-                              defaultIcon: Icon(Icons.person, size: 32),
+                              defaultIcon: const Icon(Icons.person, size: 32),
                             ),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Text(p.data?.displayname ?? client.userID!,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 28, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       );
                     }),
                 SettingsList(
-                  lightTheme: SettingsThemeData(
+                  lightTheme: const SettingsThemeData(
                       settingsListBackground: Colors.transparent),
-                  darkTheme: SettingsThemeData(
+                  darkTheme: const SettingsThemeData(
                       settingsListBackground: Colors.transparent),
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   sections: [
                     SettingsSection(
-                      title: Text('Account'),
+                      title: const Text('Account'),
                       tiles: <SettingsTile>[
                         SettingsTile.navigation(
-                          leading: Icon(Icons.person),
-                          title: Text('Account'),
+                          leading: const Icon(Icons.person),
+                          title: const Text('Account'),
                           onPressed: (context) =>
-                              context.navigateTo(SettingsAccountRoute()),
+                              context.navigateTo(const SettingsAccountRoute()),
                         ),
                         SettingsTile.navigation(
-                          leading: Icon(Icons.people),
-                          description: Text("Organize your different profiles"),
-                          title: Text('Profiles'),
+                          leading: const Icon(Icons.list),
+                          description:
+                              const Text("Organize your different feeds"),
+                          title: const Text('Feeds'),
                           onPressed: (context) =>
-                              context.navigateTo(AccountsDetailsRoute()),
+                              context.navigateTo(const AccountsDetailsRoute()),
                         ),
                         SettingsTile.navigation(
-                          leading: Icon(Icons.lock),
-                          title: Text('Security'),
+                          leading: const Icon(Icons.lock),
+                          title: const Text('Security'),
                           onPressed: (context) =>
-                              context.navigateTo(SettingsSecurityRoute()),
+                              context.navigateTo(const SettingsSecurityRoute()),
                         ),
                       ],
                     ),
                     SettingsSection(
-                      title: Text('Common'),
+                      title: const Text('Multi account'),
                       tiles: <SettingsTile>[
                         SettingsTile.navigation(
-                          leading: Icon(Icons.format_paint),
-                          title: Text('Theme'),
-                          onPressed: (context) =>
-                              context.navigateTo(SettingsThemeRoute()),
+                          leading: const Icon(Icons.switch_account),
+                          title: const Text('Switch account'),
+                          onPressed: (context) => context
+                              .navigateTo(const SettingsAccountSwitchRoute()),
                         ),
                       ],
                     ),
                     SettingsSection(
-                      title: Text('Danger'),
+                      title: const Text('Common'),
                       tiles: <SettingsTile>[
                         SettingsTile.navigation(
-                          leading: Icon(Icons.warning),
-                          title: Text('Labs'),
+                          leading: const Icon(Icons.format_paint),
+                          title: const Text('Theme'),
                           onPressed: (context) =>
-                              context.navigateTo(SettingsLabsRoute()),
+                              context.navigateTo(const SettingsThemeRoute()),
+                        ),
+                      ],
+                    ),
+                    SettingsSection(
+                      title: const Text('Danger'),
+                      tiles: <SettingsTile>[
+                        SettingsTile.navigation(
+                          leading: const Icon(Icons.warning),
+                          title: const Text('Labs'),
+                          onPressed: (context) =>
+                              context.navigateTo(const SettingsLabsRoute()),
                         ),
                         SettingsTile.navigation(
-                          leading: Icon(Icons.refresh),
-                          title: Text('Sync'),
+                          leading: const Icon(Icons.refresh),
+                          title: const Text('Sync'),
                           onPressed: (context) =>
-                              context.navigateTo(SettingsSyncRoute()),
+                              context.navigateTo(const SettingsSyncRoute()),
                         ),
                         SettingsTile.navigation(
-                          leading: Icon(Icons.bug_report),
-                          title: Text('Debug'),
+                          leading: const Icon(Icons.bug_report),
+                          title: const Text('Debug'),
                           onPressed: (context) =>
-                              context.navigateTo(DebugRoute()),
+                              context.navigateTo(const DebugRoute()),
                         ),
                         SettingsTile.navigation(
-                            leading: Icon(Icons.logout, color: Colors.red),
-                            title: Text('Logout'),
+                            leading:
+                                const Icon(Icons.logout, color: Colors.red),
+                            title: const Text('Logout'),
                             onPressed: (context) async {
                               final res = await showOkCancelAlertDialog(
                                   context: context,
@@ -176,21 +189,22 @@ class SettingsPanel extends StatelessWidget {
                               }
 
                               await client.logout();
-                              if (Navigator.of(context).canPop())
+                              if (Navigator.of(context).canPop()) {
                                 Navigator.of(context).pop();
+                              }
                             }),
                       ],
                     ),
                     SettingsSection(
                       tiles: [
                         SettingsTile(
-                          title: Text("About"),
+                          title: const Text("About"),
                           description: FutureBuilder<PackageInfo>(
                               future: PackageInfo.fromPlatform(),
                               builder: (context, snap) {
                                 if (!snap.hasData) return Container();
-                                return Text("Version " +
-                                    (snap.data?.version ?? 'null'));
+                                return Text(
+                                    "Version ${snap.data?.version ?? 'null'}");
                               }),
                         )
                       ],
