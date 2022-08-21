@@ -1,4 +1,4 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
@@ -50,7 +50,7 @@ class PostHeader extends StatelessWidget {
                             backgroundColor: Theme.of(context).primaryColor,
                             width: MinestrixAvatarSizeConstants.small,
                             height: MinestrixAvatarSizeConstants.small,
-                            defaultIcon: Icon(Icons.person, size: 48)),
+                            defaultIcon: const Icon(Icons.person, size: 48)),
                       ),
                       if (room.feedType != FeedRoomType.group)
                         Flexible(
@@ -75,7 +75,7 @@ class PostHeader extends StatelessWidget {
                                       },
                                       child: Text(
                                           (sender.displayName ?? sender.id),
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold)),
                                     ),
@@ -103,7 +103,7 @@ class PostHeader extends StatelessWidget {
                                                 feedOwner?.id ??
                                                 "null"),
                                             overflow: TextOverflow.clip,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w400)),
                                       ),
@@ -111,14 +111,32 @@ class PostHeader extends StatelessWidget {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                      timeago.format(event.originServerTs),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          color: Theme.of(context)
-                                              .textTheme
-                                              .caption!
-                                              .color)),
+                                  child: Row(
+                                    children: [
+                                      Text(timeago.format(event.originServerTs),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .caption!
+                                                  .color)),
+                                      const SizedBox(width: 4),
+                                      if (room.joinRules == JoinRules.public)
+                                        Icon(Icons.public,
+                                            size: 16,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .caption!
+                                                .color),
+                                      if (room.encrypted)
+                                        Icon(Icons.lock,
+                                            size: 16,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .caption!
+                                                .color),
+                                    ],
+                                  ),
                                 ),
                               ],
                             );
@@ -168,13 +186,32 @@ class PostHeader extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            Text(timeago.format(event.originServerTs),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .caption!
-                                        .color)),
+                            Row(
+                              children: [
+                                Text(timeago.format(event.originServerTs),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .caption!
+                                            .color)),
+                                const SizedBox(width: 4),
+                                if (room.joinRules == JoinRules.public)
+                                  Icon(Icons.public,
+                                      size: 16,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .caption!
+                                          .color),
+                                if (room.encrypted)
+                                  Icon(Icons.lock,
+                                      size: 16,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .caption!
+                                          .color),
+                              ],
+                            ),
                           ],
                         )),
                     ],
@@ -190,29 +227,29 @@ class PostHeader extends StatelessWidget {
                           itemBuilder: (_) => [
                                 if (event.canRedact)
                                   PopupMenuItem(
+                                      value: "edit",
                                       child: Row(
-                                        children: [
+                                        children: const [
                                           Icon(Icons.edit),
                                           SizedBox(width: 10),
                                           Text("Edit post"),
                                         ],
-                                      ),
-                                      value: "edit"),
+                                      )),
                                 if (event.canRedact &&
                                     event.type == MatrixTypes.post)
                                   PopupMenuItem(
+                                      value: "delete",
                                       child: Row(
-                                        children: [
+                                        children: const [
                                           Icon(Icons.delete, color: Colors.red),
                                           SizedBox(width: 10),
                                           Text("Delete post",
                                               style:
                                                   TextStyle(color: Colors.red)),
                                         ],
-                                      ),
-                                      value: "delete")
+                                      ))
                               ],
-                          icon: Icon(Icons.more_horiz),
+                          icon: const Icon(Icons.more_horiz),
                           onSelected: (String action) async {
                             switch (action) {
                               case "delete":
