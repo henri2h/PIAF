@@ -70,27 +70,31 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!widget.dense)
-                  MaterialButton(
-                      padding: EdgeInsets.all(2),
-                      disabledTextColor:
-                          Theme.of(context).colorScheme.onBackground,
-                      onPressed: isOurProfile
-                          ? () => context.pushRoute(AccountsDetailsRoute())
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: ListTile(
+                      title: const Text("Feeds"),
+                      leading: const Icon(Icons.list),
+                      onTap: isOurProfile
+                          ? () =>
+                              context.pushRoute(const AccountsDetailsRoute())
                           : null,
-                      child: H2Title("User profiles")),
+                    ),
+                  ),
                 if (profile == null && isOurProfile)
                   Card(
                     child: ListTile(
-                        leading: Icon(Icons.create_new_folder),
-                        title: Text("No user space found"),
-                        subtitle: Text("Go to settings to create one"),
-                        onTap: () => context.pushRoute(AccountsDetailsRoute())),
+                        leading: const Icon(Icons.create_new_folder),
+                        title: const Text("No user space found"),
+                        subtitle: const Text("Go to settings to create one"),
+                        onTap: () =>
+                            context.pushRoute(const AccountsDetailsRoute())),
                   ),
                 if (results.isEmpty && !isOurProfile)
                   Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ListTile(
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: const ListTile(
                           leading: Icon(Icons.question_mark),
                           title: Text("No profile found"),
                           subtitle: Text(

@@ -48,12 +48,13 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
   }
 
   int start = 0;
-  List<Event> _events = [];
+  final List<Event> _events = [];
   bool isGettingEvents = false;
 
   Future<List<Event>> getEvents() async {
-    if (!Settings().optimizedFeed)
+    if (!Settings().optimizedFeed) {
       return await Matrix.of(context).client.getMinestrixEvents();
+    }
     if (_events.isNotEmpty) return _events;
 
     await requestEvents();
@@ -120,19 +121,19 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
               builder: (context, snap) {
                 final events = snap.data;
 
-                if ((events?.length ?? 0) == 0)
+                if ((events?.length ?? 0) == 0) {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: ListView(
                           children: [
-                            H1Title("Welcome on MinesTRIX"),
+                            const H1Title("Welcome on MinesTRIX"),
                             client.prevBatch == null
                                 ? Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      MinestrixTitle(),
+                                      const MinestrixTitle(),
                                       SyncStatusCard(client: client),
                                     ],
                                   )
@@ -142,41 +143,31 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                           ? "First time here ?"
                                           : "Your timeline is empty"),
                                       if (client.userRoomCreated != true)
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
+                                        const Padding(
+                                          padding: EdgeInsets.all(8.0),
                                           child: MinestrixProfileNotCreated(),
                                         ),
                                       if (client.userRoomCreated == true)
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: CustomTextFutureButton(
-                                              icon: Icon(Icons.post_add),
+                                              icon: const Icon(Icons.post_add),
                                               text: "Write your first post",
                                               onPressed: () async {
                                                 context.pushRoute(
                                                     PostEditorRoute());
                                               }),
                                         ),
-                                      if (client.userRoomCreated == true)
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: CustomTextFutureButton(
-                                              icon: Icon(Icons.person_add),
-                                              text: "Add some followers",
-                                              onPressed: () async {
-                                                context
-                                                    .pushRoute(FriendsRoute());
-                                              }),
-                                        ),
+                                      
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: CustomTextFutureButton(
-                                            icon: Icon(Icons.group_add),
+                                            icon: const Icon(Icons.group_add),
                                             text: "Create a group",
                                             onPressed: () async {
                                               AdaptativeDialogs.show(
                                                   context: context,
-                                                  builder: (BuildContext) =>
+                                                  builder: (context) =>
                                                       CreateGroupPage());
                                             }),
                                       ),
@@ -192,7 +183,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                           right: 8,
                         ),
                         child: CustomTextFutureButton(
-                            icon: Icon(Icons.refresh),
+                            icon: const Icon(Icons.refresh),
                             text: "Refresh rooms",
                             onPressed: () async {
                               setState(() {});
@@ -200,30 +191,31 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                       ),
                     ],
                   );
+                }
 
                 return Column(
                   children: [
                     CustomHeader(
                         title: "Feed",
+                        actionButton: [
+                          IconButton(
+                              icon: const Icon(Icons.group_add),
+                              onPressed: () {
+                                AdaptativeDialogs.show(
+                                    context: context,
+                                    builder: (context) =>
+                                        CreateGroupPage());
+                              }),
+                          const NotificationBell()
+                        ],
                         child: MaterialButton(
                             minWidth: 0,
-                            shape: CircleBorder(),
+                            shape: const CircleBorder(),
                             child: AvatarBottomBar(key: Key(client.userID!)),
                             onPressed: () {
                               context.pushRoute(UserViewRoute(
                                   userID: Matrix.of(context).client.userID));
-                            }),
-                        actionButton: [
-                          IconButton(
-                              icon: Icon(Icons.group_add),
-                              onPressed: () {
-                                AdaptativeDialogs.show(
-                                    context: context,
-                                    builder: (BuildContext) =>
-                                        CreateGroupPage());
-                              }),
-                          NotificationBell()
-                        ]),
+                            })),
                     Expanded(
                       child: CustomListViewWithEmoji(
                           itemCount: events!.length + 1,
@@ -241,7 +233,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                   ),
                                   if (client.minestrixUserRoom.isNotEmpty)
                                     PostWriterModal(), // TODO: set the actual rom we are displaying
-                                  FriendSuggestionsList(),
+                                  const FriendSuggestionsList(),
                                 ],
                               );
                             }

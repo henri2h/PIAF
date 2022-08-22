@@ -1,4 +1,4 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/account_card.dart';
@@ -6,7 +6,6 @@ import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/user_room_knock_item.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
 
 class UserFriendsCard extends StatelessWidget {
   const UserFriendsCard({Key? key, required this.room}) : super(key: key);
@@ -24,7 +23,7 @@ class UserFriendsCard extends StatelessWidget {
         future: getUsers(),
         initialData: room.getParticipants(),
         builder: (context, snap) {
-          if (!snap.hasData) return CircularProgressIndicator();
+          if (!snap.hasData) return const CircularProgressIndicator();
 
           final usersSelection = snap.data!
               .where((User u) =>
@@ -35,25 +34,24 @@ class UserFriendsCard extends StatelessWidget {
               snap.data!.where((u) => u.membership == Membership.knock);
 
           return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (usersSelection.isNotEmpty)
-                MaterialButton(
-                  padding: EdgeInsets.all(2),
-                  onPressed: () {
-                    if (room.isFeed) {
-                      context.navigateTo(FriendsRoute());
-                    } else {
-                      context.navigateTo(UserFriendsRoute(room: room));
-                    }
-                  },
-                  child: H2Title("Followers"),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: ListTile(
+                      onTap: room.creatorId != room.client.userID
+                          ? null
+                          : () {
+                              context.pushRoute(FollowersRoute(room: room));
+                            },
+                      title: const Text("Followers"),
+                      leading: const Icon(Icons.people)),
                 ),
               Wrap(children: [
                 for (User user in usersSelection) AccountCard(user: user),
               ]),
               if (room.canInvite && knockingUsers.isNotEmpty)
-                H2Title("Follow request"),
+                const H2Title("Follow request"),
               if (room.canInvite)
                 for (User user in knockingUsers)
                   UserRoomKnockItem(user: user, room: room)

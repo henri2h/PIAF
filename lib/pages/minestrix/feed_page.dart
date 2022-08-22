@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'package:minestrix/partials/components/quickLinksList.dart';
-import 'package:minestrix/partials/feed/minestrixFeed.dart';
+import 'package:minestrix/partials/feed/minestrix_feed.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({Key? key}) : super(key: key);
 
   @override
-  _FeedPageState createState() => _FeedPageState();
+  FeedPageState createState() => FeedPageState();
 }
 
-class _FeedPageState extends State<FeedPage> {
+class FeedPageState extends State<FeedPage> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
