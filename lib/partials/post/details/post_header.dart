@@ -4,7 +4,8 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
 import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
@@ -43,14 +44,10 @@ class PostHeader extends StatelessWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: MatrixImageAvatar(
-                            client: sclient,
-                            url: sender.avatarUrl,
-                            defaultText: sender.displayName ?? sender.id,
-                            backgroundColor: Theme.of(context).primaryColor,
-                            width: MinestrixAvatarSizeConstants.small,
-                            height: MinestrixAvatarSizeConstants.small,
-                            defaultIcon: const Icon(Icons.person, size: 48)),
+                        child: MatrixUserAvatar.fromUser(
+                          sender,
+                          client: sclient,
+                        ),
                       ),
                       if (room.feedType != FeedRoomType.group)
                         Flexible(

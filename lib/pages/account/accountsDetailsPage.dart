@@ -1,4 +1,4 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
 import 'package:matrix/src/utils/space_child.dart';
@@ -7,7 +7,7 @@ import 'package:minestrix/partials/components/layouts/customHeader.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
@@ -41,7 +41,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
 
           return ListView(
             children: [
-              CustomHeader(title: "Your profiles"),
+              const CustomHeader(title: "Your profiles"),
               profile == null
                   ? NoProfileSpaceFound(client: client)
                   : Column(
@@ -54,10 +54,10 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                           Padding(
                             padding: const EdgeInsets.only(left: 80.0),
                             child: ListTile(
-                                leading: Icon(Icons.error),
-                                title: Text("could not open " + s.roomId!),
+                                leading: const Icon(Icons.error),
+                                title: Text("could not open ${s.roomId!}"),
                                 trailing: IconButton(
-                                    icon: Icon(Icons.delete),
+                                    icon: const Icon(Icons.delete),
                                     onPressed: () async {
                                       await profile.removeSpaceChild(s.roomId!);
                                       setState(() {});
@@ -109,7 +109,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                             },
                             text: "Create stories room",
                             expanded: false,
-                            icon: Icon(Icons.add_a_photo)),
+                            icon: const Icon(Icons.add_a_photo)),
                       ),
                     if (Settings().multipleFeedSupport)
                       Padding(
@@ -122,7 +122,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                             },
                             text: "Create a private MinesTRIX room",
                             expanded: false,
-                            icon: Icon(Icons.person_add)),
+                            icon: const Icon(Icons.person_add)),
                       ),
                     if (Settings().multipleFeedSupport)
                       Padding(
@@ -135,7 +135,7 @@ class _AccountsDetailsPageState extends State<AccountsDetailsPage> {
                             },
                             text: "Create a public MinesTRIX room",
                             expanded: false,
-                            icon: Icon(Icons.public)),
+                            icon: const Icon(Icons.public)),
                       )
                   ],
                 ),
@@ -171,14 +171,14 @@ class ProfileSpaceCard extends StatelessWidget {
                   width: 80,
                   height: 80),
             ),
-            SizedBox(width: 4),
+            const SizedBox(width: 4),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(profile.r.name,
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold)),
                   Text(profile.r.topic),
                   Card(
                       color: Theme.of(context).primaryColor,
@@ -193,7 +193,7 @@ class ProfileSpaceCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: Row(
-                        children: [
+                        children: const [
                           Text("Public profile space",
                               style: TextStyle(fontSize: 12)),
                         ],
@@ -205,7 +205,7 @@ class ProfileSpaceCard extends StatelessWidget {
           ],
         ),
         trailing: IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: () =>
                 ConvSettingsCard.show(context: context, room: profile.r)),
       ),
@@ -236,17 +236,17 @@ class NoProfileSpaceFound extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 16),
+                  const Padding(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
                     child: Icon(Icons.person, size: 50),
                   ),
                   Flexible(
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 500),
+                      constraints: const BoxConstraints(maxWidth: 500),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                        children: const [
                           Text("No user space found",
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.w600)),
@@ -266,15 +266,15 @@ class NoProfileSpaceFound extends StatelessWidget {
                   onPressed: () async {
                     await ProfileSpace.createProfileSpace(client);
                   },
+                  color: Theme.of(context).primaryColor,
+                  expanded: false,
+                  icon: Icon(Icons.add,
+                      color: Theme.of(context).colorScheme.onPrimary),
                   children: [
                     Text("Create user space",
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onPrimary))
-                  ],
-                  color: Theme.of(context).primaryColor,
-                  expanded: false,
-                  icon: Icon(Icons.add,
-                      color: Theme.of(context).colorScheme.onPrimary)),
+                  ]),
             ),
           ],
         ),
@@ -295,7 +295,8 @@ class RoomProfileListTile extends StatelessWidget {
         title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text((r.name), style: TextStyle(fontWeight: FontWeight.bold))
+              Text((r.name),
+                  style: const TextStyle(fontWeight: FontWeight.bold))
             ]),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,7 +308,7 @@ class RoomProfileListTile extends StatelessWidget {
               ),
             if (r.joinRules == JoinRules.invite)
               Row(
-                children: [
+                children: const [
                   Icon(Icons.person),
                   SizedBox(width: 10),
                   Text("Private"),
@@ -315,7 +316,7 @@ class RoomProfileListTile extends StatelessWidget {
               ),
             if (r.joinRules == JoinRules.knock)
               Row(
-                children: [
+                children: const [
                   Icon(Icons.person),
                   SizedBox(width: 10),
                   Text("Knock"),
@@ -323,7 +324,7 @@ class RoomProfileListTile extends StatelessWidget {
               ),
             if (r.joinRules == JoinRules.public)
               Row(
-                children: [
+                children: const [
                   Icon(Icons.public),
                   SizedBox(width: 10),
                   Text("Public"),
@@ -331,14 +332,14 @@ class RoomProfileListTile extends StatelessWidget {
               ),
             Row(
               children: [
-                Icon(Icons.people),
-                SizedBox(width: 10),
-                Text(r.summary.mJoinedMemberCount.toString() + " followers"),
+                const Icon(Icons.people),
+                const SizedBox(width: 10),
+                Text("${r.summary.mJoinedMemberCount} followers"),
               ],
             ),
             if (r.encrypted)
               Row(
-                children: [
+                children: const [
                   Icon(Icons.verified_user),
                   SizedBox(width: 10),
                   Text("Encrypted")
@@ -346,7 +347,7 @@ class RoomProfileListTile extends StatelessWidget {
               ),
             if (!r.encrypted)
               Row(
-                children: [
+                children: const [
                   Icon(Icons.no_encryption),
                   SizedBox(width: 10),
                   Text("Not encrypted")
@@ -357,25 +358,25 @@ class RoomProfileListTile extends StatelessWidget {
         trailing: PopupMenuButton<String>(
             itemBuilder: (_) => [
                   PopupMenuItem(
-                      child: Row(children: [
+                      value: "settings",
+                      child: Row(children: const [
                         Icon(
                           Icons.settings,
                         ),
                         SizedBox(width: 10),
                         Text("Settings", style: TextStyle()),
-                      ]),
-                      value: "settings"),
+                      ])),
                   PopupMenuItem(
+                      value: "leave",
                       child: Row(
-                        children: [
+                        children: const [
                           Icon(Icons.delete_forever, color: Colors.red),
                           SizedBox(width: 10),
                           Text("Leave", style: TextStyle(color: Colors.red)),
                         ],
-                      ),
-                      value: "leave")
+                      ))
                 ],
-            icon: Icon(Icons.more_horiz),
+            icon: const Icon(Icons.more_horiz),
             onSelected: (String action) async {
               switch (action) {
                 case "settings":

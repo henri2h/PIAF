@@ -12,7 +12,7 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/view/room_page.dart';

@@ -38,11 +38,11 @@ class UserViewPage extends StatefulWidget {
         super(key: key);
 
   @override
-  _UserViewPageState createState() => _UserViewPageState();
+  UserViewPageState createState() => UserViewPageState();
 }
 
-class _UserViewPageState extends State<UserViewPage> {
-  ScrollController _controller = new ScrollController();
+class UserViewPageState extends State<UserViewPage> {
+  ScrollController controller = ScrollController();
 
   int tabView = 0;
 
@@ -118,7 +118,7 @@ class _UserViewPageState extends State<UserViewPage> {
     _prevRoomId = widget.mroom?.id;
     _prevUserId = widget.userID;
 
-    _controller.addListener(scrollListener);
+    controller.addListener(scrollListener);
     if (mroom == null) setRoom(widget.mroom);
     _userId ??= widget.userID;
   }
@@ -141,13 +141,13 @@ class _UserViewPageState extends State<UserViewPage> {
   @override
   void deactivate() {
     super.deactivate();
-    _controller.removeListener(scrollListener);
+    controller.removeListener(scrollListener);
   }
 
   void scrollListener() async {
-    if (_controller.positions.length == 1 &&
-        _controller.position.pixels >=
-            _controller.position.maxScrollExtent * 0.8) {
+    if (controller.positions.length == 1 &&
+        controller.position.pixels >=
+            controller.position.maxScrollExtent * 0.8) {
       if (_requestingHistory == false) {
         setState(() {
           _requestingHistory = true;
@@ -225,7 +225,7 @@ class _UserViewPageState extends State<UserViewPage> {
                     builder: (context, snapProfile) {
                       return LayoutBuilder(builder: (context, constraints) {
                         return LayoutView(
-                          controller: _controller,
+                          controller: controller,
                           displayChat: false,
                           room: mroom?.room,
                           sidebarBuilder: () => Column(
@@ -397,7 +397,7 @@ class _UserViewPageState extends State<UserViewPage> {
                                               mroom: mroom, timeline: timeline);
                                         }
                                         return CustomListViewWithEmoji(
-                                            controller: _controller,
+                                            controller: controller,
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
                                             key: Key(mroom?.id ?? "room"),

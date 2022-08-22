@@ -7,7 +7,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/home/notification_view.dart';
 import 'package:minestrix/partials/navbar.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../router.gr.dart';
