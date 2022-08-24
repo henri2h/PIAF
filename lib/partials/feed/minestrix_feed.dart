@@ -43,6 +43,10 @@ class MinestrixFeedState extends State<MinestrixFeed> {
   }
 
   void init() {
+    start = 0;
+    _events.clear();
+    isGettingEvents = false;
+
     final client = Matrix.of(context).client;
 
     clientUserId = client.userID;
