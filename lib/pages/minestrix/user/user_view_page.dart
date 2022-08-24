@@ -118,6 +118,8 @@ class UserViewPageState extends State<UserViewPage> {
     _prevRoomId = widget.mroom?.id;
     _prevUserId = widget.userID;
 
+    controller = ScrollController();
+
     controller.addListener(scrollListener);
     if (mroom == null) setRoom(widget.mroom);
     _userId ??= widget.userID;
@@ -147,8 +149,9 @@ class UserViewPageState extends State<UserViewPage> {
   void scrollListener() async {
     if (controller.positions.length == 1 &&
         controller.position.pixels >=
-            controller.position.maxScrollExtent * 0.8) {
+            controller.position.maxScrollExtent - 600) {
       if (_requestingHistory == false) {
+        print("requesting history");
         setState(() {
           _requestingHistory = true;
         });
@@ -397,7 +400,6 @@ class UserViewPageState extends State<UserViewPage> {
                                               mroom: mroom, timeline: timeline);
                                         }
                                         return CustomListViewWithEmoji(
-                                            controller: controller,
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
                                             key: Key(mroom?.id ?? "room"),
@@ -454,48 +456,54 @@ class UserViewPageState extends State<UserViewPage> {
                                                       }));
                                                 }
 
-                                                return Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: MaterialButton(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8.0),
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            if (_requestingHistory)
-                                                              const Padding(
-                                                                padding: EdgeInsets
-                                                                    .only(
+                                                return Column(
+                                                  children: [
+                                                    if (_requestingHistory)
+                                                      const PostShimmer(),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: MaterialButton(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                if (_requestingHistory)
+                                                                  const Padding(
+                                                                    padding: EdgeInsets.only(
                                                                         right:
                                                                             10),
-                                                                child:
-                                                                    CircularProgressIndicator(),
-                                                              ),
-                                                            const Text(
-                                                                "Load more posts"),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      onPressed: () async {
-                                                        if (_requestingHistory ==
-                                                            false) {
-                                                          setState(() {
-                                                            _requestingHistory =
-                                                                true;
-                                                          });
-                                                          await mroom?.room
-                                                              ?.requestHistory();
-                                                          setState(() {
-                                                            _requestingHistory =
-                                                                false;
-                                                          });
-                                                        }
-                                                      }),
+                                                                    child:
+                                                                        CircularProgressIndicator(),
+                                                                  ),
+                                                                const Text(
+                                                                    "Load more posts"),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          onPressed: () async {
+                                                            if (_requestingHistory ==
+                                                                false) {
+                                                              setState(() {
+                                                                _requestingHistory =
+                                                                    true;
+                                                              });
+                                                              await mroom?.room
+                                                                  ?.requestHistory();
+                                                              setState(() {
+                                                                _requestingHistory =
+                                                                    false;
+                                                              });
+                                                            }
+                                                          }),
+                                                    ),
+                                                  ],
                                                 );
                                               } else if (mroom != null) {
                                                 return const MinestrixTitle();

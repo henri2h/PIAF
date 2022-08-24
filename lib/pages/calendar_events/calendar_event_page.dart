@@ -7,6 +7,7 @@ import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/utils/date_time_extension.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/calendar_event/calendar_event_widget.dart';
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
@@ -37,6 +38,7 @@ class CalendarEventPageState extends State<CalendarEventPage> {
   late Future<Timeline> timeline;
 
   final controller = ScrollController();
+  bool loading = false;
 
   Future<Timeline> load() async {
     await widget.room.postLoad();
@@ -69,7 +71,13 @@ class CalendarEventPageState extends State<CalendarEventPage> {
     final t = await timeline;
 
     if (t.canRequestHistory && mounted) {
+      setState(() {
+        loading = true;
+      });
       await t.requestHistory();
+      setState(() {
+        loading = false;
+      });
     }
   }
 
@@ -300,15 +308,24 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                                         ),
                                                         PostWriterModal(
                                                             room: room),
-                                                        for (Event e
-                                                            in room.getPosts(
-                                                                snapT.data!))
+                                                        for (Event e in room
+                                                            .getPosts(
+                                                                snapT.data!,
+                                                                eventTypesFilter: [
+                                                              MatrixTypes.post,
+                                                              EventTypes
+                                                                  .Encrypted,
+                                                              EventTypes
+                                                                  .RoomCreate
+                                                            ]))
                                                           Post(
                                                               event: e,
                                                               onReact:
                                                                   (Offset e) {},
                                                               timeline:
                                                                   snapT.data),
+                                                        if (loading)
+                                                          const PostShimmer(),
                                                       ],
                                                     )),
                                               if (snapT.hasData &&

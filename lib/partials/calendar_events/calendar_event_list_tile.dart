@@ -42,18 +42,18 @@ class _CalendarEventListTileState extends State<CalendarEventListTile> {
                     ),
                     Wrap(
                       children: [
-                        Text("Created by ", style: TextStyle(fontSize: 14)),
+                        const Text("Created by ", style: TextStyle(fontSize: 14)),
                         Text(
                             widget.room.createEvent?.senderFromMemoryOrFallback
                                     .displayName ??
                                 widget.room.createEvent?.senderId ??
                                 "",
-                            style: TextStyle(fontWeight: FontWeight.bold))
+                            style: const TextStyle(fontWeight: FontWeight.bold))
                       ],
                     )
                   ],
                 ),
-                trailing: Icon(Icons.navigate_next),
+                trailing: const Icon(Icons.navigate_next),
                 leading: MatrixImageAvatar(
                     client: widget.room.client,
                     url: widget.room.avatar,
