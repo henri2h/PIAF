@@ -18,7 +18,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
 import '../../../partials/components/account/account_card.dart';
-import '../../../partials/components/layouts/customHeader.dart';
+import '../../../partials/components/layouts/custom_header.dart';
 import '../../../partials/components/minesTrix/MinesTrixTitle.dart';
 import '../../../partials/minestrix_title.dart';
 import '../../../partials/users/user_avatar.dart';

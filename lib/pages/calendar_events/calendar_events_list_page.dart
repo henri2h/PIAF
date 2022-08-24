@@ -5,7 +5,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 
 import '../../partials/calendar_events/calendar_event_card.dart';
-import '../../partials/components/layouts/customHeader.dart';
+import '../../partials/components/layouts/custom_header.dart';
 
 class CalendarEventListPage extends StatefulWidget {
   const CalendarEventListPage({Key? key}) : super(key: key);
@@ -31,17 +31,17 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
         title: "Calendar events",
         actionButton: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: createCalendarEvent,
           )
         ],
       ),
       GridView.builder(
-          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 400, mainAxisExtent: 200),
           itemCount: calendarEvents.length,
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, pos) {
             final item = calendarEvents[pos];
             return Padding(
@@ -49,7 +49,7 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
               child: CalendarEventCard(room: item),
             );
           }),
-      if (sclient.calendarEvents.isEmpty) Text("No event found")
+      if (sclient.calendarEvents.isEmpty) const Text("No event found")
     ]);
   }
 }

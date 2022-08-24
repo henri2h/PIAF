@@ -1,12 +1,12 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:provider/provider.dart';
 
-import '../../utils/managers/theme_manager.dart';
+import '../../router.gr.dart';
 import '../login_page.dart';
 
 class SettingsAccountSwitchPage extends StatefulWidget {
@@ -54,12 +54,7 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                     ),
                     onTap: () async {
                       m.setActiveClient(c);
-
-                      // forcing rebuilding the client
-                      context.read<ThemeNotifier>().setPrimaryColor(
-                          context.read<ThemeNotifier>().primaryColor);
-
-                      setState(() {});
+                      context.navigateTo(const FeedRoute());
                     }),
               ListTile(
                   title: const Text("Add an account"),

@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 
 import '../chat/room_chat_card.dart';
 

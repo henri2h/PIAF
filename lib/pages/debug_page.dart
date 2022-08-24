@@ -1,7 +1,7 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
@@ -12,11 +12,13 @@ import 'package:minestrix_chat/utils/sentry_controller.dart';
 import 'settings/settings_labs_page.dart';
 
 class DebugPage extends StatefulWidget {
+  const DebugPage({Key? key}) : super(key: key);
+
   @override
-  _DebugPageState createState() => _DebugPageState();
+  DebugPageState createState() => DebugPageState();
 }
 
-class _DebugPageState extends State<DebugPage> {
+class DebugPageState extends State<DebugPage> {
   List<int> timelineLength = [];
   List<Room> rooms = [];
   Client? client;
@@ -75,17 +77,18 @@ class _DebugPageState extends State<DebugPage> {
     }
 
     return ListView(children: [
-      CustomHeader(title: "Debug"),
+      const CustomHeader(title: "Debug"),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: FutureBuilder<bool>(
             future: SentryController.getSentryStatus(),
             builder: (context, snap) {
-              if (!snap.hasData)
-                return ListTile(
+              if (!snap.hasData) {
+                return const ListTile(
                     title: Text("Sentry logging"),
                     subtitle: Text("Loading"),
                     trailing: CircularProgressIndicator());
+              }
               final sentryEnabled = snap.data!;
               return SwitchListTile(
                   value: sentryEnabled,
@@ -93,11 +96,11 @@ class _DebugPageState extends State<DebugPage> {
                     await SentryController.toggleSentryAction(context, value);
                     setState(() {});
                   },
-                  secondary: Icon(Icons.list),
-                  title: Text("Sentry logging"),
+                  secondary: const Icon(Icons.list),
+                  title: const Text("Sentry logging"),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                    children: const [
                       Text("Restart to enable sentry logging"),
                       InfoBadge(text: "Need restart", color: Colors.orange),
                     ],
@@ -108,15 +111,16 @@ class _DebugPageState extends State<DebugPage> {
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListTile(
-            title: Text("Clear cache and resync"),
-            leading: Icon(Icons.new_releases),
-            subtitle: Text("Use with caution, this make take a long time"),
-            trailing: Icon(Icons.refresh),
+            title: const Text("Clear cache and resync"),
+            leading: const Icon(Icons.new_releases),
+            subtitle:
+                const Text("Use with caution, this make take a long time"),
+            trailing: const Icon(Icons.refresh),
             onTap: _clearCacheAndResync),
       ),
-      H2Title("Minestrix rooms"),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      const H2Title("Minestrix rooms"),
+      const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12.0),
         child: Text("This is where the posts are stored."),
       ),
       Padding(
@@ -124,7 +128,7 @@ class _DebugPageState extends State<DebugPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (rooms.length != 0)
+            if (rooms.isNotEmpty)
               for (var i = 0; i < rooms.length; i++)
                 Padding(
                   padding: const EdgeInsets.all(4.0),
@@ -138,7 +142,7 @@ class _DebugPageState extends State<DebugPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(rooms[i].id,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontWeight: FontWeight.normal)),
                               ],
                             ),
@@ -150,7 +154,7 @@ class _DebugPageState extends State<DebugPage> {
                                 )
                               : null,
                           trailing: IconButton(
-                              icon: Icon(Icons.refresh),
+                              icon: const Icon(Icons.refresh),
                               onPressed: () async {
                                 await loadElements(context, rooms[i]);
                               })),
@@ -164,9 +168,8 @@ class _DebugPageState extends State<DebugPage> {
                   ),
                 ),
             if (client != null)
-              Text("MinesTRIX rooms length : " +
-                  client!.sroomsByUserId.length.toString()),
-            if (progressing) CircularProgressIndicator(),
+              Text("MinesTRIX rooms length : ${client!.sroomsByUserId.length}"),
+            if (progressing) const CircularProgressIndicator(),
           ],
         ),
       ),
@@ -195,8 +198,8 @@ class _LogLevelState extends State<LogLevel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ListTile(
-            title: const Text("Log level"),
+        const ListTile(
+            title: Text("Log level"),
             subtitle: Text(
                 "Change the log level for this session. Settings will be cleared after restart.")),
         RadioListTile(

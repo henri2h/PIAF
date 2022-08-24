@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
@@ -13,21 +13,20 @@ import '../../../partials/components/search/suggestion_list.dart';
 import '../../../utils/platforms_info.dart';
 
 class ResearchPage extends StatefulWidget {
-  ResearchPage({Key? key, this.isPopup = false}) : super(key: key);
+  const ResearchPage({Key? key, this.isPopup = false}) : super(key: key);
 
   final bool isPopup;
   @override
-  _ResearchPageState createState() => _ResearchPageState();
+  ResearchPageState createState() => ResearchPageState();
 }
 
-class _ResearchPageState extends State<ResearchPage> {
+class ResearchPageState extends State<ResearchPage> {
   final c = TextEditingController();
 
   final discoveryStream = StreamController<SearchUserDirectoryResponse>();
 
   Future<void> _callSearch() async {
     Client? client = Matrix.of(context).client;
-    print("search");
     discoveryStream.add(await client.searchUserDirectory(c.text));
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:minestrix/partials/components/quickLinksList.dart';
+import 'package:minestrix/partials/components/quick_links_list.dart00';
 import 'package:minestrix/partials/feed/minestrix_feed.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
 
@@ -27,8 +27,8 @@ class FeedPageState extends State<FeedPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
+                      children: const [
+                        Padding(
                           padding: EdgeInsets.all(10),
                           child: Text("Groups",
                               style:

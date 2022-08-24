@@ -1,9 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
@@ -18,18 +17,17 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/view/room_page.dart';
 
 import '../../../partials/components/account/account_card.dart';
-import '../../../partials/components/chat/room_chat_card.dart';
 import '../../../partials/components/layouts/layout_view.dart';
 
 class GroupPage extends StatefulWidget {
-  GroupPage({Key? key, required this.room}) : super(key: key);
+  const GroupPage({Key? key, required this.room}) : super(key: key);
   final Room room;
 
   @override
-  _GroupPageState createState() => _GroupPageState();
+  GroupPageState createState() => GroupPageState();
 }
 
-class _GroupPageState extends State<GroupPage> {
+class GroupPageState extends State<GroupPage> {
   late Future<Timeline> futureTimeline;
 
   @override

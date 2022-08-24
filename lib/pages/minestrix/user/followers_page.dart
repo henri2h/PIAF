@@ -11,7 +11,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 
-import '../../../partials/components/layouts/customHeader.dart';
+import '../../../partials/components/layouts/custom_header.dart';
 
 class FollowersPage extends StatefulWidget {
   const FollowersPage({Key? key, required this.room}) : super(key: key);

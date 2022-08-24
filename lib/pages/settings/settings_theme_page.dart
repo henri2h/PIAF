@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 
 import '../../utils/managers/theme_manager.dart';
 
@@ -10,47 +10,47 @@ class SettingsThemePage extends StatefulWidget {
   const SettingsThemePage({Key? key}) : super(key: key);
 
   @override
-  _SettingsThemePageState createState() => _SettingsThemePageState();
+  SettingsThemePageState createState() => SettingsThemePageState();
 }
 
-class _SettingsThemePageState extends State<SettingsThemePage> {
+class SettingsThemePageState extends State<SettingsThemePage> {
   @override
   Widget build(BuildContext context) {
     AppThemeMode? themeMode = context.read<ThemeNotifier>().mode;
     return Consumer<ThemeNotifier>(
       builder: (context, theme, _) => ListView(
         children: [
-          CustomHeader(title: "Theme"),
+          const CustomHeader(title: "Theme"),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
                 ColorChooser(color: Colors.blue[800]!),
-                ColorChooser(color: Colors.red),
-                ColorChooser(color: Colors.green),
-                ColorChooser(color: Colors.purple),
+                const ColorChooser(color: Colors.red),
+                const ColorChooser(color: Colors.green),
+                const ColorChooser(color: Colors.purple),
                 ColorChooser(color: Colors.grey[900]!)
               ],
             ),
           ),
           RadioListTile(
               groupValue: themeMode,
-              secondary: Icon(Icons.light_mode),
+              secondary: const Icon(Icons.light_mode),
               value: AppThemeMode.light,
               onChanged: (value) {
                 context.read<ThemeNotifier>().setLightMode();
                 setState(() {});
               },
-              title: Text("Light mode")),
+              title: const Text("Light mode")),
           RadioListTile(
-              secondary: Icon(Icons.dark_mode),
+              secondary: const Icon(Icons.dark_mode),
               groupValue: themeMode,
               value: AppThemeMode.dark,
               onChanged: (value) {
                 context.read<ThemeNotifier>().setDarkMode();
                 setState(() {});
               },
-              title: Text("Dark mode")),
+              title: const Text("Dark mode")),
           RadioListTile(
               groupValue: themeMode,
               value: AppThemeMode.black,
@@ -58,7 +58,7 @@ class _SettingsThemePageState extends State<SettingsThemePage> {
                 context.read<ThemeNotifier>().setBlackMode();
                 setState(() {});
               },
-              title: Text("Black mode")),
+              title: const Text("Black mode")),
           Padding(
             padding: const EdgeInsets.all(30),
             child: Row(
@@ -73,7 +73,7 @@ class _SettingsThemePageState extends State<SettingsThemePage> {
                         Text("A nice story",
                             style:
                                 Theme.of(context).primaryTextTheme.headline6),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text("And it's content",
                             style:
                                 Theme.of(context).primaryTextTheme.bodyText1),
@@ -97,14 +97,14 @@ class ColorChooser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color primaryColor = context.read<ThemeNotifier>().primaryColor;
-    print(color.toString() + " " + primaryColor.toString());
+
     return IconButton(
         color: Colors.red,
         icon: CircleAvatar(
-          child: ThemeNotifier.isColorEquals(primaryColor, color)
-              ? Icon(Icons.check, color: Colors.white)
-              : null,
           backgroundColor: color,
+          child: ThemeNotifier.isColorEquals(primaryColor, color)
+              ? const Icon(Icons.check, color: Colors.white)
+              : null,
         ),
         onPressed: () {
           context.read<ThemeNotifier>().setPrimaryColor(color);
