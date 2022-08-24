@@ -10,10 +10,10 @@ class RightBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Client client = Matrix.of(context).client;
     return StreamBuilder(
         stream: Matrix.of(context).onClientChange.stream,
         builder: (context, snapshot) {
+          final Client client = Matrix.of(context).client;
           return Padding(
               padding: const EdgeInsets.all(8.0),
               child: FutureBuilder(
