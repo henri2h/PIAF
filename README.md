@@ -2,6 +2,17 @@
 
 **A privacy focused social media based on MATRIX**
 
+<div>
+<img src="./readmeassets/feed_page.png" width="200">
+<img src="./readmeassets/chats_page.png" width="200">
+<img src="./readmeassets/chat_page.png" width="200">
+</div>
+
+<div>
+<img src="./readmeassets/account_page.png" width="610">
+</div>
+
+
 ![](readmeassets/feedVue.png)
 
 [Chat with us !](https://matrix.to/#/#minestrix:carnot.cc)
