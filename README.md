@@ -8,13 +8,6 @@
 <img src="./readmeassets/chat_page.png" width="200">
 </div>
 
-<div>
-<img src="./readmeassets/account_page.png" width="610">
-</div>
-
-
-![](readmeassets/feedVue.png)
-
 [Chat with us !](https://matrix.to/#/#minestrix:carnot.cc)
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
@@ -129,3 +122,9 @@ sudo apt install libolm3 libsqlite3-dev libsecret-1-dev libjsoncpp-dev
 [famedlysdk](https://gitlab.com/famedly/famedlysdk/)
 
 [fluffy chat](https://gitlab.com/famedly/fluffychat)
+
+## Desktop screenshot
+
+<div>
+<img src="./readmeassets/account_page.png" width="600">
+</div>
