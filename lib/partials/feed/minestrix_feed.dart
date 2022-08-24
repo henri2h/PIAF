@@ -158,7 +158,6 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                                                     PostEditorRoute());
                                               }),
                                         ),
-                                      
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: CustomTextFutureButton(
@@ -203,8 +202,7 @@ class _MinestrixFeedState extends State<MinestrixFeed> {
                               onPressed: () {
                                 AdaptativeDialogs.show(
                                     context: context,
-                                    builder: (context) =>
-                                        CreateGroupPage());
+                                    builder: (context) => CreateGroupPage());
                               }),
                           const NotificationBell()
                         ],
