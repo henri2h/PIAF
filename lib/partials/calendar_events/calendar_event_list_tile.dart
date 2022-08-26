@@ -42,7 +42,8 @@ class _CalendarEventListTileState extends State<CalendarEventListTile> {
                     ),
                     Wrap(
                       children: [
-                        const Text("Created by ", style: TextStyle(fontSize: 14)),
+                        const Text("Created by ",
+                            style: TextStyle(fontSize: 14)),
                         Text(
                             widget.room.createEvent?.senderFromMemoryOrFallback
                                     .displayName ??
