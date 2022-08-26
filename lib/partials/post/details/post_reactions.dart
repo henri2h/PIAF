@@ -9,23 +9,26 @@ class PostReactions extends StatelessWidget {
       : super(key: key);
   @override
   Widget build(BuildContext context) {
-    Map<String?, int> keys = new Map<String?, int>();
+    Map<String?, int> keys = <String?, int>{};
     for (Event revent in reactions) {
-      String? key = revent.content['m.relates_to']['key'];
+      String? key = revent.content
+          .tryGetMap<String, dynamic>('m.relates_to')
+          ?.tryGet<String>('key');
       keys.update(key, (value) => value + 1, ifAbsent: () => 1);
     }
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         for (MapEntry<String?, int> key in keys.entries)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(children: [
-              Text(key.key!),
-              SizedBox(width: 2),
-              Text(key.value.toString())
-            ]),
-          ),
+          if (key.key != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(children: [
+                Text(key.key!),
+                const SizedBox(width: 2),
+                Text(key.value.toString())
+              ]),
+            ),
       ],
     );
   }

@@ -28,53 +28,57 @@ class PostView extends StatelessWidget {
           return LayoutBuilder(builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 500;
 
-            return Column(
+            final post = Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // post content
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Divider(),
+                    if (isMobile) const Divider(),
                     PostHeader(
                         eventToEdit: controller.post.event!,
                         event: displayEvent),
-                    Divider(),
+                    if (!isMobile)
+                      const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+                        child: Divider(),
+                      ),
                     if (controller.post.event!.status != EventStatus.synced)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child:
                             Text("Not sent ${controller.post.event!.status}"),
                       ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: PostContent(
-                        displayEvent,
-                        imageMaxHeight: 300,
-                      ),
+                    PostContent(
+                      displayEvent,
+                      imageMaxHeight: 300,
                     ),
                     if (controller.shareEvent != null)
                       FutureBuilder<Event?>(
                           future: controller.shareEvent,
                           builder: (context, snap) {
-                            if (snap.hasError)
+                            if (snap.hasError) {
                               return Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.error),
-                                    SizedBox(width: 4),
+                                    const Icon(Icons.error),
+                                    const SizedBox(width: 4),
                                     Text(snap.error.toString()),
                                   ],
                                 ),
                               );
-                            if (!snap.hasData)
-                              return CircularProgressIndicator();
+                            }
+                            if (!snap.hasData) {
+                              return const CircularProgressIndicator();
+                            }
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
                                   child: Text("Sharing"),
                                 ),
                                 Padding(
@@ -101,40 +105,46 @@ class PostView extends StatelessWidget {
                               ],
                             );
                           }),
-                    Divider(),
-                    ReactionBar(controller: controller, isMobile: isMobile),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: ReactionBar(
+                          controller: controller, isMobile: isMobile),
+                    ),
                   ],
                 ),
                 (controller.replyToMessageId != null ||
                             controller.showReplies) &&
                         t != null
-                    ? Container(
-                        child: Column(
-                          children: [
-                            Divider(),
-                            if (controller.replyToMessageId != null ||
-                                controller.showReplies)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: RepliesVue(
-                                    timeline: t,
-                                    event: controller.post.event!,
-                                    replies: (controller.showReplies &&
-                                            controller.replies?.isNotEmpty ==
-                                                true)
-                                        ? controller.nestedReplies
-                                        : null,
-                                    replyToMessageId:
-                                        controller.replyToMessageId,
-                                    setRepliedMessage:
-                                        controller.setRepliedMessage),
-                              ),
-                          ],
-                        ),
+                    ? Column(
+                        children: [
+                          const Divider(),
+                          if (controller.replyToMessageId != null ||
+                              controller.showReplies)
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: RepliesVue(
+                                  timeline: t,
+                                  event: controller.post.event!,
+                                  replies: (controller.showReplies &&
+                                          controller.replies?.isNotEmpty ==
+                                              true)
+                                      ? controller.nestedReplies
+                                      : null,
+                                  replyToMessageId: controller.replyToMessageId,
+                                  setRepliedMessage:
+                                      controller.setRepliedMessage),
+                            ),
+                        ],
                       )
-                    : SizedBox(height: 8),
+                    : const SizedBox(height: 8),
               ],
             );
+
+            if (isMobile) {
+              return post;
+            }
+
+            return Card(child: post);
           });
         });
   }

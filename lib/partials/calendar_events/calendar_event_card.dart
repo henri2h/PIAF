@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 
 import '../../router.gr.dart';
 

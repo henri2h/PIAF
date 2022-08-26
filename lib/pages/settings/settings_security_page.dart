@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix_chat/utils/matrix_sdk_extension/device_extensions.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
@@ -13,10 +13,10 @@ class SettingsSecurityPage extends StatefulWidget {
   const SettingsSecurityPage({Key? key}) : super(key: key);
 
   @override
-  _SettingsSecurityPageState createState() => _SettingsSecurityPageState();
+  SettingsSecurityPageState createState() => SettingsSecurityPageState();
 }
 
-class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
+class SettingsSecurityPageState extends State<SettingsSecurityPage> {
   final TextEditingController _passphraseController = TextEditingController();
 
   @override
@@ -25,20 +25,20 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
 
     return ListView(
       children: [
-        CustomHeader(title: "Security"),
-        H1Title("This session"),
+        const CustomHeader(title: "Security"),
+        const H1Title("This session"),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ListTile(
-                  leading: Icon(Icons.title),
-                  title: Text("Device name"),
+                  leading: const Icon(Icons.title),
+                  title: const Text("Device name"),
                   subtitle: Text(client.deviceName!)),
               ListTile(
-                  leading: Icon(Icons.perm_device_info),
-                  title: Text("Device id"),
+                  leading: const Icon(Icons.perm_device_info),
+                  title: const Text("Device id"),
                   subtitle: Text(client.deviceID!)),
             ],
           ),
@@ -48,15 +48,15 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (client.encryption!.crossSigning.enabled == false)
-                    Text("❌ Cross signing is not enabled"),
+                    const Text("❌ Cross signing is not enabled"),
                   ListTile(
                     leading: client.isUnknownSession == false
-                        ? Icon(Icons.check, size: 32, color: Colors.green)
-                        : Icon(Icons.error, size: 32),
-                    title: Text("Session status"),
+                        ? const Icon(Icons.check, size: 32, color: Colors.green)
+                        : const Icon(Icons.error, size: 32),
+                    title: const Text("Session status"),
                     subtitle: client.isUnknownSession == false
-                        ? Text("Verified")
-                        : Text(
+                        ? const Text("Verified")
+                        : const Text(
                             "Not verified",
                           ),
                   ),
@@ -67,7 +67,7 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
-                              children: [
+                              children: const [
                                 Icon(Icons.enhanced_encryption),
                                 SizedBox(width: 10),
                                 Text("Setup encryption"),
@@ -78,16 +78,16 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                             showDialog(
                                 context: context,
                                 builder: (buildContext) => SimpleDialog(
-                                      title: Text("Setup encryption"),
-                                      contentPadding: EdgeInsets.all(20),
+                                      title: const Text("Setup encryption"),
+                                      contentPadding: const EdgeInsets.all(20),
                                       children: [
                                         TextField(
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                                 labelText: "Key Password"),
                                             controller: _passphraseController),
-                                        SizedBox(height: 15),
+                                        const SizedBox(height: 15),
                                         ElevatedButton(
-                                            child: Text("Get keys"),
+                                            child: const Text("Get keys"),
                                             onPressed: () async {
                                               await client
                                                   .encryption!.crossSigning
@@ -103,8 +103,8 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
                     ),
                 ],
               )
-            : Padding(
-                padding: const EdgeInsets.all(8.0),
+            : const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: Text("Encryption disabled ❌"),
               ),
         FutureBuilder<List<Device>?>(
@@ -130,7 +130,7 @@ class _SettingsSecurityPageState extends State<SettingsSecurityPage> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  H1Title("Devices"),
+                  const H1Title("Devices"),
                   for (final device in devices)
                     Builder(builder: (context) {
                       final dt = device.lastSeenTs != null

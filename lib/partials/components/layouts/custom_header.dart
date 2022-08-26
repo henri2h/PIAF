@@ -37,7 +37,7 @@ class CustomHeader extends StatelessWidget {
                           if (onBack != null) onBack!();
                           context.router.pop();
                         },
-                        icon: Icon(Icons.arrow_back)),
+                        icon: const Icon(Icons.arrow_back)),
                   if (context.router.canPopSelfOrChildren == false &&
                       drawerEnabled)
                     IconButton(
@@ -45,14 +45,14 @@ class CustomHeader extends StatelessWidget {
                           if (onBack != null) onBack!();
                           Scaffold.of(context).openDrawer();
                         },
-                        icon: Icon(Icons.menu)),
+                        icon: const Icon(Icons.menu)),
                   if (child != null) Flexible(child: child!),
                   if (title != null)
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Text(title!,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 26, fontWeight: FontWeight.bold)),
                       ),
                     ),

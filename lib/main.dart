@@ -32,8 +32,7 @@ void main(List<String> args) async {
 
   runZonedGuarded(
     () => runApp(ChangeNotifierProvider<ThemeNotifier>(
-        create: (_) => new ThemeNotifier(),
-        child: Minestrix(clients: clients))),
+        create: (_) => ThemeNotifier(), child: Minestrix(clients: clients))),
     SentryController.captureException,
   );
 }

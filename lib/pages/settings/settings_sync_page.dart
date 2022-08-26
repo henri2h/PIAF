@@ -3,7 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../partials/components/layouts/customHeader.dart';
+import '../../partials/components/layouts/custom_header.dart';
 
 class SettingsSyncPage extends StatefulWidget {
   const SettingsSyncPage({Key? key}) : super(key: key);
@@ -58,9 +58,9 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
   @override
   Widget build(BuildContext context) {
     return ListView(children: [
-      CustomHeader(title: "Theme"),
+      const CustomHeader(title: "Theme"),
       ListTile(
-          title: Text("Room"),
+          title: const Text("Room"),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -71,8 +71,8 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
           trailing: Text(global)),
       CustomFutureButton(
           onPressed: syncRooms,
-          children: [Text("Sync rooms")],
-          icon: Icon(Icons.refresh))
+          icon: const Icon(Icons.refresh),
+          children: const [Text("Sync rooms")])
     ]);
   }
 }

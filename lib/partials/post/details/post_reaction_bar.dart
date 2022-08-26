@@ -54,10 +54,9 @@ class ReactionBar extends StatelessWidget {
                   ),
                 if (controller.replies?.isNotEmpty ?? false)
                   MaterialButton(
-                      child: Text((controller.showReplies ? "Hide " : "Show ") +
-                          controller.replies!.length.toString() +
-                          " comments"),
-                      onPressed: controller.toggleReplyView),
+                      onPressed: controller.toggleReplyView,
+                      child: Text(
+                          "${controller.showReplies ? "Hide " : "Show "}${controller.replies!.length} comments")),
               ],
             ),
           ),
@@ -72,7 +71,7 @@ class ReactionBar extends StatelessWidget {
               controller.onReact(detail.globalPosition);
             },
           ),
-          SizedBox(width: 9),
+          const SizedBox(width: 9),
           PostButton(
             iconOnly: isMobile,
             text: "Comment",
@@ -89,18 +88,18 @@ class ReactionBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10)),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                onPressed: controller.share,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.share,
                         color: Theme.of(context).colorScheme.onPrimary),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     Text("Share",
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onPrimary))
                   ],
                 ),
-                onPressed: controller.share,
               ),
             ),
         ],

@@ -4,10 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/home/notificationView.dart';
+import 'package:minestrix/partials/home/notification_view.dart';
 import 'package:minestrix/partials/navbar.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../router.gr.dart';
@@ -88,7 +88,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                             showUnselectedLabels: false,
                             iconSize: 24,
                             onTap: (pos) {
-                              print(context.routeData.name);
                               switch (pos) {
                                 case 0:
                                   context.navigateTo(const FeedRoute());
@@ -106,10 +105,9 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                             type: BottomNavigationBarType.fixed,
                             items: [
                               const BottomNavigationBarItem(
-                                  icon: const Icon(Icons.list), label: "Feed"),
+                                  icon: Icon(Icons.list), label: "Feed"),
                               const BottomNavigationBarItem(
-                                  icon: const Icon(Icons.search),
-                                  label: "Search"),
+                                  icon: Icon(Icons.search), label: "Search"),
                               BottomNavigationBarItem(
                                   icon: StreamBuilder(
                                       stream: client.onSync.stream,

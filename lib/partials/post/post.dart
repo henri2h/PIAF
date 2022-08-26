@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/partials/components/shimmer_widget.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
 import 'package:minestrix_chat/utils/matrix/client_extension.dart';
@@ -13,7 +15,8 @@ class Post extends StatefulWidget {
   final Event event;
   final void Function(Offset) onReact;
   final Timeline? timeline;
-  Post({Key? key, required this.event, required this.onReact, this.timeline})
+  const Post(
+      {Key? key, required this.event, required this.onReact, this.timeline})
       : super(key: key);
 
   @override
@@ -110,5 +113,118 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
         context: context,
         shareEvent: widget.event,
         rooms: Matrix.of(context).client.minestrixUserRoom);
+  }
+}
+
+class PostShimmer extends StatelessWidget {
+  const PostShimmer({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerWidget(
+      child: Column(
+        children: [
+          ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              focusColor: Colors.grey,
+              hoverColor: Colors.grey,
+              enableFeedback: true,
+              leading: MatrixImageAvatar(
+                  url: null,
+                  fit: true,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  width: 42,
+                  height: 42,
+                  client: null),
+              title: Row(
+                children: [
+                  Container(
+                    width: 120.0,
+                    height: 10.0,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ],
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 2.0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20.0),
+            child: Column(
+              children: [
+                Container(
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const CircleAvatar(radius: 10),
+              const SizedBox(width: 4),
+              Container(
+                height: 12,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              const SizedBox(width: 18),
+              const CircleAvatar(radius: 10),
+              const SizedBox(width: 4),
+              Container(
+                height: 12,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

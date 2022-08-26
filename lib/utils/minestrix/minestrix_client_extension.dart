@@ -4,6 +4,7 @@ import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/utils/matrix/power_levels_extension.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 
 extension MinestrixClientExtension on Client {
   List<Room> get srooms => rooms.where((r) => r.isFeed).toList();
@@ -106,9 +107,7 @@ extension MinestrixClientExtension on Client {
 
   Future<bool> inviteFriend(String userId,
       {Room? r, bool waitForInvite = true}) async {
-    if (r == null) {
-      r = minestrixUserRoom.firstOrNull;
-    }
+    r ??= minestrixUserRoom.firstOrNull;
 
     if (r != null) {
       await r.invite(userId);
@@ -123,26 +122,11 @@ extension MinestrixClientExtension on Client {
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
-      {List<String> eventTypesFilter: const [
-        MatrixTypes.post,
-        EventTypes.Encrypted
-      ]}) {
-    List<Event> filteredEvents = t.events
-        .where((e) =>
-            !{
-              RelationshipTypes.edit,
-              RelationshipTypes.reaction,
-              RelationshipTypes.reply,
-              MatrixTypes.threadRelation
-            }.contains(e.relationshipType) &&
-            eventTypesFilter.contains(e.type) &&
-            !e.redacted)
-        .toList();
-    for (var i = 0; i < filteredEvents.length; i++) {
-      filteredEvents[i] = filteredEvents[i].getDisplayEvent(t);
-    }
-    return filteredEvents;
-  }
+          {List<String> eventTypesFilter: const [
+            MatrixTypes.post,
+            EventTypes.Encrypted
+          ]}) =>
+      t.room.getPosts(t, eventTypesFilter: eventTypesFilter);
 
   Iterable<Event> getPostReactions(Iterable<Event> events) => events
       .where((e) =>

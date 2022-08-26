@@ -2,7 +2,11 @@
 
 **A privacy focused social media based on MATRIX**
 
-![](readmeassets/feedVue.png)
+<div>
+<img src="./readmeassets/feed_page.png" width="200">
+<img src="./readmeassets/chats_page.png" width="200">
+<img src="./readmeassets/chat_page.png" width="200">
+</div>
 
 [Chat with us !](https://matrix.to/#/#minestrix:carnot.cc)
 
@@ -118,3 +122,9 @@ sudo apt install libolm3 libsqlite3-dev libsecret-1-dev libjsoncpp-dev
 [famedlysdk](https://gitlab.com/famedly/famedlysdk/)
 
 [fluffy chat](https://gitlab.com/famedly/fluffychat)
+
+## Desktop screenshot
+
+<div>
+<img src="./readmeassets/account_page.png" width="600">
+</div>

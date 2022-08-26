@@ -14,9 +14,8 @@ class MessageButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
     return CustomFutureButton(
-        icon: Icon(Icons.message),
-        children: [Text("Message")],
-        padding: EdgeInsets.all(6),
+        icon: const Icon(Icons.message),
+        padding: const EdgeInsets.all(6),
         expanded: false,
         onPressed: () async {
           String? roomId = await client.startDirectChat(userId);
@@ -26,6 +25,7 @@ class MessageButton extends StatelessWidget {
                   roomId: roomId,
                   client: client,
                   onBack: () => context.popRoute()));
-        });
+        },
+        children: const [Text("Message")]);
   }
 }

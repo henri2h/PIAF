@@ -1,41 +1,63 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
 import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
 import 'package:minestrix/partials/users/MinesTrixUserSelection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix_chat/partials/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/view/room_page.dart';
 
 import '../../../partials/components/account/account_card.dart';
-import '../../../partials/components/chat/room_chat_card.dart';
 import '../../../partials/components/layouts/layout_view.dart';
 
 class GroupPage extends StatefulWidget {
-  GroupPage({Key? key, required this.room}) : super(key: key);
+  const GroupPage({Key? key, required this.room}) : super(key: key);
   final Room room;
 
   @override
-  _GroupPageState createState() => _GroupPageState();
+  GroupPageState createState() => GroupPageState();
 }
 
-class _GroupPageState extends State<GroupPage> {
+class GroupPageState extends State<GroupPage> {
   late Future<Timeline> futureTimeline;
+
+  final controller = ScrollController();
+  bool updating = false;
 
   @override
   void initState() {
     futureTimeline = widget.room.getTimeline();
+    controller.addListener(scrollListener);
+
     super.initState();
+  }
+
+  void scrollListener() async {
+    if (controller.position.pixels >=
+        controller.position.maxScrollExtent - 600) {
+      final timeline = await futureTimeline;
+
+      if (timeline.canRequestHistory) {
+        setState(() {
+          updating = true;
+        });
+
+        await timeline.requestHistory();
+        setState(() {
+          updating = false;
+        });
+      }
+    }
   }
 
   @override
@@ -50,13 +72,18 @@ class _GroupPageState extends State<GroupPage> {
           if (!snapshot.hasData) return const CircularProgressIndicator();
 
           Timeline timeline = snapshot.data!;
-          List<Event> sevents =
-              sclient.getSRoomFilteredEvents(timeline) as List<Event>;
+          List<Event> sevents = sclient.getSRoomFilteredEvents(timeline,
+              eventTypesFilter: [
+                MatrixTypes.post,
+                EventTypes.Encrypted,
+                EventTypes.RoomCreate
+              ]).toList();
 
           return LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
             bool displayChatView = constraints.maxWidth > 1400;
             return LayoutView(
+              controller: controller,
               customHeader: CustomHeader(
                 title: room.name,
                 actionButton: [
@@ -74,7 +101,7 @@ class _GroupPageState extends State<GroupPage> {
               mainBuilder: ({required bool displaySideBar}) => StreamBuilder(
                   stream: room.onUpdate.stream,
                   builder: (context, _) => CustomListViewWithEmoji(
-                      itemCount: sevents.length + 1,
+                      itemCount: sevents.length + 1 + (updating ? 1 : 0),
                       itemBuilder: (BuildContext c, int i,
                           void Function(Offset, Event) onReact) {
                         if (i == 0) {
@@ -93,13 +120,14 @@ class _GroupPageState extends State<GroupPage> {
                             ),
                           ]);
                         }
-
                         return Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 2, horizontal: 12),
-                            child: Post(
-                                event: sevents[i - 1],
-                                onReact: (e) => onReact(e, sevents[i - 1])));
+                            child: (i - 1 < sevents.length)
+                                ? Post(
+                                    event: sevents[i - 1],
+                                    onReact: (e) => onReact(e, sevents[i - 1]))
+                                : const PostShimmer());
                       })),
               sidebarBuilder: () => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,5 +1,5 @@
 name: minestrix
-description: A new Flutter project.
+description: A privacy focused social media based on matrix
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -23,7 +23,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
 
   # Matrix
   matrix:
@@ -68,7 +67,7 @@ dependencies:
   encrypt: ^5.0.1
 
   localstorage: ^4.0.0+1
-  flutter_secure_storage: ^5.0.2
+  flutter_secure_storage: ^6.0.0
   
   # cache 
   flutter_cache_manager: ^3.0.1
@@ -79,8 +78,9 @@ dependencies:
   cupertino_icons: ^1.0.1
 
   # Notifications
-  #firebase_messaging: ^7.0.3
-  #flutter_local_notifications: ^3.0.2
+  flutter_local_notifications: ^9.4.0
+  unifiedpush: ^4.0.0
+  desktop_notifications: ^0.6.3
   
   # Flushbar
   another_flushbar: ^1.10.25
@@ -93,11 +93,9 @@ dependencies:
   minestrix_chat:
     git:
       url: https://gitlab.com/minestrix/minestrix-chat.git
+    #path: ../minestrix-chat
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
-  desktop_notifications: ^0.6.3
-  flutter_local_notifications: ^9.4.0
-  unifiedpush: ^4.0.0
   connectivity_plus: ^2.3.0
   just_audio: ^0.9.20
   flutter_ringtone_player: ^3.2.0

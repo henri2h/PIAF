@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/partials/components/layouts/customHeader.dart';
+import 'package:minestrix/partials/components/layouts/custom_header.dart';
 
 import '../../utils/settings.dart';
 
@@ -16,9 +16,9 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
     return SafeArea(
       child: ListView(
         children: [
-          CustomHeader(title: "Labs"),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
+          const CustomHeader(title: "Labs"),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
             child: Text("Experimental features, use with caution!"),
           ),
           SwitchListTile(
@@ -27,50 +27,50 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
                 Settings().multipleFeedSupport = value;
                 setState(() {});
               },
-              secondary: Icon(Icons.people),
-              title: Text("Allow creating multiple feeds"),
+              secondary: const Icon(Icons.people),
+              title: const Text("Allow creating multiple feeds"),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: const [
                   Text(
                       "Want to share post with a subset of you friends ? Then multiple feed support is the solution."),
                   InfoBadge(text: "WIP"),
                   InfoBadge(color: Colors.blue, text: "UI")
                 ],
               )),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           SwitchListTile(
               value: Settings().calendarEventSupport,
               onChanged: (value) {
                 Settings().calendarEventSupport = value;
                 setState(() {});
               },
-              secondary: Icon(Icons.calendar_today),
-              title: Text("Enable calendar event support"),
+              secondary: const Icon(Icons.calendar_today),
+              title: const Text("Enable calendar event support"),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Allow creating calendar events."),
-                  InfoBadge(
+                  const Text("Allow creating calendar events."),
+                  const InfoBadge(
                     text: "WIP",
                   ),
-                  InfoBadge(
+                  const InfoBadge(
                     text: "Read only",
                   )
                 ],
               )),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           SwitchListTile(
               value: Settings().optimizedFeed,
               onChanged: (value) {
                 Settings().optimizedFeed = value;
                 setState(() {});
               },
-              secondary: Icon(Icons.list),
-              title: Text("Optimized feed"),
+              secondary: const Icon(Icons.list),
+              title: const Text("Optimized feed"),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: const [
                   Text("Restart to reload the feed correctly"),
                   InfoBadge(text: "WIP"),
                   InfoBadge(text: "Need restart", color: Colors.orange),
@@ -94,7 +94,7 @@ class InfoBadge extends StatelessWidget {
       color: color,
       child: Padding(
         padding: const EdgeInsets.all(3),
-        child: Text(text, style: TextStyle(color: Colors.white)),
+        child: Text(text, style: const TextStyle(color: Colors.white)),
       ),
     );
   }

@@ -22,12 +22,12 @@ import 'pages/minestrix/friends/research_page.dart';
 import 'pages/minestrix/groups/create_group_page.dart';
 import 'pages/minestrix/groups/group_page.dart';
 import 'pages/minestrix/image/post_gallery_page.dart';
-import 'pages/minestrix/user/friends_page.dart';
-import 'pages/minestrix/user/user_friends_page.dart';
+import 'pages/minestrix/user/followers_page.dart';
 import 'pages/minestrix/user/user_view_page.dart';
+import 'pages/settings/settings_account_switch_page.dart';
 import 'pages/settings/settings_labs_page.dart';
 import 'pages/settings/settings_page.dart';
-import 'pages/settings/settings_profile_page.dart';
+import 'pages/settings/settings_account_page.dart';
 import 'pages/settings/settings_security_page.dart';
 import 'pages/settings/settings_sync_page.dart';
 import 'pages/settings/settings_theme_page.dart';
@@ -56,8 +56,7 @@ const chatsWrapper = AutoRoute(
       AutoRoute(path: 'group/create', page: CreateGroupPage),
       AutoRoute(path: 'createPost', page: PostEditorPage),
       AutoRoute(path: 'userfeed', page: UserViewPage),
-      AutoRoute(path: 'my_friends', page: FriendsPage),
-      AutoRoute(path: 'user_friends', page: UserFriendsPage),
+      AutoRoute(path: 'follewers', page: FollowersPage),
       AutoRoute(path: 'calendar_events/item', page: CalendarEventPage),
       AutoRoute(path: 'post/image_gallery', page: PostGalleryPage),
       AutoRoute(path: 'calendar_events/list', page: CalendarEventListPage),
@@ -67,6 +66,8 @@ const chatsWrapper = AutoRoute(
         AutoRoute(
             path: 'settings/home', page: SettingsPanelInnerPage, initial: true),
         AutoRoute(path: 'settings/account', page: SettingsAccountPage),
+        AutoRoute(
+            path: 'settings/account_switch', page: SettingsAccountSwitchPage),
         AutoRoute(path: 'settings/theme', page: SettingsThemePage),
         AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
         AutoRoute(path: 'settings/labs', page: SettingsLabsPage),

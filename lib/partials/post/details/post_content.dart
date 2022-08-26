@@ -69,7 +69,7 @@ class PostContent extends StatelessWidget {
             return Text(event.body);
 
           default:
-            return Text("other message type : " + event.type);
+            return Text("other message type : ${event.type}");
         }
       case EventTypes.RoomCreate:
         return FutureBuilder<User?>(
@@ -81,11 +81,11 @@ class PostContent extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Text(
-                        "✨ " + sender.calcDisplayname() + " Joined MinesTRIX ✨",
-                        style: TextStyle(
+                        "✨ ${sender.calcDisplayname()} created ${event.room.displayname} ✨",
+                        style: const TextStyle(
                             fontSize: 24, fontWeight: FontWeight.w400)),
                   ),
-                  MinestrixTitle()
+                  const MinestrixTitle()
                 ],
               );
             });
@@ -101,8 +101,8 @@ class PostContent extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                        sender.calcDisplayname() + " Changed page picture",
-                        style: TextStyle()),
+                        "${sender.calcDisplayname()} Changed page picture",
+                        style: const TextStyle()),
                   ),
                   MatrixEventImage(event: event),
                 ],
@@ -110,12 +110,10 @@ class PostContent extends StatelessWidget {
             });
     }
 
-    return Container(
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(event.type),
-          ]),
-    );
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(event.type),
+        ]);
   }
 }
