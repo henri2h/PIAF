@@ -436,12 +436,12 @@ packages:
     source: hosted
     version: "1.3.0"
   ffi:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: ffi
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.1"
+    version: "2.0.1"
   file:
     dependency: transitive
     description:
@@ -1050,11 +1050,9 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "5def53202ed358a89461f8e2bdabbba13633af21"
-      url: "https://gitlab.com/minestrix/minestrix-chat.git"
-    source: git
+      path: "../minestrix-chat"
+      relative: true
+    source: path
     version: "0.0.2"
   modal_bottom_sheet:
     dependency: transitive
@@ -1066,11 +1064,9 @@ packages:
   native_imaging:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "8c6a5afe2c965b79b5959bb4b49c4aad020cb980"
-      url: "https://gitlab.com/famedly/company/frontend/libraries/native_imaging.git"
-    source: git
+      name: native_imaging
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.1.0"
   nested:
     dependency: transitive
@@ -1335,6 +1331,13 @@ packages:
     dependency: "direct main"
     description:
       name: sentry
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.9.1"
+  sentry_flutter:
+    dependency: "direct main"
+    description:
+      name: sentry_flutter
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.9.1"

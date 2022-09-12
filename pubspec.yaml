@@ -56,8 +56,7 @@ dependencies:
   image_picker:
   file_picker_cross:
   path_provider: ^2.0.5
-  native_imaging:
-    git: https://gitlab.com/famedly/company/frontend/libraries/native_imaging.git
+  native_imaging: ^0.1.0
 
 
   # time formating
@@ -91,9 +90,9 @@ dependencies:
   package_info_plus: ^1.0.0
   
   minestrix_chat:
-    git:
-      url: https://gitlab.com/minestrix/minestrix-chat.git
-    #path: ../minestrix-chat
+    #git:
+    #  url: https://gitlab.com/minestrix/minestrix-chat.git
+    path: ../minestrix-chat
   collection: ^1.15.0-nullsafety.4
   f_logs: ^2.0.0
   connectivity_plus: ^2.3.0
@@ -106,6 +105,7 @@ dependencies:
   desktop_webview_window: ^0.1.6
   settings_ui: ^2.0.2
   flutter_datetime_picker: ^1.5.1
+  sentry_flutter: ^6.9.1
 
       
 dev_dependencies:
@@ -138,3 +138,9 @@ flutter:
     - family: NotoEmoji
       fonts:
         - asset: fonts/NotoEmoji/NotoColorEmoji.ttf
+
+
+
+dependency_overrides:
+  # Until all dependencies are compatible. Missing: file_picker_cross, flutter_matrix_html
+  ffi: ^2.0.0
