@@ -11,18 +11,18 @@ import 'router.gr.dart';
 import 'utils/managers/theme_manager.dart';
 
 class Minestrix extends StatefulWidget {
-  Minestrix({Key? key, required this.clients}) : super(key: key);
+  const Minestrix({Key? key, required this.clients}) : super(key: key);
 
   final List<Client> clients;
   @override
-  _MinestrixState createState() => _MinestrixState();
+  MinestrixState createState() => MinestrixState();
 }
 
-class _MinestrixState extends State<Minestrix> {
+class MinestrixState extends State<Minestrix> {
   final _appRouter = AppRouter();
   bool _initLock = false;
   Future<bool> initMatrix(Client m) async {
-    Logs().i("[ logged ] : " + m.isLogged().toString());
+    Logs().i("[ logged ] : ${m.isLogged()}");
     if (m.isLogged() == false && !_initLock) {
       _initLock = true;
       await m.init(
@@ -53,7 +53,7 @@ class _MinestrixState extends State<Minestrix> {
                     return FutureBuilder(
                         future: client.ssoLogin(),
                         builder: (context, snap) =>
-                            CircularProgressIndicator());
+                            const CircularProgressIndicator());
                   }
                 }
 
@@ -69,7 +69,7 @@ class _MinestrixState extends State<Minestrix> {
                               //if (state.hasData == false)
                               //  MatrixLoadingRoute()
                               if (isLogged)
-                                AppWrapperRoute()
+                                const AppWrapperRoute()
                               // if they are not logged in, bring them to the Login page
                               else
                                 LoginRoute()
