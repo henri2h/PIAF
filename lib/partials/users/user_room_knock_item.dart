@@ -4,7 +4,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../components/buttons/customFutureButton.dart';
+import '../components/buttons/custom_future_button.dart';
 
 class UserRoomKnockItem extends StatelessWidget {
   const UserRoomKnockItem({

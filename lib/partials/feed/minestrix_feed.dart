@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/minestrix/groups/create_group_page.dart';
-import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
+import 'package:minestrix/partials/components/buttons/custom_text_future_button.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/feed/minestrixProfileNotCreated.dart';
 import 'package:minestrix/partials/feed/notficationBell.dart';
@@ -182,7 +182,9 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                                                         "Write your first post",
                                                     onPressed: () async {
                                                       context.pushRoute(
-                                                          PostEditorRoute());
+                                                          PostEditorRoute(
+                                                              room: client
+                                                                  .minestrixUserRoom));
                                                     }),
                                               ),
                                             Padding(

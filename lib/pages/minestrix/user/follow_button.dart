@@ -3,7 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
-import '../../../partials/components/buttons/customFutureButton.dart';
+import '../../../partials/components/buttons/custom_future_button.dart';
 
 class FollowingIndicator extends StatelessWidget {
   const FollowingIndicator({Key? key, required this.room}) : super(key: key);

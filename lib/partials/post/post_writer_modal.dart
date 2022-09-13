@@ -8,7 +8,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class PostWriterModal extends StatelessWidget {
-  PostWriterModal({Key? key, this.room}) : super(key: key);
+  const PostWriterModal({Key? key, this.room}) : super(key: key);
   final Room? room;
   @override
   Widget build(BuildContext context) {
@@ -28,18 +28,18 @@ class PostWriterModal extends StatelessWidget {
                     defaultText: snap.data?.displayName ?? client.userID,
                     backgroundColor: Theme.of(context).primaryColor);
               }),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           Expanded(
               child: FakeTextField(
             onPressed: () {
               AdaptativeDialogs.show(
                   context: context,
                   title: "Create post",
-                  builder: (BuildContext) => PostEditorPage(
+                  builder: (BuildContext context) => PostEditorPage(
                       room: room != null ? [room!] : client.minestrixUserRoom));
             },
             icon: Icons.edit,
-            text: "Write a post on " + (room?.name ?? "your timeline"),
+            text: "Write a post on ${room?.name ?? "your timeline"}",
           )),
         ],
       ),

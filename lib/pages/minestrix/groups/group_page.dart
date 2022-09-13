@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
-import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
+import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/post.dart';

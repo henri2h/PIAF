@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-
 import 'package:minestrix/router.gr.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class MinesTrixContactView extends StatelessWidget {
