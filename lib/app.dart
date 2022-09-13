@@ -66,8 +66,6 @@ class MinestrixState extends State<Minestrix> {
                           routes: (_) {
                             final isLogged = client.isLogged();
                             return [
-                              //if (state.hasData == false)
-                              //  MatrixLoadingRoute()
                               if (isLogged)
                                 const AppWrapperRoute()
                               // if they are not logged in, bring them to the Login page

@@ -106,6 +106,9 @@ dependencies:
   settings_ui: ^2.0.2
   flutter_datetime_picker: ^1.5.1
   sentry_flutter: ^6.9.1
+  intl: ^0.17.0
+
+  
 
       
 dev_dependencies:
@@ -144,3 +147,4 @@ flutter:
 dependency_overrides:
   # Until all dependencies are compatible. Missing: file_picker_cross, flutter_matrix_html
   ffi: ^2.0.0
+  flutter_svg: ^1.1.5
