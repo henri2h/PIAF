@@ -39,17 +39,7 @@ class DebugPageState extends State<DebugPage> {
 
     if (client == null) return;
     Logs().w("Clearing cache");
-    await client!.abortSync();
-    await client!.database?.clearCache();
-    Logs().w("Sync");
-
-    try {
-      await client!.handleSync(await client!
-          .sync()); // Wait long for the response, can take several dozen of minutes}
-    } catch (e, s) {
-      Logs().e("Could not sync", e, s);
-      await client?.handleSync(await client!.sync());
-    }
+    client!.clearCache();
     Logs().w("Sync done");
   }
 

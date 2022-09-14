@@ -60,11 +60,14 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                   title: const Text("Add an account"),
                   trailing: const Icon(Icons.add),
                   onTap: () async {
-                    AdaptativeDialogs.show(
+                    await AdaptativeDialogs.show(
                         context: context,
                         bottomSheet: true,
                         builder: (context) => LoginPage(
                             popOnLogin: true, title: "Add a new account"));
+                    if (mounted) {
+                      setState(() {});
+                    }
                   }),
             ],
           ),

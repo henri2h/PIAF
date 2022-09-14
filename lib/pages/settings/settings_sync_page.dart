@@ -31,25 +31,31 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
     for (final room in client.rooms) {
       if (!mounted) return;
 
-      if (mounted)
+      if (mounted) {
         setState(() {
           actualRoom = room;
           counter = 0;
           global = (pos / (1.0 * encryptedCount) * 100).toStringAsFixed(1);
         });
+      }
 
       if (!room.encrypted) continue;
 
       final timeline = await room.getTimeline();
-      while (timeline.canRequestHistory) {
-        await timeline.requestHistory();
+      try {
+        while (timeline.canRequestHistory) {
+          await timeline.requestHistory();
 
-        if (!mounted) return;
+          if (!mounted) return;
 
-        if (mounted)
-          setState(() {
-            counter++;
-          });
+          if (mounted) {
+            setState(() {
+              counter++;
+            });
+          }
+        }
+      } catch (ex, stack) {
+        Logs().e("Could not fetch history for ${room.displayname}", ex, stack);
       }
       pos++;
     }
