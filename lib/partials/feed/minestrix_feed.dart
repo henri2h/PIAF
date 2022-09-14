@@ -107,6 +107,7 @@ class MinestrixFeedState extends State<MinestrixFeed> {
 
     final client = Matrix.of(context).client;
     try {
+      Logs().w("Request history $start");
       /*
       In order to prevent the application to redraw the feed each time we recieve
       a new post, we make here a copy of the feed and refresh the feed only if the
@@ -132,8 +133,9 @@ class MinestrixFeedState extends State<MinestrixFeed> {
       _databaseTimelineEvents.addAll(fevents);
 
       isGettingEvents = false;
-      return fevents;
-    } catch (_) {
+      return _databaseTimelineEvents;
+    } catch (ex, stack) {
+      Logs().e("Timeline fetching error", ex, stack);
       isGettingEvents = false;
       return [];
     }
@@ -286,8 +288,8 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                                 ),
                                 child: Post(
                                     event: events![i - 1],
-                                    key: Key(events![i].eventId +
-                                        events![i].status.toString()),
+                                    key: Key(events![i - 1].eventId +
+                                        events![i - 1].status.toString()),
                                     onReact: (Offset e) =>
                                         onReact(e, events![i - 1])));
                           }),
