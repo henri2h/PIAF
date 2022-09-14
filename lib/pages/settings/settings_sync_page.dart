@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/components/layouts/custom_header.dart';
@@ -17,7 +19,12 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
   int counter = 0;
   String global = "";
 
-  Future<void> syncRooms() async {
+  Future<void> syncSocialRooms() async {
+    await syncRooms(MatrixTypes.account);
+    await syncRooms(MatrixTypes.group);
+  }
+
+  Future<void> syncRooms([String? filter]) async {
     final client = Matrix.of(context).client;
     final encryptedCount = client.rooms
         .where(
@@ -39,7 +46,8 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
         });
       }
 
-      if (!room.encrypted) continue;
+      if ((filter == null && !room.encrypted) ||
+          (filter != null && room.type != filter)) continue;
 
       final timeline = await room.getTimeline();
       try {
@@ -78,7 +86,11 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
       CustomFutureButton(
           onPressed: syncRooms,
           icon: const Icon(Icons.refresh),
-          children: const [Text("Sync rooms")])
+          children: const [Text("Sync rooms")]),
+      CustomFutureButton(
+          onPressed: syncSocialRooms,
+          icon: const Icon(Icons.refresh),
+          children: const [Text("Sync social rooms")])
     ]);
   }
 }
