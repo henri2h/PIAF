@@ -38,7 +38,7 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
       ),
       GridView.builder(
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 500, mainAxisExtent: 330),
+              maxCrossAxisExtent: 500, mainAxisExtent: 380),
           itemCount: calendarEvents.length,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),

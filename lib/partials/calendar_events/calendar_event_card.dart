@@ -44,7 +44,7 @@ class CalendarEventCard extends StatelessWidget {
                         borderRadius: const BorderRadius.only(
                             topRight: Radius.circular(8),
                             topLeft: Radius.circular(8)),
-                        height: 150,
+                        height: 200,
                         defaultText: room.displayname,
                         thumnailOnly:
                             false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
@@ -85,7 +85,7 @@ class CalendarEventCard extends StatelessWidget {
                                             const EdgeInsets.only(left: 4.0),
                                         child: Text(
                                             "${room.summary.mJoinedMemberCount} members"),
-                                      )
+                                      ),
                                     ],
                                   ),
                                   if (calendarEvent?.place != null)
