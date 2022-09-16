@@ -11,7 +11,6 @@ import 'package:minestrix_chat/partials/calendar_event/calendar_event_widget.dar
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
-import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/dialogs/custom_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';

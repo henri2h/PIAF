@@ -5,21 +5,21 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 
 class CalendarEventCreateWidget extends StatefulWidget {
-  CalendarEventCreateWidget({Key? key}) : super(key: key);
+  const CalendarEventCreateWidget({Key? key}) : super(key: key);
 
   @override
-  _CalendarEventCreateWidgetState createState() =>
-      _CalendarEventCreateWidgetState();
+  CalendarEventCreateWidgetState createState() =>
+      CalendarEventCreateWidgetState();
 
   static Future<void> show(BuildContext context) async {
     await AdaptativeDialogs.show(
         title: "Create event",
         context: context,
-        builder: (context) => CalendarEventCreateWidget());
+        builder: (context) => const CalendarEventCreateWidget());
   }
 }
 
-class _CalendarEventCreateWidgetState extends State<CalendarEventCreateWidget> {
+class CalendarEventCreateWidgetState extends State<CalendarEventCreateWidget> {
   final nameController = TextEditingController();
   final topicController = TextEditingController();
 
@@ -48,7 +48,7 @@ class _CalendarEventCreateWidgetState extends State<CalendarEventCreateWidget> {
               )),
         ),
         MaterialButton(
-            child: Text("Create"),
+            child: const Text("Create"),
             onPressed: () async {
               final client = Matrix.of(context).client;
               await client.createCalendarEventRoom(client,
