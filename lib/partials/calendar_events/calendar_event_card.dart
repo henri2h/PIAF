@@ -22,95 +22,86 @@ class CalendarEventCard extends StatelessWidget {
     return FutureBuilder(
         future: room.postLoad(),
         builder: (context, snapshot) {
+          final calendarEvent = room.getEventAttendanceEvent();
           return MaterialButton(
-            onPressed: () async {
-              await context.navigateTo(CalendarEventRoute(room: room));
-            },
-            color: Theme.of(context).cardColor,
-            padding: EdgeInsets.zero,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            child: FutureBuilder<CalendarEvent?>(
-                future: room.getEventAttendanceEvent(),
-                builder: (context, snap) {
-                  final calendarEvent = snap.data;
-                  return Column(
+              onPressed: () async {
+                await context.navigateTo(CalendarEventRoute(room: room));
+              },
+              color: Theme.of(context).cardColor,
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              child: Column(
+                children: [
+                  MatrixImageAvatar(
+                    client: room.client,
+                    url: room.avatar,
+                    width: 2000,
+                    shape: MatrixImageAvatarShape.none,
+                    borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(8),
+                        topLeft: Radius.circular(8)),
+                    height: 200,
+                    defaultText: room.displayname,
+                    thumnailOnly:
+                        false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
+                    backgroundColor: Colors.blue,
+                  ),
+                  EventCreator(room: room),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MatrixImageAvatar(
-                        client: room.client,
-                        url: room.avatar,
-                        width: 2000,
-                        shape: MatrixImageAvatarShape.none,
-                        borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(8),
-                            topLeft: Radius.circular(8)),
-                        height: 200,
-                        defaultText: room.displayname,
-                        thumnailOnly:
-                            false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
-                        backgroundColor: Colors.blue,
-                      ),
-                      EventCreator(room: room),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (calendarEvent?.start != null)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: DateWidget(calendarEvent: calendarEvent),
-                            ),
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.end,
+                      if (calendarEvent?.start != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: DateWidget(calendarEvent: calendarEvent),
+                        ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(room.displayname,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 19)),
+                              if (room.topic.isNotEmpty)
+                                Text(
+                                  room.topic.trim(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              Row(
                                 children: [
-                                  Text(room.displayname,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 19)),
-                                  if (room.topic.isNotEmpty)
-                                    Text(
-                                      room.topic.trim(),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.people),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 4.0),
-                                        child: Text(
-                                            "${room.summary.mJoinedMemberCount} members"),
-                                      ),
-                                    ],
+                                  const Icon(Icons.people),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: Text(
+                                        "${room.summary.mJoinedMemberCount} members"),
                                   ),
-                                  if (calendarEvent?.place != null)
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.place),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 4.0),
-                                          child: Text(
-                                              calendarEvent!.place?.trim() ??
-                                                  ''),
-                                        )
-                                      ],
-                                    )
                                 ],
                               ),
-                            ),
+                              if (calendarEvent?.place != null)
+                                Row(
+                                  children: [
+                                    const Icon(Icons.place),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: Text(
+                                          calendarEvent!.place?.trim() ?? ''),
+                                    )
+                                  ],
+                                )
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ],
-                  );
-                }),
-          );
+                  ),
+                ],
+              ));
         });
   }
 }

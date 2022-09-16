@@ -99,193 +99,197 @@ class CalendarEventPageState extends State<CalendarEventPage> {
       child: FutureBuilder<Timeline>(
           future: timeline,
           builder: (context, snapT) {
+            final calendarEvent = room.getEventAttendanceEvent();
             return StreamBuilder<Object>(
                 stream: room.onRoomInSync(),
                 builder: (context, snapshot) {
-                  return FutureBuilder<CalendarEvent?>(
-                      future: room.getEventAttendanceEvent(),
-                      builder: (context, snapCalendar) {
-                        final calendarEvent = snapCalendar.data;
-
-                        return LayoutView(
-                            controller: controller,
-                            customHeader: CustomHeader(
-                              title: "Event",
-                              actionButton: [
-                                IconButton(
-                                    icon: const Icon(Icons.settings),
-                                    onPressed: () {
-                                      ConvSettingsCard.show(
-                                          context: context, room: room);
-                                    })
-                              ],
-                            ),
-                            room: room,
-                            headerHeight: 280,
-                            mainWidth: double.infinity,
-                            mainBuilder:
-                                ({required bool displaySideBar}) => Column(
-                                      children: [
-                                        Center(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Card(
-                                              child: ConstrainedBox(
-                                                constraints:
-                                                    const BoxConstraints(
-                                                        maxWidth: 1200),
-                                                child: Row(
+                  return LayoutView(
+                      controller: controller,
+                      customHeader: CustomHeader(
+                        title: "Event",
+                        actionButton: [
+                          IconButton(
+                              icon: const Icon(Icons.settings),
+                              onPressed: () {
+                                ConvSettingsCard.show(
+                                    context: context, room: room);
+                              })
+                        ],
+                      ),
+                      room: room,
+                      headerHeight: 280,
+                      mainWidth: double.infinity,
+                      mainBuilder: ({required bool displaySideBar}) => Column(
+                            children: [
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Card(
+                                    child: ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 1200),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                H2Title(room.name),
+                                                Row(
                                                   children: [
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          left: 10, right: 4),
+                                                      child: Text("By",
+                                                          style: TextStyle(
+                                                              fontSize: 18.0,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                    ),
                                                     Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          H2Title(room.name),
-                                                          Row(
-                                                            children: [
-                                                              const Padding(
-                                                                padding: EdgeInsets
-                                                                    .only(
-                                                                        left:
-                                                                            10,
-                                                                        right:
-                                                                            4),
-                                                                child: Text(
-                                                                    "By",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            18.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500)),
-                                                              ),
-                                                              Expanded(
-                                                                child: MatrixUserItem.fromUser(
-                                                                    room
-                                                                        .creator!,
-                                                                    client: room
-                                                                        .client),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child: RoomParticipantsIndicator(
-                                                                      room:
-                                                                          room),
-                                                                ),
-                                                                ElevatedButton(
-                                                                    onPressed:
-                                                                        inviteUsers,
-                                                                    child: Row(
-                                                                      children: const [
-                                                                        Icon(Icons
-                                                                            .person_add),
-                                                                        SizedBox(
-                                                                            width:
-                                                                                8),
-                                                                        Text(
-                                                                            "Invite"),
-                                                                      ],
-                                                                    ))
-                                                              ],
-                                                            ),
-                                                          )
-                                                        ],
-                                                      ),
+                                                      child: MatrixUserItem
+                                                          .fromUser(
+                                                              room.creator!,
+                                                              client:
+                                                                  room.client),
                                                     ),
                                                   ],
                                                 ),
-                                              ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child:
+                                                            RoomParticipantsIndicator(
+                                                                room: room),
+                                                      ),
+                                                      ElevatedButton(
+                                                          onPressed:
+                                                              inviteUsers,
+                                                          child: Row(
+                                                            children: const [
+                                                              Icon(Icons
+                                                                  .person_add),
+                                                              SizedBox(
+                                                                  width: 8),
+                                                              Text("Invite"),
+                                                            ],
+                                                          ))
+                                                    ],
+                                                  ),
+                                                )
+                                              ],
                                             ),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Wrap(
-                                            alignment: WrapAlignment.center,
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Wrap(
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    if (snapT.hasData)
+                                      ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                              maxWidth: 600),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              if (snapT.hasData)
-                                                ConstrainedBox(
-                                                    constraints:
-                                                        const BoxConstraints(
-                                                            maxWidth: 600),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Card(
-                                                            child: Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                const H2Title(
-                                                                    "About"),
-                                                                (snapT.hasData &&
-                                                                        calendarEvent?.pollId !=
-                                                                            null)
-                                                                    ? FutureBuilder<
-                                                                            Event?>(
-                                                                        future: snapT
-                                                                            .data!
-                                                                            .getEventById(calendarEvent!
-                                                                                .pollId!),
-                                                                        builder:
-                                                                            (context,
-                                                                                snapshot) {
-                                                                          if (snapshot.hasData ==
-                                                                              false) {
-                                                                            return Container();
-                                                                          }
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Card(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      const H2Title("About"),
+                                                      (snapT.hasData &&
+                                                              calendarEvent
+                                                                      ?.pollId !=
+                                                                  null)
+                                                          ? FutureBuilder<
+                                                                  Event?>(
+                                                              future: snapT
+                                                                  .data!
+                                                                  .getEventById(
+                                                                      calendarEvent!
+                                                                          .pollId!),
+                                                              builder: (context,
+                                                                  snapshot) {
+                                                                if (snapshot
+                                                                        .hasData ==
+                                                                    false) {
+                                                                  return Container();
+                                                                }
 
-                                                                          Poll p = Poll(
-                                                                              e: snapshot.data!,
-                                                                              t: snapT.data!);
-                                                                          return Row(
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
-                                                                            children: [
-                                                                              CalendarEventWidget(p: p),
-                                                                            ],
-                                                                          );
-                                                                        })
-                                                                    : ListTile(
-                                                                        leading:
-                                                                            const Icon(Icons
-                                                                                .poll),
-                                                                        title: const Text(
-                                                                            "Set poll id"),
-                                                                        subtitle: Text(room.canSendDefaultStates
-                                                                            ? "Attendance poll could not be found"
-                                                                            : "You don't have the permission to modify this event"),
-                                                                        onTap: !room.canSendDefaultStates
-                                                                            ? null
-                                                                            : () async {
-                                                                                if (calendarEvent != null) {
-                                                                                  await room.setPollAttendance(calendarEvent);
-                                                                                } else {
-                                                                                  await room.setPollAttendance(CalendarEvent());
-                                                                                }
-                                                                              }),
-                                                                Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                              .all(
-                                                                          20.0),
-                                                                  child:
-                                                                      MarkdownBody(
+                                                                Poll p = Poll(
+                                                                    e: snapshot
+                                                                        .data!,
+                                                                    t: snapT
+                                                                        .data!);
+                                                                return Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    CalendarEventWidget(
+                                                                        p: p),
+                                                                  ],
+                                                                );
+                                                              })
+                                                          : ListTile(
+                                                              leading: const Icon(
+                                                                  Icons.poll),
+                                                              title: const Text(
+                                                                  "Set poll id"),
+                                                              subtitle: Text(room
+                                                                      .canSendDefaultStates
+                                                                  ? "Attendance poll could not be found"
+                                                                  : "You don't have the permission to modify this event"),
+                                                              onTap: !room
+                                                                      .canSendDefaultStates
+                                                                  ? null
+                                                                  : () async {
+                                                                      if (calendarEvent !=
+                                                                          null) {
+                                                                        await room
+                                                                            .setPollAttendance(calendarEvent);
+                                                                      } else {
+                                                                        await room
+                                                                            .setPollAttendance(CalendarEvent());
+                                                                      }
+                                                                    }),
+                                                      if (room.canSendDefaultStates ||
+                                                          room.topic.isNotEmpty)
+                                                        Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                          .symmetric(
+                                                                      vertical:
+                                                                          16.0),
+                                                              child: ListTile(
+                                                                  title: room
+                                                                          .topic
+                                                                          .isEmpty
+                                                                      ? const Text(
+                                                                          "Set topic")
+                                                                      : MarkdownBody(
                                                                           data: room
                                                                               .topic,
                                                                           onTapLink: (text,
@@ -301,58 +305,70 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                                                               }
                                                                             }
                                                                           }),
-                                                                ),
-                                                              ],
+                                                                  leading:
+                                                                      const Icon(
+                                                                          Icons
+                                                                              .topic),
+                                                                  onTap: !room
+                                                                          .canSendDefaultStates
+                                                                      ? null
+                                                                      : () async {
+                                                                          String?
+                                                                              topic =
+                                                                              await CustomDialogs.showCustomTextDialog(
+                                                                            context,
+                                                                            title:
+                                                                                "Set the event topic",
+                                                                            helpText:
+                                                                                "Event topic",
+                                                                            initialText:
+                                                                                room.topic,
+                                                                          );
+                                                                          if (topic !=
+                                                                              null) {
+                                                                            await room.setDescription(topic);
+                                                                          }
+                                                                        }),
                                                             ),
-                                                          ),
+                                                          ],
                                                         ),
-                                                        PostWriterModal(
-                                                            room: room),
-                                                        for (Event e in room
-                                                            .getPosts(
-                                                                snapT.data!,
-                                                                eventTypesFilter: [
-                                                              MatrixTypes.post,
-                                                              EventTypes
-                                                                  .Encrypted,
-                                                              EventTypes
-                                                                  .RoomCreate
-                                                            ]))
-                                                          Post(
-                                                              event: e,
-                                                              onReact:
-                                                                  (Offset e) {},
-                                                              timeline:
-                                                                  snapT.data),
-                                                        if (loading)
-                                                          const PostShimmer(),
-                                                      ],
-                                                    )),
-                                              if (snapT.hasData &&
-                                                  calendarEvent != null)
-                                                ConstrainedBox(
-                                                    constraints:
-                                                        const BoxConstraints(
-                                                            maxWidth: 450),
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: CalendarEventInfo(
-                                                          room: room,
-                                                          timeline: snapT.data!,
-                                                          calendarEvent:
-                                                              calendarEvent),
-                                                    )),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              PostWriterModal(room: room),
+                                              for (Event e in room.getPosts(
+                                                  snapT.data!,
+                                                  eventTypesFilter: [
+                                                    MatrixTypes.post,
+                                                    EventTypes.Encrypted,
+                                                    EventTypes.RoomCreate
+                                                  ]))
+                                                Post(
+                                                    event: e,
+                                                    onReact: (Offset e) {},
+                                                    timeline: snapT.data),
+                                              if (loading) const PostShimmer(),
                                             ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                            headerChildBuilder: (
-                                    {required bool displaySideBar}) =>
-                                Container());
-                      });
+                                          )),
+                                    if (snapT.hasData && calendarEvent != null)
+                                      ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                              maxWidth: 450),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: CalendarEventInfo(
+                                                room: room,
+                                                timeline: snapT.data!,
+                                                calendarEvent: calendarEvent),
+                                          )),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                      headerChildBuilder: ({required bool displaySideBar}) =>
+                          Container());
                 });
           }),
     );
