@@ -23,6 +23,7 @@ import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../partials/components/layouts/layout_view.dart';
+import '../../partials/feed/topic_list_tile.dart';
 import '../../partials/post/post_writer_modal.dart';
 import '../../partials/users/MinesTrixUserSelection.dart';
 
@@ -272,66 +273,7 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                                                     }),
                                                       if (room.canSendDefaultStates ||
                                                           room.topic.isNotEmpty)
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                          .symmetric(
-                                                                      vertical:
-                                                                          16.0),
-                                                              child: ListTile(
-                                                                  title: room
-                                                                          .topic
-                                                                          .isEmpty
-                                                                      ? const Text(
-                                                                          "Set topic")
-                                                                      : MarkdownBody(
-                                                                          data: room
-                                                                              .topic,
-                                                                          onTapLink: (text,
-                                                                              href,
-                                                                              title) async {
-                                                                            if (href !=
-                                                                                null) {
-                                                                              final url = Uri.parse(href);
-                                                                              if (await canLaunchUrl(url)) {
-                                                                                await launchUrl(url);
-                                                                              } else {
-                                                                                throw 'Could not launch $href';
-                                                                              }
-                                                                            }
-                                                                          }),
-                                                                  leading:
-                                                                      const Icon(
-                                                                          Icons
-                                                                              .topic),
-                                                                  onTap: !room
-                                                                          .canSendDefaultStates
-                                                                      ? null
-                                                                      : () async {
-                                                                          String?
-                                                                              topic =
-                                                                              await CustomDialogs.showCustomTextDialog(
-                                                                            context,
-                                                                            title:
-                                                                                "Set the event topic",
-                                                                            helpText:
-                                                                                "Event topic",
-                                                                            initialText:
-                                                                                room.topic,
-                                                                          );
-                                                                          if (topic !=
-                                                                              null) {
-                                                                            await room.setDescription(topic);
-                                                                          }
-                                                                        }),
-                                                            ),
-                                                          ],
-                                                        ),
+                                                        TopicListTile(room: room),
                                                     ],
                                                   ),
                                                 ),

@@ -20,6 +20,7 @@ import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/custom_header.dart';
 import '../../../partials/components/minesTrix/MinesTrixTitle.dart';
+import '../../../partials/feed/topic_list_tile.dart';
 import '../../../partials/minestrix_title.dart';
 import '../../../partials/users/user_avatar.dart';
 import '../../../router.gr.dart';
@@ -346,8 +347,8 @@ class UserViewPageState extends State<UserViewPage> {
                                                 ],
                                               ),
                                             ),
-                                            if (mroom != null &&
-                                                mroom?.topic != "")
+                                            if (mroom?.room == null &&
+                                                mroom?.topic.isNotEmpty == true)
                                               Padding(
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -355,6 +356,13 @@ class UserViewPageState extends State<UserViewPage> {
                                                         horizontal: 8.0),
                                                 child: Text(mroom!.topic),
                                               ),
+                                            if (mroom?.room != null &&
+                                                (mroom!.room!
+                                                        .canSendDefaultStates ||
+                                                    mroom!.room?.topic
+                                                            .isNotEmpty ==
+                                                        true))
+                                              TopicListTile(room: mroom!.room!),
                                             Padding(
                                               padding:
                                                   const EdgeInsets.all(12.0),

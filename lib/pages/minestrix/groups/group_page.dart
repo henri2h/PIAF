@@ -19,6 +19,7 @@ import 'package:minestrix_chat/view/room_page.dart';
 
 import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/layout_view.dart';
+import '../../../partials/feed/topic_list_tile.dart';
 
 class GroupPage extends StatefulWidget {
   const GroupPage({Key? key, required this.room}) : super(key: key);
@@ -149,11 +150,9 @@ class GroupPageState extends State<GroupPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const H2Title("About"),
-                                    if (room.topic.isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(room.topic),
-                                      ),
+                                    if (room.canSendDefaultStates ||
+                                        room.topic.isNotEmpty)
+                                      TopicListTile(room: room),
                                     ListTile(
                                         leading:
                                             room.joinRules == JoinRules.public
