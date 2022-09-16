@@ -25,6 +25,7 @@ class CalendarEventCard extends StatelessWidget {
           final calendarEvent = room.getEventAttendanceEvent();
           return MaterialButton(
               onPressed: () async {
+                if (room.membership == Membership.invite) await room.join();
                 await context.navigateTo(CalendarEventRoute(room: room));
               },
               color: Theme.of(context).cardColor,
@@ -47,7 +48,22 @@ class CalendarEventCard extends StatelessWidget {
                         false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
                     backgroundColor: Colors.blue,
                   ),
-                  EventCreator(room: room),
+                  Row(
+                    children: [
+                      Expanded(child: EventCreator(room: room)),
+                      if (room.membership == Membership.invite)
+                        Card(
+                            color: Theme.of(context).primaryColor,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("Invited",
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary)),
+                            )),
+                    ],
+                  ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -67,22 +83,28 @@ class CalendarEventCard extends StatelessWidget {
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 19)),
+                              if (room.membership == Membership.invite)
+                                const ListTile(
+                                    title: Text(
+                                        "You've been invited to this event"),
+                                    subtitle: Text("Click to join and see it")),
                               if (room.topic.isNotEmpty)
                                 Text(
                                   room.topic.trim(),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              Row(
-                                children: [
-                                  const Icon(Icons.people),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4.0),
-                                    child: Text(
-                                        "${room.summary.mJoinedMemberCount} members"),
-                                  ),
-                                ],
-                              ),
+                              if (room.membership == Membership.join)
+                                Row(
+                                  children: [
+                                    const Icon(Icons.people),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: Text(
+                                          "${room.summary.mJoinedMemberCount} members"),
+                                    ),
+                                  ],
+                                ),
                               if (calendarEvent?.place != null)
                                 Row(
                                   children: [

@@ -6,10 +6,10 @@ import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
-import 'package:minestrix/partials/users/MinesTrixUserSelection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
+import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
@@ -213,10 +213,8 @@ class GroupPageState extends State<GroupPage> {
                                           leading: Icon(Icons.person_add)),
                                       onPressed: () async {
                                         List<Profile>? profiles =
-                                            await AdaptativeDialogs.show(
-                                                context: context,
-                                                builder: (a) =>
-                                                    MinesTrixUserSelection());
+                                            await 
+                                                    MinesTrixUserSelection.show(context);
 
                                         profiles?.forEach((Profile p) async {
                                           await room.invite(p.userId);

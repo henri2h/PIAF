@@ -10,6 +10,7 @@ import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/calendar_event/calendar_event_widget.dart';
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
+import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/dialogs/custom_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
@@ -23,7 +24,6 @@ import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/feed/topic_list_tile.dart';
 import '../../partials/post/post_writer_modal.dart';
-import '../../partials/users/MinesTrixUserSelection.dart';
 
 class CalendarEventPage extends StatefulWidget {
   final Room room;
@@ -81,8 +81,7 @@ class CalendarEventPageState extends State<CalendarEventPage> {
   }
 
   Future<void> inviteUsers() async {
-    List<Profile>? profiles = await AdaptativeDialogs.show(
-        context: context, builder: (a) => MinesTrixUserSelection());
+    List<Profile>? profiles = await MinesTrixUserSelection.show(context);
 
     profiles?.forEach((Profile p) async {
       await widget.room.invite(p.userId);
