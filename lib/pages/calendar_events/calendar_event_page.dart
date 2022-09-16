@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
@@ -20,7 +19,6 @@ import 'package:minestrix_chat/utils/poll/poll.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/model/calendar_event_model.dart';
 import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/feed/topic_list_tile.dart';
@@ -273,7 +271,8 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                                                     }),
                                                       if (room.canSendDefaultStates ||
                                                           room.topic.isNotEmpty)
-                                                        TopicListTile(room: room),
+                                                        TopicListTile(
+                                                            room: room),
                                                     ],
                                                   ),
                                                 ),
