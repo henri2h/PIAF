@@ -77,7 +77,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.8.2"
+    version: "2.9.0"
   audio_session:
     dependency: transitive
     description:
@@ -224,7 +224,7 @@ packages:
       name: characters
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.0"
+    version: "1.2.1"
   charcode:
     dependency: transitive
     description:
@@ -245,7 +245,7 @@ packages:
       name: clock
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   code_builder:
     dependency: transitive
     description:
@@ -448,7 +448,7 @@ packages:
       name: fake_async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.3.0"
+    version: "1.3.1"
   ffi:
     dependency: "direct overridden"
     description:
@@ -912,6 +912,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.6.0"
+  infinite_list:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "henri2h/enhancements"
+      resolved-ref: bb52b06f052203a4724a7304f31e037d75f50841
+      url: "git@gitlab.com:minestrix/infinite-list.git"
+    source: git
+    version: "0.0.1"
   intersperse:
     dependency: transitive
     description:
@@ -1016,20 +1025,20 @@ packages:
       name: matcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.11"
+    version: "0.12.12"
   material_color_utilities:
     dependency: transitive
     description:
       name: material_color_utilities
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.4"
+    version: "0.1.5"
   matrix:
     dependency: "direct main"
     description:
       path: "."
       ref: "henri2h/index-events-by-event-type"
-      resolved-ref: "2c6866f36a6b378406c1f3d5689921dbc8b79544"
+      resolved-ref: "036b0ce8b43c91a3562bf9b395ef313064893e63"
       url: "https://gitlab.com/minestrix/famedlysdk.git"
     source: git
     version: "0.13.0"
@@ -1053,7 +1062,7 @@ packages:
       name: meta
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.7.0"
+    version: "1.8.0"
   mime:
     dependency: transitive
     description:
@@ -1066,7 +1075,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "6c470c89d0f6d239c02dd4ff7684a7c98a2a80f7"
+      resolved-ref: "8ddbaedd52e0c530ad9ffd2ed3216f24430f2d98"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.2"
@@ -1167,7 +1176,7 @@ packages:
       name: path
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.8.1"
+    version: "1.8.2"
   path_drawing:
     dependency: transitive
     description:
@@ -1322,6 +1331,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.27.5"
+  scroll_to_index:
+    dependency: "direct main"
+    description:
+      name: scroll_to_index
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.1"
   sdp_transform:
     dependency: transitive
     description:
@@ -1508,7 +1524,7 @@ packages:
       name: source_span
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.8.2"
+    version: "1.9.0"
   sqflite:
     dependency: transitive
     description:
@@ -1550,7 +1566,7 @@ packages:
       name: string_scanner
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   swipe_to:
     dependency: transitive
     description:
@@ -1571,14 +1587,14 @@ packages:
       name: term_glyph
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.0"
+    version: "1.2.1"
   test_api:
     dependency: transitive
     description:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.9"
+    version: "0.4.12"
   time:
     dependency: transitive
     description:
