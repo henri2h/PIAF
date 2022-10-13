@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

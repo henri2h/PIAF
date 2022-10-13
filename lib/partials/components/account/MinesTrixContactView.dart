@@ -41,7 +41,7 @@ class MinesTrixContactView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
                                   Text((user.displayName ?? user.id),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                       )),
                                   Text(
@@ -56,18 +56,19 @@ class MinesTrixContactView extends StatelessWidget {
                               itemBuilder: (_) => [
                                     if (user.canKick)
                                       PopupMenuItem(
+                                          value: "kick",
                                           child: Row(
-                                            children: [
+                                            children: const [
                                               Icon(Icons.person_remove),
                                               SizedBox(width: 10),
                                               Text("Kick"),
                                             ],
-                                          ),
-                                          value: "kick"),
+                                          )),
                                     if (user.canBan)
                                       PopupMenuItem(
+                                          value: "ban",
                                           child: Row(
-                                            children: [
+                                            children: const [
                                               Icon(Icons.delete_forever,
                                                   color: Colors.red),
                                               SizedBox(width: 10),
@@ -75,10 +76,9 @@ class MinesTrixContactView extends StatelessWidget {
                                                   style: TextStyle(
                                                       color: Colors.red)),
                                             ],
-                                          ),
-                                          value: "ban")
+                                          ))
                                   ],
-                              icon: Icon(Icons.more_horiz),
+                              icon: const Icon(Icons.more_horiz),
                               onSelected: (String action) async {
                                 switch (action) {
                                   case "kick":

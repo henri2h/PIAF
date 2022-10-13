@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class FriendRequestList extends StatelessWidget {
+  const FriendRequestList({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     Client client = Matrix.of(context).client;
 
-    if (client.minestrixInvites.length == 0) return Container();
+    if (client.minestrixInvites.isEmpty) return Container();
     return StreamBuilder(
         stream: client.onEvent.stream,
         builder: (context, _) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
                   child: H2Title("Friend requests"),
                 ),
                 for (Room sm in client.minestrixInvites)
@@ -27,19 +29,19 @@ class FriendRequestList extends StatelessWidget {
                       Row(
                         children: [
                           MatrixImageAvatar(client: client, url: sm.avatar),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Text(sm.name),
                         ],
                       ),
                       Row(
                         children: [
                           IconButton(
-                              icon: Icon(Icons.check, color: Colors.green),
+                              icon: const Icon(Icons.check, color: Colors.green),
                               onPressed: () async {
                                 await sm.join();
                               }),
                           IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () async {
                                 await sm.leave();
                               }),
