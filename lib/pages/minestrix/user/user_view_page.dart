@@ -8,7 +8,6 @@ import 'package:minestrix/partials/users/user_friends_card.dart';
 import 'package:minestrix/partials/users/user_profile_selection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
@@ -16,6 +15,7 @@ import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
+import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/custom_header.dart';
@@ -323,7 +323,7 @@ class UserViewPageState extends State<UserViewPage> {
                                                           icon: const Icon(
                                                               Icons.edit),
                                                           onPressed: () =>
-                                                              ConvSettingsCard.show(
+                                                              RoomSettingsPage.show(
                                                                   context:
                                                                       context,
                                                                   room: mroom!

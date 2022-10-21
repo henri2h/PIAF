@@ -9,7 +9,6 @@ import 'package:minestrix/utils/date_time_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/calendar_event/calendar_event_widget.dart';
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
-import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/dialogs/custom_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
@@ -19,6 +18,7 @@ import 'package:minestrix_chat/utils/poll/poll.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/model/calendar_event_model.dart';
 import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
+import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/feed/topic_list_tile.dart';
@@ -108,7 +108,7 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                           IconButton(
                               icon: const Icon(Icons.settings),
                               onPressed: () {
-                                ConvSettingsCard.show(
+                                RoomSettingsPage.show(
                                     context: context, room: room);
                               })
                         ],

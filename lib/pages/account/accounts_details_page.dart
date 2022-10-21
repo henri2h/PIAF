@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
-import 'package:matrix/src/utils/space_child.dart';
 import 'package:minestrix/partials/components/buttons/custom_text_future_button.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/router.gr.dart';
@@ -12,6 +11,7 @@ import 'package:minestrix_chat/utils/matrix/room_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/room_feed_extension.dart';
+import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../partials/components/buttons/custom_future_button.dart';
 import '../../utils/settings.dart';
@@ -207,7 +207,7 @@ class ProfileSpaceCard extends StatelessWidget {
         trailing: IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () =>
-                ConvSettingsCard.show(context: context, room: profile.r)),
+                RoomSettingsPage.show(context: context, room: profile.r)),
       ),
     );
   }
