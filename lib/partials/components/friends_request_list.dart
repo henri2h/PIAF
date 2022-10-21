@@ -36,7 +36,8 @@ class FriendRequestList extends StatelessWidget {
                       Row(
                         children: [
                           IconButton(
-                              icon: const Icon(Icons.check, color: Colors.green),
+                              icon:
+                                  const Icon(Icons.check, color: Colors.green),
                               onPressed: () async {
                                 await sm.join();
                               }),

@@ -68,8 +68,8 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
               for (Room room in rooms)
                 Builder(builder: (context) {
                   final hasBeenAdded = profile != null &&
-                      profile.r.spaceChildren.indexWhere(
-                              (final sc) => sc.roomId == room.id) !=
+                      profile.r.spaceChildren
+                              .indexWhere((final sc) => sc.roomId == room.id) !=
                           -1;
                   return SwitchListTile(
                     onChanged: profile != null
