@@ -48,7 +48,7 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                   if (!mobile)
                     Consumer<RoomListState>(
                         builder: (context, state, _) => SizedBox(
-                            width: state.spaceListExpanded ? 230 : 60,
+                            width: state.spaceListExpanded ? 280 : 60,
                             child: RoomListSpacesList(
                                 mobile: false,
                                 scrollController: scrollControllerSpaces))),

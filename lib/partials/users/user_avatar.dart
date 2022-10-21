@@ -31,12 +31,12 @@ class UserAvatar extends StatelessWidget {
                 defaultIcon: Icon(Icons.person,
                     size: 100, color: Theme.of(context).colorScheme.onPrimary),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(p.displayName ?? p.userId,
                     style:
-                        TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+                        const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
               ),
               if (p.displayName != null)
                 Padding(
