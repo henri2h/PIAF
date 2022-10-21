@@ -5,7 +5,7 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../partials/feed/minestrixProfileNotCreated.dart';
+import '../partials/feed/minestrix_profile_not_created.dart';
 
 class MatrixLoadingPage extends StatefulWidget {
   const MatrixLoadingPage({Key? key}) : super(key: key);

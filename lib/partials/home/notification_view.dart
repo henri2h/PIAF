@@ -44,7 +44,7 @@ class NotificationView extends StatelessWidget {
                           leading: const Icon(Icons.notifications),
                           title: Text(notif.title),
                           subtitle: Text(notif.body)),
-                    FriendRequestList(),
+                    const FriendRequestList(),
                   ]),
                 ),
                 if (notificationRooms.isNotEmpty) const H2Title("Chats"),

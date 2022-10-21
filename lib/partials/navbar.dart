@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/partials/feed/notficationBell.dart';
+import 'package:minestrix/partials/feed/notfication_bell.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/partials/components/fake_text_field.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
@@ -16,7 +15,7 @@ class NavBarDesktop extends StatelessWidget {
   void displaySearch(BuildContext context) async =>
       await AdaptativeDialogs.show(
           title: 'Search',
-          builder: (context) => ResearchPage(isPopup: true),
+          builder: (context) => const ResearchPage(isPopup: true),
           context: context);
   @override
   Widget build(BuildContext context) {
@@ -41,9 +40,8 @@ class NavBarDesktop extends StatelessWidget {
                                 height: 40,
                                 cacheHeight: 80,
                                 cacheWidth: 80),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
                               child: Text("MinesTRIX",
                                   style: TextStyle(
                                       fontSize: 30,
@@ -53,14 +51,14 @@ class NavBarDesktop extends StatelessWidget {
                         ),
                       ),
                       onPressed: () async {
-                        await context.navigateTo(AppWrapperRoute());
-                        await context.navigateTo(FeedRoute());
+                        await context.navigateTo(const AppWrapperRoute());
+                        await context.navigateTo(const FeedRoute());
                       }),
                   NavBarButton(
                       name: "My account",
                       icon: Icons.person,
                       onPressed: () async {
-                        await context.navigateTo(AppWrapperRoute());
+                        await context.navigateTo(const AppWrapperRoute());
                         await context.navigateTo(UserViewRoute(
                             userID: Matrix.of(context).client.userID));
                       }),
@@ -68,21 +66,22 @@ class NavBarDesktop extends StatelessWidget {
                       name: "Chats",
                       icon: Icons.chat,
                       onPressed: () async {
-                        await context.navigateTo(RoomListWrapperRoute());
+                        await context.navigateTo(const RoomListWrapperRoute());
                       }),
                   if (Settings().calendarEventSupport)
                     NavBarButton(
                         name: "Events",
                         icon: Icons.event,
                         onPressed: () async {
-                          await context.navigateTo(CalendarEventListRoute());
+                          await context
+                              .navigateTo(const CalendarEventListRoute());
                         })
                 ],
               ),
             ),
             constraints.maxWidth > 1000
                 ? ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 280),
+                    constraints: const BoxConstraints(maxWidth: 280),
                     child: FakeTextField(
                       icon: Icons.search,
                       onPressed: () => displaySearch(context),
@@ -93,8 +92,8 @@ class NavBarDesktop extends StatelessWidget {
                     name: "Search",
                     icon: Icons.search,
                     onPressed: () => displaySearch(context)),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
               child: NotificationBell(),
             ),
           ],
@@ -121,10 +120,11 @@ class NavBarButton extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(icon, size: 26),
-            if (name != null) SizedBox(width: 6),
+            if (name != null) const SizedBox(width: 6),
             if (name != null)
               Text(name!,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w500)),
           ],
         ),
       ),

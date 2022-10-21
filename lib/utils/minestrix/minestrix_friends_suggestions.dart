@@ -17,7 +17,7 @@ extension MinestrixFriendsSugestion on Client {
 
   /// Get friend suggestions by looking in smatrix rooms
   Future<List<Profile>> getFriendsSuggestions() async {
-    Map<String, ProfileCount> profiles = Map<String, ProfileCount>();
+    Map<String, ProfileCount> profiles = <String, ProfileCount>{};
 
     for (Room r in rooms) {
       //await r.requestParticipants();
@@ -39,11 +39,12 @@ extension MinestrixFriendsSugestion on Client {
         .toList();
 
     // TODO: find which room we may use. Maybe define a main room.
-    if (minestrixUserRoom.isNotEmpty)
+    if (minestrixUserRoom.isNotEmpty) {
       ps.removeWhere((ProfileCount profile) =>
           minestrixUserRoom.first.getParticipants().firstWhereOrNull(
               (User element) => element.id == profile.p.userId) !=
           null);
+    }
 
     // get the 20 best results
     return ps.take(20).map<Profile>((ProfileCount p) => p.p).toList();

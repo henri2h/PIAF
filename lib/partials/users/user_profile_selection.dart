@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
@@ -25,10 +24,10 @@ class UserProfileSelection extends StatefulWidget {
   final void Function(RoomWithSpace? r) onRoomSelected;
 
   @override
-  _UserProfileSelectionState createState() => _UserProfileSelectionState();
+  UserProfileSelectionState createState() => UserProfileSelectionState();
 }
 
-class _UserProfileSelectionState extends State<UserProfileSelection> {
+class UserProfileSelectionState extends State<UserProfileSelection> {
   void selectRoom(RoomWithSpace? r) {
     setState(() {
       widget.onRoomSelected(r);
@@ -91,10 +90,10 @@ class _UserProfileSelectionState extends State<UserProfileSelection> {
                             context.pushRoute(const AccountsDetailsRoute())),
                   ),
                 if (results.isEmpty && !isOurProfile)
-                  Card(
-                    child: const Padding(
+                  const Card(
+                    child: Padding(
                       padding: EdgeInsets.all(8.0),
-                      child: const ListTile(
+                      child: ListTile(
                           leading: Icon(Icons.question_mark),
                           title: Text("No profile found"),
                           subtitle: Text(

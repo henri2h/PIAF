@@ -20,7 +20,7 @@ class RepliesVue extends StatelessWidget {
   final String? replyToMessageId;
 
   final void Function(String? value) setRepliedMessage;
-  RepliesVue(
+  const RepliesVue(
       {Key? key,
       required this.event,
       required this.replies,
@@ -53,7 +53,7 @@ class RepliesVueRecursive extends StatefulWidget {
   final String? replyToMessageId;
 
   final void Function(String? value) setRepliedMessage;
-  RepliesVueRecursive(
+  const RepliesVueRecursive(
       {Key? key,
       required this.event,
       required this.postEvent,
@@ -99,128 +99,125 @@ class RepliesVueRecursiveState extends State<RepliesVueRecursive> {
         ? min(directRepliesToEvent.length, tMax)
         : directRepliesToEvent.length;
 
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.replyToMessageId == widget.event.eventId)
-            MatrixMessageComposer(
-                client: client,
-                room: widget.event.room,
-                enableAutoFocusOnDesktop: false,
-                hintText: "Reply",
-                allowSendingPictures: false,
-                overrideSending: (String text) =>
-                    overrideTextSending(text, replyTo: widget.event),
-                onSend: () => widget.setRepliedMessage(null)),
-          for (Event revent
-              in directRepliesToEvent.take(max).toList()
-                ..sort((a, b) => b.originServerTs.compareTo(a.originServerTs)))
-            FutureBuilder<User?>(
-                future: revent.fetchSenderUser(),
-                builder: (context, snap) {
-                  final sender = snap.data ?? revent.senderFromMemoryOrFallback;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 2.0, horizontal: 20.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 6),
-                                      child: MatrixImageAvatar(
-                                        client: client,
-                                        url: sender.avatarUrl,
-                                        defaultText: sender.calcDisplayname(),
-                                        backgroundColor:
-                                            Theme.of(context).primaryColor,
-                                        width: 32,
-                                        height: 32,
-                                      )),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 6, horizontal: 12),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Wrap(
-                                            children: [
-                                              Text(
-                                                  sender.asUser.displayName
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w700)),
-                                              Text(
-                                                  " - " +
-                                                      timeago.format(revent
-                                                          .originServerTs),
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w400)),
-                                            ],
-                                          ),
-                                          SizedBox(height: 5),
-                                          PostContent(
-                                              widget.timeline != null
-                                                  ? revent.getDisplayEvent(
-                                                      widget.timeline!)
-                                                  : revent,
-                                              disablePadding: true,
-                                              imageMaxHeight: 200),
-                                          if (widget.replyToMessageId !=
-                                              revent.eventId)
-                                            TextButton(
-                                                onPressed: () =>
-                                                    widget.setRepliedMessage(
-                                                        revent.eventId),
-                                                child: Text("Reply"))
-                                        ],
-                                      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.replyToMessageId == widget.event.eventId)
+          MatrixMessageComposer(
+              client: client,
+              room: widget.event.room,
+              enableAutoFocusOnDesktop: false,
+              hintText: "Reply",
+              allowSendingPictures: false,
+              overrideSending: (String text) =>
+                  overrideTextSending(text, replyTo: widget.event),
+              onSend: () => widget.setRepliedMessage(null)),
+        for (Event revent
+            in directRepliesToEvent.take(max).toList()
+              ..sort((a, b) => b.originServerTs.compareTo(a.originServerTs)))
+          FutureBuilder<User?>(
+              future: revent.fetchSenderUser(),
+              builder: (context, snap) {
+                final sender = snap.data ?? revent.senderFromMemoryOrFallback;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 2.0, horizontal: 20.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 6),
+                                    child: MatrixImageAvatar(
+                                      client: client,
+                                      url: sender.avatarUrl,
+                                      defaultText: sender.calcDisplayname(),
+                                      backgroundColor:
+                                          Theme.of(context).primaryColor,
+                                      width: 32,
+                                      height: 32,
+                                    )),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Wrap(
+                                          children: [
+                                            Text(
+                                                sender.asUser.displayName
+                                                    .toString(),
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w700)),
+                                            Text(
+                                                " - ${timeago.format(revent
+                                                        .originServerTs)}",
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        PostContent(
+                                            widget.timeline != null
+                                                ? revent.getDisplayEvent(
+                                                    widget.timeline!)
+                                                : revent,
+                                            disablePadding: true,
+                                            imageMaxHeight: 200),
+                                        if (widget.replyToMessageId !=
+                                            revent.eventId)
+                                          TextButton(
+                                              onPressed: () =>
+                                                  widget.setRepliedMessage(
+                                                      revent.eventId),
+                                              child: const Text("Reply"))
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        if (widget.replies![revent] != null ||
-                            widget.replyToMessageId == revent.eventId)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20.0),
-                            child: RepliesVueRecursive(
-                                event: revent,
-                                postEvent: widget.postEvent,
-                                timeline: widget.timeline,
-                                enableMore: widget.enableMore,
-                                replies: widget.replies![revent],
-                                setRepliedMessage: widget.setRepliedMessage,
-                                replyToMessageId: widget.replyToMessageId),
                           ),
-                      ],
-                    ),
-                  );
-                }),
-          if (directRepliesToEvent.length > max)
-            Center(
-                child: MaterialButton(
-                    child: Text("Show more"),
-                    onPressed: () {
-                      setState(() {
-                        tMax = max + 5;
-                      });
-                    }))
-        ],
-      ),
+                        ],
+                      ),
+                      if (widget.replies![revent] != null ||
+                          widget.replyToMessageId == revent.eventId)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20.0),
+                          child: RepliesVueRecursive(
+                              event: revent,
+                              postEvent: widget.postEvent,
+                              timeline: widget.timeline,
+                              enableMore: widget.enableMore,
+                              replies: widget.replies![revent],
+                              setRepliedMessage: widget.setRepliedMessage,
+                              replyToMessageId: widget.replyToMessageId),
+                        ),
+                    ],
+                  ),
+                );
+              }),
+        if (directRepliesToEvent.length > max)
+          Center(
+              child: MaterialButton(
+                  child: const Text("Show more"),
+                  onPressed: () {
+                    setState(() {
+                      tMax = max + 5;
+                    });
+                  }))
+      ],
     );
   }
 }

@@ -27,6 +27,7 @@ class MinestrixProfileNotCreated extends StatelessWidget {
               icon: Icon(Icons.skateboarding_outlined,
                   color: Theme.of(context).colorScheme.onPrimary),
               color: Theme.of(context).primaryColor,
+              onPressed: sclient.createPrivateMinestrixProfile,
               children: [
                 Text("Create your private MinesTRIX profile",
                     style: TextStyle(
@@ -37,8 +38,7 @@ class MinestrixProfileNotCreated extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(context).colorScheme.onPrimary)),
-              ],
-              onPressed: sclient.createPrivateMinestrixProfile);
+              ]);
         });
   }
 }

@@ -33,7 +33,7 @@ extension MinestrixNotifications on Client {
     minestrixInvites.forEach((room) {
       Notification n = Notification();
       n.body = "Friend request";
-      n.type = NotificationType.FriendRequest;
+      n.type = NotificationType.friendRequest;
       notifications.add(n);
     });
     return notifications;
@@ -41,7 +41,7 @@ extension MinestrixNotifications on Client {
 
   get hasNotifications => _hasNotifications();
   bool _hasNotifications() {
-    if (notifications.length == 0) return false;
+    if (notifications.isEmpty) return false;
     return true;
   }
 
@@ -64,4 +64,4 @@ class Notification {
   Profile? p;
 }
 
-enum NotificationType { Text, FriendRequest }
+enum NotificationType { Text, friendRequest }

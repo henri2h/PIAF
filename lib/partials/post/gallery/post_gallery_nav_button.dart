@@ -40,14 +40,14 @@ class _PostGalleryNavButtonState extends State<PostGalleryNavButton> {
                   sigmaY: 1.0,
                 ),
                 child:
-                    Container(decoration: BoxDecoration(color: Colors.black12)),
+                    Container(decoration: const BoxDecoration(color: Colors.black12)),
               ),
             ),
           Center(
             child: MaterialButton(
                 minWidth: 0,
-                child: Icon(widget.icon, size: 40, color: Colors.white),
-                onPressed: widget.onPressed),
+                onPressed: widget.onPressed,
+                child: Icon(widget.icon, size: 40, color: Colors.white)),
           ),
         ]),
       ),

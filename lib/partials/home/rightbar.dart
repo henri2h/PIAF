@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/feed/minestrixProfileNotCreated.dart';
-import 'package:minestrix/partials/minestrixRoomTile.dart';
+import 'package:minestrix/partials/feed/minestrix_profile_not_created.dart';
+import 'package:minestrix/partials/minestrix_room_tile.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 

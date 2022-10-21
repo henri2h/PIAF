@@ -1,4 +1,4 @@
-import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
@@ -38,7 +38,7 @@ class ContactView extends StatelessWidget {
                         url: sroom.avatar,
                         width: 32,
                         height: 32,
-                        defaultIcon: Icon(Icons.person, size: 32),
+                        defaultIcon: const Icon(Icons.person, size: 32),
                       ),
                       Flexible(
                         child: Padding(
@@ -80,7 +80,7 @@ class ContactView extends StatelessWidget {
 
 class MinestrixRoomTileNavigator extends StatelessWidget {
   const MinestrixRoomTileNavigator(
-      {Key? key, required this.room, this.shouldPop: false})
+      {Key? key, required this.room, this.shouldPop = false})
       : super(key: key);
   final Room room;
   final bool shouldPop;

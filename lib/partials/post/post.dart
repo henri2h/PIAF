@@ -23,11 +23,11 @@ class Post extends StatefulWidget {
   PostState createState() => PostState();
 }
 
-enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
+enum PostTypeUpdate { profilePicture, displayName, membership, none }
 
 class PostState extends State<Post> with SingleTickerProviderStateMixin {
   final key = GlobalKey();
-  String? replyToMessageId = null;
+  String? replyToMessageId;
   bool showReplies = false;
 
   Set<Event>? reactions;

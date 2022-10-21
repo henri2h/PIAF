@@ -29,7 +29,7 @@ class UserRoomKnockItem extends StatelessWidget {
           defaultIcon: Icon(Icons.person,
               color: Theme.of(context).colorScheme.onPrimary, size: 70),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +38,7 @@ class UserRoomKnockItem extends StatelessWidget {
                 padding: const EdgeInsets.all(4.0),
                 child: Text(user.displayName ?? user.id,
                     style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               ),
               Row(
                 children: [
@@ -46,7 +46,7 @@ class UserRoomKnockItem extends StatelessWidget {
                     child: CustomFutureButton(
                       expanded: false,
                       color: Theme.of(context).primaryColor,
-                      padding: EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(2),
                       icon: Icon(Icons.check,
                           size: 15,
                           color: Theme.of(context).colorScheme.onPrimary),
@@ -64,13 +64,13 @@ class UserRoomKnockItem extends StatelessWidget {
                   Flexible(
                     child: CustomFutureButton(
                       expanded: false,
-                      padding: EdgeInsets.all(2),
-                      icon: Icon(Icons.close, size: 15),
+                      padding: const EdgeInsets.all(2),
+                      icon: const Icon(Icons.close, size: 15),
                       onPressed: () async {
                         await room.kick(user.id);
                       },
                       children: [
-                        Text("Remove", style: TextStyle(fontSize: 15))
+                        const Text("Remove", style: TextStyle(fontSize: 15))
                       ],
                     ),
                   ),

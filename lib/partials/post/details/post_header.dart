@@ -62,7 +62,7 @@ class PostHeader extends StatelessWidget {
                                   children: [
                                     TextButton(
                                       style: TextButton.styleFrom(
-                                          primary: Theme.of(context)
+                                          foregroundColor: Theme.of(context)
                                               .textTheme
                                               .bodyText1!
                                               .color),
@@ -87,7 +87,7 @@ class PostHeader extends StatelessWidget {
                                     if (sender.id != feedOwner?.id)
                                       TextButton(
                                         style: TextButton.styleFrom(
-                                            primary: Theme.of(context)
+                                            foregroundColor: Theme.of(context)
                                                 .textTheme
                                                 .bodyText1!
                                                 .color),
