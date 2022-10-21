@@ -39,8 +39,8 @@ class _PostGalleryNavButtonState extends State<PostGalleryNavButton> {
                   sigmaX: 1.0,
                   sigmaY: 1.0,
                 ),
-                child:
-                    Container(decoration: const BoxDecoration(color: Colors.black12)),
+                child: Container(
+                    decoration: const BoxDecoration(color: Colors.black12)),
               ),
             ),
           Center(

@@ -132,8 +132,8 @@ class RepliesVueRecursiveState extends State<RepliesVueRecursive> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 6),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
                                     child: MatrixImageAvatar(
                                       client: client,
                                       url: sender.avatarUrl,
@@ -160,8 +160,7 @@ class RepliesVueRecursiveState extends State<RepliesVueRecursive> {
                                                     fontWeight:
                                                         FontWeight.w700)),
                                             Text(
-                                                " - ${timeago.format(revent
-                                                        .originServerTs)}",
+                                                " - ${timeago.format(revent.originServerTs)}",
                                                 style: const TextStyle(
                                                     fontWeight:
                                                         FontWeight.w400)),

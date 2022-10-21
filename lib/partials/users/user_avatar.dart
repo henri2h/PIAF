@@ -35,8 +35,8 @@ class UserAvatar extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(p.displayName ?? p.userId,
-                    style:
-                        const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 21, fontWeight: FontWeight.bold)),
               ),
               if (p.displayName != null)
                 Padding(

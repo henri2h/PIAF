@@ -37,8 +37,8 @@ class UserRoomKnockItem extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Text(user.displayName ?? user.id,
-                    style:
-                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 18)),
               ),
               Row(
                 children: [
