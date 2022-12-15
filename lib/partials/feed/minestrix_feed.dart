@@ -117,7 +117,7 @@ class MinestrixFeedState extends State<MinestrixFeed> {
     */
 
       await client.roomsLoading;
-      final events = await client.database?.getEventListFortype(
+      final events = await client.database?.getEventListForType(
               MatrixTypes.post, client.rooms,
               start: start) ??
           [];

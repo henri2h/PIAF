@@ -6,7 +6,7 @@ import FlutterMacOS
 import Foundation
 
 import audio_session
-import connectivity_plus_macos
+import connectivity_plus
 import desktop_lifecycle
 import desktop_webview_window
 import dynamic_color

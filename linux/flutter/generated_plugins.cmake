@@ -6,8 +6,10 @@ list(APPEND FLUTTER_PLUGIN_LIST
   desktop_lifecycle
   desktop_webview_window
   dynamic_color
+  emoji_picker_flutter
   file_selector_linux
   flutter_secure_storage_linux
+  flutter_webrtc
   sentry_flutter
   url_launcher_linux
 )
