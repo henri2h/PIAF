@@ -19,6 +19,7 @@ class ThemeNotifier with ChangeNotifier {
         primaryColor: _primaryColor,
         scaffoldBackgroundColor: Colors.black,
         primarySwatch: Colors.blue,
+        useMaterial3: true,
         bottomNavigationBarTheme:
             const BottomNavigationBarThemeData(backgroundColor: Colors.black),
         cardColor: Colors.grey[900],
