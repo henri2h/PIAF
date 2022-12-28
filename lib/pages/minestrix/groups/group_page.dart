@@ -102,6 +102,7 @@ class GroupPageState extends State<GroupPage> {
               mainBuilder: ({required bool displaySideBar}) => StreamBuilder(
                   stream: room.onUpdate.stream,
                   builder: (context, _) => CustomListViewWithEmoji(
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: sevents.length + 1 + (updating ? 1 : 0),
                       itemBuilder: (BuildContext c, int i,
                           void Function(Offset, Event) onReact) {
