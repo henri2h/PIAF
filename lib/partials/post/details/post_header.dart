@@ -5,8 +5,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {

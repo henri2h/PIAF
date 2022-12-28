@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/model/calendar_event_model.dart';
 

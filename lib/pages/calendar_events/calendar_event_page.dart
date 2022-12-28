@@ -13,7 +13,7 @@ import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/dialogs/custom_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/poll/poll.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 import 'package:minestrix_chat/utils/social/calendar_events/model/calendar_event_model.dart';

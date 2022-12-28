@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/components/layouts/custom_header.dart';

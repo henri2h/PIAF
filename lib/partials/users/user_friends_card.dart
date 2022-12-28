@@ -5,7 +5,7 @@ import 'package:minestrix/partials/components/account/account_card.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/users/user_room_knock_item.dart';
 import 'package:minestrix/router.gr.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 
 class UserFriendsCard extends StatelessWidget {
   const UserFriendsCard({Key? key, required this.room}) : super(key: key);

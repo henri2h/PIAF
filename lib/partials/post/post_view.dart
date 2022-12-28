@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/utils/events/event_extension.dart';
 
 import 'details/post_content.dart';
 import 'details/post_header.dart';
@@ -21,8 +21,7 @@ class PostView extends StatelessWidget {
           Timeline? t = snap.data;
 
           final displayEvent = t != null
-              ? controller.post
-                  .getDisplayEventWithType(t, MatrixTypes.post)
+              ? controller.post.getDisplayEventWithType(t, MatrixTypes.post)
               : controller.post;
 
           return LayoutBuilder(builder: (context, constraints) {
@@ -37,8 +36,7 @@ class PostView extends StatelessWidget {
                   children: [
                     if (isMobile) const Divider(),
                     PostHeader(
-                        eventToEdit: controller.post,
-                        event: displayEvent),
+                        eventToEdit: controller.post, event: displayEvent),
                     if (!isMobile)
                       const Padding(
                         padding:
@@ -48,8 +46,7 @@ class PostView extends StatelessWidget {
                     if (controller.post.status != EventStatus.synced)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child:
-                            Text("Not sent ${controller.post.status}"),
+                        child: Text("Not sent ${controller.post.status}"),
                       ),
                     PostContent(
                       displayEvent,

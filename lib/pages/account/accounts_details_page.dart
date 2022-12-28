@@ -7,10 +7,9 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../partials/components/buttons/custom_future_button.dart';
