@@ -42,7 +42,7 @@ dependencies:
   auto_route: ^5.0.2
 
   # web navigator for SSO
-  webview_flutter: ^3.0.0
+  webview_flutter: ^4.0.1
   url_launcher: ^6.0.3
 
   flutter_typeahead: ^4.0.0
@@ -64,7 +64,7 @@ dependencies:
   encrypt: ^5.0.1
 
   localstorage: ^4.0.0+1
-  flutter_secure_storage: ^6.0.0
+  flutter_secure_storage: ^7.0.1
 
   # cache
   flutter_cache_manager: ^3.0.1
@@ -88,16 +88,15 @@ dependencies:
   package_info_plus: ^1.0.0
 
   minestrix_chat:
-    #git:
-    #  url: https://gitlab.com/minestrix/minestrix-chat.git
-    path: ../minestrix-chat
+    git:
+      url: https://gitlab.com/minestrix/minestrix-chat.git
+    #path: ../minestrix_chat
   infinite_list:
     git:
       url: https://gitlab.com/minestrix/infinite-list.git
       ref: henri2h/enhancements
 
   collection: ^1.15.0-nullsafety.4
-  f_logs: ^2.0.0
   connectivity_plus: ^3.0.2
   just_audio: ^0.9.20
   flutter_ringtone_player: ^3.2.0
@@ -109,13 +108,13 @@ dependencies:
   settings_ui: ^2.0.2
   flutter_datetime_picker: ^1.5.1
   sentry_flutter: ^6.9.1
-  intl: ^0.17.0
+  intl: ^0.18.0
   scroll_to_index: ^3.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  hive_generator: ^1.1.1
+  hive_generator: ^2.0.0
   auto_route_generator: ^5.0.2
   build_runner: ^2.1.2
   import_sorter: ^4.6.0
