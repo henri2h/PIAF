@@ -38,7 +38,7 @@ class ReactionBar extends StatelessWidget {
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: MaterialButton(
                                 child: PostReactions(
-                                    event: controller.post.event!,
+                                    event: controller.post,
                                     reactions: controller.reactions!),
                                 onPressed: () async {
                                   await AdaptativeDialogs.show(

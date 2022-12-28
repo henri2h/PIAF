@@ -47,7 +47,7 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
         replyToMessageId = value;
       });
 
-  late SocialItem post;
+  late Event post;
 
   Timeline? timeline;
 
@@ -66,7 +66,7 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    post = SocialItem.fromEvent(e: widget.event);
+    post = widget.event;
 
     if (post.shareEventId != null && post.shareEventRoomId != null) {
       shareEvent = widget.event.room.client.getEventFromArbitraryRoomById(
@@ -83,9 +83,9 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
   }
 
   void loadPost(Timeline t) {
-    reactions = post.event!.getReactions(t);
-    replies = post.event!.getReplies(t);
-    if (replies != null) nestedReplies = post.event!.getNestedReplies(replies!);
+    reactions = post.getReactions(t);
+    replies = post.getReplies(t);
+    if (replies != null) nestedReplies = post.getNestedReplies(replies!);
   }
 
   void replyButtonClick() {

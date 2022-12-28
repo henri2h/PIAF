@@ -21,9 +21,9 @@ class PostView extends StatelessWidget {
           Timeline? t = snap.data;
 
           final displayEvent = t != null
-              ? controller.post.event!
+              ? controller.post
                   .getDisplayEventWithType(t, MatrixTypes.post)
-              : controller.post.event!;
+              : controller.post;
 
           return LayoutBuilder(builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 500;
@@ -37,7 +37,7 @@ class PostView extends StatelessWidget {
                   children: [
                     if (isMobile) const Divider(),
                     PostHeader(
-                        eventToEdit: controller.post.event!,
+                        eventToEdit: controller.post,
                         event: displayEvent),
                     if (!isMobile)
                       const Padding(
@@ -45,11 +45,11 @@ class PostView extends StatelessWidget {
                             EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                         child: Divider(),
                       ),
-                    if (controller.post.event!.status != EventStatus.synced)
+                    if (controller.post.status != EventStatus.synced)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child:
-                            Text("Not sent ${controller.post.event!.status}"),
+                            Text("Not sent ${controller.post.status}"),
                       ),
                     PostContent(
                       displayEvent,
@@ -124,7 +124,7 @@ class PostView extends StatelessWidget {
                               padding: const EdgeInsets.all(8.0),
                               child: RepliesVue(
                                   timeline: t,
-                                  event: controller.post.event!,
+                                  event: controller.post,
                                   replies: (controller.showReplies &&
                                           controller.replies?.isNotEmpty ==
                                               true)

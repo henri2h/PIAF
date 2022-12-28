@@ -3,11 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/chat/message_composer/matrix_message_composer.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
+import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'post_content.dart';
@@ -71,20 +70,9 @@ class RepliesVueRecursive extends StatefulWidget {
 class RepliesVueRecursiveState extends State<RepliesVueRecursive> {
   int tMax = 2;
 
-  Future<void> overrideTextSending(String text, {Event? replyTo}) async {
-    final sp = SocialItem();
-    sp.postText = text;
-
-    final result = sp.toJson()
-      ..addAll({
-        "m.relates_to": {
-          "rel_type": MatrixTypes.threadRelation,
-          "event_id": widget.postEvent.eventId,
-          "m.in_reply_to": {if (replyTo != null) "event_id": replyTo.eventId}
-        }
-      });
-
-    await widget.event.room.sendEvent(result, type: MatrixTypes.post);
+  Future<String?> overrideTextSending(String text, {Event? replyTo}) async {
+    return await widget.event.room
+        .commentPost(content: text, post: widget.postEvent, replyTo: replyTo);
   }
 
   @override
