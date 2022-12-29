@@ -52,7 +52,9 @@ class PostView extends StatelessWidget {
                             trailing: const Icon(Icons.message),
                             leading: const CircularProgressIndicator(),
                             title: const Text("Sending"),
-                            subtitle: Text("${controller.post.status}")),
+                            subtitle: Text(controller.post.status
+                                .toString()
+                                .replaceAll("EventStatus.", ""))),
                       ),
                     PostContent(
                       displayEvent,
