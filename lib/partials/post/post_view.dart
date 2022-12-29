@@ -43,10 +43,16 @@ class PostView extends StatelessWidget {
                             EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                         child: Divider(),
                       ),
-                    if (controller.post.status != EventStatus.synced)
+                    if ([EventStatus.sent, EventStatus.synced]
+                            .contains(controller.post.status) ==
+                        false)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("Not sent ${controller.post.status}"),
+                        child: ListTile(
+                            trailing: const Icon(Icons.message),
+                            leading: const CircularProgressIndicator(),
+                            title: const Text("Sending"),
+                            subtitle: Text("${controller.post.status}")),
                       ),
                     PostContent(
                       displayEvent,
