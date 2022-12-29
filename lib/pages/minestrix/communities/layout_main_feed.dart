@@ -1,16 +1,24 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
+import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
+import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:matrix/src/utils/cached_stream_controller.dart';
 
+import '../../../partials/calendar_events/calendar_event_card.dart';
+import '../../../partials/feed/topic_list_tile.dart';
 import '../../../partials/post/post.dart';
 import '../../../partials/post/post_writer_modal.dart';
+import 'community_page.dart';
 
 class FeedController {
   final stream = CachedStreamController<String>();
@@ -28,12 +36,14 @@ class LayoutMainFeed extends StatefulWidget {
       {Key? key,
       required this.space,
       required this.children,
-      required this.controller})
+      required this.controller,
+      this.displayPostModal = true})
       : super(key: key);
 
   final Room space;
   final List<Room> children;
   final FeedController controller;
+  final bool displayPostModal;
 
   @override
   State<LayoutMainFeed> createState() => _LayoutMainFeedState();
@@ -53,6 +63,16 @@ class _LayoutMainFeedState extends State<LayoutMainFeed> {
     widget.controller.enabled = true;
   }
 
+  Future<void> inviteUsers() async {
+    List<Profile>? profiles = await MinesTrixUserSelection.show(context);
+
+    profiles?.forEach((Profile p) async {
+      await widget.space.invite(p.userId);
+    });
+
+    setState(() {});
+  }
+
   int start = 0;
   final List<Event> _databaseTimelineEvents = [];
 
@@ -66,7 +86,8 @@ class _LayoutMainFeedState extends State<LayoutMainFeed> {
 
       await client.roomsLoading;
       final events = await client.database?.getEventListForType(
-              MatrixTypes.post, widget.children,
+              MatrixTypes.post,
+              widget.children.where((room) => room.isFeed).toList(),
               start: start) ??
           [];
 
@@ -99,6 +120,10 @@ class _LayoutMainFeedState extends State<LayoutMainFeed> {
 
   @override
   Widget build(BuildContext context) {
+    final calendarRooms = widget.children
+        .where((room) => room.type == MatrixTypes.calendarEvent)
+        .toList();
+
     return StreamBuilder(
         stream: widget.controller.stream.stream,
         builder: (context, snapshot) {
@@ -111,20 +136,61 @@ class _LayoutMainFeedState extends State<LayoutMainFeed> {
                     itemBuilder: (BuildContext c, int i,
                         void Function(Offset, Event) onReact) {
                       if (i == 0) {
-                        return Column(children: [
-                          if (space.avatar != null)
-                            Center(
-                                child: MatrixImageAvatar(
-                                    client: space.client,
-                                    url: space.avatar,
-                                    unconstraigned: true,
-                                    shape: MatrixImageAvatarShape.none,
-                                    maxHeight: 500)),
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: PostWriterModal(room: space),
-                          ),
-                        ]);
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: RoomParticipantsIndicator(
+                                            room: space),
+                                      ),
+                                      ElevatedButton(
+                                          onPressed: inviteUsers,
+                                          child: Row(
+                                            children: const [
+                                              Icon(Icons.person_add),
+                                              SizedBox(width: 8),
+                                              Text("Invite"),
+                                            ],
+                                          ))
+                                    ],
+                                  ),
+                                ),
+                                TopicListTile(room: space),
+                                StoriesList(
+                                  client: space.client,
+                                  allowCreatingStory: false,
+                                  restrictRoom: widget.children,
+                                ),
+                                if (calendarRooms.isNotEmpty)
+                                  SizedBox(
+                                    height: 380,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: calendarRooms.length,
+                                      itemBuilder: ((context, index) => Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: SizedBox(
+                                                width: 260,
+                                                height: 380,
+                                                child: CalendarEventCard(
+                                                    room:
+                                                        calendarRooms[index])),
+                                          )),
+                                    ),
+                                  ),
+                                if (widget.displayPostModal)
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: PostWriterModal(room: space),
+                                  ),
+                              ]),
+                        );
                       }
                       return Padding(
                           padding: const EdgeInsets.symmetric(

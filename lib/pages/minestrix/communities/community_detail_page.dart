@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/minestrix/communities/community_page.dart';
 import 'package:minestrix/partials/components/layouts/layout_view.dart';
+import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
 
@@ -41,11 +42,11 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
     return StreamBuilder(
         stream: space.onUpdate.stream,
         builder: (context, snapshot) {
-          final children = CommunityPageState.getChildren(space)
-              .where((Room room) => room.isFeed)
-              .toList();
+          final children = CommunityPageState.getChildren(space).toList();
+          final feedChildren = children.where((room) => room.isFeed);
           return LayoutView(
             controller: controller,
+            displayChat: false,
             customHeader: CustomHeader(
               title: space
                   .getLocalizedDisplayname(const MatrixDefaultLocalizations()),
@@ -61,13 +62,19 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
             room: space,
             headerChildBuilder: ({required bool displaySideBar}) => Container(),
             sidebarBuilder: () => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final room in children)
+                const H2Title("Groups"),
+                for (final room in feedChildren)
                   MinestrixRoomTileNavigator(room: room),
               ],
             ),
             mainBuilder: ({required bool displaySideBar}) => LayoutMainFeed(
-                space: space, children: children, controller: feedController),
+              space: space,
+              children: children,
+              controller: feedController,
+              displayPostModal: false,
+            ),
           );
         });
   }

@@ -356,12 +356,7 @@ class UserViewPageState extends State<UserViewPage> {
                                                         horizontal: 8.0),
                                                 child: Text(mroom!.topic),
                                               ),
-                                            if (mroom?.room != null &&
-                                                (mroom!.room!
-                                                        .canSendDefaultStates ||
-                                                    mroom!.room?.topic
-                                                            .isNotEmpty ==
-                                                        true))
+                                            if (mroom?.room != null)
                                               TopicListTile(room: mroom!.room!),
                                             Padding(
                                               padding:
@@ -427,7 +422,7 @@ class UserViewPageState extends State<UserViewPage> {
                                                     children: [
                                                       StoriesList(
                                                           client: client,
-                                                          restrict:
+                                                          restrictUserID:
                                                               mroom?.creatorId,
                                                           allowCreatingStory:
                                                               mroom?.creatorId ==

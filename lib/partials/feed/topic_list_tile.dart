@@ -14,6 +14,9 @@ class TopicListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!room.canSendDefaultStates || room.topic.isEmpty) {
+      return Container();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
