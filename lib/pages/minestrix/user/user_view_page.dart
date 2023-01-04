@@ -8,18 +8,19 @@ import 'package:minestrix/partials/users/user_friends_card.dart';
 import 'package:minestrix/partials/users/user_profile_selection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
+import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/custom_header.dart';
 import '../../../partials/components/minesTrix/MinesTrixTitle.dart';
+import '../../../partials/feed/topic_list_tile.dart';
 import '../../../partials/minestrix_title.dart';
 import '../../../partials/users/user_avatar.dart';
 import '../../../router.gr.dart';
@@ -150,7 +151,7 @@ class UserViewPageState extends State<UserViewPage> {
     if (controller.positions.length == 1 &&
         controller.position.pixels >=
             controller.position.maxScrollExtent - 600) {
-      if (_requestingHistory == false) {
+      if (_requestingHistory == false && timeline?.canRequestHistory == true) {
         print("requesting history");
         setState(() {
           _requestingHistory = true;
@@ -322,7 +323,7 @@ class UserViewPageState extends State<UserViewPage> {
                                                           icon: const Icon(
                                                               Icons.edit),
                                                           onPressed: () =>
-                                                              ConvSettingsCard.show(
+                                                              RoomSettingsPage.show(
                                                                   context:
                                                                       context,
                                                                   room: mroom!
@@ -346,8 +347,8 @@ class UserViewPageState extends State<UserViewPage> {
                                                 ],
                                               ),
                                             ),
-                                            if (mroom != null &&
-                                                mroom?.topic != "")
+                                            if (mroom?.room == null &&
+                                                mroom?.topic.isNotEmpty == true)
                                               Padding(
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -355,6 +356,8 @@ class UserViewPageState extends State<UserViewPage> {
                                                         horizontal: 8.0),
                                                 child: Text(mroom!.topic),
                                               ),
+                                            if (mroom?.room != null)
+                                              TopicListTile(room: mroom!.room!),
                                             Padding(
                                               padding:
                                                   const EdgeInsets.all(12.0),
@@ -419,7 +422,7 @@ class UserViewPageState extends State<UserViewPage> {
                                                     children: [
                                                       StoriesList(
                                                           client: client,
-                                                          restrict:
+                                                          restrictUserID:
                                                               mroom?.creatorId,
                                                           allowCreatingStory:
                                                               mroom?.creatorId ==

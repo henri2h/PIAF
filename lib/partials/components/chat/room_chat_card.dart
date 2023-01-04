@@ -19,7 +19,7 @@ class RoomChatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          H2Title("Chat"),
+          const H2Title("Chat"),
           Expanded(
             child: Container(
               color: Theme.of(context).cardColor,

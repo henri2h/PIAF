@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
-
 import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-
 import 'package:minestrix/router.gr.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class MinesTrixContactView extends StatelessWidget {
@@ -43,7 +41,7 @@ class MinesTrixContactView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
                                   Text((user.displayName ?? user.id),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                       )),
                                   Text(
@@ -58,18 +56,19 @@ class MinesTrixContactView extends StatelessWidget {
                               itemBuilder: (_) => [
                                     if (user.canKick)
                                       PopupMenuItem(
+                                          value: "kick",
                                           child: Row(
-                                            children: [
+                                            children: const [
                                               Icon(Icons.person_remove),
                                               SizedBox(width: 10),
                                               Text("Kick"),
                                             ],
-                                          ),
-                                          value: "kick"),
+                                          )),
                                     if (user.canBan)
                                       PopupMenuItem(
+                                          value: "ban",
                                           child: Row(
-                                            children: [
+                                            children: const [
                                               Icon(Icons.delete_forever,
                                                   color: Colors.red),
                                               SizedBox(width: 10),
@@ -77,10 +76,9 @@ class MinesTrixContactView extends StatelessWidget {
                                                   style: TextStyle(
                                                       color: Colors.red)),
                                             ],
-                                          ),
-                                          value: "ban")
+                                          ))
                                   ],
-                              icon: Icon(Icons.more_horiz),
+                              icon: const Icon(Icons.more_horiz),
                               onSelected: (String action) async {
                                 switch (action) {
                                   case "kick":

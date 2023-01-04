@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
-import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
+import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
-import 'package:minestrix/partials/users/MinesTrixUserSelection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
+import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/view/room_page.dart';
+import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/layout_view.dart';
+import '../../../partials/feed/topic_list_tile.dart';
 
 class GroupPage extends StatefulWidget {
   const GroupPage({Key? key, required this.room}) : super(key: key);
@@ -90,7 +91,7 @@ class GroupPageState extends State<GroupPage> {
                   IconButton(
                       icon: const Icon(Icons.settings),
                       onPressed: () {
-                        ConvSettingsCard.show(context: context, room: room);
+                        RoomSettingsPage.show(context: context, room: room);
                       })
                 ],
               ),
@@ -101,6 +102,7 @@ class GroupPageState extends State<GroupPage> {
               mainBuilder: ({required bool displaySideBar}) => StreamBuilder(
                   stream: room.onUpdate.stream,
                   builder: (context, _) => CustomListViewWithEmoji(
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: sevents.length + 1 + (updating ? 1 : 0),
                       itemBuilder: (BuildContext c, int i,
                           void Function(Offset, Event) onReact) {
@@ -149,11 +151,9 @@ class GroupPageState extends State<GroupPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const H2Title("About"),
-                                    if (room.topic.isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(room.topic),
-                                      ),
+                                    if (room.canSendDefaultStates ||
+                                        room.topic.isNotEmpty)
+                                      TopicListTile(room: room),
                                     ListTile(
                                         leading:
                                             room.joinRules == JoinRules.public
@@ -214,10 +214,8 @@ class GroupPageState extends State<GroupPage> {
                                           leading: Icon(Icons.person_add)),
                                       onPressed: () async {
                                         List<Profile>? profiles =
-                                            await AdaptativeDialogs.show(
-                                                context: context,
-                                                builder: (a) =>
-                                                    MinesTrixUserSelection());
+                                            await MinesTrixUserSelection.show(
+                                                context);
 
                                         profiles?.forEach((Profile p) async {
                                           await room.invite(p.userId);

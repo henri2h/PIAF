@@ -19,8 +19,9 @@ class ThemeNotifier with ChangeNotifier {
         primaryColor: _primaryColor,
         scaffoldBackgroundColor: Colors.black,
         primarySwatch: Colors.blue,
+        useMaterial3: true,
         bottomNavigationBarTheme:
-            BottomNavigationBarThemeData(backgroundColor: Colors.black),
+            const BottomNavigationBarThemeData(backgroundColor: Colors.black),
         cardColor: Colors.grey[900],
         brightness: Brightness.dark,
         textTheme: PlatformInfos.isDesktop
@@ -76,13 +77,11 @@ class ThemeNotifier with ChangeNotifier {
           color.split('(0x')[1].split(')')[0]; // kind of hacky..
       int value = int.parse(valueString, radix: 16);
       _primaryColor = Color(value);
-    } catch (e) {}
+    } catch (_) {}
 
     _buildTheme();
 
     var value = await StorageManager.readData('themeMode');
-
-    print('theme: ' + value.toString());
 
     _mode = AppThemeMode.values.firstWhere(
         (e) => e.toString() == value.toString(),

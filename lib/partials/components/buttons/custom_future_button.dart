@@ -20,10 +20,10 @@ class CustomFutureButton extends StatefulWidget {
       : super(key: key);
 
   @override
-  _CustomFutureButtonState createState() => _CustomFutureButtonState();
+  CustomFutureButtonState createState() => CustomFutureButtonState();
 }
 
-class _CustomFutureButtonState extends State<CustomFutureButton> {
+class CustomFutureButtonState extends State<CustomFutureButton> {
   bool loading = false;
 
   @override
@@ -31,6 +31,25 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
     return MaterialButton(
         minWidth: 0,
         padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        onPressed: widget.onPressed != null
+            ? () async {
+                if (loading) return;
+
+                setState(() {
+                  loading = true;
+                });
+                try {
+                  if (widget.onPressed != null) await widget.onPressed!();
+                } finally {
+                  if (mounted) {
+                    setState(() {
+                      loading = false;
+                    });
+                  }
+                }
+              }
+            : null,
         child: Card(
           color: widget.color,
           child: Padding(
@@ -41,7 +60,7 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
                 Padding(
                   padding: const EdgeInsets.only(right: 2),
                   child: loading
-                      ? CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(color: Colors.white)
                       : widget.icon,
                 ),
                 widget.expanded
@@ -63,24 +82,6 @@ class _CustomFutureButtonState extends State<CustomFutureButton> {
               ],
             ),
           ),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        onPressed: widget.onPressed != null
-            ? () async {
-                if (loading) return;
-
-                setState(() {
-                  loading = true;
-                });
-                try {
-                  if (widget.onPressed != null) await widget.onPressed!();
-                } finally {
-                  if (mounted)
-                    setState(() {
-                      loading = false;
-                    });
-                }
-              }
-            : null);
+        ));
   }
 }

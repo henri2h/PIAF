@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/buttons/customFutureButton.dart';
+import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
+import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/components/layouts/custom_header.dart';
@@ -17,7 +19,12 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
   int counter = 0;
   String global = "";
 
-  Future<void> syncRooms() async {
+  Future<void> syncSocialRooms() async {
+    await syncRooms(MatrixTypes.account);
+    await syncRooms(MatrixTypes.group);
+  }
+
+  Future<void> syncRooms([String? filter]) async {
     final client = Matrix.of(context).client;
     final encryptedCount = client.rooms
         .where(
@@ -31,25 +38,32 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
     for (final room in client.rooms) {
       if (!mounted) return;
 
-      if (mounted)
+      if (mounted) {
         setState(() {
           actualRoom = room;
           counter = 0;
           global = (pos / (1.0 * encryptedCount) * 100).toStringAsFixed(1);
         });
+      }
 
-      if (!room.encrypted) continue;
+      if ((filter == null && !room.encrypted) ||
+          (filter != null && room.type != filter)) continue;
 
       final timeline = await room.getTimeline();
-      while (timeline.canRequestHistory) {
-        await timeline.requestHistory();
+      try {
+        while (timeline.canRequestHistory) {
+          await timeline.requestHistory();
 
-        if (!mounted) return;
+          if (!mounted) return;
 
-        if (mounted)
-          setState(() {
-            counter++;
-          });
+          if (mounted) {
+            setState(() {
+              counter++;
+            });
+          }
+        }
+      } catch (ex, stack) {
+        Logs().e("Could not fetch history for ${room.displayname}", ex, stack);
       }
       pos++;
     }
@@ -72,7 +86,11 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
       CustomFutureButton(
           onPressed: syncRooms,
           icon: const Icon(Icons.refresh),
-          children: const [Text("Sync rooms")])
+          children: const [Text("Sync rooms")]),
+      CustomFutureButton(
+          onPressed: syncSocialRooms,
+          icon: const Icon(Icons.refresh),
+          children: const [Text("Sync social rooms")])
     ]);
   }
 }

@@ -35,7 +35,7 @@ class RoomListWrapperState extends State<RoomListWrapper> {
         },
         onSpaceSelection: (String spaceId) async {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
-            await context.navigateTo(RoomListSpaceRoute());
+            await context.navigateTo(const RoomListSpaceRoute());
           } else {
             await context.navigateTo(RoomListRoute());
           }
@@ -48,7 +48,7 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                   if (!mobile)
                     Consumer<RoomListState>(
                         builder: (context, state, _) => SizedBox(
-                            width: state.spaceListExpanded ? 230 : 60,
+                            width: state.spaceListExpanded ? 280 : 60,
                             child: RoomListSpacesList(
                                 mobile: false,
                                 scrollController: scrollControllerSpaces))),
@@ -56,16 +56,12 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                     Container(
                       color: Theme.of(context).cardColor,
                       child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 350),
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: RoomListBuilder(
-                              scrollController: scrollControllerRoomList,
-                            ),
+                          constraints: const BoxConstraints(maxWidth: 350),
+                          child: RoomListBuilder(
+                            scrollController: scrollControllerRoomList,
                           )),
                     ),
-                  Expanded(child: AutoRouter()),
+                  const Expanded(child: AutoRouter()),
                 ],
               );
             }),

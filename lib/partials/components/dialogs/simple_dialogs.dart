@@ -21,7 +21,7 @@ class SimpleDialogs {
         futureResult.then(
           (result) => Navigator.of(context).pop<dynamic>(result),
         );
-        return AlertDialog(
+        return const AlertDialog(
           title: Text("loading please wait"),
           content: LinearProgressIndicator(),
         );

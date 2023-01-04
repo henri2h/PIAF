@@ -4,12 +4,8 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
-import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {
@@ -25,8 +21,11 @@ class PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Client sclient = Matrix.of(context).client;
+    final Client sclient = event.room.client;
     Room? room = event.room;
+    if (event.room.client.userID == null) {
+      return const CircularProgressIndicator();
+    }
 
     return FutureBuilder<User?>(
         future: event.fetchSenderUser(),
@@ -62,7 +61,7 @@ class PostHeader extends StatelessWidget {
                                   children: [
                                     TextButton(
                                       style: TextButton.styleFrom(
-                                          primary: Theme.of(context)
+                                          foregroundColor: Theme.of(context)
                                               .textTheme
                                               .bodyText1!
                                               .color),
@@ -87,7 +86,7 @@ class PostHeader extends StatelessWidget {
                                     if (sender.id != feedOwner?.id)
                                       TextButton(
                                         style: TextButton.styleFrom(
-                                            primary: Theme.of(context)
+                                            foregroundColor: Theme.of(context)
                                                 .textTheme
                                                 .bodyText1!
                                                 .color),

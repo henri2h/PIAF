@@ -3,7 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import '../../minestrixRoomTile.dart';
+import '../../minestrix_room_tile.dart';
 import '../minesTrix/MinesTrixTitle.dart';
 
 class SuggestionList extends StatelessWidget {
@@ -18,10 +18,10 @@ class SuggestionList extends StatelessWidget {
       stream: client.onSync.stream,
       builder: (context, _) =>
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        H2Title("Contacts"),
+        const H2Title("Contacts"),
         for (Room r in client.sfriends)
           MinestrixRoomTileNavigator(room: r, shouldPop: shouldPop),
-        H2Title("Groups"),
+        const H2Title("Groups"),
         for (Room r in client.sgroups)
           MinestrixRoomTileNavigator(room: r, shouldPop: shouldPop),
       ]),

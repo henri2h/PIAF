@@ -4,12 +4,14 @@
 
 import 'package:auto_route/auto_route.dart';
 import 'package:minestrix/pages/chat/room_list_wrapper.dart';
+import 'package:minestrix/pages/minestrix/communities/community_detail_page.dart';
+import 'package:minestrix/pages/minestrix/communities/community_page.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/view/room_list/room_list_room.dart';
 import 'package:minestrix_chat/view/room_list/room_list_space.dart';
 import 'package:minestrix_chat/view/room_page.dart';
 
-import 'pages/account/accountsDetailsPage.dart';
+import 'pages/account/accounts_details_page.dart';
 import 'pages/app_wrapper_page.dart';
 import 'pages/calendar_events/calendar_event_page.dart';
 import 'pages/chat/room_list_page.dart';
@@ -62,6 +64,8 @@ const chatsWrapper = AutoRoute(
       AutoRoute(path: 'calendar_events/list', page: CalendarEventListPage),
       AutoRoute(path: 'search', page: ResearchPage),
       AutoRoute(path: 'accounts', page: AccountsDetailsPage),
+      AutoRoute(path: 'communities', page: CommunityPage),
+      AutoRoute(path: 'community', page: CommunityDetailPage),
       AutoRoute(path: 'settings', page: SettingsPage, children: [
         AutoRoute(
             path: 'settings/home', page: SettingsPanelInnerPage, initial: true),

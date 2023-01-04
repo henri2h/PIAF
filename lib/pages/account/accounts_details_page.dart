@@ -1,19 +1,18 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
-import 'package:matrix/src/utils/space_child.dart';
-import 'package:minestrix/partials/components/buttons/customTextFutureButton.dart';
+import 'package:minestrix/partials/components/buttons/custom_text_future_button.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
-import 'package:minestrix_chat/utils/room_feed_extension.dart';
+import 'package:minestrix_chat/view/room_settings_page.dart';
 
-import '../../partials/components/buttons/customFutureButton.dart';
+import '../../partials/components/buttons/custom_future_button.dart';
 import '../../utils/settings.dart';
 
 class AccountsDetailsPage extends StatefulWidget {
@@ -47,7 +46,7 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
                   : Column(
                       children: [
                         ProfileSpaceCard(profile: profile),
-                        for (SpaceChild s in profile.r.spaceChildren.where(
+                        for (final s in profile.r.spaceChildren.where(
                             (element) =>
                                 element.roomId != null &&
                                 client.getRoomById(element.roomId!) == null))
@@ -68,8 +67,8 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
               for (Room room in rooms)
                 Builder(builder: (context) {
                   final hasBeenAdded = profile != null &&
-                      profile.r.spaceChildren.indexWhere(
-                              (SpaceChild sc) => sc.roomId == room.id) !=
+                      profile.r.spaceChildren
+                              .indexWhere((final sc) => sc.roomId == room.id) !=
                           -1;
                   return SwitchListTile(
                     onChanged: profile != null
@@ -207,7 +206,7 @@ class ProfileSpaceCard extends StatelessWidget {
         trailing: IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () =>
-                ConvSettingsCard.show(context: context, room: profile.r)),
+                RoomSettingsPage.show(context: context, room: profile.r)),
       ),
     );
   }

@@ -1,15 +1,14 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import 'package:auto_route/src/router/auto_router_x.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 
 class AccountCard extends StatelessWidget {
-  AccountCard({Key? key, this.user, this.profile})
+  const AccountCard({Key? key, this.user, this.profile})
       : assert(user != null || profile != null),
         super(key: key);
 
@@ -37,7 +36,7 @@ class AccountCard extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           primary: Theme.of(context).cardColor,
-          padding: EdgeInsets.all(0),
+          padding: const EdgeInsets.all(0),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -54,7 +53,7 @@ class AccountCard extends StatelessWidget {
               height: MinestrixAvatarSizeConstants.large,
               shape: MatrixImageAvatarShape.none,
               backgroundColor: Theme.of(context).primaryColor,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10.0),
                   topRight: Radius.circular(10)),
               defaultIcon: Icon(Icons.person,
@@ -81,7 +80,7 @@ class AccountCard extends StatelessWidget {
               ),
             ),
             if (user != null && user!.membership == Membership.invite)
-              Text("Invited")
+              const Text("Invited")
           ],
         ),
       ),

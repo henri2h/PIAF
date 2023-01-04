@@ -23,7 +23,7 @@ class _FriendSuggestionsListState extends State<FriendSuggestionsList> {
         child: FutureBuilder<List<Profile>>(
             future: client.getFriendsSuggestions(),
             builder: (context, snap) {
-              if (snap.hasData == false) return Text("Loading");
+              if (snap.hasData == false) return const Text("Loading");
               return Row(
                 children: [
                   for (Profile p in snap.data!) AccountCard(profile: p),

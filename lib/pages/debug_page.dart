@@ -6,7 +6,7 @@ import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix_chat/utils/matrix/room_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/sentry_controller.dart';
 
 import 'settings/settings_labs_page.dart';
@@ -39,17 +39,7 @@ class DebugPageState extends State<DebugPage> {
 
     if (client == null) return;
     Logs().w("Clearing cache");
-    await client!.abortSync();
-    await client!.database?.clearCache();
-    Logs().w("Sync");
-
-    try {
-      await client!.handleSync(await client!
-          .sync()); // Wait long for the response, can take several dozen of minutes}
-    } catch (e, s) {
-      Logs().e("Could not sync", e, s);
-      await client?.handleSync(await client!.sync());
-    }
+    client!.clearCache();
     Logs().w("Sync done");
   }
 

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/style/minestrix_avatar_size_constants.dart';
 
 class UserAvatar extends StatelessWidget {
   final Profile p;
@@ -34,12 +31,12 @@ class UserAvatar extends StatelessWidget {
                 defaultIcon: Icon(Icons.person,
                     size: 100, color: Theme.of(context).colorScheme.onPrimary),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(p.displayName ?? p.userId,
-                    style:
-                        TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 21, fontWeight: FontWeight.bold)),
               ),
               if (p.displayName != null)
                 Padding(

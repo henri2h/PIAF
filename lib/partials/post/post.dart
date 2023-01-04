@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
-import 'package:minestrix_chat/utils/matrix/client_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 import '../../utils/settings.dart';
 import 'post_view.dart';
@@ -23,11 +23,11 @@ class Post extends StatefulWidget {
   PostState createState() => PostState();
 }
 
-enum PostTypeUpdate { ProfilePicture, DisplayName, Membership, None }
+enum PostTypeUpdate { profilePicture, displayName, membership, none }
 
 class PostState extends State<Post> with SingleTickerProviderStateMixin {
   final key = GlobalKey();
-  String? replyToMessageId = null;
+  String? replyToMessageId;
   bool showReplies = false;
 
   Set<Event>? reactions;
@@ -47,7 +47,7 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
         replyToMessageId = value;
       });
 
-  late SocialItem post;
+  late Event post;
 
   Timeline? timeline;
 
@@ -66,7 +66,7 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    post = SocialItem.fromEvent(e: widget.event);
+    post = widget.event;
 
     if (post.shareEventId != null && post.shareEventRoomId != null) {
       shareEvent = widget.event.room.client.getEventFromArbitraryRoomById(
@@ -83,9 +83,9 @@ class PostState extends State<Post> with SingleTickerProviderStateMixin {
   }
 
   void loadPost(Timeline t) {
-    reactions = post.event!.getReactions(t);
-    replies = post.event!.getReplies(t);
-    if (replies != null) nestedReplies = post.event!.getNestedReplies(replies!);
+    reactions = post.getReactions(t);
+    replies = post.getReplies(t);
+    if (replies != null) nestedReplies = post.getNestedReplies(replies!);
   }
 
   void replyButtonClick() {

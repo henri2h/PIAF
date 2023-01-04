@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/friendsRequestList.dart';
+import 'package:minestrix/partials/components/friends_request_list.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
@@ -44,7 +44,7 @@ class NotificationView extends StatelessWidget {
                           leading: const Icon(Icons.notifications),
                           title: Text(notif.title),
                           subtitle: Text(notif.body)),
-                    FriendRequestList(),
+                    const FriendRequestList(),
                   ]),
                 ),
                 if (notificationRooms.isNotEmpty) const H2Title("Chats"),

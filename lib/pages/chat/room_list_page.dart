@@ -20,15 +20,16 @@ class _RoomListPageState extends State<RoomListPage> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, _) {
       final state = Provider.of<RoomListWrapperState>(context, listen: false);
-      if (state.mobile)
+      if (state.mobile) {
         return RoomListBuilder(
           mobile: true,
           scrollController: scrollController,
-          appBarColor: Theme.of(context).scaffoldBackgroundColor.withAlpha(180),
-          onAppBarClicked: () => context.navigateTo(SettingsRoute()),
+          appBarColor: Theme.of(context).scaffoldBackgroundColor.withAlpha(220),
+          onAppBarClicked: () => context.navigateTo(const SettingsRoute()),
         );
+      }
 
-      return Center(child: MinestrixTitle());
+      return const Center(child: MinestrixTitle());
     });
   }
 }

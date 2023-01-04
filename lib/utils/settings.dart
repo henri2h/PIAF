@@ -52,5 +52,5 @@ class Settings {
     }
   }
 
-  Settings() {}
+  Settings();
 }

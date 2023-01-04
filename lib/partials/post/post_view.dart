@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
-import 'package:minestrix_chat/utils/events/event_extension.dart';
 
 import 'details/post_content.dart';
 import 'details/post_header.dart';
@@ -21,9 +21,8 @@ class PostView extends StatelessWidget {
           Timeline? t = snap.data;
 
           final displayEvent = t != null
-              ? controller.post.event!
-                  .getDisplayEventWithType(t, MatrixTypes.post)
-              : controller.post.event!;
+              ? controller.post.getDisplayEventWithType(t, MatrixTypes.post)
+              : controller.post;
 
           return LayoutBuilder(builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 500;
@@ -37,19 +36,25 @@ class PostView extends StatelessWidget {
                   children: [
                     if (isMobile) const Divider(),
                     PostHeader(
-                        eventToEdit: controller.post.event!,
-                        event: displayEvent),
+                        eventToEdit: controller.post, event: displayEvent),
                     if (!isMobile)
                       const Padding(
                         padding:
                             EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
                         child: Divider(),
                       ),
-                    if (controller.post.event!.status != EventStatus.synced)
+                    if ([EventStatus.sent, EventStatus.synced]
+                            .contains(controller.post.status) ==
+                        false)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child:
-                            Text("Not sent ${controller.post.event!.status}"),
+                        child: ListTile(
+                            trailing: const Icon(Icons.message),
+                            leading: const CircularProgressIndicator(),
+                            title: const Text("Sending"),
+                            subtitle: Text(controller.post.status
+                                .toString()
+                                .replaceAll("EventStatus.", ""))),
                       ),
                     PostContent(
                       displayEvent,
@@ -124,7 +129,7 @@ class PostView extends StatelessWidget {
                               padding: const EdgeInsets.all(8.0),
                               child: RepliesVue(
                                   timeline: t,
-                                  event: controller.post.event!,
+                                  event: controller.post,
                                   replies: (controller.showReplies &&
                                           controller.replies?.isNotEmpty ==
                                               true)

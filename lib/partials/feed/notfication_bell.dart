@@ -15,9 +15,9 @@ class NotificationBell extends StatelessWidget {
         stream: client.onMinestrixUpdate,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           return IconButton(
-              icon: client.notifications.length == 0
-                  ? Icon(Icons.notifications_none)
-                  : Icon(Icons.notifications_active),
+              icon: client.notifications.isEmpty
+                  ? const Icon(Icons.notifications_none)
+                  : const Icon(Icons.notifications_active),
               onPressed: () {
                 Scaffold.of(context).openEndDrawer();
               });
