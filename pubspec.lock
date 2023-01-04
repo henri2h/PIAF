@@ -1024,7 +1024,7 @@ packages:
     description:
       path: "."
       ref: "henri2h/index-events-by-event-type"
-      resolved-ref: e1f3bf07dad9e92b99d41fa00f895cb6612507ca
+      resolved-ref: f59fdf8345b9d477c3f3c266985a55b230db705e
       url: "https://gitlab.com/minestrix/famedlysdk.git"
     source: git
     version: "0.15.9"
@@ -1061,7 +1061,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "46ee0f891deed9ee228f61e69dbc4159335abe40"
+      resolved-ref: "7a3636794f932a82951d1089b59b62d552fce628"
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.2"
