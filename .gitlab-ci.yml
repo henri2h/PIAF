@@ -4,6 +4,7 @@ stages:
 - build
 - test
 - deploy
+
 build_linux:
   stage: build
   before_script:
@@ -21,6 +22,7 @@ build_linux:
     - build/linux/x64/release/bundle/
   tags:
   - shared
+
 build_android_bundle:
   stage: build
   script:
@@ -36,6 +38,7 @@ build_android_bundle:
     - build/app/outputs/bundle/release/app-release.aab
   tags:
   - shared
+
 build_android_apk:
   stage: build
   script:
@@ -51,6 +54,7 @@ build_android_apk:
     - build/app/outputs/flutter-apk/app-release.apk
   tags:
   - shared
+
 build_web:
   stage: build
   script:
@@ -64,6 +68,7 @@ build_web:
     - build/web/
   tags:
   - shared
+
 deploy_web:
   image: debian:buster
   stage: deploy
@@ -79,6 +84,7 @@ deploy_web:
   - rsync -az build/web/ $USER@$HOST:app --delete
   only:
   - main
+
 deploy_android_fdroid:
   image: debian:buster
   stage: deploy
@@ -99,6 +105,7 @@ deploy_android_fdroid:
   - ssh $USER@$HOST -t '/bin/bash -i -l -c  "cd fdroid && fdroid update"'
   only:
   - main
+
 analyze:
   stage: analyze
   script:
@@ -109,3 +116,48 @@ analyze:
   - flutter format lib/ --set-exit-if-changed
   tags:
   - shared
+
+.release:
+  stage: deploy
+  image: curlimages/curl:latest
+  tags:
+    - shared
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+    - if: '$CI_COMMIT_TAG =~ /^rc\d+\.\d+\.\d+-\d+$/'
+  before_script:
+    - export RELEASE_TYPE=$(echo $CI_COMMIT_TAG | grep -oE "[a-z]+")
+    - export RELEASE_VERSION=$(echo $CI_COMMIT_TAG | grep -oE "\d+\.\d+\.\d+")
+    - export PACKAGE_REGISTRY_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/minestrix/${RELEASE_VERSION}"
+
+upload_android:
+  extends: .release
+  script:
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file build/android/app-release.apk ${PACKAGE_REGISTRY_URL}/minestrix.apk
+
+upload_web:
+  extends: .release
+  script:
+    # workaround bug of Flutter engine
+    - tar czf package.tar.gz --ignore-failed-read -C build/web/ .
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file package.tar.gz ${PACKAGE_REGISTRY_URL}/minestrix-web.tar.gz
+
+upload_linux_x86:
+  extends: .release
+  script:
+    - tar czf package.tar.gz -C build/linux/x64/release/bundle/ .
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file package.tar.gz ${PACKAGE_REGISTRY_URL}/minestrix-linux-x86.tar.gz
+
+release:
+  extends: .release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+
+  script:
+    - |
+      release-cli create --name "Release ${CI_COMMIT_TAG}" --tag-name $CI_COMMIT_TAG \
+        --assets-link "{\"name\":\"minestrix.apk\",\"url\":\"${PACKAGE_REGISTRY_URL}/minestrix.apk\"}" \
+        --assets-link "{\"name\":\"minestrix-linux-x86.tar.gz\",\"url\":\"${PACKAGE_REGISTRY_URL}/minestrix-linux-x86.tar.gz\"}" \
+        --assets-link "{\"name\":\"minestrix-web.tar.gz\",\"url\":\"${PACKAGE_REGISTRY_URL}/minestrix-web.tar.gz\"}"
