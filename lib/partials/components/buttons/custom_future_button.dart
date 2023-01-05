@@ -28,30 +28,32 @@ class CustomFutureButtonState extends State<CustomFutureButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-        minWidth: 0,
-        padding: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        onPressed: widget.onPressed != null
-            ? () async {
-                if (loading) return;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: MaterialButton(
+          minWidth: 0,
+          padding: EdgeInsets.zero,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          color: widget.color,
+          onPressed: widget.onPressed != null
+              ? () async {
+                  if (loading) return;
 
-                setState(() {
-                  loading = true;
-                });
-                try {
-                  if (widget.onPressed != null) await widget.onPressed!();
-                } finally {
-                  if (mounted) {
-                    setState(() {
-                      loading = false;
-                    });
+                  setState(() {
+                    loading = true;
+                  });
+                  try {
+                    if (widget.onPressed != null) await widget.onPressed!();
+                  } finally {
+                    if (mounted) {
+                      setState(() {
+                        loading = false;
+                      });
+                    }
                   }
                 }
-              }
-            : null,
-        child: Card(
-          color: widget.color,
+              : null,
           child: Padding(
             padding: widget.padding ?? const EdgeInsets.all(14),
             child: Row(
@@ -81,7 +83,7 @@ class CustomFutureButtonState extends State<CustomFutureButton> {
                       )
               ],
             ),
-          ),
-        ));
+          )),
+    );
   }
 }

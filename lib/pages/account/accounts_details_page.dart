@@ -5,9 +5,8 @@ import 'package:minestrix/partials/components/buttons/custom_text_future_button.
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix_chat/partials/chat/settings/conv_settings_card.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
@@ -28,124 +27,82 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
     Client client = Matrix.of(context).client;
 
     return StreamBuilder(
-        stream: client.onSync.stream,
+        stream: client.onSync.stream.where((event) => event.hasRoomUpdate),
         builder: (context, _) {
           ProfileSpace? profile = ProfileSpace.getProfileSpace(client);
 
           final rooms = client.srooms
               .where((sroom) =>
                   sroom.creatorId == client.userID &&
-                  sroom.feedType == FeedRoomType.user)
+                  sroom.feedType == FeedRoomType.user &&
+                  (profile?.r.spaceChildren.indexWhere(
+                              (final sc) => sc.roomId == sroom.id) ??
+                          -1) ==
+                      -1)
               .toSet();
 
           return ListView(
             children: [
-              const CustomHeader(title: "Your profiles"),
+              const CustomHeader(title: "Your profiles space"),
               profile == null
                   ? NoProfileSpaceFound(client: client)
-                  : Column(
-                      children: [
-                        ProfileSpaceCard(profile: profile),
-                        for (final s in profile.r.spaceChildren.where(
-                            (element) =>
-                                element.roomId != null &&
-                                client.getRoomById(element.roomId!) == null))
-                          Padding(
-                            padding: const EdgeInsets.only(left: 80.0),
-                            child: ListTile(
-                                leading: const Icon(Icons.error),
-                                title: Text("could not open ${s.roomId!}"),
-                                trailing: IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () async {
-                                      await profile.removeSpaceChild(s.roomId!);
-                                      setState(() {});
-                                    })),
-                          )
-                      ],
+                  : Card(
+                      child: Wrap(
+                        children: [
+                          ProfileSpaceCard(profile: profile),
+                        ],
+                      ),
                     ),
               for (Room room in rooms)
-                Builder(builder: (context) {
-                  final hasBeenAdded = profile != null &&
-                      profile.r.spaceChildren
-                              .indexWhere((final sc) => sc.roomId == room.id) !=
-                          -1;
-                  return SwitchListTile(
-                    onChanged: profile != null
-                        ? (bool value) async {
-                            if (value) {
-                              await profile.r.setSpaceChild(room.id);
-                            } else {
-                              await profile.r.removeSpaceChild(room.id);
-                            }
-                          }
-                        : null,
-                    value: hasBeenAdded,
-                    title: Column(
-                      children: [
-                        RoomProfileListTile(room, onLeave: () async {
-                          if (hasBeenAdded) {
-                            await profile?.r.removeSpaceChild(room.id);
-                          }
-                          setState(() {});
-                        }),
-                      ],
-                    ),
-                  );
-                }),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  children: [
-                    if (profile != null)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: CustomTextFutureButton(
-                            onPressed: () async {
-                              await profile.createStoriesRoom();
-                              setState(() {});
-                            },
-                            text: "Create stories room",
-                            expanded: false,
-                            icon: const Icon(Icons.add_a_photo)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Builder(builder: (context) {
+                    return Card(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 6),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  RoomProfileListTile(room, onLeave: () async {
+                                    if (profile != null &&
+                                        profile.r.spaceChildren.indexWhere(
+                                                (final sc) =>
+                                                    sc.roomId == room.id) !=
+                                            -1) {
+                                      await profile.r.removeSpaceChild(room.id);
+                                    }
+                                    setState(() {});
+                                  }),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CustomTextFutureButton(
+                                  icon: Icons.add,
+                                  onPressed: () async {
+                                    await profile?.r.setSpaceChild(room.id);
+                                  },
+                                  expanded: false,
+                                  color: Theme.of(context).primaryColor,
+                                  text: "Add to profile"),
+                            ),
+                          ],
+                        ),
                       ),
-                    if (Settings().multipleFeedSupport)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: CustomTextFutureButton(
-                            onPressed: () async {
-                              final roomId =
-                                  await client.createPrivateMinestrixProfile();
-                              await profile?.r.setSpaceChild(roomId);
-                            },
-                            text: "Create a private MinesTRIX room",
-                            expanded: false,
-                            icon: const Icon(Icons.person_add)),
-                      ),
-                    if (Settings().multipleFeedSupport)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: CustomTextFutureButton(
-                            onPressed: () async {
-                              final roomId =
-                                  await client.createPublicMinestrixProfile();
-                              await profile?.r.setSpaceChild(roomId);
-                            },
-                            text: "Create a public MinesTRIX room",
-                            expanded: false,
-                            icon: const Icon(Icons.public)),
-                      )
-                  ],
+                    );
+                  }),
                 ),
-              ),
             ],
           );
         });
   }
 }
 
-class ProfileSpaceCard extends StatelessWidget {
+class ProfileSpaceCard extends StatefulWidget {
   const ProfileSpaceCard({
     Key? key,
     required this.profile,
@@ -154,60 +111,181 @@ class ProfileSpaceCard extends StatelessWidget {
   final ProfileSpace profile;
 
   @override
+  State<ProfileSpaceCard> createState() => _ProfileSpaceCardState();
+}
+
+class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ListTile(
-        title: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: MatrixImageAvatar(
-                  url: profile.r.avatar,
-                  client: profile.r.client,
-                  backgroundColor: Theme.of(context).primaryColor,
-                  defaultText: profile.r.name,
-                  width: 80,
-                  height: 80),
+    final room = widget.profile.r;
+
+    final client = room.client;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ListTile(
+            title: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: MatrixImageAvatar(
+                      url: room.avatar,
+                      client: room.client,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      defaultText: room.name,
+                      width: 80,
+                      height: 80),
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(room.name,
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                      if (room.topic.isNotEmpty) Text(room.topic),
+                      if (room.joinRules == JoinRules.public)
+                        Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Row(
+                            children: const [
+                              Text("Public profile space",
+                                  style: TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            trailing: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () =>
+                    RoomSettingsPage.show(context: context, room: room)),
+          ),
+        ),
+        LayoutBuilder(builder: (context, constraints) {
+          final leftBar = Column(
+            children: [
+              Card(
+                  color: Theme.of(context).primaryColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text(room.canonicalAlias,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        )),
+                  )),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 26),
+                child: RoomInfo(r: room),
+              ),
+              Column(
                 children: [
-                  Text(profile.r.name,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text(profile.r.topic),
-                  Card(
+                  CustomTextFutureButton(
+                      onPressed: () async {
+                        await widget.profile.createStoriesRoom();
+                        setState(() {});
+                      },
+                      text: "Create stories room",
                       color: Theme.of(context).primaryColor,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Text(profile.r.canonicalAlias,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            )),
-                      )),
-                  if (profile.r.joinRules == JoinRules.public)
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Row(
-                        children: const [
-                          Text("Public profile space",
-                              style: TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                    ),
+                      icon: Icons.add_a_photo),
+                  if (Settings().multipleFeedSupport)
+                    CustomTextFutureButton(
+                        onPressed: () async {
+                          final roomId =
+                              await client.createPrivateMinestrixProfile();
+                          await room.setSpaceChild(roomId);
+                        },
+                        text: "Create a private MinesTRIX room",
+                        color: Theme.of(context).primaryColor,
+                        icon: Icons.person_add),
+                  if (Settings().multipleFeedSupport)
+                    CustomTextFutureButton(
+                        onPressed: () async {
+                          final roomId =
+                              await client.createPublicMinestrixProfile();
+                          await room.setSpaceChild(roomId);
+                        },
+                        text: "Create a public MinesTRIX room",
+                        color: Theme.of(context).primaryColor,
+                        icon: Icons.public)
                 ],
               ),
-            ),
-          ],
-        ),
-        trailing: IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () =>
-                RoomSettingsPage.show(context: context, room: profile.r)),
-      ),
+            ],
+          );
+
+          final rightBar = Column(
+            children: [
+              for (final s in room.spaceChildren
+                  .where((element) => element.roomId != null))
+                Builder(builder: (context) {
+                  final room = client.getRoomById(s.roomId!);
+
+                  if (room == null) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 80.0),
+                      child: ListTile(
+                          leading: const Icon(Icons.error),
+                          title: Text("Unknown room ${s.roomId!}"),
+                          trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () async {
+                                await widget.profile
+                                    .removeSpaceChild(s.roomId!);
+                              })),
+                    );
+                  }
+
+                  return RoomProfileListTile(
+                    room,
+                    onLeave: () async {
+                      await widget.profile.r.removeSpaceChild(room.id);
+                    },
+                    onRemoveFromProfile: () async {
+                      await widget.profile.r.removeSpaceChild(room.id);
+                    },
+                  );
+                }),
+            ],
+          );
+
+          if (constraints.maxWidth < 530) {
+            return Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16),
+              child: Column(
+                children: [
+                  leftBar,
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  rightBar
+                ],
+              ),
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(width: 200, child: leftBar),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Expanded(child: rightBar),
+            ],
+          );
+        })
+      ],
     );
   }
 }
@@ -283,77 +361,28 @@ class NoProfileSpaceFound extends StatelessWidget {
 }
 
 class RoomProfileListTile extends StatelessWidget {
-  const RoomProfileListTile(this.r, {Key? key, required this.onLeave})
+  const RoomProfileListTile(this.r,
+      {Key? key, required this.onLeave, this.onRemoveFromProfile})
       : super(key: key);
   final Room r;
   final VoidCallback onLeave;
+  final VoidCallback? onRemoveFromProfile;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+        leading: MatrixImageAvatar(
+          url: r.avatar,
+          client: r.client,
+          defaultText: r.displayname,
+        ),
         title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text((r.name),
                   style: const TextStyle(fontWeight: FontWeight.bold))
             ]),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (r.topic != "")
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(r.topic),
-              ),
-            if (r.joinRules == JoinRules.invite)
-              Row(
-                children: const [
-                  Icon(Icons.person),
-                  SizedBox(width: 10),
-                  Text("Private"),
-                ],
-              ),
-            if (r.joinRules == JoinRules.knock)
-              Row(
-                children: const [
-                  Icon(Icons.person),
-                  SizedBox(width: 10),
-                  Text("Knock"),
-                ],
-              ),
-            if (r.joinRules == JoinRules.public)
-              Row(
-                children: const [
-                  Icon(Icons.public),
-                  SizedBox(width: 10),
-                  Text("Public"),
-                ],
-              ),
-            Row(
-              children: [
-                const Icon(Icons.people),
-                const SizedBox(width: 10),
-                Text("${r.summary.mJoinedMemberCount} followers"),
-              ],
-            ),
-            if (r.encrypted)
-              Row(
-                children: const [
-                  Icon(Icons.verified_user),
-                  SizedBox(width: 10),
-                  Text("Encrypted")
-                ],
-              ),
-            if (!r.encrypted)
-              Row(
-                children: const [
-                  Icon(Icons.no_encryption),
-                  SizedBox(width: 10),
-                  Text("Not encrypted")
-                ],
-              ),
-          ],
-        ),
+        subtitle: RoomInfo(r: r),
         trailing: PopupMenuButton<String>(
             itemBuilder: (_) => [
                   PopupMenuItem(
@@ -363,8 +392,17 @@ class RoomProfileListTile extends StatelessWidget {
                           Icons.settings,
                         ),
                         SizedBox(width: 10),
-                        Text("Settings", style: TextStyle()),
+                        Text("Settings"),
                       ])),
+                  if (onRemoveFromProfile != null)
+                    PopupMenuItem(
+                      value: "remove",
+                      child: Row(children: const [
+                        Icon(Icons.remove),
+                        SizedBox(width: 10),
+                        Text("Remove from profile")
+                      ]),
+                    ),
                   PopupMenuItem(
                       value: "leave",
                       child: Row(
@@ -379,16 +417,14 @@ class RoomProfileListTile extends StatelessWidget {
             onSelected: (String action) async {
               switch (action) {
                 case "settings":
-                  await showDialog(
-                      context: context,
-                      builder: (context) => Dialog(
-                          child: ConvSettingsCard(
-                              room: r,
-                              onClose: () => Navigator.of(context).pop())));
+                  await RoomSettingsPage.show(context: context, room: r);
                   break;
                 case "leave":
                   await r.leave();
                   onLeave();
+                  break;
+                case "remove":
+                  onRemoveFromProfile?.call();
                   break;
                 default:
               }
@@ -396,5 +432,75 @@ class RoomProfileListTile extends StatelessWidget {
         onTap: () {
           context.navigateTo(UserViewRoute(mroom: r));
         });
+  }
+}
+
+class RoomInfo extends StatelessWidget {
+  const RoomInfo({
+    Key? key,
+    required this.r,
+  }) : super(key: key);
+
+  final Room r;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (r.topic != "")
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Text(r.topic),
+          ),
+        if (r.joinRules == JoinRules.invite)
+          Row(
+            children: const [
+              Icon(Icons.person),
+              SizedBox(width: 10),
+              Text("Private"),
+            ],
+          ),
+        if (r.joinRules == JoinRules.knock)
+          Row(
+            children: const [
+              Icon(Icons.person),
+              SizedBox(width: 10),
+              Text("Knock"),
+            ],
+          ),
+        if (r.joinRules == JoinRules.public)
+          Row(
+            children: const [
+              Icon(Icons.public),
+              SizedBox(width: 10),
+              Text("Public"),
+            ],
+          ),
+        Row(
+          children: [
+            const Icon(Icons.people),
+            const SizedBox(width: 10),
+            Text("${r.summary.mJoinedMemberCount} followers"),
+          ],
+        ),
+        if (r.encrypted)
+          Row(
+            children: const [
+              Icon(Icons.verified_user),
+              SizedBox(width: 10),
+              Text("Encrypted")
+            ],
+          ),
+        if (!r.encrypted)
+          Row(
+            children: const [
+              Icon(Icons.no_encryption),
+              SizedBox(width: 10),
+              Text("Not encrypted")
+            ],
+          ),
+      ],
+    );
   }
 }

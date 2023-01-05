@@ -193,7 +193,7 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: CustomTextFutureButton(
-                                              icon: const Icon(Icons.post_add),
+                                              icon: Icons.post_add,
                                               text: "Write your first post",
                                               onPressed: () async {
                                                 context.pushRoute(
@@ -205,7 +205,7 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: CustomTextFutureButton(
-                                            icon: const Icon(Icons.group_add),
+                                            icon: Icons.group_add,
                                             text: "Create a group",
                                             onPressed: () async {
                                               AdaptativeDialogs.show(
@@ -226,7 +226,7 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                           right: 8,
                         ),
                         child: CustomTextFutureButton(
-                            icon: const Icon(Icons.refresh),
+                            icon: Icons.refresh,
                             text: "Refresh rooms",
                             onPressed: () async {
                               getEvents();
