@@ -9,13 +9,15 @@ build_linux:
   stage: build
   before_script:
   - sudo apt update && sudo apt install curl clang cmake ninja-build pkg-config libgtk-3-dev
-    libblkid-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.0-dev -y
+    libblkid-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.0-dev patchelf -y
   script:
   - flutter config --enable-linux-desktop
   - flutter clean
   - flutter pub get
   - flutter packages pub run build_runner build --delete-conflicting-outputs
   - flutter build linux --release
+  # https://github.com/flutter-webrtc/flutter-webrtc/issues/1174#issuecomment-1372911821
+  - patchelf build/linux/x64/release/bundle/lib/libflutter_webrtc_plugin.so  --set-rpath "\$ORIGIN"
   artifacts:
     when: on_success
     paths:
