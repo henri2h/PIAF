@@ -31,15 +31,14 @@ class CustomHeader extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  if (context.router.canPopSelfOrChildren || overrideCanPop)
+                  if (context.router.canPop() || overrideCanPop)
                     IconButton(
                         onPressed: () {
                           if (onBack != null) onBack!();
                           context.router.pop();
                         },
                         icon: const Icon(Icons.arrow_back)),
-                  if (context.router.canPopSelfOrChildren == false &&
-                      drawerEnabled)
+                  if (context.router.canPop() == false && drawerEnabled)
                     IconButton(
                         onPressed: () {
                           if (onBack != null) onBack!();

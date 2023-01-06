@@ -10,19 +10,19 @@ extension MinestrixClientExtension on Client {
 
   /// Return a map of all the user feed room for each user
   Map<String, List<Room>> get sroomsByUserId {
-    Map<String, List<Room>> _srooms = {};
+    Map<String, List<Room>> srooms = {};
 
     for (var i = 0; i < rooms.length; i++) {
       Room r = rooms[i];
       if (r.isFeed && r.feedType == FeedRoomType.user) {
-        if (_srooms[r.creatorId ?? ''] == null) {
-          _srooms[r.creatorId ?? ''] = [r];
+        if (srooms[r.creatorId ?? ''] == null) {
+          srooms[r.creatorId ?? ''] = [r];
         } else {
-          _srooms[r.creatorId ?? '']!.add(r);
+          srooms[r.creatorId ?? '']!.add(r);
         }
       }
     }
-    return _srooms;
+    return srooms;
   }
 
   // room sub types
@@ -42,7 +42,7 @@ extension MinestrixClientExtension on Client {
   List<Room> get minestrixUserRoom =>
       srooms.where((r) => r.creatorId == userID).toList();
 
-  bool get userRoomCreated => minestrixUserRoom.length > 0;
+  bool get userRoomCreated => minestrixUserRoom.isNotEmpty;
 
   Future<String> createPrivateMinestrixProfile() async {
     final p = await getProfileFromUserId(userID!);
@@ -121,7 +121,7 @@ extension MinestrixClientExtension on Client {
   }
 
   Iterable<Event> getSRoomFilteredEvents(Timeline t,
-          {List<String> eventTypesFilter: const [
+          {List<String> eventTypesFilter = const [
             MatrixTypes.post,
             EventTypes.Encrypted
           ]}) =>

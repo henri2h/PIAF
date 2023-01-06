@@ -152,7 +152,6 @@ class UserViewPageState extends State<UserViewPage> {
         controller.position.pixels >=
             controller.position.maxScrollExtent - 600) {
       if (_requestingHistory == false && timeline?.canRequestHistory == true) {
-        print("requesting history");
         setState(() {
           _requestingHistory = true;
         });

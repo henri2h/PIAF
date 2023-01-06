@@ -6,7 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key? key, this.title, this.onLogin, this.popOnLogin = false})
+  const LoginPage({Key? key, this.title, this.onLogin, this.popOnLogin = false})
       : super(key: key);
   final String? title;
   final Function(bool isLoggedIn)? onLogin;
@@ -14,24 +14,25 @@ class LoginPage extends StatefulWidget {
   final bool popOnLogin;
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth > 900)
+      if (constraints.maxWidth > 900) {
         return buildDesktop();
-      else
+      } else {
         return buildMobile();
+      }
     });
   }
 
   Widget buildDesktop() {
     Client client = Matrix.of(context).getLoginClient();
 
-    final radius = Radius.circular(8);
+    final radius = const Radius.circular(8);
 
     return Scaffold(
       body: Stack(fit: StackFit.expand, children: [
@@ -102,14 +103,12 @@ class _LoginPageState extends State<LoginPage> {
                                   const EdgeInsets.symmetric(vertical: 15.0),
                               child: Padding(
                                 padding: const EdgeInsets.all(20.0),
-                                child: Container(
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                        maxWidth: 450, minHeight: 200),
-                                    child: LoginMatrixCard(
-                                        client: client,
-                                        popOnLogin: widget.popOnLogin),
-                                  ),
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                      maxWidth: 450, minHeight: 200),
+                                  child: LoginMatrixCard(
+                                      client: client,
+                                      popOnLogin: widget.popOnLogin),
                                 ),
                               ),
                             ),
@@ -132,20 +131,20 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                       onPressed: () async =>
                           await _launchURL(Uri.parse("https://matrix.org")),
-                      child: new Text('The matrix protocol'),
+                      child: const Text('The matrix protocol'),
                     ),
                     TextButton(
                       onPressed: () async => await _launchURL(Uri.parse(
                           "https://gitlab.com/minestrix/minestrix-flutter")),
-                      child: new Text('MinesTRIX code'),
+                      child: const Text('MinesTRIX code'),
                     ),
-                    SizedBox(width: 20),
+                    const SizedBox(width: 20),
                     FutureBuilder<PackageInfo>(
                         future: PackageInfo.fromPlatform(),
                         builder: (context, snap) {
                           if (!snap.hasData) return Container();
                           return Text(
-                              "Version " + (snap.data?.version ?? 'null'));
+                              "Version ${snap.data?.version ?? 'null'}");
                         }),
                   ],
                 ),
@@ -163,56 +162,54 @@ class _LoginPageState extends State<LoginPage> {
     Client client = Matrix.of(context).getLoginClient();
 
     return Scaffold(
-      body: Container(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset("assets/bg_paris.jpg", fit: BoxFit.cover),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(50),
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Row(
-                      children: [
-                        Image.asset("assets/icon_512.png",
-                            width: 72, height: 72, cacheWidth: 140),
-                        SizedBox(width: 28),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("MinesTRIX",
-                                  style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white)),
-                              Text(
-                                  "A privacy focused social media based on MATRIX",
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.white))
-                            ],
-                          ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset("assets/bg_paris.jpg", fit: BoxFit.cover),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(50),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Row(
+                    children: [
+                      Image.asset("assets/icon_512.png",
+                          width: 72, height: 72, cacheWidth: 140),
+                      const SizedBox(width: 28),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text("MinesTRIX",
+                                style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white)),
+                            Text(
+                                "A privacy focused social media based on MATRIX",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white))
+                          ],
                         ),
-                      ],
-                    ),
-                  ]),
-                ),
-                Flexible(
-                  child: Container(
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(30))),
-                      child: ListView(shrinkWrap: true, children: <Widget>[
-                        LoginMatrixCard(client: client),
-                      ])),
-                ),
-              ],
-            ),
-          ],
-        ),
+                      ),
+                    ],
+                  ),
+                ]),
+              ),
+              Flexible(
+                child: Container(
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(30))),
+                    child: ListView(shrinkWrap: true, children: <Widget>[
+                      LoginMatrixCard(client: client),
+                    ])),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

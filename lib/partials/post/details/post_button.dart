@@ -21,18 +21,18 @@ class PostButton extends StatelessWidget {
       minWidth: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      onPressed: onPressed,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
-          if (!iconOnly) SizedBox(width: 5),
+          if (!iconOnly) const SizedBox(width: 5),
           if (!iconOnly)
             Text(text,
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.onPrimary))
         ],
       ),
-      onPressed: onPressed,
     );
   }
 }

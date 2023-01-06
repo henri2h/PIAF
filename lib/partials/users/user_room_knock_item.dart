@@ -69,8 +69,8 @@ class UserRoomKnockItem extends StatelessWidget {
                       onPressed: () async {
                         await room.kick(user.id);
                       },
-                      children: [
-                        const Text("Remove", style: TextStyle(fontSize: 15))
+                      children: const [
+                        Text("Remove", style: TextStyle(fontSize: 15))
                       ],
                     ),
                   ),

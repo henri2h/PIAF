@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 
 import 'package:minestrix/partials/components/quick_links_list.dart';
 import 'package:minestrix/partials/feed/minestrix_feed.dart';
 import 'package:minestrix/partials/home/rightbar.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({Key? key}) : super(key: key);
@@ -53,7 +55,7 @@ class FeedPageState extends State<FeedPage> {
                 flex: 6,
                 fit: FlexFit.loose,
                 child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 340),
+                    constraints: const BoxConstraints(maxWidth: 400),
                     child: const RightBar()),
               ),
           ],

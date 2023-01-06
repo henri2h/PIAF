@@ -63,7 +63,7 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                     await AdaptativeDialogs.show(
                         context: context,
                         bottomSheet: true,
-                        builder: (context) => LoginPage(
+                        builder: (context) => const LoginPage(
                             popOnLogin: true, title: "Add a new account"));
                     if (mounted) {
                       setState(() {});
