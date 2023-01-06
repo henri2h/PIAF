@@ -70,7 +70,7 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
             if (post.isNotEmpty)
               GridView.builder(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 500, mainAxisExtent: 380),
+                      maxCrossAxisExtent: 470, mainAxisExtent: 380),
                   itemCount: post.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -85,7 +85,7 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
             if (prev.isNotEmpty)
               GridView.builder(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 500, mainAxisExtent: 380),
+                      maxCrossAxisExtent: 470, mainAxisExtent: 380),
                   itemCount: prev.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),

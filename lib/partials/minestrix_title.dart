@@ -16,11 +16,11 @@ class MinestrixTitle extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("MinesTRIX",
+                children: const [
+                  Text("MinesTRIX",
                       style:
                           TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
-                  const Text("A privacy focused social media based on MATRIX",
+                  Text("A privacy focused social media based on MATRIX",
                       style: TextStyle(fontSize: 16))
                 ],
               ),
