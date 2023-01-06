@@ -33,7 +33,7 @@ build_android_bundle:
   - flutter clean
   - flutter pub get
   - flutter packages pub run build_runner build --delete-conflicting-outputs
-  - flutter build appbundle --release
+  - flutter build appbundle --release -v
   artifacts:
     when: on_success
     paths:
