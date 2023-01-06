@@ -99,7 +99,7 @@ class GroupPageState extends State<GroupPage> {
               room: room,
               headerChildBuilder: ({required bool displaySideBar}) =>
                   Container(),
-              mainBuilder: ({required bool displaySideBar}) => StreamBuilder(
+              mainBuilder: ({required bool displaySideBar, required bool displayLeftBar}) => StreamBuilder(
                   stream: room.onUpdate.stream,
                   builder: (context, _) => CustomListViewWithEmoji(
                       physics: const NeverScrollableScrollPhysics(),
@@ -131,7 +131,7 @@ class GroupPageState extends State<GroupPage> {
                                     onReact: (e) => onReact(e, sevents[i - 1]))
                                 : const PostShimmer());
                       })),
-              sidebarBuilder: () => Column(
+              sidebarBuilder: ({required bool displayLeftBar}) => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   StreamBuilder(

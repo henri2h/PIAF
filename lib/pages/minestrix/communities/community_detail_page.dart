@@ -61,7 +61,7 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
             headerHeight: 300,
             room: space,
             headerChildBuilder: ({required bool displaySideBar}) => Container(),
-            sidebarBuilder: () => Column(
+            sidebarBuilder: ({required bool displayLeftBar}) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const H2Title("Groups"),
@@ -69,7 +69,10 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
                   MinestrixRoomTileNavigator(room: room),
               ],
             ),
-            mainBuilder: ({required bool displaySideBar}) => LayoutMainFeed(
+            mainBuilder: (
+                    {required bool displaySideBar,
+                    required bool displayLeftBar}) =>
+                LayoutMainFeed(
               space: space,
               children: children,
               controller: feedController,
