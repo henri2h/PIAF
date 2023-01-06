@@ -99,39 +99,43 @@ class GroupPageState extends State<GroupPage> {
               room: room,
               headerChildBuilder: ({required bool displaySideBar}) =>
                   Container(),
-              mainBuilder: ({required bool displaySideBar}) => StreamBuilder(
-                  stream: room.onUpdate.stream,
-                  builder: (context, _) => CustomListViewWithEmoji(
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: sevents.length + 1 + (updating ? 1 : 0),
-                      itemBuilder: (BuildContext c, int i,
-                          void Function(Offset, Event) onReact) {
-                        if (i == 0) {
-                          return Column(children: [
-                            if (room.avatar != null)
-                              Center(
-                                  child: MatrixImageAvatar(
-                                      client: sclient,
-                                      url: room.avatar,
-                                      unconstraigned: true,
-                                      shape: MatrixImageAvatarShape.none,
-                                      maxHeight: 500)),
-                            Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: PostWriterModal(room: room),
-                            ),
-                          ]);
-                        }
-                        return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 2, horizontal: 12),
-                            child: (i - 1 < sevents.length)
-                                ? Post(
-                                    event: sevents[i - 1],
-                                    onReact: (e) => onReact(e, sevents[i - 1]))
-                                : const PostShimmer());
-                      })),
-              sidebarBuilder: () => Column(
+              mainBuilder: (
+                      {required bool displaySideBar,
+                      required bool displayLeftBar}) =>
+                  StreamBuilder(
+                      stream: room.onUpdate.stream,
+                      builder: (context, _) => CustomListViewWithEmoji(
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: sevents.length + 1 + (updating ? 1 : 0),
+                          itemBuilder: (BuildContext c, int i,
+                              void Function(Offset, Event) onReact) {
+                            if (i == 0) {
+                              return Column(children: [
+                                if (room.avatar != null)
+                                  Center(
+                                      child: MatrixImageAvatar(
+                                          client: sclient,
+                                          url: room.avatar,
+                                          unconstraigned: true,
+                                          shape: MatrixImageAvatarShape.none,
+                                          maxHeight: 500)),
+                                Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: PostWriterModal(room: room),
+                                ),
+                              ]);
+                            }
+                            return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 2, horizontal: 12),
+                                child: (i - 1 < sevents.length)
+                                    ? Post(
+                                        event: sevents[i - 1],
+                                        onReact: (e) =>
+                                            onReact(e, sevents[i - 1]))
+                                    : const PostShimmer());
+                          })),
+              sidebarBuilder: ({required bool displayLeftBar}) => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   StreamBuilder(

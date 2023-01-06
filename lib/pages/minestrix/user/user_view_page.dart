@@ -231,10 +231,23 @@ class UserViewPageState extends State<UserViewPage> {
                           controller: controller,
                           displayChat: false,
                           room: mroom?.room,
-                          sidebarBuilder: () => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          leftBar: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               if (userId != null)
+                                Card(
+                                  child: UserProfileSelection(
+                                      userId: userId!,
+                                      onRoomSelected: selectRoom,
+                                      roomSelectedId: mroom?.id),
+                                ),
+                            ],
+                          ),
+                          sidebarBuilder: ({required bool displayLeftBar}) =>
+                              Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (!displayLeftBar)
                                 UserProfileSelection(
                                     userId: userId!,
                                     onRoomSelected: selectRoom,
@@ -273,7 +286,10 @@ class UserViewPageState extends State<UserViewPage> {
                               headerChildBuilder(
                                   displaySideBar: displaySideBar,
                                   profile: snapProfile.data),
-                          mainBuilder: ({required bool displaySideBar}) => Row(
+                          mainBuilder: (
+                                  {required bool displaySideBar,
+                                  required bool displayLeftBar}) =>
+                              Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

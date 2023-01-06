@@ -38,7 +38,7 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
 
-    final _rooms = client.sroomsByUserId[widget.userId]?.toList() ?? [];
+    final rooms = client.sroomsByUserId[widget.userId]?.toList() ?? [];
 
     bool isOurProfile = widget.userId == client.userID;
 
@@ -47,7 +47,7 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
     return FutureBuilder<List<SpaceRoomsChunk>?>(
         future: ProfileSpace.getProfileSpaceHierarchy(client, widget.userId),
         builder: (context, snap) {
-          final results = _rooms.map((e) => RoomWithSpace(room: e)).toList();
+          final results = rooms.map((e) => RoomWithSpace(room: e)).toList();
           final discoveredRooms = snap.data;
 
           discoveredRooms?.forEach((space) {
@@ -72,7 +72,7 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: ListTile(
-                      title: const Text("Feeds"),
+                      title: Text(isOurProfile ? "My profiles" : "Feeds"),
                       leading: const Icon(Icons.list),
                       onTap: isOurProfile
                           ? () =>
@@ -81,24 +81,20 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
                     ),
                   ),
                 if (profile == null && isOurProfile)
-                  Card(
-                    child: ListTile(
-                        leading: const Icon(Icons.create_new_folder),
-                        title: const Text("No user space found"),
-                        subtitle: const Text("Go to settings to create one"),
-                        onTap: () =>
-                            context.pushRoute(const AccountsDetailsRoute())),
-                  ),
+                  ListTile(
+                      leading: const Icon(Icons.create_new_folder),
+                      title: const Text("No user space found"),
+                      subtitle: const Text("Go to settings to create one"),
+                      onTap: () =>
+                          context.pushRoute(const AccountsDetailsRoute())),
                 if (results.isEmpty && !isOurProfile)
-                  const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: ListTile(
-                          leading: Icon(Icons.question_mark),
-                          title: Text("No profile found"),
-                          subtitle: Text(
-                              "We weren't able to found a MinesTRIX profile related to this user. ")),
-                    ),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: ListTile(
+                        leading: Icon(Icons.question_mark),
+                        title: Text("No profile found"),
+                        subtitle: Text(
+                            "We weren't able to found a MinesTRIX profile related to this user. ")),
                   ),
                 widget.dense
                     ? DropdownButton<RoomWithSpace>(
