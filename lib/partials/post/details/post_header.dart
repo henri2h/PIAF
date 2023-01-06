@@ -48,7 +48,7 @@ class PostHeader extends StatelessWidget {
                           client: sclient,
                         ),
                       ),
-                      if (room.feedType != FeedRoomType.group)
+                      if (room.feedType == FeedRoomType.user)
                         Flexible(
                           child: Builder(builder: (BuildContext context) {
                             User? feedOwner = event.room.creator;
@@ -138,7 +138,8 @@ class PostHeader extends StatelessWidget {
                             );
                           }),
                         ),
-                      if (room.feedType == FeedRoomType.group)
+                      if (room.feedType == FeedRoomType.group ||
+                          room.feedType == FeedRoomType.calendar)
                         Flexible(
                             child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
