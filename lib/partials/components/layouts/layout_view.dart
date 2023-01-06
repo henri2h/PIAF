@@ -132,7 +132,9 @@ class LayoutView extends StatelessWidget {
                       if (displaySideBar)
                         Card(
                             child: SizedBox(
-                                width: sidebarWidth, child: sidebarBuilder!(displayLeftBar: displayLeftBar))),
+                                width: sidebarWidth,
+                                child: sidebarBuilder!(
+                                    displayLeftBar: displayLeftBar))),
                       Expanded(
                         child: Center(
                           child: ConstrainedBox(

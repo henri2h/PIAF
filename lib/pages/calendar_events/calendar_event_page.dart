@@ -116,7 +116,10 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                       room: room,
                       headerHeight: 280,
                       mainWidth: double.infinity,
-                      mainBuilder: ({required bool displaySideBar, required bool displayLeftBar}) => Column(
+                      mainBuilder: (
+                              {required bool displaySideBar,
+                              required bool displayLeftBar}) =>
+                          Column(
                             children: [
                               Center(
                                 child: Padding(
