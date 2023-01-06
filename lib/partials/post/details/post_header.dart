@@ -169,8 +169,14 @@ class PostHeader extends StatelessWidget {
                                             .bodyText1!
                                             .color)),
                                 TextButton(
-                                  onPressed: () {
-                                    context.navigateTo(GroupRoute(room: room));
+                                  onPressed: () async {
+                                    if (room.feedType == FeedRoomType.group) {
+                                      await context
+                                          .navigateTo(GroupRoute(room: room));
+                                    } else {
+                                      await context.navigateTo(
+                                          CalendarEventRoute(room: room));
+                                    }
                                   },
                                   child: Text(event.room.name,
                                       style: TextStyle(
