@@ -23,7 +23,7 @@ build_linux:
     paths:
     - build/linux/x64/release/bundle/
   tags:
-  - shared
+  - minestrix
 
 build_android_bundle:
   stage: build
@@ -39,7 +39,7 @@ build_android_bundle:
     paths:
     - build/app/outputs/bundle/release/app-release.aab
   tags:
-  - shared
+  - minestrix
 
 build_android_apk:
   stage: build
@@ -55,7 +55,7 @@ build_android_apk:
     paths:
     - build/app/outputs/flutter-apk/app-release.apk
   tags:
-  - shared
+  - minestrix
 
 build_web:
   stage: build
@@ -69,7 +69,7 @@ build_web:
     paths:
     - build/web/
   tags:
-  - shared
+  - minestrix
 
 deploy_web:
   image: debian:buster
@@ -86,6 +86,8 @@ deploy_web:
   - rsync -az build/web/ $USER@$HOST:app --delete
   only:
   - main
+  tags:
+  - minestrix
 
 deploy_android_fdroid:
   image: debian:buster
@@ -107,6 +109,8 @@ deploy_android_fdroid:
   - ssh $USER@$HOST -t '/bin/bash -i -l -c  "cd fdroid && fdroid update"'
   only:
   - main
+  tags:
+  - minestrix
 
 analyze:
   stage: analyze
@@ -117,13 +121,13 @@ analyze:
   # - flutter analyze
   - flutter format lib/ --set-exit-if-changed
   tags:
-  - shared
+  - minestrix
 
 .release:
   stage: deploy
   image: curlimages/curl:latest
   tags:
-    - shared
+    - minestrix
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
     - if: '$CI_COMMIT_TAG =~ /^rc\d+\.\d+\.\d+-\d+$/'
