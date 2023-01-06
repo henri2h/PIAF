@@ -21,6 +21,7 @@ class CreateGroupPageState extends State<CreateGroupPage> {
   TextEditingController tName = TextEditingController();
   TextEditingController tDesc = TextEditingController();
 
+  String? errorText;
   @override
   Widget build(BuildContext context) {
     Client? sclient = Matrix.of(context).client;
