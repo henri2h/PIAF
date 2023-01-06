@@ -49,12 +49,12 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
               title: const Text("Enable calendar event support"),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Allow creating calendar events."),
-                  const InfoBadge(
+                children: const [
+                  Text("Allow creating calendar events."),
+                  InfoBadge(
                     text: "WIP",
                   ),
-                  const InfoBadge(
+                  InfoBadge(
                     text: "Read only",
                   )
                 ],

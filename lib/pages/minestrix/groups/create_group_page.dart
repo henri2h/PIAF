@@ -21,7 +21,6 @@ class CreateGroupPageState extends State<CreateGroupPage> {
   TextEditingController tName = TextEditingController();
   TextEditingController tDesc = TextEditingController();
 
-  String? errorText = null;
   @override
   Widget build(BuildContext context) {
     Client? sclient = Matrix.of(context).client;
@@ -50,7 +49,7 @@ class CreateGroupPageState extends State<CreateGroupPage> {
                           focusedBorder: const OutlineInputBorder(
                             borderSide: BorderSide.none,
                             borderRadius: BorderRadius.all(
-                              const Radius.circular(15),
+                              Radius.circular(15),
                             ),
                           ),
                           errorText: errorText,
@@ -70,7 +69,7 @@ class CreateGroupPageState extends State<CreateGroupPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide.none,
-                            borderRadius: const BorderRadius.all(
+                            borderRadius: BorderRadius.all(
                               Radius.circular(15),
                             ),
                           ),
@@ -86,7 +85,7 @@ class CreateGroupPageState extends State<CreateGroupPage> {
                     children: [
                       SwitchListTile(
                           title: const Text("Make this group public",
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold)),
                           subtitle: const Text(
                               "Private group can only be joined with invitation"),
@@ -97,7 +96,7 @@ class CreateGroupPageState extends State<CreateGroupPage> {
                           }),
                       SwitchListTile(
                           title: const Text("Enable end-to-end encryption",
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold)),
                           subtitle: const Text("You can't disable it later"),
                           value: _isE2EEnabled,

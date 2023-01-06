@@ -49,7 +49,7 @@ class ResearchPageState extends State<ResearchPage> {
     Client? client = Matrix.of(context).client;
     return Column(
       children: [
-        if (!widget.isPopup) CustomHeader(title: "Search"),
+        if (!widget.isPopup) const CustomHeader(title: "Search"),
         Expanded(
           child: ListView(children: [
             Padding(
@@ -63,8 +63,9 @@ class ResearchPageState extends State<ResearchPage> {
             StreamBuilder<SearchUserDirectoryResponse>(
                 stream: discoveryStream.stream,
                 builder: (context, snap) {
-                  if (!snap.hasData || c.text == "")
+                  if (!snap.hasData || c.text == "") {
                     return SuggestionList(shouldPop: widget.isPopup);
+                  }
 
                   final list = snap.data!.results.toList();
                   return Column(
@@ -72,7 +73,7 @@ class ResearchPageState extends State<ResearchPage> {
                       for (final profile in list)
                         ListTile(
                           leading: profile.avatarUrl == null
-                              ? Icon(Icons.person)
+                              ? const Icon(Icons.person)
                               : MatrixImageAvatar(
                                   client: client, url: profile.avatarUrl),
                           title: Text((profile.displayName ?? profile.userId)),

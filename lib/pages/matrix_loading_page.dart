@@ -23,8 +23,9 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
       if (sclient.prevBatch?.isEmpty ?? true) {
         await sclient.onSync.stream.first;
       }
-    } else
+    } else {
       print("Can't wait for rooms loading");
+    }
     return true;
   }
 
@@ -39,55 +40,49 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
             return StreamBuilder<SyncStatusUpdate>(
                 stream: sclient.onSyncStatus.stream,
                 builder: (context, snap) {
-                  if (!snap.hasData) return Center(child: MinestrixTitle());
+                  if (!snap.hasData)
+                    return const Center(child: MinestrixTitle());
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      MinestrixTitle(),
+                      const MinestrixTitle(),
                       FutureBuilder(
                           future: waitForRoomsLoading(sclient),
                           builder: (context, snapLoading) {
-                            print("Snap loading : " +
-                                (snapLoading.data?.toString() ?? 'null'));
-
                             if (!snapLoading.hasData ||
                                 sclient.userRoomCreated) {
-                              if (snap.data!.status != SyncStatus.finished)
+                              if (snap.data!.status != SyncStatus.finished) {
                                 return Padding(
                                   padding: const EdgeInsets.all(20),
                                   child: Card(
                                     child: Padding(
                                       padding: const EdgeInsets.all(20),
                                       child: Column(children: [
-                                        Text("Syncing",
+                                        const Text("Syncing",
                                             style: TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 20),
+                                        const SizedBox(height: 20),
                                         if (snap.data!.status ==
                                             SyncStatus.processing)
                                           LinearProgressIndicator(
                                               value: snap.data!.progress),
                                         if (snap.data!.status !=
                                             SyncStatus.processing)
-                                          Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              LinearProgressIndicator()
-                                            ],
-                                          ),
+                                          const LinearProgressIndicator()
 
                                         // check if we need to create a user room for the user
                                       ]),
                                     ),
                                   ),
                                 );
+                              }
                               return Container();
                             }
-                            return MinestrixProfileNotCreated();
+                            return const MinestrixProfileNotCreated();
                           }),
-                      if (running) LinearProgressIndicator(),
+                      if (running) const LinearProgressIndicator(),
                     ],
                   );
                 });

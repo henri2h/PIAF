@@ -56,8 +56,7 @@ class FeedPageState extends State<FeedPage> {
                 fit: FlexFit.loose,
                 child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 400),
-                    child: const RightBar(
-                        )),
+                    child: const RightBar()),
               ),
           ],
         );
