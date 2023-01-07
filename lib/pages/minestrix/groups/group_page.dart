@@ -1,11 +1,14 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/pages/minestrix/settings/social_settings_page.dart';
 import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
 import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
 import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
@@ -89,10 +92,10 @@ class GroupPageState extends State<GroupPage> {
                 title: room.name,
                 actionButton: [
                   IconButton(
-                      icon: const Icon(Icons.settings),
+                      icon: const Icon(Icons.edit),
                       onPressed: () {
-                        RoomSettingsPage.show(context: context, room: room);
-                      })
+                        context.pushRoute(SocialSettingsRoute(room: room));
+                      }),
                 ],
               ),
               headerHeight: 300,

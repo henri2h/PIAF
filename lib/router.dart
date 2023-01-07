@@ -24,6 +24,7 @@ import 'pages/minestrix/friends/research_page.dart';
 import 'pages/minestrix/groups/create_group_page.dart';
 import 'pages/minestrix/groups/group_page.dart';
 import 'pages/minestrix/image/post_gallery_page.dart';
+import 'pages/minestrix/settings/social_settings_page.dart';
 import 'pages/minestrix/user/followers_page.dart';
 import 'pages/minestrix/user/user_view_page.dart';
 import 'pages/settings/settings_account_switch_page.dart';
@@ -66,6 +67,7 @@ const chatsWrapper = AutoRoute(
       AutoRoute(path: 'accounts', page: AccountsDetailsPage),
       AutoRoute(path: 'communities', page: CommunityPage),
       AutoRoute(path: 'community', page: CommunityDetailPage),
+      AutoRoute(path: 'social_page_settings', page: SocialSettingsPage),
       AutoRoute(path: 'settings', page: SettingsPage, children: [
         AutoRoute(
             path: 'settings/home', page: SettingsPanelInnerPage, initial: true),

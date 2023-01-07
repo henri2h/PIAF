@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -23,6 +24,7 @@ import 'package:minestrix_chat/view/room_settings_page.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/feed/topic_list_tile.dart';
 import '../../partials/post/post_writer_modal.dart';
+import '../../router.gr.dart';
 
 class CalendarEventPage extends StatefulWidget {
   final Room room;
@@ -106,11 +108,11 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                         title: "Event",
                         actionButton: [
                           IconButton(
-                              icon: const Icon(Icons.settings),
+                              icon: const Icon(Icons.edit),
                               onPressed: () {
-                                RoomSettingsPage.show(
-                                    context: context, room: room);
-                              })
+                                context
+                                    .pushRoute(SocialSettingsRoute(room: room));
+                              }),
                         ],
                       ),
                       room: room,
