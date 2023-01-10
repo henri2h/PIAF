@@ -70,7 +70,7 @@ class CalendarEventCard extends StatelessWidget {
                       if (calendarEvent?.start != null)
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
-                          child: DateWidget(calendarEvent: calendarEvent),
+                          child: DateWidget(calendarEvent: calendarEvent!),
                         ),
                       Expanded(
                         child: Padding(
@@ -134,22 +134,29 @@ class DateWidget extends StatelessWidget {
     required this.calendarEvent,
   }) : super(key: key);
 
-  final CalendarEvent? calendarEvent;
+  final CalendarEvent calendarEvent;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-        color: Theme.of(context).primaryColor,
+    return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6.0),
+          color: Theme.of(context).primaryColor,
+        ),
+        height: 42,
+        width: 42,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(4.0),
           child: Column(
             children: [
-              Text(DateFormat.MMM().format(calendarEvent!.start!),
+              Text(DateFormat.MMM().format(calendarEvent.start!),
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 3),
-              Text(DateFormat.d().format(calendarEvent!.start!),
-                  style: const TextStyle(fontSize: 22))
+                      fontWeight: FontWeight.normal, fontSize: 10)),
+              Text(DateFormat.d().format(calendarEvent.start!),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ))
             ],
           ),
         ));
