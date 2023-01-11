@@ -30,97 +30,113 @@ class CalendarEventCard extends StatelessWidget {
               padding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
-              child: Column(
-                children: [
-                  MatrixImageAvatar(
-                    client: room.client,
-                    url: room.avatar,
-                    width: 2000,
-                    shape: MatrixImageAvatarShape.none,
-                    borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(8),
-                        topLeft: Radius.circular(8)),
-                    height: 200,
-                    defaultText: room.displayname,
-                    thumnailOnly:
-                        false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
-                    backgroundColor: Colors.blue,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(child: EventCreator(room: room)),
-                      if (room.membership == Membership.invite)
-                        Card(
-                            color: Theme.of(context).primaryColor,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text("Invited",
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary)),
-                            )),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (calendarEvent?.start != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: DateCard(calendarEvent: calendarEvent!),
-                        ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(room.displayname,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 19)),
-                              if (room.membership == Membership.invite)
-                                const ListTile(
-                                    title: Text(
-                                        "You've been invited to this event"),
-                                    subtitle: Text("Click to join and see it")),
-                              if (room.topic.isNotEmpty)
-                                Text(
-                                  room.topic.trim(),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Column(
+                  children: [
+                    MatrixImageAvatar(
+                      client: room.client,
+                      url: room.avatar,
+                      width: 2000,
+                      shape: MatrixImageAvatarShape.none,
+                      borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(8),
+                          topLeft: Radius.circular(8)),
+                      height: 180,
+                      defaultText: room.displayname,
+                      thumnailOnly:
+                          false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
+                      backgroundColor: Colors.blue,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(child: EventCreator(room: room)),
+                        if (room.membership == Membership.join)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 2),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.people, size: 18),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4.0),
+                                  child: Text(
+                                    "${room.summary.mJoinedMemberCount}",
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
                                 ),
-                              if (room.membership == Membership.join)
-                                Row(
-                                  children: [
-                                    const Icon(Icons.people),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 4.0),
-                                      child: Text(
-                                          "${room.summary.mJoinedMemberCount} members"),
+                                if (calendarEvent?.place != null)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 8.0),
+                                    child: Icon(
+                                      Icons.place,
+                                      size: 18,
                                     ),
-                                  ],
-                                ),
-                              if (calendarEvent?.place != null)
-                                Row(
-                                  children: [
-                                    const Icon(Icons.place),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 4.0),
-                                      child: Text(
-                                          calendarEvent!.place?.trim() ?? ''),
-                                    )
-                                  ],
-                                )
-                            ],
+                                  ),
+                                if (calendarEvent?.place != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: Text(calendarEvent!.place?.trim() ??
+                                        ',  style: const TextStyle(fontSize: 13),'),
+                                  )
+                              ],
+                            ),
+                          ),
+                        if (room.membership == Membership.invite)
+                          Card(
+                              color: Theme.of(context).primaryColor,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("Invited",
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary)),
+                              )),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (calendarEvent?.start != null)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: DateCard(calendarEvent: calendarEvent!),
+                          ),
+                        Expanded(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(room.displayname,
+                                    maxLines: 1,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15)),
+                                if (room.membership == Membership.invite)
+                                  const ListTile(
+                                      title: Text(
+                                          "You've been invited to this event"),
+                                      subtitle:
+                                          Text("Click to join and see it")),
+                                if (room.topic.isNotEmpty)
+                                  Text(
+                                    room.topic,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ));
         });
   }
