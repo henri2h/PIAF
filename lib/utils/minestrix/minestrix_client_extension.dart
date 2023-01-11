@@ -3,7 +3,6 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/utils/matrix/power_levels_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
-import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 
 extension MinestrixClientExtension on Client {
   List<Room> get srooms => rooms.where((r) => r.isFeed).toList();

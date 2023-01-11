@@ -1,11 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/model/calendar_event_model.dart';
+import 'package:minestrix_chat/partials/calendar_event/date_card.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 
 import '../../router.gr.dart';
 
@@ -70,7 +68,7 @@ class CalendarEventCard extends StatelessWidget {
                       if (calendarEvent?.start != null)
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
-                          child: DateWidget(calendarEvent: calendarEvent!),
+                          child: DateCard(calendarEvent: calendarEvent!),
                         ),
                       Expanded(
                         child: Padding(
@@ -125,41 +123,6 @@ class CalendarEventCard extends StatelessWidget {
                 ],
               ));
         });
-  }
-}
-
-class DateWidget extends StatelessWidget {
-  const DateWidget({
-    Key? key,
-    required this.calendarEvent,
-  }) : super(key: key);
-
-  final CalendarEvent calendarEvent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6.0),
-          color: Theme.of(context).primaryColor,
-        ),
-        height: 42,
-        width: 42,
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Column(
-            children: [
-              Text(DateFormat.MMM().format(calendarEvent.start!),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.normal, fontSize: 10)),
-              Text(DateFormat.d().format(calendarEvent.start!),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ))
-            ],
-          ),
-        ));
   }
 }
 

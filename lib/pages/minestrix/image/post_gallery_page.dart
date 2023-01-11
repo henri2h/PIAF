@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/event/matrix_image.dart';
-import 'package:minestrix_chat/utils/social/posts/model/social_item.dart';
-import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
+import 'package:minestrix_chat/utils/extensions/minestrix/model/social_item.dart';
 
 import '../../../partials/post/details/post_replies.dart';
 import '../../../partials/post/gallery/post_gallery_nav_button.dart';

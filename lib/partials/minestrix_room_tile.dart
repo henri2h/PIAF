@@ -3,13 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_room.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/minestrix_chat.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
-
-import 'calendar_events/calendar_event_card.dart';
 
 class ContactView extends StatelessWidget {
   const ContactView({
@@ -91,7 +88,7 @@ class MinestrixRoomTileNavigator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4),
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
@@ -104,61 +101,7 @@ class MinestrixRoomTileNavigator extends StatelessWidget {
             context.navigateTo(UserViewRoute(mroom: room));
           }
         },
-        child: room.feedType == FeedRoomType.calendar
-            ? MinestrixCalendarRoomTile(room: room)
-            : MinestrixRoomTile(room: room),
-      ),
-    );
-  }
-}
-
-class MinestrixCalendarRoomTile extends StatelessWidget {
-  const MinestrixCalendarRoomTile({Key? key, required this.room})
-      : super(key: key);
-  final Room room;
-
-  @override
-  Widget build(BuildContext context) {
-    final calendarEvent = room.getEventAttendanceEvent();
-
-    return SizedBox(
-      height: 52,
-      child: Row(
-        children: [
-          calendarEvent != null
-              ? DateWidget(calendarEvent: calendarEvent)
-              : MatrixImageAvatar(
-                  client: room.client,
-                  url: room.avatar,
-                  defaultText: room.displayname,
-                  backgroundColor: Theme.of(context).primaryColor,
-                  shape: MatrixImageAvatarShape.rounded,
-                  width: 42,
-                  height: 42,
-                ),
-          const SizedBox(
-            width: 8,
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(room.displayname,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w700)),
-                if (room.topic != "")
-                  Text(room.topic,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w500)),
-              ],
-            ),
-          ),
-        ],
+        child: MinestrixRoomTile(room: room),
       ),
     );
   }

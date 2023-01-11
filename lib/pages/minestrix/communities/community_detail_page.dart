@@ -61,13 +61,16 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
             headerHeight: 300,
             room: space,
             headerChildBuilder: ({required bool displaySideBar}) => Container(),
-            sidebarBuilder: ({required bool displayLeftBar}) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const H2Title("Groups"),
-                for (final room in feedChildren)
-                  MinestrixRoomTileNavigator(room: room),
-              ],
+            sidebarBuilder: ({required bool displayLeftBar}) => Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const H2Title("Groups"),
+                  for (final room in feedChildren)
+                    MinestrixRoomTileNavigator(room: room),
+                ],
+              ),
             ),
             mainBuilder: (
                     {required bool displaySideBar,

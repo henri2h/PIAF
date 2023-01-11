@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/style/constants.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 
 class CalendarEventCreateWidget extends StatefulWidget {
   const CalendarEventCreateWidget({Key? key}) : super(key: key);
