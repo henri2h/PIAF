@@ -22,7 +22,7 @@ class AppWrapperPage extends StatefulWidget {
 class _AppWrapperPageState extends State<AppWrapperPage> {
   Future<void>? loadFuture;
 
-  static const displayAppBarList = {"/search", "/feed", "/rooms"};
+  static const displayAppBarList = {"/search", "/feed", "/rooms", "/evnts"};
 
   /// bah dirty
 
@@ -75,7 +75,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           bottomNavigationBar: isWideScreen || !displayAppBar
               ? null
               : SizedBox(
-                  height: 55,
+                  height: 58,
                   child: ClipRRect(
                       child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -93,9 +93,13 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                                   context.navigateTo(const FeedRoute());
                                   break;
                                 case 1:
-                                  context.navigateTo(ResearchRoute());
+                                  context.navigateTo(
+                                      const CalendarEventListRoute());
                                   break;
                                 case 2:
+                                  context.navigateTo(ResearchRoute());
+                                  break;
+                                case 3:
                                   context
                                       .navigateTo(const RoomListWrapperRoute());
                                   break;
@@ -106,6 +110,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                             items: [
                               const BottomNavigationBarItem(
                                   icon: Icon(Icons.list), label: "Feed"),
+                              const BottomNavigationBarItem(
+                                  icon: Icon(Icons.event), label: "Event"),
                               const BottomNavigationBarItem(
                                   icon: Icon(Icons.search), label: "Search"),
                               BottomNavigationBarItem(

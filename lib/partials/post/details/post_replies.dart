@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/message_composer/matrix_message_composer.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'post_content.dart';

@@ -417,7 +417,7 @@ class RoomProfileListTile extends StatelessWidget {
             onSelected: (String action) async {
               switch (action) {
                 case "settings":
-                  await RoomSettingsPage.show(context: context, room: r);
+                  await context.pushRoute(SocialSettingsRoute(room: r));
                   break;
                 case "leave":
                   await r.leave();

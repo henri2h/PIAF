@@ -169,15 +169,14 @@ class _LayoutMainFeedState extends State<LayoutMainFeed> {
                                 ),
                                 if (calendarRooms.isNotEmpty)
                                   SizedBox(
-                                    height: 380,
+                                    height: 290,
                                     child: ListView.builder(
                                       scrollDirection: Axis.horizontal,
                                       itemCount: calendarRooms.length,
                                       itemBuilder: ((context, index) => Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: SizedBox(
-                                                width: 260,
-                                                height: 380,
+                                                width: 360,
                                                 child: CalendarEventCard(
                                                     room:
                                                         calendarRooms[index])),

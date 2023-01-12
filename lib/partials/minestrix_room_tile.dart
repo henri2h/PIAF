@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_room.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/minestrix_chat.dart';
 
 class ContactView extends StatelessWidget {
   const ContactView({
@@ -88,13 +88,15 @@ class MinestrixRoomTileNavigator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4),
       child: MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
           if (shouldPop) Navigator.of(context).pop();
           if (room.feedType == FeedRoomType.group) {
             await context.navigateTo(GroupRoute(room: room));
+          } else if (room.feedType == FeedRoomType.calendar) {
+            await context.navigateTo(CalendarEventRoute(room: room));
           } else {
             context.navigateTo(UserViewRoute(mroom: room));
           }

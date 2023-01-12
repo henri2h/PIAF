@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/calendar_events/calendar_event_create_widget.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
 
 import '../../partials/calendar_events/calendar_event_card.dart';
+import '../../partials/calendar_events/calendar_event_create_widget.dart';
 import '../../partials/components/layouts/custom_header.dart';
-import '../../partials/components/minesTrix/MinesTrixTitle.dart';
+import '../../partials/components/minestrix/minestrix_title.dart';
 
 class CalendarEventListPage extends StatefulWidget {
   const CalendarEventListPage({Key? key}) : super(key: key);
@@ -70,7 +70,7 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
             if (post.isNotEmpty)
               GridView.builder(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 470, mainAxisExtent: 380),
+                      maxCrossAxisExtent: 470, mainAxisExtent: 290),
                   itemCount: post.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -85,7 +85,7 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
             if (prev.isNotEmpty)
               GridView.builder(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 470, mainAxisExtent: 380),
+                      maxCrossAxisExtent: 470, mainAxisExtent: 290),
                   itemCount: prev.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),

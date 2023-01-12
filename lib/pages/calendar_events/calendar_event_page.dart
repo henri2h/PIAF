@@ -1,28 +1,27 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix/partials/post/post.dart';
-import 'package:minestrix/utils/date_time_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/calendar_event/calendar_event_widget.dart';
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
 import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
-import 'package:minestrix_chat/partials/dialogs/custom_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
-import 'package:minestrix_chat/minestrix_chat.dart';
+import 'package:minestrix_chat/utils/extensions/minestrix/model/calendar_event_model.dart';
 import 'package:minestrix_chat/utils/poll/poll.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/calendar_events_extension.dart';
-import 'package:minestrix_chat/utils/social/calendar_events/model/calendar_event_model.dart';
-import 'package:minestrix_chat/utils/social/posts/posts_event_extension.dart';
-import 'package:minestrix_chat/view/room_settings_page.dart';
 
+import '../../partials/calendar_events/datetime_tile.dart';
+import '../../partials/calendar_events/duration_widget.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/feed/topic_list_tile.dart';
 import '../../partials/post/post_writer_modal.dart';
+import '../../router.gr.dart';
 
 class CalendarEventPage extends StatefulWidget {
   final Room room;
@@ -106,11 +105,11 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                         title: "Event",
                         actionButton: [
                           IconButton(
-                              icon: const Icon(Icons.settings),
+                              icon: const Icon(Icons.edit),
                               onPressed: () {
-                                RoomSettingsPage.show(
-                                    context: context, room: room);
-                              })
+                                context
+                                    .pushRoute(SocialSettingsRoute(room: room));
+                              }),
                         ],
                       ),
                       room: room,
@@ -214,66 +213,24 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                                             .start,
                                                     children: [
                                                       const H2Title("About"),
-                                                      (snapT.hasData &&
-                                                              calendarEvent
-                                                                      ?.pollId !=
-                                                                  null)
-                                                          ? FutureBuilder<
-                                                                  Event?>(
-                                                              future: snapT
-                                                                  .data!
-                                                                  .getEventById(
-                                                                      calendarEvent!
-                                                                          .pollId!),
-                                                              builder: (context,
-                                                                  snapshot) {
-                                                                if (snapshot
-                                                                        .hasData ==
-                                                                    false) {
-                                                                  return Container();
-                                                                }
-
-                                                                Poll p = Poll(
-                                                                    e: snapshot
-                                                                        .data!,
-                                                                    t: snapT
-                                                                        .data!);
-                                                                return Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    CalendarEventWidget(
-                                                                        p: p),
-                                                                  ],
-                                                                );
-                                                              })
-                                                          : ListTile(
-                                                              leading: const Icon(
-                                                                  Icons.poll),
-                                                              title: const Text(
-                                                                  "Set poll id"),
-                                                              subtitle: Text(room
-                                                                      .canSendDefaultStates
-                                                                  ? "Attendance poll could not be found"
-                                                                  : "You don't have the permission to modify this event"),
-                                                              onTap: !room
-                                                                      .canSendDefaultStates
-                                                                  ? null
-                                                                  : () async {
-                                                                      if (calendarEvent !=
-                                                                          null) {
-                                                                        await room
-                                                                            .setPollAttendance(calendarEvent);
-                                                                      } else {
-                                                                        await room
-                                                                            .setPollAttendance(CalendarEvent());
-                                                                      }
-                                                                    }),
-                                                      if (room.canSendDefaultStates ||
-                                                          room.topic.isNotEmpty)
-                                                        TopicListTile(
+                                                      if (room.topic.isNotEmpty)
+                                                        Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(16.0),
+                                                            child: TopicBody(
+                                                              room: room,
+                                                            )),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(16.0),
+                                                        child: AttendancePollCard(
+                                                            snapT: snapT,
+                                                            calendarEvent:
+                                                                calendarEvent,
                                                             room: room),
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
@@ -313,6 +270,58 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                           Container());
                 });
           }),
+    );
+  }
+}
+
+class AttendancePollCard extends StatelessWidget {
+  const AttendancePollCard(
+      {Key? key,
+      required this.calendarEvent,
+      required this.room,
+      required this.snapT})
+      : super(key: key);
+
+  final CalendarEvent? calendarEvent;
+  final Room room;
+  final AsyncSnapshot<Timeline> snapT;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        (snapT.hasData && calendarEvent?.pollId != null)
+            ? FutureBuilder<Event?>(
+                future: snapT.data!.getEventById(calendarEvent!.pollId!),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData == false) {
+                    return Container();
+                  }
+
+                  Poll p = Poll(e: snapshot.data!, t: snapT.data!);
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CalendarEventWidget(p: p),
+                    ],
+                  );
+                })
+            : ListTile(
+                leading: const Icon(Icons.poll),
+                title: const Text("Set poll id"),
+                subtitle: Text(room.canSendDefaultStates
+                    ? "Attendance poll could not be found"
+                    : "You don't have the permission to modify this event"),
+                onTap: !room.canSendDefaultStates
+                    ? null
+                    : () async {
+                        if (calendarEvent != null) {
+                          await room.setPollAttendance(calendarEvent!);
+                        } else {
+                          await room.setPollAttendance(CalendarEvent());
+                        }
+                      }),
+      ],
     );
   }
 }
@@ -360,67 +369,23 @@ class CalendarEventInfo extends StatelessWidget {
                   children: [
                     const H2Title("Location"),
                     ListTile(
-                        title: Text(calendarEvent.place != null
-                            ? calendarEvent.place!
-                            : "Set place"),
-                        leading: const Icon(Icons.location_on),
-                        onTap: !room.canSendDefaultStates
-                            ? null
-                            : () async {
-                                String? place =
-                                    await CustomDialogs.showCustomTextDialog(
-                                  context,
-                                  title: "Set the event location",
-                                  helpText: "Event location",
-                                  initialText: calendarEvent.place ?? '',
-                                );
-                                if (place != null) {
-                                  calendarEvent.place = place;
-                                  await room
-                                      .sendCalendarEventState(calendarEvent);
-                                }
-                              }),
+                      title: Text(calendarEvent.place != null
+                          ? calendarEvent.place!
+                          : "Set place"),
+                      leading: const Icon(Icons.location_on),
+                    ),
                   ],
                 ),
               const H2Title("Date and time"),
-              ListTile(
-                  title: const Text("Start"),
-                  subtitle: Text(calendarEvent.start?.toFormatedString() ??
-                      "No start date"),
-                  leading: const Icon(
-                    Icons.calendar_today,
-                  ),
-                  onTap: !room.canSendDefaultStates
-                      ? null
-                      : () {
-                          DatePicker.showDateTimePicker(context,
-                              showTitleActions: true,
-                              currentTime: calendarEvent.start,
-                              onConfirm: (date) {
-                            calendarEvent.start = date;
-                            room.sendCalendarEventState(calendarEvent);
-                          });
-                        }),
-              ListTile(
-                  title: const Text("End"),
-                  subtitle: Text(
-                      calendarEvent.end?.toFormatedString() ?? "No end date"),
-                  leading: const Icon(
-                    Icons.calendar_today,
-                  ),
-                  onTap: !room.canSendDefaultStates
-                      ? null
-                      : () {
-                          DatePicker.showDateTimePicker(context,
-                              showTitleActions: true,
-                              currentTime: calendarEvent.end,
-                              onConfirm: (date) {
-                            calendarEvent.end = date;
-                            room.sendCalendarEventState(calendarEvent);
-                          });
-                        }),
-              if (calendarEvent.start != null && calendarEvent.end != null)
-                DurationWidget(calendarEvent: calendarEvent),
+              if (calendarEvent.start != null)
+                DateTimeTile(text: "Start", date: calendarEvent.start!),
+              if (calendarEvent.end != null && calendarEvent.start != null)
+                calendarEvent.end!
+                        .difference(
+                            calendarEvent.start!.add(const Duration(days: 1)))
+                        .isNegative
+                    ? DurationWidget(calendarEvent: calendarEvent)
+                    : DateTimeTile(text: "End", date: calendarEvent.end!),
               const H2Title("Organized by"),
               MatrixUserItem.fromUser(room.creator!, client: room.client),
               const SizedBox(height: 20),
@@ -431,37 +396,5 @@ class CalendarEventInfo extends StatelessWidget {
         SocialGalleryPreviewWigdet(room: room, timeline: timeline),
       ],
     );
-  }
-}
-
-class DurationWidget extends StatelessWidget {
-  const DurationWidget({
-    Key? key,
-    required this.calendarEvent,
-  }) : super(key: key);
-
-  final CalendarEvent calendarEvent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Builder(builder: (context) {
-      final diff = calendarEvent.end!.difference(calendarEvent.start!);
-      String text = "No duration";
-      if (diff.inHours != 0) {
-        text = "${diff.inHours} hour(s)";
-      }
-      if (diff.inMinutes.abs() > 0) {
-        if (diff.inMinutes >= 60) {
-          text += " and ${diff.inMinutes % 60} minute(s)";
-        } else {
-          text = "${diff.inMinutes} minute(s)";
-        }
-      }
-
-      return ListTile(
-          title: const Text("Duration"),
-          subtitle: Text(text),
-          leading: const Icon(Icons.date_range));
-    });
   }
 }

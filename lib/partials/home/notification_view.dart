@@ -5,9 +5,11 @@ import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 
-import '../components/minesTrix/MinesTrixTitle.dart';
+import '../components/minestrix/minestrix_title.dart';
 
 class NotificationView extends StatelessWidget {
+  const NotificationView({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     Client client = Matrix.of(context).client;

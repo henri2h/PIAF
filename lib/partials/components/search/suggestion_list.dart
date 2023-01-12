@@ -4,7 +4,7 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../minestrix_room_tile.dart';
-import '../minesTrix/MinesTrixTitle.dart';
+import '../minestrix/minestrix_title.dart';
 
 class SuggestionList extends StatelessWidget {
   const SuggestionList({Key? key, required this.shouldPop}) : super(key: key);
