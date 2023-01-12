@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../components/minestrix/minestrix_title.dart';
