@@ -9,6 +9,8 @@ import 'package:minestrix_chat/partials/chat/settings/conv_settings_permissions.
 import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
 
+import '../../../partials/calendar_events/calendar_event_create_widget.dart';
+
 class SocialSettingsPage extends StatefulWidget {
   const SocialSettingsPage({Key? key, required this.room}) : super(key: key);
 
