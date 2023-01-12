@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/calendar_events/calendar_event_create_widget.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/calendar_events/calendar_event_card.dart';
+import '../../partials/calendar_events/calendar_event_create_widget.dart';
 import '../../partials/components/layouts/custom_header.dart';
-import '../../partials/components/minesTrix/MinesTrixTitle.dart';
+import '../../partials/components/minestrix/minestrix_title.dart';
 
 class CalendarEventListPage extends StatefulWidget {
   const CalendarEventListPage({Key? key}) : super(key: key);

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/pages/calendar_events/calendar_events_list_page.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_permissions.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
@@ -27,16 +29,24 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
             CustomHeader(
                 title:
                     "${room.getLocalizedDisplayname(const MatrixDefaultLocalizations())} settings"),
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Column(
-                  children: [
-                    Card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            Wrap(
+              alignment: WrapAlignment.center,
+              children: [
+                if (room.feedType == FeedRoomType.calendar)
+                  SizedBox(
+                      width: 500,
+                      child: Card(child: EditCalendarRoom(room: room))),
+                if (room.feedType == FeedRoomType.calendar)
+                  const SizedBox(
+                    width: 12,
+                  ),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Column(
+                    children: [
+                      SectionCard(
+                        text: "Permissions",
                         children: [
-                          const H2Title("Permissions"),
                           PermissionTile(
                             room: room,
                             icon: const Icon(Icons.post_add),
@@ -53,12 +63,9 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
                           ),
                         ],
                       ),
-                    ),
-                    Card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      SectionCard(
+                        text: "Join rules",
                         children: [
-                          const H2Title("Join rules"),
                           JoinRulesTile(
                             room: room,
                             icon: const Icon(Icons.post_add),
@@ -67,12 +74,9 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
                           ),
                         ],
                       ),
-                    ),
-                    Card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      SectionCard(
+                        text: "Other settings",
                         children: [
-                          const H2Title("Other settings"),
                           ListTile(
                             title: const Text("Settings"),
                             subtitle: const Text("Default room settings"),
@@ -85,13 +89,41 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
                           ),
                         ],
                       ),
-                    )
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+              ],
             )
           ]);
         });
+  }
+}
+
+class SectionCard extends StatelessWidget {
+  const SectionCard({
+    Key? key,
+    required this.children,
+    required this.text,
+  }) : super(key: key);
+
+  final String text;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 8.0, left: 8, right: 8, bottom: 8),
+            child: H3Title(text),
+          ),
+          ...children
+        ],
+      ),
+    );
   }
 }
 
