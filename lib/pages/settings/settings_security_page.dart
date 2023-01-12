@@ -7,7 +7,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../../partials/components/minesTrix/MinesTrixTitle.dart';
+import '../../partials/components/minestrix/minestrix_title.dart';
 
 class SettingsSecurityPage extends StatefulWidget {
   const SettingsSecurityPage({Key? key}) : super(key: key);

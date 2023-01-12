@@ -9,7 +9,7 @@ import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../calendar_events/calendar_event_card.dart';
-import '../components/minesTrix/MinesTrixTitle.dart';
+import '../components/minestrix/minestrix_title.dart';
 
 class RightBar extends StatelessWidget {
   const RightBar({Key? key}) : super(key: key);

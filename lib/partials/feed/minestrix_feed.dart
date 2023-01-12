@@ -7,7 +7,7 @@ import 'package:matrix/matrix.dart';
 import 'package:matrix/src/utils/cached_stream_controller.dart';
 import 'package:minestrix/pages/minestrix/groups/create_group_page.dart';
 import 'package:minestrix/partials/components/buttons/custom_text_future_button.dart';
-import 'package:minestrix/partials/components/minesTrix/MinesTrixTitle.dart';
+import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix/partials/feed/minestrix_profile_not_created.dart';
 import 'package:minestrix/partials/feed/notfication_bell.dart';
 import 'package:minestrix/partials/post/post.dart';

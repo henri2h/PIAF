@@ -25,18 +25,7 @@ class TopicListTile extends StatelessWidget {
           child: ListTile(
               title: room.topic.isEmpty
                   ? const Text("Set topic")
-                  : MarkdownBody(
-                      data: room.topic,
-                      onTapLink: (text, href, title) async {
-                        if (href != null) {
-                          final url = Uri.parse(href);
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
-                          } else {
-                            throw 'Could not launch $href';
-                          }
-                        }
-                      }),
+                  : TopicBody(room: room),
               leading: const Icon(Icons.topic),
               onTap: !room.canSendDefaultStates
                   ? null
@@ -54,5 +43,30 @@ class TopicListTile extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class TopicBody extends StatelessWidget {
+  const TopicBody({
+    Key? key,
+    required this.room,
+  }) : super(key: key);
+
+  final Room room;
+
+  @override
+  Widget build(BuildContext context) {
+    return MarkdownBody(
+        data: room.topic,
+        onTapLink: (text, href, title) async {
+          if (href != null) {
+            final url = Uri.parse(href);
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url);
+            } else {
+              throw 'Could not launch $href';
+            }
+          }
+        });
   }
 }

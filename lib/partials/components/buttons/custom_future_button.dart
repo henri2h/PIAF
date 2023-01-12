@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class CustomFutureButton extends StatefulWidget {
   final AsyncCallback? onPressed;
-  final Widget icon;
+  final Widget? icon;
   final List<Widget> children;
   final Color? color;
   final bool expanded;
@@ -13,7 +13,7 @@ class CustomFutureButton extends StatefulWidget {
       {Key? key,
       required this.onPressed,
       required this.children,
-      required this.icon,
+      this.icon,
       this.expanded = true,
       this.padding,
       this.color})
@@ -59,12 +59,13 @@ class CustomFutureButtonState extends State<CustomFutureButton> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 2),
-                  child: loading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : widget.icon,
-                ),
+                if (loading || widget.icon != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 2),
+                    child: loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : widget.icon,
+                  ),
                 widget.expanded
                     ? Expanded(
                         child: Padding(
