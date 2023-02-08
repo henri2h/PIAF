@@ -53,7 +53,6 @@ dependencies:
 
   # images
   image_picker:
-  file_picker_cross:
   path_provider: ^2.0.5
   native_imaging: ^0.1.0
 
@@ -85,7 +84,7 @@ dependencies:
   #dialogs
   adaptive_dialog: ^1.2.0
 
-  package_info_plus: ^1.0.0
+  package_info_plus: ^3.0.2
 
   minestrix_chat:
     git:
