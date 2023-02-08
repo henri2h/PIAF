@@ -85,7 +85,7 @@ class ThemeNotifier with ChangeNotifier {
 
     _mode = AppThemeMode.values.firstWhere(
         (e) => e.toString() == value.toString(),
-        orElse: () => AppThemeMode.light);
+        orElse: () => AppThemeMode.dark);
 
     _loadMode();
   }
@@ -101,7 +101,6 @@ class ThemeNotifier with ChangeNotifier {
       case AppThemeMode.light:
         _themeData = _lightTheme;
         break;
-
       case AppThemeMode.dark:
         _themeData = _darkTheme;
         break;
