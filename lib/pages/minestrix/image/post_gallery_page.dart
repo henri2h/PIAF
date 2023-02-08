@@ -22,7 +22,7 @@ class PostGalleryPage extends StatefulWidget {
 }
 
 class _PostGalleryPageState extends State<PostGalleryPage> {
-  bool get modeRef => widget.selectedImageEventId != null;
+  bool get modeRef => selectedImageEventId != null;
   Timeline? timeline;
 
   Set<Event>? reactions;
@@ -67,6 +67,7 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
 
     if (selectedImageEventId != null) {
       _event = await widget.post.room.getEventById(selectedImageEventId!);
+      return _event;
     }
 
     return null;
@@ -76,6 +77,12 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
   void initState() {
     selectedImage = widget.image;
     selectedImageEventId = widget.selectedImageEventId;
+
+    if (selectedImage == null &&
+        selectedImageEventId == null &&
+        widget.post.imagesRefEventId.isNotEmpty) {
+      selectedImageEventId = widget.post.imagesRefEventId.first;
+    }
 
     futureImage = getImage();
 
@@ -117,10 +124,11 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                         final image = snap.data!;
 
                         return MatrixEventImage(
-                          key: Key(image.eventId),
-                          fit: BoxFit.cover,
+                          key: Key("img_event_${image.eventId}"),
+                          fit: BoxFit.contain,
                           borderRadius: BorderRadius.zero,
-                          event: widget.post,
+                          getThumbnail: false,
+                          event: image,
                         );
                       }),
                       PostGalleryNavButton(
