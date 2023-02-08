@@ -32,7 +32,7 @@ class LoginPageState extends State<LoginPage> {
   Widget buildDesktop() {
     Client client = Matrix.of(context).getLoginClient();
 
-    final radius = const Radius.circular(8);
+    const radius = Radius.circular(8);
 
     return Scaffold(
       body: Stack(fit: StackFit.expand, children: [
@@ -51,7 +51,7 @@ class LoginPageState extends State<LoginPage> {
                           SizedBox(
                             width: 180,
                             child: Card(
-                              shape: RoundedRectangleBorder(
+                              shape: const RoundedRectangleBorder(
                                   borderRadius: BorderRadius.only(
                                       topLeft: radius, bottomLeft: radius)),
                               margin: EdgeInsets.zero,
@@ -94,7 +94,7 @@ class LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           Card(
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.only(
                                     topRight: radius, bottomRight: radius)),
                             margin: EdgeInsets.zero,
@@ -131,7 +131,7 @@ class LoginPageState extends State<LoginPage> {
                     TextButton(
                       onPressed: () async =>
                           await _launchURL(Uri.parse("https://matrix.org")),
-                      child: const Text('The matrix protocol'),
+                      child: const Text('The Matrix protocol'),
                     ),
                     TextButton(
                       onPressed: () async => await _launchURL(Uri.parse(
