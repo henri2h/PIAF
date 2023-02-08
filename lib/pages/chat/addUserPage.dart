@@ -7,12 +7,12 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 
 class AddUserPage extends StatefulWidget {
-  AddUserPage(BuildContext context, {Key? key}) : super(key: key);
+  const AddUserPage(BuildContext context, {Key? key}) : super(key: key);
   @override
-  _AddUserPageState createState() => _AddUserPageState();
+  AddUserPageState createState() => AddUserPageState();
 }
 
-class _AddUserPageState extends State<AddUserPage> {
+class AddUserPageState extends State<AddUserPage> {
   List<Profile> profiles = [];
 
   @override
@@ -20,13 +20,13 @@ class _AddUserPageState extends State<AddUserPage> {
     Client? client = Matrix.of(context).client;
     return Scaffold(
         appBar: AppBar(
-          title: Text("Add users"),
+          title: const Text("Add users"),
           actions: [
             IconButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: Icon(Icons.done))
+                icon: const Icon(Icons.done))
           ],
         ),
         body: ListView(children: [
@@ -34,15 +34,15 @@ class _AddUserPageState extends State<AddUserPage> {
             padding: const EdgeInsets.all(8.0),
             child: TypeAheadField(
               hideOnEmpty: true,
-              textFieldConfiguration: TextFieldConfiguration(
+              textFieldConfiguration: const TextFieldConfiguration(
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
                 var ur = await client.searchUserDirectory(pattern);
                 List<User?> following = List<User?>.empty();
-                client.following.forEach((room) {
+                for (var room in client.following) {
                   following.add(room.creator);
-                });
+                }
 
                 return ur.results
                     .where((element) =>
@@ -56,7 +56,7 @@ class _AddUserPageState extends State<AddUserPage> {
                 Profile profile = suggestion;
                 return ListTile(
                   leading: profile.avatarUrl == null
-                      ? Icon(Icons.person)
+                      ? const Icon(Icons.person)
                       : MatrixImageAvatar(
                           client: client, url: profile.avatarUrl),
                   title: Text((profile.displayName ?? profile.userId)),
