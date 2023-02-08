@@ -43,15 +43,6 @@ class SettingsThemePageState extends State<SettingsThemePage> {
               },
               title: const Text("Light mode")),
           RadioListTile(
-              secondary: const Icon(Icons.dark_mode),
-              groupValue: themeMode,
-              value: AppThemeMode.dark,
-              onChanged: (value) {
-                context.read<ThemeNotifier>().setDarkMode();
-                setState(() {});
-              },
-              title: const Text("Dark mode")),
-          RadioListTile(
               groupValue: themeMode,
               value: AppThemeMode.black,
               onChanged: (value) {

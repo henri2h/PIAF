@@ -473,14 +473,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-  fluffybox:
-    dependency: transitive
-    description:
-      name: fluffybox
-      sha256: "3f69aed9bc25443a5a1ef270ac1237223c464cc3877ccf5eb369a0610e9e06cc"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.4.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -1078,7 +1070,7 @@ packages:
     description:
       path: "."
       ref: "henri2h/index-events-by-event-type"
-      resolved-ref: "4d652068d32ffa6f47d93cba253a3181bcff036a"
+      resolved-ref: "4f91164bd2a7b4816638eeebcc4f5a99618062ce"
       url: "https://gitlab.com/minestrix/famedlysdk.git"
     source: git
     version: "0.16.0"
@@ -1117,11 +1109,9 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "1d7d266c1e8bbad3c219bae68861bdfaeea8c643"
-      url: "https://gitlab.com/minestrix/minestrix-chat.git"
-    source: git
+      path: "../minestrix_chat"
+      relative: true
+    source: path
     version: "0.0.2"
   modal_bottom_sheet:
     dependency: transitive
