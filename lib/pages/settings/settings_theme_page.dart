@@ -87,7 +87,7 @@ class ColorChooser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color primaryColor = context.read<ThemeNotifier>().primaryColor;
+    Color primaryColor = context.watch<ThemeNotifier>().primaryColor;
 
     return IconButton(
         color: Colors.red,

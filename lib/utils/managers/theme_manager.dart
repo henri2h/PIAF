@@ -16,9 +16,8 @@ class ThemeNotifier with ChangeNotifier {
 
   void _buildTheme() {
     _blackTheme = ThemeData(
-        primaryColor: _primaryColor,
+        colorSchemeSeed: _primaryColor,
         scaffoldBackgroundColor: Colors.black,
-        primarySwatch: Colors.blue,
         useMaterial3: true,
         bottomNavigationBarTheme:
             const BottomNavigationBarThemeData(backgroundColor: Colors.black),
@@ -33,8 +32,8 @@ class ThemeNotifier with ChangeNotifier {
         textTheme: PlatformInfos.isDesktop
             ? Typography.material2018().white.merge(fallbackTextTheme)
             : null);
-    _lightTheme = ThemeData.light().copyWith(
-        primaryColor: _primaryColor,
+    _lightTheme = ThemeData.light(useMaterial3: true).copyWith(
+        useMaterial3: true,
         textTheme: PlatformInfos.isDesktop
             ? Typography.material2018().black.merge(fallbackTextTheme)
             : null);
