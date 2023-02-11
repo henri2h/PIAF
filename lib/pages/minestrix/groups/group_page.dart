@@ -218,12 +218,12 @@ class GroupPageState extends State<GroupPage> {
                                           title: Text("Add users"),
                                           leading: Icon(Icons.person_add)),
                                       onPressed: () async {
-                                        List<Profile>? profiles =
+                                        List<String>? userIds =
                                             await MinesTrixUserSelection.show(
-                                                context);
+                                                context, room);
 
-                                        profiles?.forEach((Profile p) async {
-                                          await room.invite(p.userId);
+                                        userIds?.forEach((String userId) async {
+                                          await room.invite(userId);
                                         });
                                         participants =
                                             await room.requestParticipants();

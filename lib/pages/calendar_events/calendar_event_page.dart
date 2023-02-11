@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
@@ -79,10 +78,10 @@ class CalendarEventPageState extends State<CalendarEventPage> {
   }
 
   Future<void> inviteUsers() async {
-    List<Profile>? profiles = await MinesTrixUserSelection.show(context);
+    List<String>? userIds = await MinesTrixUserSelection.show(context, widget.room);
 
-    profiles?.forEach((Profile p) async {
-      await widget.room.invite(p.userId);
+    userIds?.forEach((String userId) async {
+      await widget.room.invite(userId);
     });
 
     setState(() {});

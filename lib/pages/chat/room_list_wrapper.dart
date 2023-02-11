@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/view/matrix_chat_creator.dart';
 import 'package:minestrix_chat/view/room_list/room_list_builder.dart';
 import 'package:minestrix_chat/view/room_list/room_list_spaces_list.dart';
 import 'package:minestrix_chat/view/room_list/room_list_widget.dart';
@@ -21,6 +23,9 @@ class RoomListWrapperState extends State<RoomListWrapper> {
   final scrollControllerRoomList = ScrollController();
 
   bool mobile = true;
+  Future<void> onRoomSelected(String? id) async {
+    await context.navigateTo(RoomListRoomRoute(displaySettingsOnDesktop: true));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +34,7 @@ class RoomListWrapperState extends State<RoomListWrapper> {
       child: RoomList(
         client: Matrix.of(context).client,
         allowPop: false,
-        onRoomSelection: (String roomId) async {
-          await context
-              .navigateTo(RoomListRoomRoute(displaySettingsOnDesktop: true));
-        },
+        onRoomSelection: onRoomSelected,
         onSpaceSelection: (String spaceId) async {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
             await context.navigateTo(const RoomListSpaceRoute());
@@ -53,10 +55,10 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                                 mobile: false,
                                 scrollController: scrollControllerSpaces))),
                   if (!mobile)
-                    Container(
-                      color: Theme.of(context).cardColor,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 350),
+                          constraints: const BoxConstraints(maxWidth: 400),
                           child: RoomListBuilder(
                             scrollController: scrollControllerRoomList,
                           )),
@@ -65,6 +67,16 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                 ],
               );
             }),
+            floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  AdaptativeDialogs.show(
+                      context: context,
+                      title: "New message",
+                      builder: (_) => MatrixChatCreator(
+                          client: Matrix.of(context).client,
+                          onRoomSelected: onRoomSelected));
+                },
+                child: const Icon(Icons.create)),
             drawer: Drawer(
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 child: SafeArea(

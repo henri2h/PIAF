@@ -149,7 +149,7 @@ class _EditCalendarRoomState extends State<EditCalendarRoom> {
             children: [
               Center(
                   child: Text(
-                widget.room == null ? "Create" : "Edit",
+                widget.room == null ? "Create" : "Save",
                 style:
                     const TextStyle(fontWeight: FontWeight.w500, fontSize: 17),
               ))

@@ -17,7 +17,7 @@ class ThemeNotifier with ChangeNotifier {
   void _buildTheme() {
     _blackTheme = ThemeData(
         colorSchemeSeed: _primaryColor,
-        scaffoldBackgroundColor: Colors.black,
+        //scaffoldBackgroundColor: Colors.black,
         useMaterial3: true,
         bottomNavigationBarTheme:
             const BottomNavigationBarThemeData(backgroundColor: Colors.black),

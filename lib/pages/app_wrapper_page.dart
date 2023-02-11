@@ -56,6 +56,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           body: Column(
             children: [
               if (isWideScreen) const NavBarDesktop(),
+              
               Expanded(child: AutoRouter(
                 builder: (context, widget) {
                   final shouldDisplayAppBar = displayAppBarList.contains(

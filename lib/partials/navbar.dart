@@ -20,91 +20,97 @@ class NavBarDesktop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-        padding: const EdgeInsets.all(2),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  MaterialButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Image.asset("assets/icon_512.png",
-                                width: 40,
-                                height: 40,
-                                cacheHeight: 80,
-                                cacheWidth: 80),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text("MinesTRIX",
-                                  style: TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                          ],
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    MaterialButton(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Image.asset("assets/icon_512.png",
+                                  width: 40,
+                                  height: 40,
+                                  cacheHeight: 80,
+                                  cacheWidth: 80),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text("MinesTRIX",
+                                    style: TextStyle(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      onPressed: () async {
-                        await context.navigateTo(const AppWrapperRoute());
-                        await context.navigateTo(const FeedRoute());
-                      }),
-                  NavBarButton(
-                      name: "My account",
-                      icon: Icons.person,
-                      onPressed: () async {
-                        await context.navigateTo(const AppWrapperRoute());
-                        await context.navigateTo(UserViewRoute(
-                            userID: Matrix.of(context).client.userID));
-                      }),
-                  NavBarButton(
-                      name: "Chats",
-                      icon: Icons.chat,
-                      onPressed: () async {
-                        await context.navigateTo(const RoomListWrapperRoute());
-                      }),
-                  if (Settings().calendarEventSupport)
+                        onPressed: () async {
+                          await context.navigateTo(const AppWrapperRoute());
+                          await context.navigateTo(const FeedRoute());
+                        }),
                     NavBarButton(
-                        name: "Events",
-                        icon: Icons.event,
+                        name: "My account",
+                        icon: Icons.person,
+                        onPressed: () async {
+                          await context.navigateTo(const AppWrapperRoute());
+                          await context.navigateTo(UserViewRoute(
+                              userID: Matrix.of(context).client.userID));
+                        }),
+                    NavBarButton(
+                        name: "Chats",
+                        icon: Icons.chat,
                         onPressed: () async {
                           await context
-                              .navigateTo(const CalendarEventListRoute());
+                              .navigateTo(const RoomListWrapperRoute());
                         }),
-                  NavBarButton(
-                      name: "Communities",
-                      icon: Icons.group,
-                      onPressed: () async {
-                        await context.navigateTo(const AppWrapperRoute());
-                        await context.navigateTo(const CommunityRoute());
-                      }),
-                ],
+                    if (Settings().calendarEventSupport)
+                      NavBarButton(
+                          name: "Events",
+                          icon: Icons.event,
+                          onPressed: () async {
+                            await context
+                                .navigateTo(const CalendarEventListRoute());
+                          }),
+                    NavBarButton(
+                        name: "Communities",
+                        icon: Icons.group,
+                        onPressed: () async {
+                          await context.navigateTo(const AppWrapperRoute());
+                          await context.navigateTo(const CommunityRoute());
+                        }),
+                  ],
+                ),
               ),
-            ),
-            constraints.maxWidth > 1000
-                ? ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 280),
-                    child: FakeTextField(
+              constraints.maxWidth > 1000
+                  ? ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 280),
+                      child: FakeTextField(
+                        icon: Icons.search,
+                        onPressed: () => displaySearch(context),
+                        text: "Search",
+                      ),
+                    )
+                  : NavBarButton(
+                      name: "Search",
                       icon: Icons.search,
-                      onPressed: () => displaySearch(context),
-                      text: "Search",
-                    ),
-                  )
-                : NavBarButton(
-                    name: "Search",
-                    icon: Icons.search,
-                    onPressed: () => displaySearch(context)),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: NotificationBell(),
-            ),
-          ],
-        ),
+                      onPressed: () => displaySearch(context)),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: NotificationBell(),
+              ),
+            ],
+          ),
+          Container(
+            color: Theme.of(context).dividerColor,
+            height: 1,
+          ),
+        ],
       );
     });
   }
