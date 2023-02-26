@@ -1,17 +1,13 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
-
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix_chat/partials/dialogs/custom_dialogs.dart';
 import 'package:minestrix_chat/partials/dialogs/key_verification_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_sdk_extension/device_extensions.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
-
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../partials/components/minestrix/minestrix_title.dart';
@@ -49,6 +45,19 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
             ));
   }
 
+  static void renameDevice(BuildContext context, String deviceId,
+      {String? deviceName}) async {
+    final client = Matrix.of(context).client;
+    final result = await showTextInputDialog(context: context, textFields: [
+      DialogTextField(hintText: "New name", initialText: deviceName),
+    ]);
+
+    if (result?.isNotEmpty == true && result?.first.isNotEmpty == true) {
+      await context.showFutureInTryCatch(
+          () => client.updateDevice(deviceId!, displayName: result!.first));
+    }
+  }
+
   Future<void> deleteAllOldSessions(BuildContext context) async {
     final client = Matrix.of(context).client;
 
@@ -84,18 +93,12 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
       return;
     }
 
-    try {
-      final auth = await client.getAuthData(context);
-      if (auth != null) {
-        await context
-            .showFutureDialog(client.deleteDevices(devicesList, auth: auth));
-      }
-    } catch (ex) {
-      await showAlertDialog(
-          context: context,
-          title: "Something unexpected happened",
-          message: ex.toString());
+    final auth = await client.getAuthData(context);
+    if (auth != null) {
+      await context.showFutureInTryCatch(
+          () async => client.deleteDevices(devicesList, auth: auth));
     }
+    setState(() {});
   }
 
   @override
@@ -115,111 +118,126 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
         FutureBuilder<List<Device>?>(
             future: client.getDevices(),
             builder: (context, snap) {
-              // update last seen time
-              if (snap.hasData) {
-                for (final device in snap.data!) {
-                  if (device.lastSeenTs != null &&
-                      client.userDeviceKeys[client.userID]?.deviceKeys
-                              .containsKey(device.deviceId) ==
-                          true) {
-                    final deviceFromClient = client
-                        .userDeviceKeys[client.userID]
-                        ?.deviceKeys[device.deviceId];
+              return StreamBuilder<Object>(
+                  stream: client.onSync.stream,
+                  builder: (context, snapshot) {
+                    // update last seen time
+                    if (snap.hasData) {
+                      for (final device in snap.data!) {
+                        if (device.lastSeenTs != null &&
+                            client.userDeviceKeys[client.userID]?.deviceKeys
+                                    .containsKey(device.deviceId) ==
+                                true) {
+                          final deviceFromClient = client
+                              .userDeviceKeys[client.userID]
+                              ?.deviceKeys[device.deviceId];
 
-                    deviceFromClient?.lastActive =
-                        DateTime.fromMillisecondsSinceEpoch(device.lastSeenTs!);
-                  }
-                }
-              }
+                          deviceFromClient?.lastActive =
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  device.lastSeenTs!);
+                        }
+                      }
+                    }
 
-              // sort devices list
+                    // sort devices list
 
-              verifiedDevices
-                  .sort((a, b) => b.lastActive.compareTo(a.lastActive));
+                    verifiedDevices
+                        .sort((a, b) => b.lastActive.compareTo(a.lastActive));
 
-              final unverifiedDevices = client.unverifiedDevices
-                ..sort((a, b) => b.lastActive.compareTo(a.lastActive));
+                    final unverifiedDevices = client.unverifiedDevices
+                      ..sort((a, b) => b.lastActive.compareTo(a.lastActive));
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SettingsList(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      sections: [
-                        SettingsSection(
-                            title: const Text("This session"),
-                            tiles: [
-                              SettingsTile(
-                                  leading: const Icon(Icons.title),
-                                  title: const Text("Device name"),
-                                  value: Text(client.deviceName!)),
-                              SettingsTile(
-                                  leading: const Icon(Icons.perm_device_info),
-                                  title: const Text("Device id"),
-                                  value: Text(client.deviceID!)),
-                            ]),
-                        SettingsSection(
-                          tiles: [
-                            if (client.encryptionEnabled)
-                              if (client.encryption!.crossSigning.enabled ==
-                                  false)
-                                SettingsTile(
-                                    title: const Text(
-                                        "❌ Cross signing is not enabled")),
-                            SettingsTile(
-                              leading: client.isUnknownSession == false
-                                  ? const Icon(Icons.check,
-                                      size: 32, color: Colors.green)
-                                  : const Icon(Icons.error, size: 32),
-                              title: const Text("Session status"),
-                              value: client.isUnknownSession == false
-                                  ? const Text("Verified")
-                                  : const Text(
-                                      "Not verified",
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SettingsList(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            sections: [
+                              SettingsSection(
+                                  title: const Text("This session"),
+                                  tiles: [
+                                    SettingsTile(
+                                      leading: const Icon(Icons.title),
+                                      title: const Text("Device name"),
+                                      value: Text(client.deviceName ?? ""),
+                                      trailing: const Icon(Icons.edit),
+                                      onPressed: (context) => renameDevice(
+                                          context, client.deviceID!,
+                                          deviceName: client.deviceName),
                                     ),
-                            ),
-                            if (client.encryptionEnabled)
-                              if (client.encryptionEnabled &&
-                                  client.isUnknownSession)
-                                SettingsTile(
-                                  onPressed: (context) => unlockCrossSigning(),
-                                  leading:
-                                      const Icon(Icons.enhanced_encryption),
-                                  title: const Text("Setup encryption"),
-                                ),
-                            if (!client.encryptionEnabled)
-                              SettingsTile(
-                                  title: const Text("Encryption disabled ❌")),
-                          ],
-                        ),
-                        SettingsSection(
-                            title: const Text("Unverified devices"),
-                            tiles: [
-                              for (final device in unverifiedDevices)
-                                buildDeviceWidgetTile(device),
-                            ]),
-                        SettingsSection(
-                            title: const Text("Verified devices"),
-                            tiles: <SettingsTile>[
-                              for (final device in verifiedDevices)
-                                buildDeviceWidgetTile(device),
-                            ]),
-                        SettingsSection(
-                            title: const Text("This session"),
-                            tiles: [
-                              SettingsTile(
-                                onPressed: deleteAllOldSessions,
-                                leading: const Icon(Icons.delete_forever,
-                                    color: Colors.red),
-                                title: const Text("Remove all old sessions"),
-                                description: const Text(
-                                    "Remove all sessions older than 90 days old"),
+                                    SettingsTile(
+                                        leading:
+                                            const Icon(Icons.perm_device_info),
+                                        title: const Text("Device id"),
+                                        value: Text(client.deviceID!)),
+                                  ]),
+                              SettingsSection(
+                                tiles: [
+                                  if (client.encryptionEnabled)
+                                    if (client
+                                            .encryption!.crossSigning.enabled ==
+                                        false)
+                                      SettingsTile(
+                                          title: const Text(
+                                              "❌ Cross signing is not enabled")),
+                                  SettingsTile(
+                                    leading: client.isUnknownSession == false
+                                        ? const Icon(Icons.check,
+                                            size: 32, color: Colors.green)
+                                        : const Icon(Icons.error, size: 32),
+                                    title: const Text("Session status"),
+                                    value: client.isUnknownSession == false
+                                        ? const Text("Verified")
+                                        : const Text(
+                                            "Not verified",
+                                          ),
+                                  ),
+                                  if (client.encryptionEnabled)
+                                    if (client.encryptionEnabled &&
+                                        client.isUnknownSession)
+                                      SettingsTile(
+                                        onPressed: (context) =>
+                                            unlockCrossSigning(),
+                                        leading: const Icon(
+                                            Icons.enhanced_encryption),
+                                        title: const Text("Setup encryption"),
+                                      ),
+                                  if (!client.encryptionEnabled)
+                                    SettingsTile(
+                                        title: const Text(
+                                            "Encryption disabled ❌")),
+                                ],
                               ),
-                            ])
-                      ]),
-                ],
-              );
+                              SettingsSection(
+                                  title: const Text("Unverified devices"),
+                                  tiles: [
+                                    for (final device in unverifiedDevices)
+                                      buildDeviceWidgetTile(device),
+                                  ]),
+                              SettingsSection(
+                                  title: const Text("Verified devices"),
+                                  tiles: <SettingsTile>[
+                                    for (final device in verifiedDevices)
+                                      buildDeviceWidgetTile(device),
+                                  ]),
+                              SettingsSection(
+                                  title: const Text("This session"),
+                                  tiles: [
+                                    SettingsTile(
+                                      onPressed: deleteAllOldSessions,
+                                      leading: const Icon(Icons.delete_forever,
+                                          color: Colors.red),
+                                      title:
+                                          const Text("Remove all old sessions"),
+                                      description: const Text(
+                                          "Remove all sessions older than 90 days old"),
+                                    ),
+                                  ])
+                            ]),
+                      ],
+                    );
+                  });
             }),
       ],
     );
@@ -318,11 +336,18 @@ class DeviceWidget extends StatelessWidget {
                           ),
                   ),
                 ),
-                if (deviceFromServer?.lastSeenIp != null)
-                  ListTile(
-                      leading: const Icon(Icons.http),
-                      title: const Text("Last seen ip"),
-                      subtitle: Text(deviceFromServer!.lastSeenIp!)),
+                ListTile(
+                    title: const Text("Rename session"),
+                    subtitle: Text(device.displayname),
+                    trailing: const Icon(Icons.edit),
+                    leading: const Icon(Icons.title),
+                    onTap: () => SettingsSecurityPageState.renameDevice(
+                        context, device.deviceId!,
+                        deviceName: device.displayname)),
+                ListTile(
+                    title: const Text("Device identifier"),
+                    leading: const Icon(Icons.numbers),
+                    subtitle: Text("${device.identifier}")),
                 Builder(builder: (context) {
                   final date = deviceFromServer?.lastSeenTs != null
                       ? DateTime.fromMillisecondsSinceEpoch(
@@ -334,10 +359,11 @@ class DeviceWidget extends StatelessWidget {
                       subtitle: Text(
                           "${timeago.format(date)} - ${DateFormat.yMMMMEEEEd().format(date)} - ${DateFormat.jms().format(date)}"));
                 }),
-                ListTile(
-                    title: const Text("Device identifier"),
-                    leading: const Icon(Icons.numbers),
-                    subtitle: Text("${device.identifier}")),
+                if (deviceFromServer?.lastSeenIp != null)
+                  ListTile(
+                      leading: const Icon(Icons.http),
+                      title: const Text("Last seen ip"),
+                      subtitle: Text(deviceFromServer!.lastSeenIp!)),
                 ListTile(
                     onTap: () async {
                       final result = await showOkCancelAlertDialog(
@@ -349,23 +375,16 @@ class DeviceWidget extends StatelessWidget {
                           device.deviceId == null) {
                         return;
                       }
-                      try {
-                        final auth = await client.getAuthData(context);
-                        if (auth != null) {
-                          await context.showFutureDialog(client
-                              .deleteDevice(device.deviceId!, auth: auth));
-                        }
 
-                        Navigator.of(context).pop();
-                      } catch (ex) {
-                        if (context.mounted) {
-                          await showAlertDialog(
-                              context: context,
-                              title: "Something unexpected happened",
-                              message: ex.toString());
-                        } else {
-                          print(ex);
-                        }
+                      final auth = await client.getAuthData(context);
+                      if (auth != null) {
+                        final result =
+                            await context.showFutureInTryCatch(() async {
+                          await client.deleteDevice(device.deviceId!,
+                              auth: auth);
+                          return true;
+                        });
+                        if (result == true) Navigator.of(context).pop();
                       }
                     },
                     title: const Text("Delete device"),
@@ -381,7 +400,7 @@ class DeviceWidget extends StatelessWidget {
 extension DialogAuth on Client {
   Future<AuthenticationData?> getAuthData(BuildContext context) async {
     final result = await showTextInputDialog(context: context, textFields: [
-      DialogTextField(
+      const DialogTextField(
           hintText: "New password", initialText: "", obscureText: true),
     ]);
 
@@ -400,25 +419,65 @@ extension on BuildContext {
     return await showDialog(
         context: this,
         builder: (context) {
+          future.then((val) {
+            Navigator.of(context).pop(val);
+          });
+
           return FutureBuilder(
               future: future,
               builder: (context, snapshot) {
-                if (snapshot.hasData) Navigator.of(context).pop(future);
                 return Dialog(
                     child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text("Loading...")
-                    ],
-                  ),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Builder(builder: (context) {
+                    if (snapshot.hasError) {
+                      return ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 280),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              title: const Text("Something bad happened!"),
+                              subtitle: Text(snapshot.error.toString()),
+                            ),
+                            TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text("Ok"))
+                          ],
+                        ),
+                      );
+                    }
+
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        CircularProgressIndicator(),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text("Loading...")
+                      ],
+                    );
+                  }),
                 ));
               });
         });
+  }
+
+  Future<T?> showFutureInTryCatch<T>(Future<T> Function() function) async {
+    try {
+      final result = function();
+      return await showFutureDialog(result);
+    } catch (ex) {
+      if (mounted) {
+        await showOkAlertDialog(
+            context: this,
+            title: "Something unexpected happened",
+            message: ex.toString());
+      } else {
+        print(ex);
+      }
+    }
   }
 }
