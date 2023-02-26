@@ -42,6 +42,9 @@ class RoomListWrapperState extends State<RoomListWrapper> {
             await context.navigateTo(RoomListRoute());
           }
         },
+        onLongPressedSpace: (String? id) async {
+          await context.navigateTo(RoomListSpaceRoute());
+        },
         child: Scaffold(
             body: LayoutBuilder(builder: (context, constraints) {
               mobile = constraints.maxWidth < 800;

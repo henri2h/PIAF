@@ -6,6 +6,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:minestrix/pages/chat/room_list_wrapper.dart';
 import 'package:minestrix/pages/minestrix/communities/community_detail_page.dart';
 import 'package:minestrix/pages/minestrix/communities/community_page.dart';
+import 'package:minestrix_chat/partials/chat/spaces_list/space_page.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/view/room_list/room_list_room.dart';
 import 'package:minestrix_chat/view/room_list/room_list_space.dart';
@@ -42,6 +43,8 @@ const chatsWrapper = AutoRoute(
     children: [
       AutoRoute(path: '', page: RoomListPage, initial: true),
       AutoRoute(path: 'space', name: 'RoomListSpaceRoute', page: RoomListSpace),
+      AutoRoute(
+          path: 'space/:spaceId', name: 'RoomSpaceRoute', page: RoomSpacePage),
       AutoRoute(path: ':roomId', name: 'RoomListRoomRoute', page: RoomListRoom),
     ]);
 

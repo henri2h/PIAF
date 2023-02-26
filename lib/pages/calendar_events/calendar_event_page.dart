@@ -78,7 +78,8 @@ class CalendarEventPageState extends State<CalendarEventPage> {
   }
 
   Future<void> inviteUsers() async {
-    List<String>? userIds = await MinesTrixUserSelection.show(context, widget.room);
+    List<String>? userIds =
+        await MinesTrixUserSelection.show(context, widget.room);
 
     userIds?.forEach((String userId) async {
       await widget.room.invite(userId);
