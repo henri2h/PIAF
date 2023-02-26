@@ -29,7 +29,8 @@ class _RoomListPageState extends State<RoomListPage> {
         );
       }
 
-      return const Center(child: MinestrixTitle());
+      return const SafeArea(
+          child: Card(child: Center(child: MinestrixTitle())));
     });
   }
 }

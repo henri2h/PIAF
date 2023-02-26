@@ -24,7 +24,12 @@ class RoomListWrapperState extends State<RoomListWrapper> {
 
   bool mobile = true;
   Future<void> onRoomSelected(String? id) async {
-    await context.navigateTo(RoomListRoomRoute(displaySettingsOnDesktop: true));
+    if (id != null) {
+      await context
+          .navigateTo(RoomListRoomRoute(displaySettingsOnDesktop: true));
+    } else {
+      await context.navigateTo(RoomListRoute());
+    }
   }
 
   @override
@@ -43,7 +48,10 @@ class RoomListWrapperState extends State<RoomListWrapper> {
           }
         },
         onLongPressedSpace: (String? id) async {
-          await context.navigateTo(RoomListSpaceRoute());
+          if (id != null) {
+            await context.navigateTo(
+                RoomSpaceRoute(spaceId: id, client: Matrix.of(context).client));
+          }
         },
         child: Scaffold(
             body: LayoutBuilder(builder: (context, constraints) {
