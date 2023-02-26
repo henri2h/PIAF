@@ -25,6 +25,10 @@ class _SettingsStorysPageState extends State<SettingsStorysPage> {
       SettingsList(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          lightTheme: const SettingsThemeData(
+              settingsListBackground: Colors.transparent),
+          darkTheme: const SettingsThemeData(
+              settingsListBackground: Colors.transparent),
           sections: [
             SettingsSection(
               tiles: <SettingsTile>[

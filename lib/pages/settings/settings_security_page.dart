@@ -153,6 +153,10 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
                         SettingsList(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
+                            lightTheme: const SettingsThemeData(
+                                settingsListBackground: Colors.transparent),
+                            darkTheme: const SettingsThemeData(
+                                settingsListBackground: Colors.transparent),
                             sections: [
                               SettingsSection(
                                   title: const Text("This session"),

@@ -2,7 +2,6 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
@@ -92,6 +91,10 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
               return SettingsList(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  lightTheme: const SettingsThemeData(
+                      settingsListBackground: Colors.transparent),
+                  darkTheme: const SettingsThemeData(
+                      settingsListBackground: Colors.transparent),
                   sections: [
                     SettingsSection(
                         title: const Text("Avatar"),
