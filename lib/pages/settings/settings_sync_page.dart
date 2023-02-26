@@ -72,7 +72,7 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
   @override
   Widget build(BuildContext context) {
     return ListView(children: [
-      const CustomHeader(title: "Theme"),
+      const CustomHeader(title: "Sync"),
       ListTile(
           title: const Text("Room"),
           subtitle: Column(

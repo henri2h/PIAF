@@ -33,6 +33,7 @@ import 'pages/settings/settings_labs_page.dart';
 import 'pages/settings/settings_page.dart';
 import 'pages/settings/settings_account_page.dart';
 import 'pages/settings/settings_security_page.dart';
+import 'pages/settings/settings_stories_page.dart';
 import 'pages/settings/settings_sync_page.dart';
 import 'pages/settings/settings_theme_page.dart';
 
@@ -81,6 +82,7 @@ const chatsWrapper = AutoRoute(
         AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
         AutoRoute(path: 'settings/labs', page: SettingsLabsPage),
         AutoRoute(path: 'settings/sync', page: SettingsSyncPage),
+        AutoRoute(path: 'settings/storys', page: SettingsStorysPage),
         AutoRoute(path: 'accounts', page: AccountsDetailsPage),
         AutoRoute(path: 'settings/debug', page: DebugPage)
       ]),

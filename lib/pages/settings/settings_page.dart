@@ -128,6 +128,12 @@ class SettingsPanel extends StatelessWidget {
                           onPressed: (context) =>
                               context.navigateTo(const SettingsSecurityRoute()),
                         ),
+                        SettingsTile.navigation(
+                          leading: const Icon(Icons.photo),
+                          title: const Text('Storys'),
+                          onPressed: (context) =>
+                              context.navigateTo(const SettingsStorysRoute()),
+                        ),
                       ],
                     ),
                     SettingsSection(
