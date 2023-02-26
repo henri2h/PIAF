@@ -69,14 +69,13 @@ class NavBarDesktop extends StatelessWidget {
                           await context
                               .navigateTo(const RoomListWrapperRoute());
                         }),
-                    if (Settings().calendarEventSupport)
-                      NavBarButton(
-                          name: "Events",
-                          icon: Icons.event,
-                          onPressed: () async {
-                            await context
-                                .navigateTo(const CalendarEventListRoute());
-                          }),
+                    NavBarButton(
+                        name: "Events",
+                        icon: Icons.event,
+                        onPressed: () async {
+                          await context
+                              .navigateTo(const CalendarEventListRoute());
+                        }),
                     NavBarButton(
                         name: "Communities",
                         icon: Icons.group,
