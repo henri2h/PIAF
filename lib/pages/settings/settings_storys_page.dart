@@ -21,13 +21,12 @@ class _SettingsStorysPageState extends State<SettingsStorysPage> {
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
     return ListView(children: [
-      const CustomHeader(title: "Stories"),
+      const CustomHeader(title: "Storys"),
       SettingsList(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           sections: [
             SettingsSection(
-              title: const Text('Storys'),
               tiles: <SettingsTile>[
                 for (final room
                     in client.getStorieRoomsFromUser(userID: client.userID!))

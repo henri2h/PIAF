@@ -33,7 +33,7 @@ import 'pages/settings/settings_labs_page.dart';
 import 'pages/settings/settings_page.dart';
 import 'pages/settings/settings_account_page.dart';
 import 'pages/settings/settings_security_page.dart';
-import 'pages/settings/settings_stories_page.dart';
+import 'pages/settings/settings_storys_page.dart';
 import 'pages/settings/settings_sync_page.dart';
 import 'pages/settings/settings_theme_page.dart';
 
