@@ -66,9 +66,16 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
           message: "Make sure to enter the same password twice.",
         );
       } else {
-        await Matrix.of(context)
-            .client
-            .changePassword(results[0], oldPassword: results[1]);
+        try {
+          await Matrix.of(context)
+              .client
+              .changePassword(results[0], oldPassword: results[1]);
+        } catch (ex) {
+          await showAlertDialog(
+              context: context,
+              title: "Something unexpected happened",
+              message: ex.toString());
+        }
       }
     }
   }
@@ -216,8 +223,14 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                               if (res != OkCancelResult.ok) {
                                 return;
                               }
-
-                              await client.deactivateAccount();
+                              try {
+                                await client.deactivateAccount();
+                              } catch (ex) {
+                                await showAlertDialog(
+                                    context: context,
+                                    title: "Something unexpected happened",
+                                    message: ex.toString());
+                              }
                               if (Navigator.of(context).canPop()) {
                                 Navigator.of(context).pop();
                                 Navigator.of(context).pop();
