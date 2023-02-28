@@ -93,7 +93,9 @@ class MinestrixRoomTileNavigator extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         onPressed: () async {
           if (shouldPop) Navigator.of(context).pop();
-          if (room.feedType == FeedRoomType.group) {
+          if (room.isSpace) {
+            await context.navigateTo(CommunityDetailRoute(room: room));
+          } else if (room.feedType == FeedRoomType.group) {
             await context.navigateTo(GroupRoute(room: room));
           } else if (room.feedType == FeedRoomType.calendar) {
             await context.navigateTo(CalendarEventRoute(room: room));

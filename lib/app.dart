@@ -55,7 +55,7 @@ class MinestrixState extends State<Minestrix> {
                     builder: (context, snapshot) {
                       // Progress indicator while login in on web
                       if (webLogin != null && !snapshot.hasData) {
-                        return const MaterialApp(
+                        return MaterialApp(
                           home: Scaffold(
                             body: Center(
                                 child: Row(

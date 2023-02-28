@@ -6,8 +6,8 @@ import 'package:minestrix_chat/partials/components/fake_text_field.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../pages/minestrix/friends/research_page.dart';
-import '../utils/settings.dart';
+import '../../pages/minestrix/friends/research_page.dart';
+import '../../utils/settings.dart';
 
 class NavBarDesktop extends StatelessWidget {
   const NavBarDesktop({Key? key}) : super(key: key);
@@ -104,10 +104,6 @@ class NavBarDesktop extends StatelessWidget {
                 child: NotificationBell(),
               ),
             ],
-          ),
-          Container(
-            color: Theme.of(context).dividerColor,
-            height: 1,
           ),
         ],
       );
