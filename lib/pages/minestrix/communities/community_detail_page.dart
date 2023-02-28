@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/minestrix/communities/community_page.dart';
 import 'package:minestrix/partials/components/layouts/layout_view.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
@@ -8,6 +7,7 @@ import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../../partials/components/layouts/custom_header.dart';
 import '../../../partials/minestrix_room_tile.dart';
+import '../../../utils/minestrix/minestrix_community_extension.dart';
 import 'layout_main_feed.dart';
 
 class CommunityDetailPage extends StatefulWidget {
@@ -42,7 +42,7 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
     return StreamBuilder(
         stream: space.onUpdate.stream,
         builder: (context, snapshot) {
-          final children = CommunityPageState.getChildren(space).toList();
+          final children = Community.getChildren(space);
           final feedChildren = children.where((room) => room.isFeed);
           return LayoutView(
             controller: controller,
@@ -76,6 +76,7 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
                     {required bool displaySideBar,
                     required bool displayLeftBar}) =>
                 LayoutMainFeed(
+              key: Key("community_${space.id}"),
               space: space,
               children: children,
               controller: feedController,
