@@ -12,7 +12,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_webrtc
   pasteboard
   permission_handler_windows
-  sentry_flutter
   share_plus
   url_launcher_windows
 )
