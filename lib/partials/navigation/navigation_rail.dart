@@ -1,4 +1,3 @@
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
@@ -75,22 +74,8 @@ class MinestrixNavigationRail extends StatelessWidget {
                 if (notif == 0) {
                   return const Icon(Icons.message_outlined);
                 } else {
-                  return Stack(
-                    children: [
-                      const Icon(Icons.message),
-                      Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 0, horizontal: 20),
-                          child: CircleAvatar(
-                              radius: 9,
-                              backgroundColor: Colors.red,
-                              child: Text(notif.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                  )))),
-                    ],
-                  );
+                  return Badge.count(
+                      count: notif, child: const Icon(Icons.message));
                 }
               }),
           label: const Text("Chat"),
@@ -159,4 +144,3 @@ class MinestrixNavigationRail extends StatelessWidget {
     );
   }
 }
-
