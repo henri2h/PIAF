@@ -45,14 +45,9 @@ class FollowingIndicator extends StatelessWidget {
 
     return CustomFutureButton(
         expanded: false,
-        color: Theme.of(context).primaryColor,
         padding: const EdgeInsets.all(6),
-        icon: Icon(following ? Icons.person : Icons.person_add,
-            color: Theme.of(context).colorScheme.onPrimary),
+        icon: Icon(following ? Icons.person : Icons.person_add),
         onPressed: () async => follow(Matrix.of(context).client, context),
-        children: [
-          Text(following ? "Following" : "Follow",
-              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary))
-        ]);
+        children: [Text(following ? "Following" : "Follow")]);
   }
 }

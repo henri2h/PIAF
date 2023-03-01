@@ -358,8 +358,14 @@ class UserViewPageState extends State<UserViewPage> {
                                                       if (userId != null &&
                                                           userId !=
                                                               client.userID)
-                                                        MessageButton(
-                                                            userId: userId!)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  left: 4.0),
+                                                          child: MessageButton(
+                                                              userId: userId!),
+                                                        )
                                                     ],
                                                   )
                                                 ],
