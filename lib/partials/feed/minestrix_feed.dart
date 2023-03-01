@@ -23,6 +23,7 @@ import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../pages/app_wrapper_page.dart';
+import '../../pages/minestrix/friends/research_page.dart';
 import '../../utils/settings.dart';
 import '../components/friend_suggestion_list.dart';
 import '../components/layouts/custom_header.dart';
@@ -243,13 +244,22 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                         title: "Feed",
                         actionButton: [
                           IconButton(
-                              icon: const Icon(Icons.group_add),
+                              icon: const Icon(Icons.create),
                               onPressed: () {
                                 AdaptativeDialogs.show(
                                     context: context,
                                     builder: (context) =>
                                         const CreateGroupPage());
                               }),
+                          IconButton(
+                              onPressed: () async {
+                                await AdaptativeDialogs.show(
+                                    title: 'Search',
+                                    builder: (context) =>
+                                        const ResearchPage(isPopup: true),
+                                    context: context);
+                              },
+                              icon: const Icon(Icons.search)),
                           const NotificationBell()
                         ],
                         child: MaterialButton(

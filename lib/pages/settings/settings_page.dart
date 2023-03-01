@@ -142,8 +142,8 @@ class SettingsPanel extends StatelessWidget {
                         SettingsTile.navigation(
                           leading: const Icon(Icons.switch_account),
                           title: const Text('Switch account'),
-                          onPressed: (context) => context
-                              .navigateTo(const SettingsAccountSwitchRoute()),
+                          onPressed: (context) =>
+                              context.navigateTo(SettingsAccountSwitchRoute()),
                         ),
                       ],
                     ),
