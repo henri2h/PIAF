@@ -117,7 +117,8 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                                   await FilePicker.platform.pickFiles(
                                       type: FileType.image, withData: true);
 
-                              if (result?.files.first.bytes == null) return;
+                              if (result?.files.isNotEmpty == true &&
+                                  result?.files.first.bytes == null) return;
 
                               setState(() {
                                 uploadingFile = true;

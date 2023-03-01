@@ -20,6 +20,7 @@ import 'pages/debug_page.dart';
 import 'pages/login_page.dart';
 import 'pages/matrix_loading_page.dart';
 import 'pages/calendar_events/calendar_events_list_page.dart';
+import 'pages/minestrix/feed_list_page.dart';
 import 'pages/minestrix/feed_page.dart';
 import 'pages/minestrix/friends/research_page.dart';
 import 'pages/minestrix/groups/create_group_page.dart';
@@ -59,6 +60,7 @@ const chatsWrapper = AutoRoute(
 // as it's distracting when typing messages
     AutoRoute(path: '/', page: AppWrapperPage, children: [
       AutoRoute(path: 'feed', page: FeedPage, initial: true),
+      AutoRoute(path: 'feeds', page: FeedListPage),
       AutoRoute(path: 'group', page: GroupPage),
       AutoRoute(path: 'group/create', page: CreateGroupPage),
       AutoRoute(path: 'createPost', page: PostEditorPage),

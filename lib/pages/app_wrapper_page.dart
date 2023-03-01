@@ -24,7 +24,13 @@ class AppWrapperPage extends StatefulWidget {
 class _AppWrapperPageState extends State<AppWrapperPage> {
   Future<void>? loadFuture;
 
-  static const displayAppBarList = {"/search", "/feed", "/rooms", "/events"};
+  static const displayAppBarList = {
+    "/search",
+    "/feed",
+    "/rooms",
+    "/events",
+    "/communities"
+  };
 
   /// bah dirty
 
@@ -47,8 +53,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   Widget build(BuildContext context) {
     loadFuture ??= load();
 
-    final client = Matrix.of(context).client;
-
     Matrix.of(context).navigatorContext = context;
     Matrix.of(context).voipPlugin?.context = context;
 
@@ -64,12 +68,12 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
               Expanded(
                   child: Row(
                 children: [
-                  if (!displayNavigationRail)
+                  if (isWideScreen && !displayNavigationRail)
                     StreamBuilder<String>(
                         stream: controller?.stream,
                         builder: (context, snapshot) {
                           return MinestrixNavigationRail(
-                              client: client, path: snapshot.data ?? '');
+                              path: snapshot.data ?? '');
                         }),
                   Expanded(
                     child: AutoRouter(
@@ -129,9 +133,12 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                                       const CalendarEventListRoute());
                                   break;
                                 case 2:
-                                  context.navigateTo(ResearchRoute());
+                                  context.navigateTo(const CommunityRoute());
                                   break;
                                 case 3:
+                                  context.navigateTo(ResearchRoute());
+                                  break;
+                                case 4:
                                   context
                                       .navigateTo(const RoomListWrapperRoute());
                                   break;
@@ -145,39 +152,34 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                               const BottomNavigationBarItem(
                                   icon: Icon(Icons.event), label: "Event"),
                               const BottomNavigationBarItem(
+                                  icon: Icon(Icons.group), label: "Community"),
+                              const BottomNavigationBarItem(
                                   icon: Icon(Icons.search), label: "Search"),
                               BottomNavigationBarItem(
                                   icon: StreamBuilder(
-                                      stream: client.onSync.stream,
-                                      builder: (context, _) {
-                                        int notif =
-                                            client.totalNotificationsCount;
-                                        if (notif == 0) {
-                                          return const Icon(
-                                              Icons.message_outlined);
-                                        } else {
-                                          return Stack(
-                                            children: [
-                                              const Icon(Icons.message),
-                                              Padding(
-                                                  padding: const EdgeInsets
-                                                          .symmetric(
-                                                      vertical: 0,
-                                                      horizontal: 20),
-                                                  child: CircleAvatar(
-                                                      radius: 9,
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                      child: Text(
-                                                          notif.toString(),
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 10,
-                                                          )))),
-                                            ],
-                                          );
-                                        }
+                                      stream: Matrix.of(context)
+                                          .onClientChange
+                                          .stream,
+                                      builder: (context, snap) {
+                                        return StreamBuilder(
+                                            stream: Matrix.of(context)
+                                                .client
+                                                .onSync
+                                                .stream,
+                                            builder: (context, _) {
+                                              int notif = Matrix.of(context)
+                                                  .client
+                                                  .totalNotificationsCount;
+                                              if (notif == 0) {
+                                                return const Icon(
+                                                    Icons.message_outlined);
+                                              } else {
+                                                return Badge.count(
+                                                    count: notif,
+                                                    child: const Icon(
+                                                        Icons.message));
+                                              }
+                                            });
                                       }),
                                   label: "Chat"),
                             ],
@@ -189,6 +191,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     });
   }
 }
+
 class AvatarBottomBar extends StatefulWidget {
   const AvatarBottomBar({Key? key}) : super(key: key);
 
