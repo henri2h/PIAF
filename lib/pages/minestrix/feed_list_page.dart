@@ -38,7 +38,6 @@ class _FeedListPageState extends State<FeedListPage> {
                       await client.createPublicMinestrixProfile();
                       break;
                     case Selection.all:
-                      // TODO: Handle this case.
                       break;
                     case Selection.group:
                       await AdaptativeDialogs.show(
