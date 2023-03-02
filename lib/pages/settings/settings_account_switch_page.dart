@@ -44,7 +44,8 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                             url: snap.data?.avatarUrl,
                             client: c,
                             defaultText: snap.data?.displayName,
-                            backgroundColor: Theme.of(context).primaryColor,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                           );
                         }),
                     subtitle: Column(

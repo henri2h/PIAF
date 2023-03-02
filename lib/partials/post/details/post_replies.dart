@@ -127,7 +127,7 @@ class RepliesVueRecursiveState extends State<RepliesVueRecursive> {
                                       url: sender.avatarUrl,
                                       defaultText: sender.calcDisplayname(),
                                       backgroundColor:
-                                          Theme.of(context).primaryColor,
+                                          Theme.of(context).colorScheme.primary,
                                       width: 32,
                                       height: 32,
                                     )),

@@ -87,7 +87,7 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
                                     await profile?.r.setSpaceChild(room.id);
                                   },
                                   expanded: false,
-                                  color: Theme.of(context).primaryColor,
+                                  color: Theme.of(context).colorScheme.primary,
                                   text: "Add to profile"),
                             ),
                           ],
@@ -133,7 +133,7 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                   child: MatrixImageAvatar(
                       url: room.avatar,
                       client: room.client,
-                      backgroundColor: Theme.of(context).primaryColor,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       defaultText: room.name,
                       width: 80,
                       height: 80),
@@ -172,7 +172,7 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
           final leftBar = Column(
             children: [
               Card(
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                   child: Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Text(room.canonicalAlias,
@@ -193,7 +193,8 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                         setState(() {});
                       },
                       text: "Create stories room",
-                      color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       icon: Icons.add_a_photo),
                   if (Settings().multipleFeedSupport)
                     CustomTextFutureButton(
@@ -203,7 +204,9 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                           await room.setSpaceChild(roomId);
                         },
                         text: "Create a private MinesTRIX room",
-                        color: Theme.of(context).primaryColor,
+                        color: Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
                         icon: Icons.person_add),
                   if (Settings().multipleFeedSupport)
                     CustomTextFutureButton(
@@ -213,7 +216,9 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                           await room.setSpaceChild(roomId);
                         },
                         text: "Create a public MinesTRIX room",
-                        color: Theme.of(context).primaryColor,
+                        color: Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
                         icon: Icons.public)
                 ],
               ),
@@ -343,7 +348,7 @@ class NoProfileSpaceFound extends StatelessWidget {
                   onPressed: () async {
                     await ProfileSpace.createProfileSpace(client);
                   },
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                   expanded: false,
                   icon: Icon(Icons.add,
                       color: Theme.of(context).colorScheme.onPrimary),

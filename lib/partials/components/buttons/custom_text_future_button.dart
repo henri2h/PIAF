@@ -10,6 +10,7 @@ class CustomTextFutureButton extends StatelessWidget {
       required this.text,
       required this.icon,
       this.color,
+      this.foregroundColor,
       this.expanded = true})
       : super(key: key);
   final AsyncCallback onPressed;
@@ -17,15 +18,18 @@ class CustomTextFutureButton extends StatelessWidget {
   final String text;
   final bool expanded;
   final Color? color;
+  final Color? foregroundColor;
   @override
   Widget build(BuildContext context) {
     return CustomFutureButton(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      icon: Icon(icon),
+      icon: Icon(icon, color: foregroundColor),
       onPressed: onPressed,
       expanded: expanded,
       color: color,
-      children: [Text(text, style: const TextStyle(fontSize: 14))],
+      children: [
+        Text(text, style: TextStyle(fontSize: 14, color: foregroundColor))
+      ],
     );
   }
 }

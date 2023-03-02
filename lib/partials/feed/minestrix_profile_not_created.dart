@@ -26,7 +26,7 @@ class MinestrixProfileNotCreated extends StatelessWidget {
           return CustomFutureButton(
               icon: Icon(Icons.skateboarding_outlined,
                   color: Theme.of(context).colorScheme.onPrimary),
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).colorScheme.primary,
               onPressed: sclient.createPrivateMinestrixProfile,
               children: [
                 Text("Create your private MinesTRIX profile",

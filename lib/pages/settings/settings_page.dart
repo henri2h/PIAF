@@ -75,8 +75,8 @@ class SettingsPanel extends StatelessWidget {
             child: ListView(
               children: [
                 FutureBuilder(
-                    future: client.getUserProfile(client.userID!),
-                    builder: (context, AsyncSnapshot<ProfileInformation> p) {
+                    future: client.getProfileFromUserId(client.userID!),
+                    builder: (context, AsyncSnapshot<Profile> p) {
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
@@ -86,11 +86,11 @@ class SettingsPanel extends StatelessWidget {
                               url: p.data?.avatarUrl,
                               width: 120,
                               height: 120,
-                              defaultText: p.data?.displayname ?? client.userID,
+                              defaultText: p.data?.displayName ?? client.userID,
                               defaultIcon: const Icon(Icons.person, size: 32),
                             ),
                             const SizedBox(height: 30),
-                            Text(p.data?.displayname ?? client.userID!,
+                            Text(p.data?.displayName ?? client.userID!,
                                 style: const TextStyle(
                                     fontSize: 28, fontWeight: FontWeight.bold)),
                           ],

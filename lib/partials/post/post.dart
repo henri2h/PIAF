@@ -135,7 +135,7 @@ class PostShimmer extends StatelessWidget {
               leading: MatrixImageAvatar(
                   url: null,
                   fit: true,
-                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   width: 42,
                   height: 42,
                   client: null),

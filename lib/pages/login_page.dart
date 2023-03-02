@@ -55,7 +55,7 @@ class LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.only(
                                       topLeft: radius, bottomLeft: radius)),
                               margin: EdgeInsets.zero,
-                              color: Theme.of(context).primaryColor,
+                              color: Theme.of(context).colorScheme.primary,
                               child: Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,

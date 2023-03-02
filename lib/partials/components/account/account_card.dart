@@ -52,7 +52,7 @@ class AccountCard extends StatelessWidget {
               width: MinestrixAvatarSizeConstants.large,
               height: MinestrixAvatarSizeConstants.large,
               shape: MatrixImageAvatarShape.none,
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10.0),
                   topRight: Radius.circular(10)),

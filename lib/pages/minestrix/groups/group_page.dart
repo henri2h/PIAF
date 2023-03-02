@@ -225,7 +225,7 @@ class GroupPageState extends State<GroupPage> {
                     CustomFutureButton(
                         icon: Icon(Icons.chat,
                             color: Theme.of(context).colorScheme.onPrimary),
-                        color: Theme.of(context).primaryColor,
+                        color: Theme.of(context).colorScheme.primary,
                         children: [
                           Text("Open chat",
                               style: TextStyle(

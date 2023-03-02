@@ -83,7 +83,7 @@ class ReactionBar extends StatelessWidget {
               padding: const EdgeInsets.only(left: 9.0),
               child: MaterialButton(
                 elevation: 0,
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 padding:

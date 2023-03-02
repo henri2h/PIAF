@@ -84,7 +84,7 @@ class CalendarEventCard extends StatelessWidget {
                           ),
                         if (room.membership == Membership.invite)
                           Card(
-                              color: Theme.of(context).primaryColor,
+                              color: Theme.of(context).colorScheme.primary,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text("Invited",

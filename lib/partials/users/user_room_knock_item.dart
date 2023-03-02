@@ -25,7 +25,7 @@ class UserRoomKnockItem extends StatelessWidget {
           defaultText: user.displayName,
           width: MinestrixAvatarSizeConstants.small,
           height: MinestrixAvatarSizeConstants.small,
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           defaultIcon: Icon(Icons.person,
               color: Theme.of(context).colorScheme.onPrimary, size: 70),
         ),
@@ -45,7 +45,7 @@ class UserRoomKnockItem extends StatelessWidget {
                   Flexible(
                     child: CustomFutureButton(
                       expanded: false,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.all(2),
                       icon: Icon(Icons.check,
                           size: 15,

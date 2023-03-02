@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:provider/provider.dart';
 
@@ -16,6 +19,7 @@ class SettingsThemePage extends StatefulWidget {
 class SettingsThemePageState extends State<SettingsThemePage> {
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
     AppThemeMode? themeMode = context.read<ThemeNotifier>().mode;
     return Consumer<ThemeNotifier>(
       builder: (context, theme, _) => ListView(
@@ -55,19 +59,29 @@ class SettingsThemePageState extends State<SettingsThemePage> {
             child: Row(
               children: [
                 Card(
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                   child: Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("A nice story",
-                            style:
-                                Theme.of(context).primaryTextTheme.headline6),
+                            style: Theme.of(context)
+                                .primaryTextTheme
+                                .bodyLarge
+                                ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary)),
                         const SizedBox(height: 4),
                         Text("And it's content",
-                            style:
-                                Theme.of(context).primaryTextTheme.bodyText1),
+                            style: Theme.of(context)
+                                .primaryTextTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary)),
                       ],
                     ),
                   ),

@@ -20,14 +20,14 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
   bool savingDisplayName = false;
   bool uploadingFile = false;
 
-  void setDisplayName(AsyncSnapshot<ProfileInformation> p) async {
+  void setDisplayName(AsyncSnapshot<Profile> p) async {
     final client = Matrix.of(context).client;
     List<String>? results = await showTextInputDialog(
       context: context,
       textFields: [
         DialogTextField(
             hintText: "Your display name",
-            initialText: p.data?.displayname ?? "")
+            initialText: p.data?.displayName ?? "")
       ],
       title: "Set display name",
     );
@@ -86,8 +86,8 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
       children: [
         const CustomHeader(title: "Account"),
         FutureBuilder(
-            future: client.getUserProfile(client.userID!),
-            builder: (context, AsyncSnapshot<ProfileInformation> p) {
+            future: client.getProfileFromUserId(client.userID!),
+            builder: (context, AsyncSnapshot<Profile> p) {
               return SettingsList(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -165,7 +165,7 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                           SettingsTile.navigation(
                             title: const Text("Display name"),
                             trailing: const Icon(Icons.edit),
-                            value: Text(p.data?.displayname ?? client.userID!),
+                            value: Text(p.data?.displayName ?? client.userID!),
                             onPressed: (context) => setDisplayName(p),
                           ),
                           SettingsTile(
@@ -185,7 +185,7 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                           title: const Text("Change password"),
                           leading: const Icon(Icons.password),
                           trailing: const Icon(Icons.edit),
-                          value: Text(p.data?.displayname ?? client.userID!),
+                          value: Text(p.data?.displayName ?? client.userID!),
                           onPressed: (context) => changePassword(),
                         ),
                         SettingsTile.navigation(
