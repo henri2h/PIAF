@@ -46,7 +46,7 @@ class CalendarEventCard extends StatelessWidget {
                       defaultText: room.displayname,
                       thumnailOnly:
                           false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     Row(
                       children: [
