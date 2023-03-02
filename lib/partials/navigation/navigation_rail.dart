@@ -123,22 +123,6 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
         width: 280,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset("assets/icon_512.png",
-                      width: 40, height: 40, cacheHeight: 80, cacheWidth: 80),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text("MinesTRIX",
-                        style: TextStyle(
-                            fontSize: 30, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
             FutureBuilder<Profile>(
                 future: client.fetchOwnProfile(),
                 builder: (context, snap) {
