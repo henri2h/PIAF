@@ -5,7 +5,6 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/settings.dart';
 import 'package:minestrix_chat/utils/background_push.dart';
 import 'package:minestrix_chat/utils/manager/client_manager.dart';
-import 'package:minestrix_chat/utils/sentry_controller.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';

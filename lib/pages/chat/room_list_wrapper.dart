@@ -70,8 +70,10 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 400),
-                          child: RoomListBuilder(
-                            scrollController: scrollControllerRoomList,
+                          child: Card(
+                            child: RoomListBuilder(
+                              scrollController: scrollControllerRoomList,
+                            ),
                           )),
                     ),
                   const Expanded(child: AutoRouter()),
