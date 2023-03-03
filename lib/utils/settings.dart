@@ -12,7 +12,6 @@ class Settings {
   bool get optimizedFeed => _settings[_optimizedFeed] ?? false;
   bool get shareEnabled => _settings[_shareEnabled] ?? false;
 
-
   set multipleFeedSupport(bool value) {
     _settings[_multipleFeed] = value;
     saveData();
