@@ -104,7 +104,8 @@ class CommunityPageState extends State<CommunityPage> {
                                         Expanded(
                                           child: Column(
                                             children: [
-                                              for (final room in community.children)
+                                              for (final room
+                                                  in community.children)
                                                 MinestrixRoomTileNavigator(
                                                     room: room),
                                             ],
