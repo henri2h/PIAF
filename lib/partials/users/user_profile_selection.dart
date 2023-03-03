@@ -125,7 +125,7 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
                                   horizontal: 2, vertical: 2),
                               child: MaterialButton(
                                   color: room.id == widget.roomSelectedId
-                                      ? Theme.of(context).primaryColor
+                                      ? Theme.of(context).colorScheme.primary
                                       : null,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10)),

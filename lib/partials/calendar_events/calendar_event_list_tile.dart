@@ -59,7 +59,7 @@ class _CalendarEventListTileState extends State<CalendarEventListTile> {
                     client: widget.room.client,
                     url: widget.room.avatar,
                     defaultText: widget.room.name,
-                    backgroundColor: Theme.of(context).primaryColor),
+                    backgroundColor: Theme.of(context).colorScheme.primary),
                 onTap: () async {
                   await context
                       .navigateTo(CalendarEventRoute(room: widget.room));

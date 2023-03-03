@@ -49,7 +49,7 @@ class LayoutView extends StatelessWidget {
         begin: Alignment.topRight,
         end: Alignment.bottomLeft,
         colors: [
-          Theme.of(context).primaryColor,
+          Theme.of(context).colorScheme.primary,
           Colors.grey.shade800,
         ],
       );

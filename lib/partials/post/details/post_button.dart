@@ -25,12 +25,9 @@ class PostButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
+          Icon(icon),
           if (!iconOnly) const SizedBox(width: 5),
-          if (!iconOnly)
-            Text(text,
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.onPrimary))
+          if (!iconOnly) Text(text)
         ],
       ),
     );

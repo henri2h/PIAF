@@ -9,14 +9,9 @@ class Settings {
   final _shareEnabled = "share_enabled";
 
   bool get multipleFeedSupport => _settings[_multipleFeed] ?? false;
-  bool get calendarEventSupport => _settings[_calendar] ?? false;
   bool get optimizedFeed => _settings[_optimizedFeed] ?? false;
   bool get shareEnabled => _settings[_shareEnabled] ?? false;
 
-  set calendarEventSupport(bool value) {
-    _settings[_calendar] = value;
-    saveData();
-  }
 
   set multipleFeedSupport(bool value) {
     _settings[_multipleFeed] = value;

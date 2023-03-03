@@ -10,8 +10,9 @@ import '../../router.gr.dart';
 import '../login_page.dart';
 
 class SettingsAccountSwitchPage extends StatefulWidget {
-  const SettingsAccountSwitchPage({Key? key}) : super(key: key);
-
+  const SettingsAccountSwitchPage({Key? key, this.popOnUserSelected = false})
+      : super(key: key);
+  final bool popOnUserSelected;
   @override
   SettingsAccountSwitchPageState createState() =>
       SettingsAccountSwitchPageState();
@@ -43,7 +44,8 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                             url: snap.data?.avatarUrl,
                             client: c,
                             defaultText: snap.data?.displayName,
-                            backgroundColor: Theme.of(context).primaryColor,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                           );
                         }),
                     subtitle: Column(
@@ -54,7 +56,11 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                     ),
                     onTap: () async {
                       m.setActiveClient(c);
-                      context.navigateTo(const FeedRoute());
+                      if (widget.popOnUserSelected) {
+                        Navigator.of(context).pop();
+                      } else {
+                        context.navigateTo(const FeedRoute());
+                      }
                     }),
               ListTile(
                   title: const Text("Add an account"),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
@@ -5,11 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/home/notification_view.dart';
-import 'package:minestrix/partials/navbar.dart';
+import 'package:minestrix/partials/navigation/navbar.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
+import '../partials/navigation/navigation_rail.dart';
 import '../router.gr.dart';
 
 class AppWrapperPage extends StatefulWidget {
@@ -22,7 +24,13 @@ class AppWrapperPage extends StatefulWidget {
 class _AppWrapperPageState extends State<AppWrapperPage> {
   Future<void>? loadFuture;
 
-  static const displayAppBarList = {"/search", "/feed", "/rooms", "/evnts"};
+  static const displayAppBarList = {
+    "/search",
+    "/feed",
+    "/rooms",
+    "/events",
+    "/communities"
+  };
 
   /// bah dirty
 
@@ -34,15 +42,16 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   @override
   void initState() {
     super.initState();
+    controller = StreamController.broadcast();
   }
 
   bool displayAppBar = false;
+  bool displayNavigationRail = true;
+  StreamController<String>? controller;
 
   @override
   Widget build(BuildContext context) {
     loadFuture ??= load();
-
-    final client = Matrix.of(context).client;
 
     Matrix.of(context).navigatorContext = context;
     Matrix.of(context).voipPlugin?.context = context;
@@ -55,20 +64,47 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           extendBody: true,
           body: Column(
             children: [
-              if (isWideScreen) const NavBarDesktop(),
-              Expanded(child: AutoRouter(
-                builder: (context, widget) {
-                  final shouldDisplayAppBar = displayAppBarList.contains(
-                      AutoRouterDelegate.of(context).urlState.uri.toString());
-                  if (displayAppBar != shouldDisplayAppBar) {
-                    SchedulerBinding.instance.addPostFrameCallback((_) {
-                      setState(() {
-                        displayAppBar = shouldDisplayAppBar;
-                      });
-                    });
-                  }
-                  return widget;
-                },
+              if (isWideScreen && displayNavigationRail) const NavBarDesktop(),
+              Expanded(
+                  child: Row(
+                children: [
+                  if (isWideScreen && !displayNavigationRail)
+                    StreamBuilder<String>(
+                        stream: controller?.stream,
+                        builder: (context, snapshot) {
+                          return MinestrixNavigationRail(
+                              path: snapshot.data ?? '');
+                        }),
+                  Expanded(
+                    child: AutoRouter(
+                      builder: (context, widget) {
+                        final path = AutoRouterDelegate.of(context)
+                            .urlState
+                            .uri
+                            .toString();
+                        controller?.add(path);
+
+                        final shouldDisplayAppBar =
+                            displayAppBarList.contains(path);
+                        final shouldDisplayNavigationRail =
+                            path.startsWith("/rooms");
+
+                        if (displayAppBar != shouldDisplayAppBar ||
+                            shouldDisplayNavigationRail !=
+                                displayNavigationRail) {
+                          SchedulerBinding.instance.addPostFrameCallback((_) {
+                            setState(() {
+                              displayAppBar = shouldDisplayAppBar;
+                              displayNavigationRail =
+                                  shouldDisplayNavigationRail;
+                            });
+                          });
+                        }
+                        return widget;
+                      },
+                    ),
+                  ),
+                ],
               )),
             ],
           ),
@@ -97,9 +133,12 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                                       const CalendarEventListRoute());
                                   break;
                                 case 2:
-                                  context.navigateTo(ResearchRoute());
+                                  context.navigateTo(const CommunityRoute());
                                   break;
                                 case 3:
+                                  context.navigateTo(ResearchRoute());
+                                  break;
+                                case 4:
                                   context
                                       .navigateTo(const RoomListWrapperRoute());
                                   break;
@@ -113,45 +152,40 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                               const BottomNavigationBarItem(
                                   icon: Icon(Icons.event), label: "Event"),
                               const BottomNavigationBarItem(
+                                  icon: Icon(Icons.group), label: "Community"),
+                              const BottomNavigationBarItem(
                                   icon: Icon(Icons.search), label: "Search"),
                               BottomNavigationBarItem(
                                   icon: StreamBuilder(
-                                      stream: client.onSync.stream,
-                                      builder: (context, _) {
-                                        int notif =
-                                            client.totalNotificationsCount;
-                                        if (notif == 0) {
-                                          return const Icon(
-                                              Icons.message_outlined);
-                                        } else {
-                                          return Stack(
-                                            children: [
-                                              const Icon(Icons.message),
-                                              Padding(
-                                                  padding: const EdgeInsets
-                                                          .symmetric(
-                                                      vertical: 0,
-                                                      horizontal: 20),
-                                                  child: CircleAvatar(
-                                                      radius: 9,
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                      child: Text(
-                                                          notif.toString(),
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 10,
-                                                          )))),
-                                            ],
-                                          );
-                                        }
+                                      stream: Matrix.of(context)
+                                          .onClientChange
+                                          .stream,
+                                      builder: (context, snap) {
+                                        return StreamBuilder(
+                                            stream: Matrix.of(context)
+                                                .client
+                                                .onSync
+                                                .stream,
+                                            builder: (context, _) {
+                                              int notif = Matrix.of(context)
+                                                  .client
+                                                  .totalNotificationsCount;
+                                              if (notif == 0) {
+                                                return const Icon(
+                                                    Icons.message_outlined);
+                                              } else {
+                                                return Badge.count(
+                                                    count: notif,
+                                                    child: const Icon(
+                                                        Icons.message));
+                                              }
+                                            });
                                       }),
                                   label: "Chat"),
                             ],
                           ))),
                 ),
-          endDrawer: NotificationView(),
+          endDrawer: const NotificationView(),
         ),
       );
     });

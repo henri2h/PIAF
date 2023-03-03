@@ -127,8 +127,8 @@ class CreateGroupPageState extends State<CreateGroupPage> {
                     width: 60,
                     child: Center(
                       child: Text('Abort',
-                          style:
-                              TextStyle(color: Theme.of(context).primaryColor)),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary)),
                     ),
                   ),
                 ),
@@ -140,8 +140,9 @@ class CreateGroupPageState extends State<CreateGroupPage> {
               MaterialButton(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
-                color: Theme.of(context).primaryColor,
-                disabledColor: Theme.of(context).primaryColor.withOpacity(0.8),
+                color: Theme.of(context).colorScheme.primary,
+                disabledColor:
+                    Theme.of(context).colorScheme.primary.withOpacity(0.8),
                 onPressed: _creating
                     ? null
                     : () async {

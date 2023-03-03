@@ -5,9 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/settings.dart';
 import 'package:minestrix_chat/utils/background_push.dart';
 import 'package:minestrix_chat/utils/manager/client_manager.dart';
-import 'package:minestrix_chat/utils/sentry_controller.dart';
 import 'package:provider/provider.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'app.dart';
 import 'utils/managers/theme_manager.dart';
@@ -29,19 +27,7 @@ void main(List<String> args) async {
     BackgroundPush.clientOnly(clients.first);
   }
 
-  // enable debug mode if needed
-  if (!kDebugMode && await SentryController.getSentryStatus()) {
-    SentryFlutter.init(
-      (options) => {
-        options.dsn =
-            'https://c8621ef76fa54652b6766dd04761311a@o1215870.ingest.sentry.io/6357703',
-        options.tracesSampleRate = 1.0,
-      },
-      appRunner: () => runMinestrix(clients),
-    );
-  } else {
-    runMinestrix(clients);
-  }
+  runMinestrix(clients);
 }
 
 void runMinestrix(List<Client> clients) {

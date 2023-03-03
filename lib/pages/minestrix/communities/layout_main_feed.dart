@@ -1,24 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:matrix/matrix.dart';
+import 'package:matrix/src/utils/cached_stream_controller.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
 import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-
-import 'package:matrix/src/utils/cached_stream_controller.dart';
 
 import '../../../partials/calendar_events/calendar_event_card.dart';
 import '../../../partials/feed/topic_list_tile.dart';
 import '../../../partials/post/post.dart';
 import '../../../partials/post/post_writer_modal.dart';
-import 'community_page.dart';
 
 class FeedController {
   final stream = CachedStreamController<String>();
@@ -64,10 +60,10 @@ class _LayoutMainFeedState extends State<LayoutMainFeed> {
   }
 
   Future<void> inviteUsers() async {
-    List<Profile>? profiles = await MinesTrixUserSelection.show(context);
+    List<String>? users = await MinesTrixUserSelection.show(context, space);
 
-    profiles?.forEach((Profile p) async {
-      await widget.space.invite(p.userId);
+    users?.forEach((String userId) async {
+      await widget.space.invite(userId);
     });
 
     setState(() {});

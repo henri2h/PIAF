@@ -46,7 +46,7 @@ class CalendarEventCard extends StatelessWidget {
                       defaultText: room.displayname,
                       thumnailOnly:
                           false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
                     Row(
                       children: [
@@ -84,7 +84,7 @@ class CalendarEventCard extends StatelessWidget {
                           ),
                         if (room.membership == Membership.invite)
                           Card(
-                              color: Theme.of(context).primaryColor,
+                              color: Theme.of(context).colorScheme.primary,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text("Invited",

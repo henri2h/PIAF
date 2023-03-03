@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/account/MinesTrixContactView.dart';
+import 'package:minestrix/partials/components/account/contact_view.dart';
 import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
@@ -13,7 +13,6 @@ import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/view/room_page.dart';
@@ -35,6 +34,7 @@ class GroupPageState extends State<GroupPage> {
 
   final controller = ScrollController();
   bool updating = false;
+  List<User> participants = [];
 
   @override
   void initState() {
@@ -62,12 +62,23 @@ class GroupPageState extends State<GroupPage> {
     }
   }
 
+  void inviteUsers() async {
+    List<String>? userIds =
+        await MinesTrixUserSelection.show(context, widget.room);
+
+    userIds?.forEach((String userId) async {
+      await widget.room.invite(userId);
+    });
+    participants = await widget.room.requestParticipants();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     Client sclient = Matrix.of(context).client;
     Room room = widget.room;
 
-    List<User> participants = room.getParticipants();
+    participants = room.getParticipants();
     return FutureBuilder<Timeline>(
         future: futureTimeline,
         builder: (context, snapshot) {
@@ -111,20 +122,10 @@ class GroupPageState extends State<GroupPage> {
                           itemBuilder: (BuildContext c, int i,
                               void Function(Offset, Event) onReact) {
                             if (i == 0) {
-                              return Column(children: [
-                                if (room.avatar != null)
-                                  Center(
-                                      child: MatrixImageAvatar(
-                                          client: sclient,
-                                          url: room.avatar,
-                                          unconstraigned: true,
-                                          shape: MatrixImageAvatarShape.none,
-                                          maxHeight: 500)),
-                                Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: PostWriterModal(room: room),
-                                ),
-                              ]);
+                              return Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: PostWriterModal(room: room),
+                              );
                             }
                             return Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -180,7 +181,17 @@ class GroupPageState extends State<GroupPage> {
                                     ),
                                   ],
                                 ),
-                                const H2Title("Members"),
+                                Row(
+                                  children: [
+                                    const Expanded(child: H2Title("Members")),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: IconButton(
+                                          onPressed: inviteUsers,
+                                          icon: const Icon(Icons.add)),
+                                    )
+                                  ],
+                                ),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Wrap(
@@ -204,32 +215,9 @@ class GroupPageState extends State<GroupPage> {
                                           (User u) =>
                                               u.membership ==
                                               Membership.invite))
-                                        MinesTrixContactView(user: p),
+                                        ContactView(user: p),
                                     ],
                                   ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: MaterialButton(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      color: Theme.of(context).cardColor,
-                                      child: const ListTile(
-                                          title: Text("Add users"),
-                                          leading: Icon(Icons.person_add)),
-                                      onPressed: () async {
-                                        List<Profile>? profiles =
-                                            await MinesTrixUserSelection.show(
-                                                context);
-
-                                        profiles?.forEach((Profile p) async {
-                                          await room.invite(p.userId);
-                                        });
-                                        participants =
-                                            await room.requestParticipants();
-                                        setState(() {});
-                                      }),
-                                ),
                               ],
                             );
                           })),
@@ -237,7 +225,7 @@ class GroupPageState extends State<GroupPage> {
                     CustomFutureButton(
                         icon: Icon(Icons.chat,
                             color: Theme.of(context).colorScheme.onPrimary),
-                        color: Theme.of(context).primaryColor,
+                        color: Theme.of(context).colorScheme.primary,
                         children: [
                           Text("Open chat",
                               style: TextStyle(

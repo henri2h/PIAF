@@ -112,7 +112,7 @@ class _EditCalendarRoomState extends State<EditCalendarRoom> {
           padding:
               const EdgeInsets.only(left: 8.0, right: 8, bottom: 8, top: 40),
           child: CustomFutureButton(
-            color: Theme.of(context).primaryColor,
+            color: Theme.of(context).colorScheme.primary,
             onPressed: () async {
               if (nameController.text.isEmpty) {
                 await showOkAlertDialog(
@@ -149,7 +149,7 @@ class _EditCalendarRoomState extends State<EditCalendarRoom> {
             children: [
               Center(
                   child: Text(
-                widget.room == null ? "Create" : "Edit",
+                widget.room == null ? "Create" : "Save",
                 style:
                     const TextStyle(fontWeight: FontWeight.w500, fontSize: 17),
               ))

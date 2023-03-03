@@ -331,33 +331,43 @@ class UserViewPageState extends State<UserViewPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600))),
-                                                  mroom?.creatorId ==
-                                                          client.userID
-                                                      ? IconButton(
-                                                          icon: const Icon(
-                                                              Icons.edit),
-                                                          onPressed: () {
-                                                            context.pushRoute(
-                                                                SocialSettingsRoute(
-                                                                    room: mroom!
-                                                                        .room!));
-                                                          })
-                                                      : Row(
-                                                          children: [
-                                                            if (mroom != null)
-                                                              FollowingIndicator(
-                                                                room: mroom!,
-                                                              ),
-                                                            if (userId !=
-                                                                    null &&
-                                                                userId !=
-                                                                    client
-                                                                        .userID)
-                                                              MessageButton(
-                                                                  userId:
-                                                                      userId!)
-                                                          ],
+                                                  if (mroom?.creatorId ==
+                                                      client.userID)
+                                                    IconButton(
+                                                        icon: const Icon(
+                                                            Icons.edit),
+                                                        onPressed: () {
+                                                          context.pushRoute(
+                                                              SocialSettingsRoute(
+                                                                  room: mroom!
+                                                                      .room!));
+                                                        }),
+                                                  Row(
+                                                    children: [
+                                                      if (mroom != null)
+                                                        FollowingIndicator(
+                                                          room: mroom!,
+                                                          onUnfollow: () {
+                                                            setState(() {
+                                                              _userId = mroom
+                                                                  ?.creatorId;
+                                                              mroom = null;
+                                                            });
+                                                          },
+                                                        ),
+                                                      if (userId != null &&
+                                                          userId !=
+                                                              client.userID)
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  left: 4.0),
+                                                          child: MessageButton(
+                                                              userId: userId!),
                                                         )
+                                                    ],
+                                                  )
                                                 ],
                                               ),
                                             ),

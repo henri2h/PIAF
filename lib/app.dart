@@ -31,7 +31,8 @@ class MinestrixState extends State<Minestrix> {
     return true;
   }
 
-  bool loginAsWeb = false;
+  Future<bool>? webLogin;
+
   @override
   Widget build(BuildContext context) {
     return Matrix(
@@ -45,41 +46,58 @@ class MinestrixState extends State<Minestrix> {
               builder: (context, AsyncSnapshot<LoginState?> state) {
                 Client client = Matrix.of(context).client;
 
-                // detect if the user did try to login with a token
-                // don't try it twice !
-                if (kIsWeb) {
-                  if (loginAsWeb == false && client.shouldSSOLogin) {
-                    loginAsWeb = true;
-                    return FutureBuilder(
-                        future: client.ssoLogin(),
-                        builder: (context, snap) =>
-                            const CircularProgressIndicator());
-                  }
+                if (kIsWeb && client.shouldSSOLogin) {
+                  webLogin ??= client.ssoLogin();
                 }
 
-                return FutureBuilder(
-                    future: initMatrix(client),
-                    builder: (context, snap) {
-                      return MaterialApp.router(
-                        routerDelegate: AutoRouterDelegate.declarative(
-                          _appRouter,
-                          routes: (_) {
-                            final isLogged = client.isLogged();
-                            return [
-                              if (isLogged)
-                                const AppWrapperRoute()
-                              // if they are not logged in, bring them to the Login page
-                              else
-                                LoginRoute()
-                            ];
-                          },
-                        ),
+                return FutureBuilder<bool>(
+                    future: webLogin,
+                    builder: (context, snapshot) {
+                      // Progress indicator while login in on web
+                      if (webLogin != null && !snapshot.hasData) {
+                        return MaterialApp(
+                          home: Scaffold(
+                            body: Center(
+                                child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                CircularProgressIndicator(),
+                                SizedBox(
+                                  width: 12,
+                                ),
+                                Text("Loading")
+                              ],
+                            )),
+                          ),
+                        );
+                      }
 
-                        routeInformationParser: _appRouter.defaultRouteParser(),
-                        debugShowCheckedModeBanner: false,
-                        // theme :
-                        theme: theme.theme,
-                      );
+                      return FutureBuilder(
+                          future: initMatrix(client),
+                          builder: (context, snap) {
+                            return MaterialApp.router(
+                              routerDelegate: AutoRouterDelegate.declarative(
+                                _appRouter,
+                                routes: (_) {
+                                  final isLogged = client.isLogged();
+                                  return [
+                                    if (isLogged)
+                                      const AppWrapperRoute()
+
+                                    // if they are not logged in, bring them to the Login page
+                                    else
+                                      LoginRoute()
+                                  ];
+                                },
+                              ),
+
+                              routeInformationParser:
+                                  _appRouter.defaultRouteParser(),
+                              debugShowCheckedModeBanner: false,
+                              // theme :
+                              theme: theme.theme,
+                            );
+                          });
                     });
               }),
         ),

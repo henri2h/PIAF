@@ -5,6 +5,7 @@ import 'package:minestrix/partials/feed/minestrix_profile_not_created.dart';
 import 'package:minestrix/partials/minestrix_room_tile.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 

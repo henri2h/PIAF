@@ -40,27 +40,6 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
               )),
           const SizedBox(height: 8),
           SwitchListTile(
-              value: Settings().calendarEventSupport,
-              onChanged: (value) {
-                Settings().calendarEventSupport = value;
-                setState(() {});
-              },
-              secondary: const Icon(Icons.calendar_today),
-              title: const Text("Enable calendar event support"),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("Allow creating calendar events."),
-                  InfoBadge(
-                    text: "WIP",
-                  ),
-                  InfoBadge(
-                    text: "Read only",
-                  )
-                ],
-              )),
-          const SizedBox(height: 8),
-          SwitchListTile(
               value: Settings().optimizedFeed,
               onChanged: (value) {
                 Settings().optimizedFeed = value;

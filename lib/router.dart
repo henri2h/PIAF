@@ -6,6 +6,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:minestrix/pages/chat/room_list_wrapper.dart';
 import 'package:minestrix/pages/minestrix/communities/community_detail_page.dart';
 import 'package:minestrix/pages/minestrix/communities/community_page.dart';
+import 'package:minestrix_chat/partials/chat/spaces_list/space_page.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/view/room_list/room_list_room.dart';
 import 'package:minestrix_chat/view/room_list/room_list_space.dart';
@@ -19,6 +20,7 @@ import 'pages/debug_page.dart';
 import 'pages/login_page.dart';
 import 'pages/matrix_loading_page.dart';
 import 'pages/calendar_events/calendar_events_list_page.dart';
+import 'pages/minestrix/feed_list_page.dart';
 import 'pages/minestrix/feed_page.dart';
 import 'pages/minestrix/friends/research_page.dart';
 import 'pages/minestrix/groups/create_group_page.dart';
@@ -32,6 +34,7 @@ import 'pages/settings/settings_labs_page.dart';
 import 'pages/settings/settings_page.dart';
 import 'pages/settings/settings_account_page.dart';
 import 'pages/settings/settings_security_page.dart';
+import 'pages/settings/settings_storys_page.dart';
 import 'pages/settings/settings_sync_page.dart';
 import 'pages/settings/settings_theme_page.dart';
 
@@ -42,6 +45,8 @@ const chatsWrapper = AutoRoute(
     children: [
       AutoRoute(path: '', page: RoomListPage, initial: true),
       AutoRoute(path: 'space', name: 'RoomListSpaceRoute', page: RoomListSpace),
+      AutoRoute(
+          path: 'space/:spaceId', name: 'RoomSpaceRoute', page: RoomSpacePage),
       AutoRoute(path: ':roomId', name: 'RoomListRoomRoute', page: RoomListRoom),
     ]);
 
@@ -55,6 +60,7 @@ const chatsWrapper = AutoRoute(
 // as it's distracting when typing messages
     AutoRoute(path: '/', page: AppWrapperPage, children: [
       AutoRoute(path: 'feed', page: FeedPage, initial: true),
+      AutoRoute(path: 'feeds', page: FeedListPage),
       AutoRoute(path: 'group', page: GroupPage),
       AutoRoute(path: 'group/create', page: CreateGroupPage),
       AutoRoute(path: 'createPost', page: PostEditorPage),
@@ -78,6 +84,7 @@ const chatsWrapper = AutoRoute(
         AutoRoute(path: 'settings/security', page: SettingsSecurityPage),
         AutoRoute(path: 'settings/labs', page: SettingsLabsPage),
         AutoRoute(path: 'settings/sync', page: SettingsSyncPage),
+        AutoRoute(path: 'settings/storys', page: SettingsStorysPage),
         AutoRoute(path: 'accounts', page: AccountsDetailsPage),
         AutoRoute(path: 'settings/debug', page: DebugPage)
       ]),
