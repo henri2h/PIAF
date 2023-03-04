@@ -119,7 +119,7 @@ analyze:
   - flutter pub get
   - flutter packages pub run build_runner build
   # - flutter analyze
-  - flutter format lib/ --set-exit-if-changed
+  - dart format lib/ --set-exit-if-changed
   tags:
   - minestrix
 
