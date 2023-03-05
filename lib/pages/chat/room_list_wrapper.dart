@@ -72,8 +72,9 @@ class RoomListWrapperState extends State<RoomListWrapper> {
                           constraints: const BoxConstraints(maxWidth: 400),
                           child: Card(
                             child: RoomListBuilder(
-                              scrollController: scrollControllerRoomList,
-                            ),
+                                scrollController: scrollControllerRoomList,
+                                onAppBarClicked: () =>
+                                    context.navigateTo(const SettingsRoute())),
                           )),
                     ),
                   const Expanded(child: AutoRouter()),
