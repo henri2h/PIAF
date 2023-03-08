@@ -25,21 +25,21 @@ build_linux:
   tags:
   - minestrix
 
-build_android_bundle:
-  stage: build
-  script:
-  - echo $KEYSTORE_FILE | base64 -d > android/app/keystore.jks
-  - echo $KEYSTORE_PROPERTIES | base64 -d > android/key.properties
-  - flutter clean
-  - flutter pub get
-  - flutter packages pub run build_runner build --delete-conflicting-outputs
-  - flutter build appbundle --release
-  artifacts:
-    when: on_success
-    paths:
-    - build/app/outputs/bundle/release/app-release.aab
-  tags:
-  - minestrix
+#build_android_bundle:
+#  stage: build
+#  script:
+#  - echo $KEYSTORE_FILE | base64 -d > android/app/keystore.jks
+#  - echo $KEYSTORE_PROPERTIES | base64 -d > android/key.properties
+#  - flutter clean
+#  - flutter pub get
+#  - flutter packages pub run build_runner build --delete-conflicting-outputs
+#  - flutter build appbundle --release
+#  artifacts:
+#    when: on_success
+#    paths:
+#    - build/app/outputs/bundle/release/app-release.aab
+#  tags:
+#  - minestrix
 
 build_android_apk:
   stage: build
