@@ -171,7 +171,7 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                       Expanded(
                         child: ListView(
                           children: [
-                            const H1Title("Welcome on MinesTRIX"),
+                            const H1Title("Welcome in MinesTRIX"),
                             client.prevBatch == null
                                 ? Column(
                                     mainAxisAlignment: MainAxisAlignment.center,

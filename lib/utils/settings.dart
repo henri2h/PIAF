@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:minestrix_chat/helpers/storage_manager.dart';
 
 class Settings {
-  final _calendar = "calendar";
   final _multipleFeed = "multiple_feed";
   final _optimizedFeed = "optimized_feed";
   final _shareEnabled = "share_enabled";
