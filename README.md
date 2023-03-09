@@ -114,7 +114,7 @@ From https://pub.dev/packages/flutter_secure_storage :
 * libjsoncpp
 
 ```bash
-sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.0-dev
+sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.0-dev libmpv-dev
 ```
 
 ## Special thanks to
