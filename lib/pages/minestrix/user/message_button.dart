@@ -18,11 +18,11 @@ class MessageButton extends StatelessWidget {
         padding: const EdgeInsets.all(6),
         expanded: false,
         onPressed: () async {
-          String? roomId = await client.startDirectChat(userId);
+          String? roomId = client.getDirectChatFromUserId(userId);
           AdaptativeDialogs.show(
               context: context,
               builder: (BuildContext context) => RoomPage(
-                  roomId: roomId,
+                  roomId: roomId ?? userId,
                   client: client,
                   onBack: () => context.popRoute()));
         },
