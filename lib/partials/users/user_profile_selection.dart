@@ -5,10 +5,13 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
+import 'package:minestrix_chat/utils/matrix/mutual_rooms_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
+
+import '../minestrix_room_tile.dart';
 
 class UserProfileSelection extends StatefulWidget {
   const UserProfileSelection(
@@ -42,10 +45,10 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
 
     bool isOurProfile = widget.userId == client.userID;
 
-    ProfileSpace? profile = ProfileSpace.getProfileSpace(client);
+    Room? profile = client.getProfileSpace();
 
     return FutureBuilder<List<SpaceRoomsChunk>?>(
-        future: ProfileSpace.getProfileSpaceHierarchy(client, widget.userId),
+        future: client.getProfileSpaceHierarchy(widget.userId),
         builder: (context, snap) {
           final results = rooms.map((e) => RoomWithSpace(room: e)).toList();
           final discoveredRooms = snap.data;
@@ -140,7 +143,34 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
                                   onPressed: () => selectRoom(room)),
                             ),
                         ],
-                      )
+                      ),
+                if (profile != null && !isOurProfile)
+                  FutureBuilder<List<String>?>(
+                      future: client.getMutualRoomsWithUser(widget.userId),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) return Container();
+
+                        final rooms = snapshot.data
+                                ?.map((element) => client.getRoomById(element))
+                                .where((element) =>
+                                    element != null && element.isFeed == true)
+                                .map((e) => e!)
+                                .toList() ??
+                            [];
+                        return Column(
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.group),
+                              title: const Text("Rooms in common"),
+                              subtitle: Text("${snapshot.data?.length ?? 0}"),
+                            ),
+                            for (final r in rooms)
+                              MinestrixRoomTileNavigator(
+                                room: r,
+                              ),
+                          ],
+                        );
+                      }),
               ],
             ),
           );

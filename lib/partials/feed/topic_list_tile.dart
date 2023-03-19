@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/dialogs/custom_dialogs.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TopicListTile extends StatelessWidget {
@@ -14,35 +13,10 @@ class TopicListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!room.canSendDefaultStates || room.topic.isEmpty) {
+    if (room.topic.isEmpty) {
       return Container();
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: ListTile(
-              title: room.topic.isEmpty
-                  ? const Text("Set topic")
-                  : TopicBody(room: room),
-              leading: const Icon(Icons.topic),
-              onTap: !room.canSendDefaultStates
-                  ? null
-                  : () async {
-                      String? topic = await CustomDialogs.showCustomTextDialog(
-                        context,
-                        title: "Set the event topic",
-                        helpText: "Event topic",
-                        initialText: room.topic,
-                      );
-                      if (topic != null) {
-                        await room.setDescription(topic);
-                      }
-                    }),
-        ),
-      ],
-    );
+    return TopicBody(room: room);
   }
 }
 

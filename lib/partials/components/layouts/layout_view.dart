@@ -130,11 +130,10 @@ class LayoutView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (displaySideBar)
-                        Card(
-                            child: SizedBox(
-                                width: sidebarWidth,
-                                child: sidebarBuilder!(
-                                    displayLeftBar: displayLeftBar))),
+                        SizedBox(
+                            width: sidebarWidth,
+                            child: sidebarBuilder!(
+                                displayLeftBar: displayLeftBar)),
                       Expanded(
                         child: Center(
                           child: ConstrainedBox(
