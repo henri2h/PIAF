@@ -39,7 +39,7 @@ dependencies:
   provider: ^6.0.1
 
   # navigator
-  auto_route: ^5.0.2
+  auto_route: ^6.0.0+1
 
   # web navigator for SSO
   webview_flutter: ^4.0.1
@@ -114,7 +114,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   hive_generator: ^2.0.0
-  auto_route_generator: ^5.0.2
+  auto_route_generator: ^6.0.0
   build_runner: ^2.1.2
   import_sorter: ^4.6.0
   flutter_lints: ^2.0.1

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/event/matrix_image.dart';
@@ -8,6 +9,7 @@ import '../../../partials/post/details/post_replies.dart';
 import '../../../partials/post/gallery/post_gallery_nav_button.dart';
 import '../../../partials/post/details/post_header.dart';
 
+@RoutePage()
 class PostGalleryPage extends StatefulWidget {
   final Event post;
   final Event? image;

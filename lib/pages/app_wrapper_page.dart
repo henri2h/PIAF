@@ -14,6 +14,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../partials/navigation/navigation_rail.dart';
 import '../router.gr.dart';
 
+@RoutePage()
 class AppWrapperPage extends StatefulWidget {
   const AppWrapperPage({Key? key}) : super(key: key);
 

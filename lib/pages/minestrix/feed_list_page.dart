@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -8,6 +9,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../partials/minestrix_room_tile.dart';
 import 'groups/create_group_page.dart';
 
+@RoutePage()
 class FeedListPage extends StatefulWidget {
   const FeedListPage({Key? key}) : super(key: key);
 

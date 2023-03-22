@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
@@ -13,6 +14,7 @@ import '../../../partials/components/minestrix/minestrix_title.dart';
 import '../../../partials/feed/topic_list_tile.dart';
 import '../../account/accounts_details_page.dart';
 
+@RoutePage()
 class SocialSettingsPage extends StatefulWidget {
   const SocialSettingsPage({Key? key, required this.room}) : super(key: key);
 

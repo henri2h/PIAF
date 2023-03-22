@@ -10,14 +10,15 @@ import '../../partials/components/layouts/custom_header.dart';
 import '../../router.gr.dart';
 
 @RoutePage()
-class SettingsStorysPage extends StatefulWidget {
-  const SettingsStorysPage({Key? key}) : super(key: key);
+class SettingsStorysDetailPage extends StatefulWidget {
+  const SettingsStorysDetailPage({Key? key}) : super(key: key);
 
   @override
-  State<SettingsStorysPage> createState() => _SettingsStorysPageState();
+  State<SettingsStorysDetailPage> createState() =>
+      _SettingsStorysDetailPageState();
 }
 
-class _SettingsStorysPageState extends State<SettingsStorysPage> {
+class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;

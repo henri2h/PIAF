@@ -10,14 +10,15 @@ import 'package:provider/provider.dart';
 
 import '../../router.gr.dart';
 
-class RoomListWrapper extends StatefulWidget {
-  const RoomListWrapper({Key? key}) : super(key: key);
+@RoutePage()
+class RoomListWrapperPage extends StatefulWidget {
+  const RoomListWrapperPage({Key? key}) : super(key: key);
 
   @override
-  State<RoomListWrapper> createState() => RoomListWrapperState();
+  State<RoomListWrapperPage> createState() => RoomListWrapperPageState();
 }
 
-class RoomListWrapperState extends State<RoomListWrapper> {
+class RoomListWrapperPageState extends State<RoomListWrapperPage> {
   final scrollControllerSpaces = ScrollController();
   final scrollControllerDrawer = ScrollController();
   final scrollControllerRoomList = ScrollController();
@@ -25,10 +26,10 @@ class RoomListWrapperState extends State<RoomListWrapper> {
   bool mobile = true;
   Future<void> onRoomSelected(String? id) async {
     if (id != null) {
-      await context
-          .navigateTo(RoomListRoomRoute(displaySettingsOnDesktop: true));
+      await context.navigateTo(
+          OverrideRoomListRoomRoute(displaySettingsOnDesktop: true));
     } else {
-      await context.navigateTo(RoomListRoute());
+      await context.navigateTo(OverrideRoomListRoute());
     }
   }
 
@@ -42,15 +43,15 @@ class RoomListWrapperState extends State<RoomListWrapper> {
         onRoomSelection: onRoomSelected,
         onSpaceSelection: (String spaceId) async {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
-            await context.navigateTo(const RoomListSpaceRoute());
+            await context.navigateTo(const OverrideRoomListSpaceRoute());
           } else {
             await context.navigateTo(RoomListRoute());
           }
         },
         onLongPressedSpace: (String? id) async {
           if (id != null) {
-            await context.navigateTo(
-                RoomSpaceRoute(spaceId: id, client: Matrix.of(context).client));
+            await context.navigateTo(OverrideRoomSpaceRoute(
+                spaceId: id, client: Matrix.of(context).client));
           }
         },
         child: Scaffold(

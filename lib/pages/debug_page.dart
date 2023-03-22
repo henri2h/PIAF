@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
@@ -11,6 +12,7 @@ import 'package:minestrix_chat/utils/sentry_controller.dart';
 
 import 'settings/settings_labs_page.dart';
 
+@RoutePage()
 class DebugPage extends StatefulWidget {
   const DebugPage({Key? key}) : super(key: key);
 

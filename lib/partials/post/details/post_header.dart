@@ -172,7 +172,7 @@ class PostHeader extends StatelessWidget {
                                   onPressed: () async {
                                     if (room.feedType == FeedRoomType.group) {
                                       await context
-                                          .navigateTo(GroupRoute(room: room));
+                                          .navigateTo(GroupRoute(roomId: room.id));
                                     } else {
                                       await context.navigateTo(
                                           CalendarEventRoute(room: room));

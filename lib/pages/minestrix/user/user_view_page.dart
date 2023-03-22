@@ -29,6 +29,8 @@ import 'message_button.dart';
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display
 /// a way to select which one to display
+
+@RoutePage()
 class UserViewPage extends StatefulWidget {
   final String? userID;
   final Room? mroom;

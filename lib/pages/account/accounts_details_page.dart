@@ -1,9 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/buttons/custom_text_future_button.dart';
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
@@ -11,8 +8,12 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../partials/components/buttons/custom_future_button.dart';
+import '../../partials/components/buttons/custom_text_future_button.dart';
+import '../../partials/components/layouts/custom_header.dart';
+import '../../router.gr.dart';
 import '../../utils/settings.dart';
 
+@RoutePage()
 class AccountsDetailsPage extends StatefulWidget {
   const AccountsDetailsPage({Key? key}) : super(key: key);
 
@@ -189,7 +190,7 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                 children: [
                   CustomTextFutureButton(
                       onPressed: () async {
-                        await widget.profile.createStoriesRoom();
+                        await widget.profile.createAndAddStoriesRoomToSpace();
                         setState(() {});
                       },
                       text: "Create stories room",

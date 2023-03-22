@@ -22,6 +22,7 @@ import '../../partials/feed/topic_list_tile.dart';
 import '../../partials/post/post_writer_modal.dart';
 import '../../router.gr.dart';
 
+@RoutePage()
 class CalendarEventPage extends StatefulWidget {
   final Room room;
   const CalendarEventPage({Key? key, required this.room}) : super(key: key);

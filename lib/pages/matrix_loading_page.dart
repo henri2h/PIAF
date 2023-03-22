@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrix_title.dart';
@@ -7,6 +8,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../partials/feed/minestrix_profile_not_created.dart';
 
+@RoutePage()
 class MatrixLoadingPage extends StatefulWidget {
   const MatrixLoadingPage({Key? key}) : super(key: key);
 
@@ -23,8 +25,6 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
       if (sclient.prevBatch?.isEmpty ?? true) {
         await sclient.onSync.stream.first;
       }
-    } else {
-      print("Can't wait for rooms loading");
     }
     return true;
   }

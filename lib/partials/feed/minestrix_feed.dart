@@ -18,6 +18,7 @@ import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
@@ -197,10 +198,10 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                                               icon: Icons.post_add,
                                               text: "Write your first post",
                                               onPressed: () async {
-                                                context.pushRoute(
-                                                    PostEditorRoute(
-                                                        room: client
-                                                            .minestrixUserRoom));
+                                                await PostEditorPage.show(
+                                                    context: context,
+                                                    rooms: client
+                                                        .minestrixUserRoom);
                                               }),
                                         ),
                                       Padding(

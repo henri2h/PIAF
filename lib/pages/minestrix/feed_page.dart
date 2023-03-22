@@ -1,7 +1,9 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/feed/minestrix_feed.dart';
 import 'package:minestrix/partials/navigation/rightbar.dart';
 
+@RoutePage()
 class FeedPage extends StatefulWidget {
   const FeedPage({Key? key}) : super(key: key);
 

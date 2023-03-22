@@ -54,14 +54,14 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.list),
           label: const Text("Feed"),
-          path: const FeedRoute().path,
+          path: "",
           onDestinationSelected: (BuildContext context) {
             context.navigateTo(const FeedRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.person),
           label: const Text("My account"),
-          path: UserViewRoute().path,
+          path: "user_feed",
           onDestinationSelected: (BuildContext context) async {
             await context.navigateTo(
                 UserViewRoute(userID: Matrix.of(context).client.userID));
@@ -69,21 +69,21 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.event),
           label: const Text("Event"),
-          path: const CalendarEventListRoute().path,
+          path: "events",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const CalendarEventListRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.groups),
           label: const Text("Communities"),
-          path: const CommunityRoute().path,
+          path: "communities",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const CommunityRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.people),
           label: const Text("Feeds"),
-          path: const FeedListRoute().path,
+          path: "feeds",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const FeedListRoute());
           }),
@@ -100,21 +100,27 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
                 }
               }),
           label: const Text("Chat"),
-          path: const RoomListWrapperRoute().path,
+          path: "chat",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const RoomListWrapperRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.settings),
           label: const Text("Settings"),
-          path: const SettingsRoute().path,
+          path: "settings",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const SettingsRoute());
           }),
     ];
 
-    var selectedIndex = items
-        .indexWhere((element) => widget.path.startsWith("/${element.path}"));
+    var selectedIndex = items.indexWhere((element) {
+      final list = widget.path.split("/");
+      if (list.length > 1) {
+        if (list[1] == element.path) return true;
+      }
+      return false;
+    });
+
     if (selectedIndex < 0 || selectedIndex >= items.length) selectedIndex = 0;
 
     return NavigationRail(
