@@ -89,7 +89,7 @@ Find our documentation in our [separate repo](https://gitlab.com/minestrix/mines
 WIP 🙃
 
 ```bash
-flutter packages pub run build_runner watch
+flutter packages pub run build_runner build
 ```
 
 ### Linux
@@ -114,7 +114,7 @@ From https://pub.dev/packages/flutter_secure_storage :
 * libjsoncpp
 
 ```bash
-sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.0-dev
+sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.1-dev
 ```
 
 ## Special thanks to
