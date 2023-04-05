@@ -25,7 +25,6 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../pages/app_wrapper_page.dart';
 import '../../pages/minestrix/friends/research_page.dart';
 import '../../utils/settings.dart';
-import '../components/friend_suggestion_list.dart';
 import '../components/layouts/custom_header.dart';
 import '../minestrix_title.dart';
 
@@ -237,7 +236,6 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                   );
                 }
 
-                Logs().w("Timeline build page");
                 return Column(
                   children: [
                     CustomHeader(
@@ -286,15 +284,16 @@ class MinestrixFeedState extends State<MinestrixFeed> {
                                     child: StoriesList(client: client),
                                   ),
                                   if (client.minestrixUserRoom.isNotEmpty)
-                                    const PostWriterModal(), // TODO: set the actual rom we are displaying
-                                  const FriendSuggestionsList(),
+                                    const Card(
+                                        child:
+                                            PostWriterModal()), // TODO: set the actual rom we are displaying
                                 ],
                               );
                             }
 
                             return Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 2,
+                                  vertical: 8,
                                 ),
                                 child: Post(
                                     event: events![i - 1],
