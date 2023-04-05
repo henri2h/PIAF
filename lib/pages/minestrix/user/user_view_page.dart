@@ -238,12 +238,10 @@ class UserViewPageState extends State<UserViewPage>
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               if (userId != null)
-                                Card(
-                                  child: UserProfileSelection(
-                                      userId: userId!,
-                                      onRoomSelected: selectRoom,
-                                      roomSelectedId: mroom?.id),
-                                ),
+                                UserProfileSelection(
+                                    userId: userId!,
+                                    onRoomSelected: selectRoom,
+                                    roomSelectedId: mroom?.id),
                             ],
                           ),
                           sidebarBuilder: ({required bool displayLeftBar}) =>
@@ -251,12 +249,10 @@ class UserViewPageState extends State<UserViewPage>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (!displayLeftBar)
-                                Card(
-                                  child: UserProfileSelection(
-                                      userId: userId!,
-                                      onRoomSelected: selectRoom,
-                                      roomSelectedId: mroom?.id),
-                                ),
+                                UserProfileSelection(
+                                    userId: userId!,
+                                    onRoomSelected: selectRoom,
+                                    roomSelectedId: mroom?.id),
                               const SizedBox(
                                 height: 8,
                               ),

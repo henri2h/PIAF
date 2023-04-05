@@ -2,19 +2,22 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
+import 'package:minestrix_chat/view/room_page.dart';
 
 class AccountCard extends StatelessWidget {
-  const AccountCard({Key? key, this.user, this.profile})
+  const AccountCard(
+      {Key? key, this.user, this.profile, this.displaySend = false})
       : assert(user != null || profile != null),
         super(key: key);
 
   final User? user;
   final Profile? profile;
-
+  final bool displaySend;
   @override
   Widget build(BuildContext context) {
     late String userId;
@@ -35,7 +38,6 @@ class AccountCard extends StatelessWidget {
       padding: const EdgeInsets.all(5.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Theme.of(context).cardColor,
           padding: const EdgeInsets.all(0),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -43,7 +45,8 @@ class AccountCard extends StatelessWidget {
         onPressed: () {
           context.pushRoute(UserViewRoute(userID: userId));
         },
-        child: Column(
+        child: Stack(
+          alignment: Alignment.bottomCenter,
           children: [
             MatrixImageAvatar(
               client: Matrix.of(context).client,
@@ -52,29 +55,47 @@ class AccountCard extends StatelessWidget {
               width: MinestrixAvatarSizeConstants.large,
               height: MinestrixAvatarSizeConstants.large,
               shape: MatrixImageAvatarShape.none,
+              unconstraigned: true,
               backgroundColor: Theme.of(context).colorScheme.primary,
-              borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(10.0),
-                  topRight: Radius.circular(10)),
+              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
               defaultIcon: Icon(Icons.person,
                   color: Theme.of(context).colorScheme.onPrimary, size: 70),
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6, top: 5),
+            Card(
               child: SizedBox(
-                width: MinestrixAvatarSizeConstants.large,
-                height: 30,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(displayName ?? userId,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color:
-                                Theme.of(context).textTheme.bodyText1!.color)),
+                height: 46,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(displayName ?? userId,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyText1!
+                                    .color)),
+                      ),
+                      if (displaySend)
+                        IconButton(
+                            onPressed: () {
+                              final client = Matrix.of(context).client;
+                              String? roomId =
+                                  client.getDirectChatFromUserId(userId);
+                              AdaptativeDialogs.show(
+                                  context: context,
+                                  builder: (BuildContext context) => RoomPage(
+                                      roomId: roomId ?? userId,
+                                      client: client,
+                                      onBack: () => context.popRoute()));
+                            },
+                            icon: const Icon(Icons.send))
+                    ],
                   ),
                 ),
               ),

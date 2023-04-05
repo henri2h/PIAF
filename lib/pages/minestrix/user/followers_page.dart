@@ -135,7 +135,10 @@ class FollowersPageState extends State<FollowersPage> {
                         for (User user in users.where((User u) =>
                             u.membership == Membership.join &&
                             u.id != sclient.userID))
-                          AccountCard(user: user),
+                          SizedBox(
+                              width: 180,
+                              height: 200,
+                              child: AccountCard(user: user)),
                       ]),
                     ),
                   ],
