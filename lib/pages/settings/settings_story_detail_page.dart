@@ -1,17 +1,22 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 import '../../partials/components/layouts/custom_header.dart';
+import '../../partials/feed/topic_list_tile.dart';
 import '../../router.gr.dart';
 
 @RoutePage()
 class SettingsStorysDetailPage extends StatefulWidget {
-  const SettingsStorysDetailPage({Key? key}) : super(key: key);
+  const SettingsStorysDetailPage({Key? key, required this.room})
+      : super(key: key);
+  final Room room;
 
   @override
   State<SettingsStorysDetailPage> createState() =>
@@ -19,34 +24,163 @@ class SettingsStorysDetailPage extends StatefulWidget {
 }
 
 class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
+  void changeJoinPermissions(String? context) {}
+
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
-    return ListView(children: [
-      const CustomHeader(title: "Storys"),
-      SettingsList(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          lightTheme: const SettingsThemeData(
-              settingsListBackground: Colors.transparent),
-          darkTheme: const SettingsThemeData(
-              settingsListBackground: Colors.transparent),
-          sections: [
-            SettingsSection(
-              tiles: <SettingsTile>[
-                for (final room
-                    in client.getStorieRoomsFromUser(userID: client.userID!))
-                  SettingsTile.navigation(
-                    leading: RoomAvatar(room: room, client: client),
-                    title: Text(room.getLocalizedDisplayname(
-                        const MatrixDefaultLocalizations())),
-                    value: Text("${room.summary.mJoinedMemberCount} followers"),
-                    onPressed: (context) =>
-                        context.navigateTo(const SettingsAccountRoute()),
+    final room = widget.room;
+    return FutureBuilder(
+        future: room.postLoad(),
+        builder: (context, snapshot) {
+          return ListView(children: [
+            CustomHeader(
+                title:
+                    "Story ${room.getLocalizedDisplayname(const MatrixDefaultLocalizations())}"),
+            SettingsList(
+                platform: DevicePlatform.iOS,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                lightTheme: const SettingsThemeData(
+                    settingsListBackground: Colors.transparent),
+                darkTheme: const SettingsThemeData(
+                    settingsListBackground: Colors.transparent),
+                sections: [
+                  SettingsSection(
+                    title: const Text("Info"),
+                    tiles: <SettingsTile>[
+                      SettingsTile(
+                          title: const Text("Story name"),
+                          value: Text(room.name),
+                          leading: const Icon(Icons.title),
+                          trailing: room.canSendDefaultStates
+                              ? const Icon(Icons.edit)
+                              : null,
+                          onPressed: !room.canSendDefaultStates
+                              ? null
+                              : (context) async {
+                                  List<String>? results =
+                                      await showTextInputDialog(
+                                    context: context,
+                                    textFields: [
+                                      DialogTextField(
+                                          hintText: "Set room name",
+                                          initialText: room.name)
+                                    ],
+                                    title: "Set room name",
+                                  );
+                                  if (results?.isNotEmpty == true) {
+                                    await room.setName(results![0]);
+                                  }
+                                }),
+                      SettingsTile(
+                          title: const Text("Story topic"),
+                          value: TopicBody(room: room),
+                          leading: const Icon(Icons.topic),
+                          trailing: room.canSendDefaultStates
+                              ? const Icon(Icons.edit)
+                              : null,
+                          onPressed: !room.canSendDefaultStates
+                              ? null
+                              : (context) async {
+                                  List<String>? results =
+                                      await showTextInputDialog(
+                                    context: context,
+                                    textFields: [
+                                      DialogTextField(
+                                          hintText: "Set event topic",
+                                          initialText: room.topic)
+                                    ],
+                                    title: "Set room topic",
+                                  );
+                                  if (results?.isNotEmpty == true) {
+                                    await room.setDescription(results![0]);
+                                  }
+                                }),
+                    ],
                   ),
-              ],
-            ),
-          ]),
-    ]);
+                  SettingsSection(
+                      title: const Text("Who can join this story"),
+                      tiles: [
+                        SettingsTileRadio.radio(
+                            groupValue: room.joinRulesString,
+                            value: JoinRules.invite.name,
+                            onPressed: changeJoinPermissions,
+                            title: const Text("Invite")),
+                        SettingsTileRadio.radio(
+                            groupValue: room.joinRulesString,
+                            value: JoinRules.public.name,
+                            onPressed: changeJoinPermissions,
+                            title: const Text("Public")),
+                        SettingsTileRadio.radio(
+                            groupValue: room.joinRulesString,
+                            value: JoinRules.knock.name,
+                            onPressed: changeJoinPermissions,
+                            title: const Text("Knock")),
+                        SettingsTileRadio.radio(
+                            groupValue: room.joinRulesString,
+                            value: JoinRules.private.name,
+                            onPressed: changeJoinPermissions,
+                            title: const Text("Private")),
+                      ]),
+                  SettingsSection(
+                    title: Row(
+                      children: [
+                        const Expanded(child: Text("Info")),
+                        ElevatedButton(
+                            onPressed: () {},
+                            child: Row(
+                              children: const [
+                                Icon(Icons.add, size: 18),
+                                SizedBox(width: 6),
+                                Text("Add"),
+                              ],
+                            ))
+                      ],
+                    ),
+                    tiles: <SettingsTile>[
+                      for (final participant in room.getParticipants())
+                        SettingsTile(
+                            leading: MatrixUserAvatar(
+                              avatarUrl: participant.avatarUrl,
+                              client: client,
+                              name: participant.calcDisplayname(),
+                              userId: participant.id,
+                            ),
+                            title: Text(participant.calcDisplayname()),
+                            value: Text(participant.id),
+                            onPressed: (context) {}),
+                    ],
+                  ),
+                ]),
+          ]);
+        });
   }
+}
+
+extension SettingsTileRadio on SettingsTile {
+  static SettingsTile radio<T>(
+      {void Function(T value)? onPressed,
+      required Widget title,
+      required T value,
+      required T groupValue}) {
+    return SettingsTile(
+      leading: Radio<T>(
+        onChanged: (val) {
+          if (val != null) {
+            onPressed?.call(val);
+          }
+        },
+        value: value,
+        groupValue: groupValue,
+      ),
+      title: title,
+      onPressed: (_) => onPressed?.call(value),
+    );
+  }
+}
+
+extension JoinRulesExtension on Room {
+  String? get joinRulesString =>
+      getState(EventTypes.RoomJoinRules)?.content['join_rule'];
 }

@@ -40,8 +40,8 @@ class _SettingsStorysPageState extends State<SettingsStorysPage> {
                     title: Text(room.getLocalizedDisplayname(
                         const MatrixDefaultLocalizations())),
                     value: Text("${room.summary.mJoinedMemberCount} followers"),
-                    onPressed: (context) =>
-                        context.navigateTo(const SettingsAccountRoute()),
+                    onPressed: (context) => context
+                        .navigateTo(SettingsStorysDetailRoute(room: room)),
                   ),
               ],
             ),
