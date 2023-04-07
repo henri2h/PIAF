@@ -33,13 +33,20 @@ class RightBar extends StatelessWidget {
 
                           return ListView(
                             children: [
-                              const H2Title("Groups"),
-                              for (final group in sgroups)
-                                Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child:
-                                      MinestrixRoomTileNavigator(room: group),
+                              Card(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const H2Title("Groups"),
+                                    for (final group in sgroups)
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: MinestrixRoomTileNavigator(
+                                            room: group),
+                                      ),
+                                  ],
                                 ),
+                              ),
                               const CardPanelList(),
                               if (client.userRoomCreated != true &&
                                   client.prevBatch != null)

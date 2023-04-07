@@ -63,7 +63,7 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
                 ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 500),
                     child: SectionCard(
-                      text: "Permissions",
+                      text: "Info",
                       children: [
                         ListTile(
                             title: const Text("Room name"),

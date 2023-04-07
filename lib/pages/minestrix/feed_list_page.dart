@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
@@ -104,6 +105,16 @@ class _FeedListPageState extends State<FeedListPage> {
                         constraints: const BoxConstraints(maxWidth: 700),
                         child: Column(
                           children: [
+                            ListTile(
+                              title: const Text("Suggestions"),
+                              subtitle: const Text(
+                                  "Follow suggestions based on your friends followers."),
+                              trailing: const Icon(Icons.navigate_next),
+                              onTap: () {
+                                context.pushRoute(
+                                    const FollowRecommendationsRoute());
+                              },
+                            ),
                             for (final room in client.rooms.where((element) {
                               if (element.isFeed) {
                                 if (selected.first == Selection.feed.name) {
