@@ -258,6 +258,7 @@ class UserViewPageState extends State<UserViewPage>
                               ),
                               if (mroom?.room != null)
                                 Card(
+                                  elevation: 3,
                                   child: Padding(
                                       padding: const EdgeInsets.all(8),
                                       child:
@@ -265,39 +266,37 @@ class UserViewPageState extends State<UserViewPage>
                                 ),
                             ],
                           ),
-                          customHeader: CustomHeader(
-                              title: isUserPage ? null : "User Feed",
-                              actionButton: [
-                                if (isUserPage)
-                                  IconButton(
-                                      icon: const Icon(Icons.settings),
-                                      onPressed: () {
-                                        context
-                                            .navigateTo(const SettingsRoute());
-                                      }),
-                                if (isUserPage)
-                                  IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () {
-                                        final space = client.getProfileSpace();
-                                        if (space != null) {
-                                          context.pushRoute(
-                                              SocialSettingsRoute(room: space));
-                                        }
-                                      }),
-                              ],
-                              child: isUserPage
-                                  ? FutureBuilder<Profile>(
-                                      future: client.fetchOwnProfile(),
-                                      builder: (context, snap) {
-                                        return MatrixUserItem(
-                                          name: snap.data?.displayName,
-                                          userId: client.userID!,
-                                          avatarUrl: snap.data?.avatarUrl,
-                                          client: client,
-                                        );
-                                      })
-                                  : null),
+                          customHeaderText: isUserPage ? null : "User Feed",
+                          customHeaderActionsButtons: [
+                            if (isUserPage)
+                              IconButton(
+                                  icon: const Icon(Icons.settings),
+                                  onPressed: () {
+                                    context.navigateTo(const SettingsRoute());
+                                  }),
+                            if (isUserPage)
+                              IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    final space = client.getProfileSpace();
+                                    if (space != null) {
+                                      context.pushRoute(
+                                          SocialSettingsRoute(room: space));
+                                    }
+                                  }),
+                          ],
+                          customHeaderChild: isUserPage
+                              ? FutureBuilder<Profile>(
+                                  future: client.fetchOwnProfile(),
+                                  builder: (context, snap) {
+                                    return MatrixUserItem(
+                                      name: snap.data?.displayName,
+                                      userId: client.userID!,
+                                      avatarUrl: snap.data?.avatarUrl,
+                                      client: client,
+                                    );
+                                  })
+                              : null,
                           headerChildBuilder: (
                                   {required bool displaySideBar}) =>
                               headerChildBuilder(

@@ -65,11 +65,10 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           extendBody: true,
           body: Column(
             children: [
-              if (isWideScreen && displayNavigationRail) const NavBarDesktop(),
               Expanded(
                   child: Row(
                 children: [
-                  if (isWideScreen && !displayNavigationRail)
+                  if (isWideScreen)
                     StreamBuilder<String>(
                         stream: controller?.stream,
                         builder: (context, snapshot) {
@@ -77,32 +76,35 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                               path: snapshot.data ?? '');
                         }),
                   Expanded(
-                    child: AutoRouter(
-                      builder: (context, widget) {
-                        final path = AutoRouterDelegate.of(context)
-                            .urlState
-                            .uri
-                            .toString();
-                        controller?.add(path);
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      child: AutoRouter(
+                        builder: (context, widget) {
+                          final path = AutoRouterDelegate.of(context)
+                              .urlState
+                              .uri
+                              .toString();
+                          controller?.add(path);
 
-                        final shouldDisplayAppBar =
-                            displayAppBarList.contains(path);
-                        final shouldDisplayNavigationRail =
-                            path.startsWith("/rooms");
+                          final shouldDisplayAppBar =
+                              displayAppBarList.contains(path);
+                          final shouldDisplayNavigationRail =
+                              path.startsWith("/rooms");
 
-                        if (displayAppBar != shouldDisplayAppBar ||
-                            shouldDisplayNavigationRail !=
-                                displayNavigationRail) {
-                          SchedulerBinding.instance.addPostFrameCallback((_) {
-                            setState(() {
-                              displayAppBar = shouldDisplayAppBar;
-                              displayNavigationRail =
-                                  shouldDisplayNavigationRail;
+                          if (displayAppBar != shouldDisplayAppBar ||
+                              shouldDisplayNavigationRail !=
+                                  displayNavigationRail) {
+                            SchedulerBinding.instance.addPostFrameCallback((_) {
+                              setState(() {
+                                displayAppBar = shouldDisplayAppBar;
+                                displayNavigationRail =
+                                    shouldDisplayNavigationRail;
+                              });
                             });
-                          });
-                        }
-                        return widget;
-                      },
+                          }
+                          return widget;
+                        },
+                      ),
                     ),
                   ),
                 ],

@@ -100,20 +100,16 @@ class GroupPageState extends State<GroupPage> {
             bool displayChatView = constraints.maxWidth > 1400;
             return LayoutView(
               controller: controller,
-              customHeader: CustomHeader(
-                title: room.name,
-                actionButton: [
-                  IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        context.pushRoute(SocialSettingsRoute(room: room));
-                      }),
-                ],
-              ),
+              customHeaderText: room.name,
+              customHeaderActionsButtons: [
+                IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      context.pushRoute(SocialSettingsRoute(room: room));
+                    }),
+              ],
               headerHeight: 300,
               room: room,
-              headerChildBuilder: ({required bool displaySideBar}) =>
-                  Container(),
               mainBuilder: (
                       {required bool displaySideBar,
                       required bool displayLeftBar}) =>

@@ -102,17 +102,15 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                 builder: (context, snapshot) {
                   return LayoutView(
                       controller: controller,
-                      customHeader: CustomHeader(
-                        title: "Event",
-                        actionButton: [
-                          IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                context
-                                    .pushRoute(SocialSettingsRoute(room: room));
-                              }),
-                        ],
-                      ),
+                      customHeaderText: "Event",
+                      customHeaderActionsButtons: [
+                        IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              context
+                                  .pushRoute(SocialSettingsRoute(room: room));
+                            }),
+                      ],
                       room: room,
                       headerHeight: 280,
                       mainWidth: double.infinity,
@@ -266,9 +264,7 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                 ),
                               ),
                             ],
-                          ),
-                      headerChildBuilder: ({required bool displaySideBar}) =>
-                          Container());
+                          ));
                 });
           }),
     );

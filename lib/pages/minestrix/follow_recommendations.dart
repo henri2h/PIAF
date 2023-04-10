@@ -34,7 +34,11 @@ class _FollowRecommendationsPageState extends State<FollowRecommendationsPage> {
                     maxCrossAxisExtent: 180,
                     childAspectRatio: 0.7,
                     children: [
-                      for (Profile p in snap.data!) AccountCard(profile: p, displaySend: true,),
+                      for (Profile p in snap.data!)
+                        AccountCard(
+                          profile: p,
+                          displaySend: true,
+                        ),
                     ],
                   );
                 }),

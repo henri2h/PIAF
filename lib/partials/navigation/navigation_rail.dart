@@ -38,21 +38,14 @@ class MinestrixNavigationRail extends StatefulWidget {
 }
 
 class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
-  Future<void> showUserSelection(BuildContext context) async {
-    await AdaptativeDialogs.show(
-        context: context,
-        builder: (context) => const SettingsAccountSwitchPage(
-              popOnUserSelected: true,
-            ));
-    setState(() {});
-  }
+  bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
     final items = [
       MinestrixNavigationRailItem(
-          icon: const Icon(Icons.list),
+          icon: const Icon(Icons.home),
           label: const Text("Feed"),
           path: "",
           onDestinationSelected: (BuildContext context) {
@@ -124,60 +117,18 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
     if (selectedIndex < 0 || selectedIndex >= items.length) selectedIndex = 0;
 
     return NavigationRail(
-      extended: true,
-      leading: SizedBox(
-        width: 280,
-        child: Column(
-          children: [
-            FutureBuilder<Profile>(
-                future: client.fetchOwnProfile(),
-                builder: (context, snap) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Card(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: MatrixUserItem(
-                              name: snap.data?.displayName,
-                              userId: client.userID!,
-                              avatarUrl: snap.data?.avatarUrl,
-                              client: client,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: IconButton(
-                                onPressed: () => showUserSelection(context),
-                                icon: const Icon(Icons.arrow_drop_down_circle)),
-                          )
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-          ],
-        ),
-      ),
+      // https://m3.material.io/components/navigation-rail/specs
+      extended: expanded,
+      labelType: NavigationRailLabelType.all,
       onDestinationSelected: (pos) => items[pos].onDestinationSelected(context),
       destinations: [
         ...items
-            .map((e) => NavigationRailDestination(icon: e.icon, label: e.label))
+            .map((e) => NavigationRailDestination(
+                icon: e.icon, label: e.label, padding: EdgeInsets.all(6)))
             .toList()
       ],
+
       selectedIndex: selectedIndex,
-      trailing: Expanded(
-        child: SizedBox(
-          width: 270,
-          child: ListView(
-            children: [
-              const H2Title("Communities"),
-              for (final community in client.getCommunities())
-                MinestrixRoomTileNavigator(room: community.space),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
