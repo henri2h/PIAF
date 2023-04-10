@@ -772,17 +772,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_webrtc
-<<<<<<< HEAD
       sha256: f8904369f3ad57945a797481bf079c281f4944ad4635e9d412529141d81c9c76
       url: "https://pub.dev"
     source: hosted
     version: "0.9.25"
-=======
-      sha256: "4eacac1b49c65fd225ea69f41b3c28fae55c1f2caba6d5f21a6de2bd43e6dc02"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.9.24"
->>>>>>> 36fd785 (chore: upgrade dependencies)
   frontend_server_client:
     dependency: transitive
     description:
@@ -900,6 +893,7 @@ packages:
     description:
       name: image_picker
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "8b0efbf350ba4f2be1531d629396a994983d0c02f4a82a128aed84d954b90cfa"
       url: "https://pub.dev"
     source: hosted
@@ -910,21 +904,33 @@ packages:
     source: hosted
     version: "0.8.7"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: cb25f04595a88450970dbe727243ba8cd21b6f7e0d7d1fc5b789fc6f52e95494
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.7+1"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   image_picker_android:
     dependency: transitive
     description:
       name: image_picker_android
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       sha256: dfb5b0f28b8786fcc662b7ed42bfb4b82a6cbbd74da1958384b10d40bdf212a7
       url: "https://pub.dev"
     source: hosted
     version: "0.8.6+6"
+<<<<<<< HEAD
 =======
       sha256: "1f5a4b38eb742422d89c1a01d9db6077c3c9496f551bc9da74649e338a2b5101"
       url: "https://pub.dev"
     source: hosted
     version: "0.8.6"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   image_picker_for_web:
     dependency: transitive
     description:
@@ -938,6 +944,7 @@ packages:
     description:
       name: image_picker_ios
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: a1546ff5861fc15812953d4733b520c3d371cec3d2859a001ff04c46c4d81883
       url: "https://pub.dev"
     source: hosted
@@ -948,6 +955,12 @@ packages:
     source: hosted
     version: "0.8.7+1"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: a1546ff5861fc15812953d4733b520c3d371cec3d2859a001ff04c46c4d81883
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.7+3"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   image_picker_platform_interface:
     dependency: transitive
     description:
@@ -1106,7 +1119,11 @@ packages:
     description:
       path: "."
       ref: "henri2h/index-events-by-event-type"
+<<<<<<< HEAD
       resolved-ref: "3dbd577753a9a792ab0b69949e54c1950cdfbcd5"
+=======
+      resolved-ref: "11706e70541578a83e6c782e2bdd3118c365d4e2"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       url: "https://gitlab.com/minestrix/famedlysdk.git"
     source: git
     version: "0.18.2"
@@ -1131,6 +1148,7 @@ packages:
     description:
       name: media_kit
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: defc249a792bf39346e6ee3ec40bbe48685c54aab86a25c4c27cc54a99afb6b1
       url: "https://pub.dev"
     source: hosted
@@ -1141,10 +1159,17 @@ packages:
     source: hosted
     version: "0.0.1"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: defc249a792bf39346e6ee3ec40bbe48685c54aab86a25c4c27cc54a99afb6b1
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4+1"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   media_kit_libs_linux:
     dependency: transitive
     description:
       name: media_kit_libs_linux
+<<<<<<< HEAD
 <<<<<<< HEAD
       sha256: "7310b17dd2abc2e7363f78a273086445c2216c7b6dfb60933ca3814031d03814"
       url: "https://pub.dev"
@@ -1156,10 +1181,17 @@ packages:
     source: hosted
     version: "1.0.0"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "7310b17dd2abc2e7363f78a273086445c2216c7b6dfb60933ca3814031d03814"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   media_kit_libs_windows_video:
     dependency: transitive
     description:
       name: media_kit_libs_windows_video
+<<<<<<< HEAD
 <<<<<<< HEAD
       sha256: c2bcbe31e6e6f1e6ae5813c5fe9b7bfde1110c2e95643869919972a7845948e1
       url: "https://pub.dev"
@@ -1171,10 +1203,17 @@ packages:
     source: hosted
     version: "1.0.0"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: c2bcbe31e6e6f1e6ae5813c5fe9b7bfde1110c2e95643869919972a7845948e1
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   media_kit_video:
     dependency: transitive
     description:
       name: media_kit_video
+<<<<<<< HEAD
 <<<<<<< HEAD
       sha256: "1a870a3d731a9ce34e12ec5baed05b3081164f0c85b71baf05900ca47ee5639c"
       url: "https://pub.dev"
@@ -1186,6 +1225,12 @@ packages:
     source: hosted
     version: "0.0.1"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "1a870a3d731a9ce34e12ec5baed05b3081164f0c85b71baf05900ca47ee5639c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   meta:
     dependency: transitive
     description:
@@ -1208,10 +1253,14 @@ packages:
       path: "."
       ref: HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       resolved-ref: "92e160d0313dc9c25a3a31a31a3e0cc6b08e919a"
 =======
       resolved-ref: "3d1b0c7ee571ecde3d00884b486e7de3cb14452d"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      resolved-ref: "03c7524d87328489a6581add590f76a9695288df"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.2"
@@ -1349,6 +1398,7 @@ packages:
     description:
       name: path_provider_foundation
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: ad4c4d011830462633f03eb34445a45345673dfd4faf1ab0b4735fbd93b19183
       url: "https://pub.dev"
     source: hosted
@@ -1359,6 +1409,12 @@ packages:
     source: hosted
     version: "2.1.3"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "818b2dc38b0f178e0ea3f7cf3b28146faab11375985d815942a68eee11c2d0f7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   path_provider_linux:
     dependency: transitive
     description:
@@ -1532,6 +1588,7 @@ packages:
     description:
       name: safe_local_storage
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: ede4eb6cb7d88a116b3d3bf1df70790b9e2038bc37cb19112e381217c74d9440
       url: "https://pub.dev"
     source: hosted
@@ -1542,6 +1599,12 @@ packages:
     source: hosted
     version: "1.0.0"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: ede4eb6cb7d88a116b3d3bf1df70790b9e2038bc37cb19112e381217c74d9440
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   scroll_to_index:
     dependency: "direct main"
     description:
@@ -1595,6 +1658,7 @@ packages:
     description:
       name: shared_preferences_android
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "8304d8a1f7d21a429f91dee552792249362b68a331ac5c3c1caf370f658873f6"
       url: "https://pub.dev"
     source: hosted
@@ -1605,10 +1669,17 @@ packages:
     source: hosted
     version: "2.0.17"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "8304d8a1f7d21a429f91dee552792249362b68a331ac5c3c1caf370f658873f6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   shared_preferences_foundation:
     dependency: transitive
     description:
       name: shared_preferences_foundation
+<<<<<<< HEAD
 <<<<<<< HEAD
       sha256: "0c1c16c56c9708aa9c361541a6f0e5cc6fc12a3232d866a687a7b7db30032b07"
       url: "https://pub.dev"
@@ -1620,10 +1691,17 @@ packages:
     source: hosted
     version: "2.1.5"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: cf2a42fb20148502022861f71698db12d937c7459345a1bdaa88fc91a91b3603
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   shared_preferences_linux:
     dependency: transitive
     description:
       name: shared_preferences_linux
+<<<<<<< HEAD
 <<<<<<< HEAD
       sha256: "9d387433ca65717bbf1be88f4d5bb18f10508917a8fa2fb02e0fd0d7479a9afa"
       url: "https://pub.dev"
@@ -1635,6 +1713,12 @@ packages:
     source: hosted
     version: "2.1.5"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "9d387433ca65717bbf1be88f4d5bb18f10508917a8fa2fb02e0fd0d7479a9afa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   shared_preferences_platform_interface:
     dependency: transitive
     description:
@@ -1648,6 +1732,7 @@ packages:
     description:
       name: shared_preferences_web
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "74083203a8eae241e0de4a0d597dbedab3b8fef5563f33cf3c12d7e93c655ca5"
       url: "https://pub.dev"
     source: hosted
@@ -1658,10 +1743,17 @@ packages:
     source: hosted
     version: "2.0.6"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "74083203a8eae241e0de4a0d597dbedab3b8fef5563f33cf3c12d7e93c655ca5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   shared_preferences_windows:
     dependency: transitive
     description:
       name: shared_preferences_windows
+<<<<<<< HEAD
 <<<<<<< HEAD
       sha256: "5e588e2efef56916a3b229c3bfe81e6a525665a454519ca51dbcc4236a274173"
       url: "https://pub.dev"
@@ -1673,6 +1765,12 @@ packages:
     source: hosted
     version: "2.1.5"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "5e588e2efef56916a3b229c3bfe81e6a525665a454519ca51dbcc4236a274173"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   shelf:
     dependency: transitive
     description:
@@ -1923,6 +2021,7 @@ packages:
     description:
       name: uri_parser
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "6543c9fd86d2862fac55d800a43e67c0dcd1a41677cb69c2f8edfe73bbcf1835"
       url: "https://pub.dev"
     source: hosted
@@ -1933,6 +2032,12 @@ packages:
     source: hosted
     version: "2.0.0"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "6543c9fd86d2862fac55d800a43e67c0dcd1a41677cb69c2f8edfe73bbcf1835"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   url_launcher:
     dependency: "direct main"
     description:
@@ -1946,6 +2051,7 @@ packages:
     description:
       name: url_launcher_android
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: dd729390aa936bf1bdf5cd1bc7468ff340263f80a2c4f569416507667de8e3c8
       url: "https://pub.dev"
     source: hosted
@@ -1956,21 +2062,33 @@ packages:
     source: hosted
     version: "6.0.25"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: dd729390aa936bf1bdf5cd1bc7468ff340263f80a2c4f569416507667de8e3c8
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.26"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   url_launcher_ios:
     dependency: transitive
     description:
       name: url_launcher_ios
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       sha256: "9af7ea73259886b92199f9e42c116072f05ff9bea2dcb339ab935dfc957392c2"
       url: "https://pub.dev"
     source: hosted
     version: "6.1.4"
+<<<<<<< HEAD
 =======
       sha256: "7ab1e5b646623d6a2537aa59d5d039f90eebef75a7c25e105f6f75de1f7750c3"
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   url_launcher_linux:
     dependency: transitive
     description:
@@ -2039,46 +2157,64 @@ packages:
     description:
       name: video_player
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       sha256: de95f0e9405f29b5582573d4166132e71f83b3158aac14e8ee5767a54f4f1fbd
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
+<<<<<<< HEAD
 =======
       sha256: "58dc3d6ceb199b82e652ec27f16485e33167ef021fe4221a954ff1aa12b1a5c0"
       url: "https://pub.dev"
     source: hosted
     version: "2.5.3"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   video_player_android:
     dependency: transitive
     description:
       name: video_player_android
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       sha256: a592048a711d5739d9cea2255d425779f138d41095b9149bda60ce4bc1af8871
       url: "https://pub.dev"
     source: hosted
     version: "2.4.4"
+<<<<<<< HEAD
 =======
       sha256: "83cd20b76749ef3d662742c650a0eb39f774960286a33d706a75c551874dbbb1"
       url: "https://pub.dev"
     source: hosted
     version: "2.3.12"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   video_player_avfoundation:
     dependency: transitive
     description:
       name: video_player_avfoundation
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       sha256: "75c6d68cd479a25f34d635149ba6887bc8f1b2b2921841121fd44ea0c5bc1927"
       url: "https://pub.dev"
     source: hosted
     version: "2.4.4"
+<<<<<<< HEAD
 =======
       sha256: "9d8585be0d63943f0dc46e0aed6697a715f64d7faab39b6053ecf9b6da3ca01d"
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   video_player_platform_interface:
     dependency: transitive
     description:
@@ -2099,6 +2235,7 @@ packages:
     description:
       name: video_player_web
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "44ce41424d104dfb7cf6982cc6b84af2b007a24d126406025bf40de5d481c74c"
       url: "https://pub.dev"
     source: hosted
@@ -2109,6 +2246,12 @@ packages:
     source: hosted
     version: "2.0.15"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "44ce41424d104dfb7cf6982cc6b84af2b007a24d126406025bf40de5d481c74c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.16"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   wakelock:
     dependency: transitive
     description:
@@ -2186,16 +2329,22 @@ packages:
     description:
       name: webview_flutter_android
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
       sha256: "5906c9aa8c88ed372b2ad3c88c942790b4fb16f73fdd1c0647b4d747d9cf5b3f"
       url: "https://pub.dev"
     source: hosted
     version: "3.4.5"
+<<<<<<< HEAD
 =======
       sha256: c849dcb6bf7367f696869006fb9575c15bdc6a1d624ae13f12de5a147a740b12
       url: "https://pub.dev"
     source: hosted
     version: "3.4.2"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   webview_flutter_platform_interface:
     dependency: transitive
     description:
@@ -2209,6 +2358,7 @@ packages:
     description:
       name: webview_flutter_wkwebview
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "9a78d963cce191dd6a9df547301fc5c008bf3dae95a323ec281fff1284e0a037"
       url: "https://pub.dev"
     source: hosted
@@ -2219,6 +2369,12 @@ packages:
     source: hosted
     version: "3.2.1"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "9a78d963cce191dd6a9df547301fc5c008bf3dae95a323ec281fff1284e0a037"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.4"
+>>>>>>> 03dcbc4 (chore: pub upgrade)
   win32:
     dependency: transitive
     description:
