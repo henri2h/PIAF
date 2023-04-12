@@ -894,6 +894,7 @@ packages:
       name: image_picker
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "8b0efbf350ba4f2be1531d629396a994983d0c02f4a82a128aed84d954b90cfa"
       url: "https://pub.dev"
     source: hosted
@@ -910,6 +911,12 @@ packages:
     source: hosted
     version: "0.8.7+1"
 >>>>>>> 03dcbc4 (chore: pub upgrade)
+=======
+      sha256: "8b0efbf350ba4f2be1531d629396a994983d0c02f4a82a128aed84d954b90cfa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.7+2"
+>>>>>>> a4a0458 (core: pub upgrade)
   image_picker_android:
     dependency: transitive
     description:
@@ -1254,6 +1261,7 @@ packages:
       ref: HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       resolved-ref: "92e160d0313dc9c25a3a31a31a3e0cc6b08e919a"
 =======
       resolved-ref: "3d1b0c7ee571ecde3d00884b486e7de3cb14452d"
@@ -1261,6 +1269,9 @@ packages:
 =======
       resolved-ref: "03c7524d87328489a6581add590f76a9695288df"
 >>>>>>> 03dcbc4 (chore: pub upgrade)
+=======
+      resolved-ref: "99e5d54869e025b15bb9a470f7c7fdd16e8360bf"
+>>>>>>> a4a0458 (core: pub upgrade)
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.2"
@@ -1399,6 +1410,7 @@ packages:
       name: path_provider_foundation
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: ad4c4d011830462633f03eb34445a45345673dfd4faf1ab0b4735fbd93b19183
       url: "https://pub.dev"
     source: hosted
@@ -1415,6 +1427,12 @@ packages:
     source: hosted
     version: "2.2.1"
 >>>>>>> 03dcbc4 (chore: pub upgrade)
+=======
+      sha256: ad4c4d011830462633f03eb34445a45345673dfd4faf1ab0b4735fbd93b19183
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.2"
+>>>>>>> a4a0458 (core: pub upgrade)
   path_provider_linux:
     dependency: transitive
     description:
@@ -1681,6 +1699,7 @@ packages:
       name: shared_preferences_foundation
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "0c1c16c56c9708aa9c361541a6f0e5cc6fc12a3232d866a687a7b7db30032b07"
       url: "https://pub.dev"
     source: hosted
@@ -1697,6 +1716,12 @@ packages:
     source: hosted
     version: "2.2.0"
 >>>>>>> 03dcbc4 (chore: pub upgrade)
+=======
+      sha256: "0c1c16c56c9708aa9c361541a6f0e5cc6fc12a3232d866a687a7b7db30032b07"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
+>>>>>>> a4a0458 (core: pub upgrade)
   shared_preferences_linux:
     dependency: transitive
     description:
@@ -2102,6 +2127,7 @@ packages:
     description:
       name: url_launcher_macos
 <<<<<<< HEAD
+<<<<<<< HEAD
       sha256: "91ee3e75ea9dadf38036200c5d3743518f4a5eb77a8d13fda1ee5764373f185e"
       url: "https://pub.dev"
     source: hosted
@@ -2112,6 +2138,12 @@ packages:
     source: hosted
     version: "3.0.4"
 >>>>>>> 36fd785 (chore: upgrade dependencies)
+=======
+      sha256: "91ee3e75ea9dadf38036200c5d3743518f4a5eb77a8d13fda1ee5764373f185e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.5"
+>>>>>>> a4a0458 (core: pub upgrade)
   url_launcher_platform_interface:
     dependency: transitive
     description:
