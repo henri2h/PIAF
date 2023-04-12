@@ -1127,10 +1127,14 @@ packages:
       path: "."
       ref: "henri2h/index-events-by-event-type"
 <<<<<<< HEAD
+<<<<<<< HEAD
       resolved-ref: "3dbd577753a9a792ab0b69949e54c1950cdfbcd5"
 =======
       resolved-ref: "11706e70541578a83e6c782e2bdd3118c365d4e2"
 >>>>>>> 03dcbc4 (chore: pub upgrade)
+=======
+      resolved-ref: "3dbd577753a9a792ab0b69949e54c1950cdfbcd5"
+>>>>>>> 836e1fa (core: upgrade dep)
       url: "https://gitlab.com/minestrix/famedlysdk.git"
     source: git
     version: "0.18.2"
@@ -1262,6 +1266,7 @@ packages:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       resolved-ref: "92e160d0313dc9c25a3a31a31a3e0cc6b08e919a"
 =======
       resolved-ref: "3d1b0c7ee571ecde3d00884b486e7de3cb14452d"
@@ -1272,6 +1277,9 @@ packages:
 =======
       resolved-ref: "99e5d54869e025b15bb9a470f7c7fdd16e8360bf"
 >>>>>>> a4a0458 (core: pub upgrade)
+=======
+      resolved-ref: "92e160d0313dc9c25a3a31a31a3e0cc6b08e919a"
+>>>>>>> 836e1fa (core: upgrade dep)
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
     version: "0.0.2"
