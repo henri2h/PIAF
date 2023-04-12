@@ -2,15 +2,12 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/minestrix_chat.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 import '../../partials/components/layouts/custom_header.dart';
 import '../../partials/feed/topic_list_tile.dart';
-import '../../router.gr.dart';
 
 @RoutePage()
 class SettingsStorysDetailPage extends StatefulWidget {
@@ -38,7 +35,6 @@ class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
                 title:
                     "Story ${room.getLocalizedDisplayname(const MatrixDefaultLocalizations())}"),
             SettingsList(
-                platform: DevicePlatform.iOS,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 lightTheme: const SettingsThemeData(

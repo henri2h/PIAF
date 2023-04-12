@@ -34,7 +34,6 @@ class SettingsPageState extends State<SettingsPage> {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 360),
                 child: Container(
-                  color: Theme.of(context).scaffoldBackgroundColor,
                   child: const SettingsPanel(),
                 ),
               ),
