@@ -32,6 +32,7 @@
 .pub-cache/
 .pub/
 build/
+ephemeral/
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -48,4 +49,3 @@ app.*.map.json
 /android/app/release
 .vscode
 *.gr.dart
-app/build/linux/x64/debug/plugins/desktop_webview_window/CMakeFiles/desktop_webview_window_plugin.dir/webview_window.cc.o
