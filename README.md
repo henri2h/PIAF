@@ -14,6 +14,10 @@
 ![](https://img.shields.io/badge/Version-ALPHA_0.1.5-teal)
 ![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
 
+
+<a href='https://flathub.org/apps/details/fr.henri2h.minestrix'><img width='240' alt='Get it on Flathub' src='https://flathub.org/assets/badges/flathub-badge-i-en.png'/></a>
+
+
 ## 🤔 Why
 
 The goal of MinesTrix is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your posts or edit them.
@@ -89,7 +93,7 @@ Find our documentation in our [separate repo](https://gitlab.com/minestrix/mines
 WIP 🙃
 
 ```bash
-flutter packages pub run build_runner watch
+flutter packages pub run build_runner build
 ```
 
 ### Linux
@@ -114,7 +118,7 @@ From https://pub.dev/packages/flutter_secure_storage :
 * libjsoncpp
 
 ```bash
-sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.0-dev libmpv-dev
+sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.1-dev libmpv-dev
 ```
 
 ## Special thanks to
