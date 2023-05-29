@@ -93,7 +93,7 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
                 }
               }),
           label: const Text("Chat"),
-          path: "chat",
+          path: "rooms",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const RoomListWrapperRoute());
           }),

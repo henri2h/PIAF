@@ -88,9 +88,7 @@ dependencies:
   package_info_plus: ^3.0.2
 
   minestrix_chat:
-    git:
-      url: https://gitlab.com/minestrix/minestrix-chat.git
-    #path: ../minestrix_chat
+    path: ../lib
   infinite_list:
     git:
       url: https://gitlab.com/minestrix/infinite-list.git

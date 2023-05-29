@@ -1261,6 +1261,7 @@ packages:
   minestrix_chat:
     dependency: "direct main"
     description:
+<<<<<<< HEAD:pubspec.lock
       path: "."
       ref: HEAD
 <<<<<<< HEAD
@@ -1282,6 +1283,11 @@ packages:
 >>>>>>> 836e1fa (core: upgrade dep)
       url: "https://gitlab.com/minestrix/minestrix-chat.git"
     source: git
+=======
+      path: "../lib"
+      relative: true
+    source: path
+>>>>>>> de6bf3f (feat: refactor):app/pubspec.lock
     version: "0.0.2"
   modal_bottom_sheet:
     dependency: transitive

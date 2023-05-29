@@ -76,35 +76,43 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                               path: snapshot.data ?? '');
                         }),
                   Expanded(
-                    child: Card(
-                      margin: EdgeInsets.zero,
-                      child: AutoRouter(
-                        builder: (context, widget) {
-                          final path = AutoRouterDelegate.of(context)
-                              .urlState
-                              .uri
-                              .toString();
-                          controller?.add(path);
+                    child: Column(
+                      children: [
+                        const NavBarDesktop(),
+                        const SizedBox(
+                          height: 6,
+                        ),
+                        Expanded(
+                          child: AutoRouter(
+                            builder: (context, widget) {
+                              final path = AutoRouterDelegate.of(context)
+                                  .urlState
+                                  .uri
+                                  .toString();
+                              controller?.add(path);
 
-                          final shouldDisplayAppBar =
-                              displayAppBarList.contains(path);
-                          final shouldDisplayNavigationRail =
-                              path.startsWith("/rooms");
+                              final shouldDisplayAppBar =
+                                  displayAppBarList.contains(path);
+                              final shouldDisplayNavigationRail =
+                                  path.startsWith("/rooms");
 
-                          if (displayAppBar != shouldDisplayAppBar ||
-                              shouldDisplayNavigationRail !=
-                                  displayNavigationRail) {
-                            SchedulerBinding.instance.addPostFrameCallback((_) {
-                              setState(() {
-                                displayAppBar = shouldDisplayAppBar;
-                                displayNavigationRail =
-                                    shouldDisplayNavigationRail;
-                              });
-                            });
-                          }
-                          return widget;
-                        },
-                      ),
+                              if (displayAppBar != shouldDisplayAppBar ||
+                                  shouldDisplayNavigationRail !=
+                                      displayNavigationRail) {
+                                SchedulerBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  setState(() {
+                                    displayAppBar = shouldDisplayAppBar;
+                                    displayNavigationRail =
+                                        shouldDisplayNavigationRail;
+                                  });
+                                });
+                              }
+                              return widget;
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

@@ -64,7 +64,7 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
 }
 
 class InfoBadge extends StatelessWidget {
-  const InfoBadge({Key? key, required this.text, this.color: Colors.red})
+  const InfoBadge({Key? key, required this.text, this.color = Colors.red})
       : super(key: key);
 
   final String text;

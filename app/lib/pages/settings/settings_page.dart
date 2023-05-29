@@ -33,7 +33,7 @@ class SettingsPageState extends State<SettingsPage> {
             if (!smallScreen)
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 360),
-                child: const SettingsPanel(),
+                 child: const SettingsPanel(),
               ),
             const Expanded(child: AutoRouter())
           ],

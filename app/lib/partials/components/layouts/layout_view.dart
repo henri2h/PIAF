@@ -113,65 +113,57 @@ class LayoutView extends StatelessWidget {
         ),
       );
 
-      return Column(
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const NavBarDesktop(),
-          const SizedBox(
-            height: 6,
-          ),
+          if (leftBar != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 6.0),
+              child: Card(
+                  margin: EdgeInsets.zero,
+                  child: SizedBox(width: 300, child: leftBar!)),
+            ),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (leftBar != null) SizedBox(width: 300, child: leftBar!),
-                Expanded(
-                  child: ListView(controller: controller, children: [
-                    header,
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Center(
-                      child: Card(
-                        elevation: 2,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: maxHeaderWidth),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (displaySideBar)
-                                SizedBox(
-                                    width: sidebarWidth,
-                                    child: sidebarBuilder!(
-                                        displayLeftBar: displayLeftBar)),
-                              Expanded(
-                                child: Center(
-                                  child: ConstrainedBox(
-                                      constraints:
-                                          BoxConstraints(maxWidth: mainWidth),
-                                      child: mainBuilder(
-                                          displaySideBar: displaySideBar,
-                                          displayLeftBar: displayLeftBar)),
-                                ),
-                              ),
-                            ],
-                          ),
+            child: ListView(controller: controller, children: [
+              header,
+              const SizedBox(
+                height: 10,
+              ),
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxHeaderWidth),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (displaySideBar)
+                        SizedBox(
+                            width: sidebarWidth,
+                            child: sidebarBuilder!(
+                                displayLeftBar: displayLeftBar)),
+                      Expanded(
+                        child: Center(
+                          child: ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: mainWidth),
+                              child: mainBuilder(
+                                  displaySideBar: displaySideBar,
+                                  displayLeftBar: displayLeftBar)),
                         ),
                       ),
-                    ),
-                  ]),
+                    ],
+                  ),
                 ),
-                if (rightBar != null) SizedBox(width: 400, child: rightBar!),
-                if (displayChat)
-                  SizedBox(
-                      width: 400,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: RoomChatCard(room: room!),
-                      ))
-              ],
-            ),
+              ),
+            ]),
           ),
+          if (rightBar != null) SizedBox(width: 400, child: rightBar!),
+          if (displayChat)
+            SizedBox(
+                width: 400,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RoomChatCard(room: room!),
+                ))
         ],
       );
     });
