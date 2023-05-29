@@ -38,30 +38,23 @@ class MinestrixNavigationRail extends StatefulWidget {
 }
 
 class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
-  Future<void> showUserSelection(BuildContext context) async {
-    await AdaptativeDialogs.show(
-        context: context,
-        builder: (context) => const SettingsAccountSwitchPage(
-              popOnUserSelected: true,
-            ));
-    setState(() {});
-  }
+  bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
     final items = [
       MinestrixNavigationRailItem(
-          icon: const Icon(Icons.list),
+          icon: const Icon(Icons.home),
           label: const Text("Feed"),
-          path: const FeedRoute().path,
+          path: "",
           onDestinationSelected: (BuildContext context) {
             context.navigateTo(const FeedRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.person),
           label: const Text("My account"),
-          path: UserViewRoute().path,
+          path: "user_feed",
           onDestinationSelected: (BuildContext context) async {
             await context.navigateTo(
                 UserViewRoute(userID: Matrix.of(context).client.userID));
@@ -69,21 +62,21 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.event),
           label: const Text("Event"),
-          path: const CalendarEventListRoute().path,
+          path: "events",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const CalendarEventListRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.groups),
           label: const Text("Communities"),
-          path: const CommunityRoute().path,
+          path: "communities",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const CommunityRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.people),
           label: const Text("Feeds"),
-          path: const FeedListRoute().path,
+          path: "feeds",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const FeedListRoute());
           }),
@@ -100,78 +93,42 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
                 }
               }),
           label: const Text("Chat"),
-          path: const RoomListWrapperRoute().path,
+          path: "chat",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const RoomListWrapperRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.settings),
           label: const Text("Settings"),
-          path: const SettingsRoute().path,
+          path: "settings",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const SettingsRoute());
           }),
     ];
 
-    var selectedIndex = items
-        .indexWhere((element) => widget.path.startsWith("/${element.path}"));
+    var selectedIndex = items.indexWhere((element) {
+      final list = widget.path.split("/");
+      if (list.length > 1) {
+        if (list[1] == element.path) return true;
+      }
+      return false;
+    });
+
     if (selectedIndex < 0 || selectedIndex >= items.length) selectedIndex = 0;
 
     return NavigationRail(
-      extended: true,
-      leading: SizedBox(
-        width: 280,
-        child: Column(
-          children: [
-            FutureBuilder<Profile>(
-                future: client.fetchOwnProfile(),
-                builder: (context, snap) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Card(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: MatrixUserItem(
-                              name: snap.data?.displayName,
-                              userId: client.userID!,
-                              avatarUrl: snap.data?.avatarUrl,
-                              client: client,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: IconButton(
-                                onPressed: () => showUserSelection(context),
-                                icon: const Icon(Icons.arrow_drop_down_circle)),
-                          )
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-          ],
-        ),
-      ),
+      // https://m3.material.io/components/navigation-rail/specs
+      extended: expanded,
+      labelType: NavigationRailLabelType.all,
       onDestinationSelected: (pos) => items[pos].onDestinationSelected(context),
       destinations: [
         ...items
-            .map((e) => NavigationRailDestination(icon: e.icon, label: e.label))
+            .map((e) => NavigationRailDestination(
+                icon: e.icon, label: e.label, padding: EdgeInsets.all(6)))
             .toList()
       ],
+
       selectedIndex: selectedIndex,
-      trailing: Expanded(
-        child: SizedBox(
-          width: 270,
-          child: ListView(
-            children: [
-              const H2Title("Communities"),
-              for (final community in client.getCommunities())
-                MinestrixRoomTileNavigator(room: community.space),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

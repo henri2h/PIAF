@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/layout_view.dart';
@@ -5,11 +6,11 @@ import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
 
-import '../../../partials/components/layouts/custom_header.dart';
 import '../../../partials/minestrix_room_tile.dart';
 import '../../../utils/minestrix/minestrix_community_extension.dart';
 import 'layout_main_feed.dart';
 
+@RoutePage()
 class CommunityDetailPage extends StatefulWidget {
   final Room room;
 
@@ -47,20 +48,17 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
           return LayoutView(
             controller: controller,
             displayChat: false,
-            customHeader: CustomHeader(
-              title: space
-                  .getLocalizedDisplayname(const MatrixDefaultLocalizations()),
-              actionButton: [
-                IconButton(
-                    icon: const Icon(Icons.settings),
-                    onPressed: () {
-                      RoomSettingsPage.show(context: context, room: space);
-                    })
-              ],
-            ),
+            customHeaderText: space
+                .getLocalizedDisplayname(const MatrixDefaultLocalizations()),
+            customHeaderActionsButtons: [
+              IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    RoomSettingsPage.show(context: context, room: space);
+                  })
+            ],
             headerHeight: 300,
             room: space,
-            headerChildBuilder: ({required bool displaySideBar}) => Container(),
             sidebarBuilder: ({required bool displayLeftBar}) => Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(

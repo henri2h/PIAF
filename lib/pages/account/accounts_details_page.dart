@@ -1,19 +1,19 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/buttons/custom_text_future_button.dart';
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/utils/profile_space.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../partials/components/buttons/custom_future_button.dart';
+import '../../partials/components/buttons/custom_text_future_button.dart';
+import '../../partials/components/layouts/custom_header.dart';
+import '../../router.gr.dart';
 import '../../utils/settings.dart';
 
+@RoutePage()
 class AccountsDetailsPage extends StatefulWidget {
   const AccountsDetailsPage({Key? key}) : super(key: key);
 
@@ -29,13 +29,14 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
     return StreamBuilder(
         stream: client.onSync.stream.where((event) => event.hasRoomUpdate),
         builder: (context, _) {
-          ProfileSpace? profile = ProfileSpace.getProfileSpace(client);
+          Room? profile = client.getProfileSpace();
 
-          final rooms = client.srooms
+          // room not in our profile space
+          final roomsNotInOurSpace = client.srooms
               .where((sroom) =>
                   sroom.creatorId == client.userID &&
                   sroom.feedType == FeedRoomType.user &&
-                  (profile?.r.spaceChildren.indexWhere(
+                  (profile?.spaceChildren.indexWhere(
                               (final sc) => sc.roomId == sroom.id) ??
                           -1) ==
                       -1)
@@ -53,7 +54,7 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
                         ],
                       ),
                     ),
-              for (Room room in rooms)
+              for (Room room in roomsNotInOurSpace)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Builder(builder: (context) {
@@ -68,11 +69,11 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
                                 children: [
                                   RoomProfileListTile(room, onLeave: () async {
                                     if (profile != null &&
-                                        profile.r.spaceChildren.indexWhere(
+                                        profile.spaceChildren.indexWhere(
                                                 (final sc) =>
                                                     sc.roomId == room.id) !=
                                             -1) {
-                                      await profile.r.removeSpaceChild(room.id);
+                                      await profile.removeSpaceChild(room.id);
                                     }
                                     setState(() {});
                                   }),
@@ -84,7 +85,7 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
                               child: CustomTextFutureButton(
                                   icon: Icons.add,
                                   onPressed: () async {
-                                    await profile?.r.setSpaceChild(room.id);
+                                    await profile?.setSpaceChild(room.id);
                                   },
                                   expanded: false,
                                   color: Theme.of(context).colorScheme.primary,
@@ -108,7 +109,7 @@ class ProfileSpaceCard extends StatefulWidget {
     required this.profile,
   }) : super(key: key);
 
-  final ProfileSpace profile;
+  final Room profile;
 
   @override
   State<ProfileSpaceCard> createState() => _ProfileSpaceCardState();
@@ -117,7 +118,7 @@ class ProfileSpaceCard extends StatefulWidget {
 class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
   @override
   Widget build(BuildContext context) {
-    final room = widget.profile.r;
+    final room = widget.profile;
 
     final client = room.client;
 
@@ -189,7 +190,7 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                 children: [
                   CustomTextFutureButton(
                       onPressed: () async {
-                        await widget.profile.createStoriesRoom();
+                        await widget.profile.createAndAddStoriesRoomToSpace();
                         setState(() {});
                       },
                       text: "Create stories room",
@@ -250,10 +251,10 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                   return RoomProfileListTile(
                     room,
                     onLeave: () async {
-                      await widget.profile.r.removeSpaceChild(room.id);
+                      await widget.profile.removeSpaceChild(room.id);
                     },
                     onRemoveFromProfile: () async {
-                      await widget.profile.r.removeSpaceChild(room.id);
+                      await widget.profile.removeSpaceChild(room.id);
                     },
                   );
                 }),
@@ -346,7 +347,7 @@ class NoProfileSpaceFound extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: CustomFutureButton(
                   onPressed: () async {
-                    await ProfileSpace.createProfileSpace(client);
+                    await client.createProfileSpace();
                   },
                   color: Theme.of(context).colorScheme.primary,
                   expanded: false,

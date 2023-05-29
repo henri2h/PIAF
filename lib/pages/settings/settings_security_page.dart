@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
@@ -12,6 +13,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../../partials/components/minestrix/minestrix_title.dart';
 
+@RoutePage()
 class SettingsSecurityPage extends StatefulWidget {
   const SettingsSecurityPage({Key? key}) : super(key: key);
 

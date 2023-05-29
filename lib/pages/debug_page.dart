@@ -1,16 +1,21 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/sentry_controller.dart';
+import 'package:settings_ui/settings_ui.dart';
 
 import 'settings/settings_labs_page.dart';
+import 'settings/settings_story_detail_page.dart';
 
+@RoutePage()
 class DebugPage extends StatefulWidget {
   const DebugPage({Key? key}) : super(key: key);
 
@@ -24,6 +29,14 @@ class DebugPageState extends State<DebugPage> {
   Client? client;
   bool init = false;
   bool progressing = false;
+
+  void changeLogLevel(Level? level) {
+    if (level != null) {
+      setState(() {
+        Logs().level = level;
+      });
+    }
+  }
 
   void _clearCacheAndResync() async {
     final res = await showOkCancelAlertDialog(
@@ -68,46 +81,74 @@ class DebugPageState extends State<DebugPage> {
 
     return ListView(children: [
       const CustomHeader(title: "Debug"),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder<bool>(
-            future: SentryController.getSentryStatus(),
-            builder: (context, snap) {
-              if (!snap.hasData) {
-                return const ListTile(
-                    title: Text("Sentry logging"),
-                    subtitle: Text("Loading"),
-                    trailing: CircularProgressIndicator());
-              }
-              final sentryEnabled = snap.data!;
-              return SwitchListTile(
-                  value: sentryEnabled,
-                  onChanged: (value) async {
-                    await SentryController.toggleSentryAction(context, value);
-                    setState(() {});
-                  },
-                  secondary: const Icon(Icons.list),
-                  title: const Text("Sentry logging"),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text("Restart to enable sentry logging"),
-                      InfoBadge(text: "Need restart", color: Colors.orange),
-                    ],
-                  ));
-            }),
-      ),
-      const LogLevel(),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListTile(
-            title: const Text("Clear cache and resync"),
-            leading: const Icon(Icons.new_releases),
-            subtitle:
-                const Text("Use with caution, this make take a long time"),
-            trailing: const Icon(Icons.refresh),
-            onTap: _clearCacheAndResync),
-      ),
+      SettingsList(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          lightTheme: const SettingsThemeData(
+              settingsListBackground: Colors.transparent),
+          darkTheme: const SettingsThemeData(
+              settingsListBackground: Colors.transparent),
+          sections: [
+            SettingsSection(title: const Text("Log level"), tiles: [
+              SettingsTile(
+                  title: const Text(
+                      "Change the log level for this session. Settings will be cleared after restart.")),
+              SettingsTileRadio.radio(
+                  title: const Text("Debug"),
+                  value: Level.debug,
+                  groupValue: Logs().level,
+                  onPressed: changeLogLevel),
+              SettingsTileRadio.radio(
+                  title: const Text("Verbose"),
+                  value: Level.verbose,
+                  groupValue: Logs().level,
+                  onPressed: changeLogLevel),
+              SettingsTileRadio.radio(
+                  title: const Text("Info"),
+                  value: Level.info,
+                  groupValue: Logs().level,
+                  onPressed: changeLogLevel),
+              SettingsTileRadio.radio(
+                  title: const Text("Warning"),
+                  value: Level.warning,
+                  groupValue: Logs().level,
+                  onPressed: changeLogLevel),
+              SettingsTileRadio.radio(
+                  title: const Text("Error"),
+                  value: Level.error,
+                  groupValue: Logs().level,
+                  onPressed: changeLogLevel),
+            ]),
+            SettingsSection(title: const Text("Info"), tiles: <SettingsTile>[
+              SettingsTile(
+                  title: const Text("Clear cache and resync"),
+                  leading: const Icon(Icons.new_releases),
+                  description: const Text(
+                      "Use with caution, this make take a long time"),
+                  trailing: const Icon(Icons.refresh),
+                  onPressed: (context) => _clearCacheAndResync()),
+            ]),
+            SettingsSection(
+                title: const Text("MinesTRIX rooms"),
+                tiles: <SettingsTile>[
+                  if (rooms.isNotEmpty)
+                    for (var i = 0; i < rooms.length; i++)
+                      SettingsTile(
+                          title: Text(rooms[i].name),
+                          description:
+                              Text("creator: ${rooms[i].creator?.displayName}"),
+                          leading: MatrixImageAvatar(
+                            client: client,
+                            url: rooms[i].avatar,
+                            defaultText: rooms[i].getLocalizedDisplayname(),
+                          ),
+                          trailing: IconButton(
+                              icon: const Icon(Icons.refresh),
+                              onPressed: () async {
+                                await loadElements(context, rooms[i]);
+                              }))
+                ]),
+          ]),
       const H2Title("Minestrix rooms"),
       const Padding(
         padding: EdgeInsets.symmetric(horizontal: 12.0),
@@ -118,45 +159,6 @@ class DebugPageState extends State<DebugPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (rooms.isNotEmpty)
-              for (var i = 0; i < rooms.length; i++)
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Column(
-                    children: [
-                      ListTile(
-                          title: Text(rooms[i].name),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(rooms[i].id,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.normal)),
-                              ],
-                            ),
-                          ),
-                          leading: (timelineLength.length > i)
-                              ? Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(timelineLength[i].toString()),
-                                )
-                              : null,
-                          trailing: IconButton(
-                              icon: const Icon(Icons.refresh),
-                              onPressed: () async {
-                                await loadElements(context, rooms[i]);
-                              })),
-                      MatrixUserItem(
-                        client: client,
-                        name: rooms[i].creator?.displayName,
-                        userId: rooms[i].creatorId ?? '',
-                        avatarUrl: rooms[i].creator?.avatarUrl,
-                      ),
-                    ],
-                  ),
-                ),
             if (client != null)
               Text("MinesTRIX rooms length : ${client!.sroomsByUserId.length}"),
             if (progressing) const CircularProgressIndicator(),
@@ -164,62 +166,6 @@ class DebugPageState extends State<DebugPage> {
         ),
       ),
     ]);
-  }
-}
-
-class LogLevel extends StatefulWidget {
-  const LogLevel({Key? key}) : super(key: key);
-
-  @override
-  State<LogLevel> createState() => _LogLevelState();
-}
-
-class _LogLevelState extends State<LogLevel> {
-  void changeLogLevel(Level? level) {
-    if (level != null) {
-      setState(() {
-        Logs().level = level;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const ListTile(
-            title: Text("Log level"),
-            subtitle: Text(
-                "Change the log level for this session. Settings will be cleared after restart.")),
-        RadioListTile(
-            title: const Text("Debug"),
-            subtitle: const Text("Hmm... so much noise"),
-            value: Level.debug,
-            groupValue: Logs().level,
-            onChanged: changeLogLevel),
-        RadioListTile(
-            title: const Text("Verbose"),
-            value: Level.verbose,
-            groupValue: Logs().level,
-            onChanged: changeLogLevel),
-        RadioListTile(
-            title: const Text("Info"),
-            value: Level.info,
-            groupValue: Logs().level,
-            onChanged: changeLogLevel),
-        RadioListTile(
-            title: const Text("Warning"),
-            value: Level.warning,
-            groupValue: Logs().level,
-            onChanged: changeLogLevel),
-        RadioListTile(
-            title: const Text("Error"),
-            value: Level.error,
-            groupValue: Logs().level,
-            onChanged: changeLogLevel),
-      ],
-    );
   }
 }
 

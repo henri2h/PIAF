@@ -22,7 +22,7 @@ class MinestrixRoomTileNavigator extends StatelessWidget {
         if (room.isSpace) {
           await context.navigateTo(CommunityDetailRoute(room: room));
         } else if (room.feedType == FeedRoomType.group) {
-          await context.navigateTo(GroupRoute(room: room));
+          await context.navigateTo(GroupRoute(roomId: room.id));
         } else if (room.feedType == FeedRoomType.calendar) {
           await context.navigateTo(CalendarEventRoute(room: room));
         } else {

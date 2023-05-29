@@ -10,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 
+@RoutePage()
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
@@ -32,10 +33,7 @@ class SettingsPageState extends State<SettingsPage> {
             if (!smallScreen)
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 360),
-                child: Container(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: const SettingsPanel(),
-                ),
+                child: const SettingsPanel(),
               ),
             const Expanded(child: AutoRouter())
           ],
@@ -45,6 +43,7 @@ class SettingsPageState extends State<SettingsPage> {
   }
 }
 
+@RoutePage()
 class SettingsPanelInnerPage extends StatelessWidget {
   const SettingsPanelInnerPage({Key? key}) : super(key: key);
 

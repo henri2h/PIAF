@@ -48,7 +48,9 @@ class UserFriendsCard extends StatelessWidget {
                       leading: const Icon(Icons.people)),
                 ),
               Wrap(children: [
-                for (User user in usersSelection) AccountCard(user: user),
+                for (User user in usersSelection)
+                  SizedBox(
+                      height: 160, width: 134, child: AccountCard(user: user)),
               ]),
               if (room.canInvite && knockingUsers.isNotEmpty)
                 const H2Title("Follow request"),

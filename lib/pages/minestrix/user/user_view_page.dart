@@ -29,6 +29,8 @@ import 'message_button.dart';
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display
 /// a way to select which one to display
+
+@RoutePage()
 class UserViewPage extends StatefulWidget {
   final String? userID;
   final Room? mroom;
@@ -41,11 +43,11 @@ class UserViewPage extends StatefulWidget {
   UserViewPageState createState() => UserViewPageState();
 }
 
-class UserViewPageState extends State<UserViewPage> {
+class UserViewPageState extends State<UserViewPage>
+    with TickerProviderStateMixin {
   ScrollController controller = ScrollController();
 
-  int tabView = 0;
-
+  late TabController _tabController;
   String? _userId;
 
   RoomWithSpace? mroom;
@@ -128,6 +130,8 @@ class UserViewPageState extends State<UserViewPage> {
   @override
   void initState() {
     super.initState();
+
+    _tabController = TabController(length: 3, vsync: this);
 
     setVariable();
 
@@ -234,12 +238,10 @@ class UserViewPageState extends State<UserViewPage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               if (userId != null)
-                                Card(
-                                  child: UserProfileSelection(
-                                      userId: userId!,
-                                      onRoomSelected: selectRoom,
-                                      roomSelectedId: mroom?.id),
-                                ),
+                                UserProfileSelection(
+                                    userId: userId!,
+                                    onRoomSelected: selectRoom,
+                                    roomSelectedId: mroom?.id),
                             ],
                           ),
                           sidebarBuilder: ({required bool displayLeftBar}) =>
@@ -251,35 +253,50 @@ class UserViewPageState extends State<UserViewPage> {
                                     userId: userId!,
                                     onRoomSelected: selectRoom,
                                     roomSelectedId: mroom?.id),
+                              const SizedBox(
+                                height: 8,
+                              ),
                               if (mroom?.room != null)
-                                Padding(
-                                    padding: const EdgeInsets.all(15),
-                                    child: UserFriendsCard(room: mroom!.room!)),
+                                Card(
+                                  elevation: 3,
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child:
+                                          UserFriendsCard(room: mroom!.room!)),
+                                ),
                             ],
                           ),
-                          customHeader: CustomHeader(
-                              title: isUserPage ? null : "User Feed",
-                              actionButton: [
-                                if (isUserPage)
-                                  IconButton(
-                                      icon: const Icon(Icons.settings),
-                                      onPressed: () {
-                                        context
-                                            .navigateTo(const SettingsRoute());
-                                      }),
-                              ],
-                              child: isUserPage
-                                  ? FutureBuilder<Profile>(
-                                      future: client.fetchOwnProfile(),
-                                      builder: (context, snap) {
-                                        return MatrixUserItem(
-                                          name: snap.data?.displayName,
-                                          userId: client.userID!,
-                                          avatarUrl: snap.data?.avatarUrl,
-                                          client: client,
-                                        );
-                                      })
-                                  : null),
+                          customHeaderText: isUserPage ? null : "User Feed",
+                          customHeaderActionsButtons: [
+                            if (isUserPage)
+                              IconButton(
+                                  icon: const Icon(Icons.settings),
+                                  onPressed: () {
+                                    context.navigateTo(const SettingsRoute());
+                                  }),
+                            if (isUserPage)
+                              IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    final space = client.getProfileSpace();
+                                    if (space != null) {
+                                      context.pushRoute(
+                                          SocialSettingsRoute(room: space));
+                                    }
+                                  }),
+                          ],
+                          customHeaderChild: isUserPage
+                              ? FutureBuilder<Profile>(
+                                  future: client.fetchOwnProfile(),
+                                  builder: (context, snap) {
+                                    return MatrixUserItem(
+                                      name: snap.data?.displayName,
+                                      userId: client.userID!,
+                                      avatarUrl: snap.data?.avatarUrl,
+                                      client: client,
+                                    );
+                                  })
+                              : null,
                           headerChildBuilder: (
                                   {required bool displaySideBar}) =>
                               headerChildBuilder(
@@ -381,47 +398,32 @@ class UserViewPageState extends State<UserViewPage> {
                                                 child: Text(mroom!.topic),
                                               ),
                                             if (mroom?.room != null)
-                                              TopicListTile(room: mroom!.room!),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(12.0),
-                                              child: Row(
-                                                children: [
-                                                  MaterialButton(
-                                                      child: const Text("Feed"),
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          tabView = 0;
-                                                        });
-                                                      }),
-                                                  MaterialButton(
-                                                      child: const Text(
-                                                          "Followers"),
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          tabView = 1;
-                                                        });
-                                                      }),
-                                                  MaterialButton(
-                                                      child:
-                                                          const Text("Images"),
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          tabView = 2;
-                                                        });
-                                                      })
-                                                ],
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(18.0),
+                                                child: TopicListTile(
+                                                    room: mroom!.room!),
                                               ),
-                                            )
+                                            TabBar(
+                                                controller: _tabController,
+                                                onTap: (val) {
+                                                  setState(() {});
+                                                },
+                                                tabs: const [
+                                                  Tab(text: "Feed"),
+                                                  Tab(text: "Followers"),
+                                                  Tab(text: "Images"),
+                                                ]),
                                           ],
                                         ),
                                       ),
                                       Builder(builder: (context) {
-                                        if (tabView == 1 && timeline != null) {
+                                        if (_tabController.index == 1 &&
+                                            timeline != null) {
                                           final room = timeline.room;
                                           return FollowersTab(
                                               mroom: mroom, room: room);
-                                        } else if (tabView == 2 &&
+                                        } else if (_tabController.index == 2 &&
                                             timeline != null) {
                                           return ImagesTab(
                                               mroom: mroom, timeline: timeline);

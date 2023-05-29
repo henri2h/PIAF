@@ -9,7 +9,7 @@ build_linux:
   stage: build
   before_script:
   - sudo apt update && sudo apt install curl clang cmake ninja-build pkg-config libgtk-3-dev
-    libblkid-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.1-dev patchelf -y
+    libblkid-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.1-dev patchelf libmpv-dev -y
   script:
   - flutter config --enable-linux-desktop
   - flutter clean

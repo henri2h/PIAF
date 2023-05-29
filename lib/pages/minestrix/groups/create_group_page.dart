@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 
 import 'package:matrix/matrix.dart';
@@ -6,6 +7,7 @@ import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
+@RoutePage()
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({Key? key}) : super(key: key);
 

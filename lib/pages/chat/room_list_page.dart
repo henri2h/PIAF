@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 
 import '../../partials/minestrix_title.dart';
 import '../../router.gr.dart';
-import 'room_list_wrapper.dart';
+import 'room_list_wrapper_page.dart';
 
+@RoutePage()
 class RoomListPage extends StatefulWidget {
   const RoomListPage({Key? key, this.isMobile = false}) : super(key: key);
   final bool isMobile;
@@ -19,7 +20,8 @@ class _RoomListPageState extends State<RoomListPage> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, _) {
-      final state = Provider.of<RoomListWrapperState>(context, listen: false);
+      final state =
+          Provider.of<RoomListWrapperPageState>(context, listen: false);
       if (state.mobile) {
         return RoomListBuilder(
           mobile: true,

@@ -1,8 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 
 import '../../utils/settings.dart';
 
+@RoutePage()
 class SettingsLabsPage extends StatefulWidget {
   const SettingsLabsPage({Key? key}) : super(key: key);
 

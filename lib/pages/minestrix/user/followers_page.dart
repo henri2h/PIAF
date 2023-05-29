@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -13,6 +14,7 @@ import 'package:minestrix_chat/minestrix_chat.dart';
 
 import '../../../partials/components/layouts/custom_header.dart';
 
+@RoutePage()
 class FollowersPage extends StatefulWidget {
   const FollowersPage({Key? key, required this.room}) : super(key: key);
 
@@ -133,7 +135,10 @@ class FollowersPageState extends State<FollowersPage> {
                         for (User user in users.where((User u) =>
                             u.membership == Membership.join &&
                             u.id != sclient.userID))
-                          AccountCard(user: user),
+                          SizedBox(
+                              width: 180,
+                              height: 200,
+                              child: AccountCard(user: user)),
                       ]),
                     ),
                   ],

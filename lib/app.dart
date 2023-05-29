@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/router.dart';
 import 'package:minestrix_chat/utils/login/login_extension.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:provider/provider.dart';
@@ -21,14 +22,16 @@ class Minestrix extends StatefulWidget {
 class MinestrixState extends State<Minestrix> {
   final _appRouter = AppRouter();
   bool _initLock = false;
-  Future<bool> initMatrix(Client m) async {
-    Logs().i("[ logged ] : ${m.isLogged()}");
-    if (m.isLogged() == false && !_initLock) {
+  Future<void> initMatrix(Client m) async {
+    if (_initLock) return;
+
+    if (!m.isLogged()) {
+      Logs().i("[ logged ] [ ${m.clientName} ]: ${m.isLogged()}");
       _initLock = true;
       await m.init(
           waitForFirstSync: false, waitUntilLoadCompletedLoaded: false);
     }
-    return true;
+    return;
   }
 
   Future<bool>? webLogin;

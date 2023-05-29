@@ -171,8 +171,8 @@ class PostHeader extends StatelessWidget {
                                 TextButton(
                                   onPressed: () async {
                                     if (room.feedType == FeedRoomType.group) {
-                                      await context
-                                          .navigateTo(GroupRoute(room: room));
+                                      await context.navigateTo(
+                                          GroupRoute(roomId: room.id));
                                     } else {
                                       await context.navigateTo(
                                           CalendarEventRoute(room: room));

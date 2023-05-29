@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 
+import '../../navigation/navbar.dart';
 import '../chat/room_chat_card.dart';
 
 class LayoutView extends StatelessWidget {
   const LayoutView(
       {Key? key,
       this.controller,
-      required this.customHeader,
+      this.customHeaderText,
+      this.customHeaderActionsButtons,
+      this.customHeaderChild,
       required this.mainBuilder,
       this.sidebarBuilder,
       this.leftBar,
-      required this.headerChildBuilder,
+      this.headerChildBuilder,
       this.maxSidebarWidth = 1000,
       this.maxChatWidth = 1400,
       this.sidebarWidth = 300,
@@ -21,14 +24,16 @@ class LayoutView extends StatelessWidget {
       this.headerHeight,
       this.displayChat = true,
       this.maxHeaderWidth = 1200,
-      this.room})
+      this.room,
+      this.rightBar})
       : super(key: key);
 
   final Widget? leftBar;
+  final Widget? rightBar;
   final Widget Function({required bool displayLeftBar})? sidebarBuilder;
   final Widget Function(
       {required bool displaySideBar, required bool displayLeftBar}) mainBuilder;
-  final Widget Function({required bool displaySideBar}) headerChildBuilder;
+  final Widget Function({required bool displaySideBar})? headerChildBuilder;
 
   final Room? room;
 
@@ -39,7 +44,11 @@ class LayoutView extends StatelessWidget {
 
   final double sidebarWidth;
   final double mainWidth;
-  final CustomHeader customHeader;
+
+  final Widget? customHeaderChild;
+  final String? customHeaderText;
+  final List<Widget>? customHeaderActionsButtons;
+
   final ScrollController? controller;
 
   final double? headerHeight;
@@ -90,73 +99,79 @@ class LayoutView extends StatelessWidget {
             ),
             child: Column(
               children: [
-                customHeader,
-                headerChildBuilder(displaySideBar: displaySideBar),
+                if (customHeaderText != null)
+                  CustomHeader(
+                    title: customHeaderText!,
+                    actionButton: customHeaderActionsButtons,
+                    child: customHeaderChild,
+                  ),
+                if (headerChildBuilder != null)
+                  headerChildBuilder!(displaySideBar: displaySideBar),
               ],
             ),
           ),
         ),
       );
 
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      return Column(
         children: [
+          const NavBarDesktop(),
+          const SizedBox(
+            height: 6,
+          ),
           Expanded(
-            child: ListView(controller: controller, children: [
-              Center(
-                  child: displayLeftBar
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (leftBar != null)
-                              SizedBox(width: 300, child: leftBar!),
-                            header,
-                            if (leftBar != null)
-                              const SizedBox(
-                                width: 300,
-                              )
-                          ],
-                        )
-                      : header),
-              const SizedBox(
-                height: 10,
-              ),
-              Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: maxHeaderWidth),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (displaySideBar)
-                        Card(
-                            child: SizedBox(
-                                width: sidebarWidth,
-                                child: sidebarBuilder!(
-                                    displayLeftBar: displayLeftBar))),
-                      Expanded(
-                        child: Center(
-                          child: ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: mainWidth),
-                              child: mainBuilder(
-                                  displaySideBar: displaySideBar,
-                                  displayLeftBar: displayLeftBar)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (leftBar != null) SizedBox(width: 300, child: leftBar!),
+                Expanded(
+                  child: ListView(controller: controller, children: [
+                    header,
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Center(
+                      child: Card(
+                        elevation: 2,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: maxHeaderWidth),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (displaySideBar)
+                                SizedBox(
+                                    width: sidebarWidth,
+                                    child: sidebarBuilder!(
+                                        displayLeftBar: displayLeftBar)),
+                              Expanded(
+                                child: Center(
+                                  child: ConstrainedBox(
+                                      constraints:
+                                          BoxConstraints(maxWidth: mainWidth),
+                                      child: mainBuilder(
+                                          displaySideBar: displaySideBar,
+                                          displayLeftBar: displayLeftBar)),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ]),
                 ),
-              ),
-            ]),
+                if (rightBar != null) SizedBox(width: 400, child: rightBar!),
+                if (displayChat)
+                  SizedBox(
+                      width: 400,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: RoomChatCard(room: room!),
+                      ))
+              ],
+            ),
           ),
-          if (displayChat)
-            SizedBox(
-                width: 400,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: RoomChatCard(room: room!),
-                ))
         ],
       );
     });

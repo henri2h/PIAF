@@ -21,9 +21,11 @@ import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/layout_view.dart';
 import '../../../partials/feed/topic_list_tile.dart';
 
+@RoutePage()
 class GroupPage extends StatefulWidget {
-  const GroupPage({Key? key, required this.room}) : super(key: key);
-  final Room room;
+  const GroupPage({Key? key, @pathParam required this.roomId})
+      : super(key: key);
+  final String roomId;
 
   @override
   GroupPageState createState() => GroupPageState();
@@ -36,9 +38,12 @@ class GroupPageState extends State<GroupPage> {
   bool updating = false;
   List<User> participants = [];
 
+  late Room room;
+
   @override
   void initState() {
-    futureTimeline = widget.room.getTimeline();
+    room = Matrix.of(context).client.getRoomById(widget.roomId)!;
+    futureTimeline = room.getTimeline();
     controller.addListener(scrollListener);
 
     super.initState();
@@ -63,20 +68,18 @@ class GroupPageState extends State<GroupPage> {
   }
 
   void inviteUsers() async {
-    List<String>? userIds =
-        await MinesTrixUserSelection.show(context, widget.room);
+    List<String>? userIds = await MinesTrixUserSelection.show(context, room);
 
     userIds?.forEach((String userId) async {
-      await widget.room.invite(userId);
+      await room.invite(userId);
     });
-    participants = await widget.room.requestParticipants();
+    participants = await room.requestParticipants();
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     Client sclient = Matrix.of(context).client;
-    Room room = widget.room;
 
     participants = room.getParticipants();
     return FutureBuilder<Timeline>(
@@ -97,20 +100,16 @@ class GroupPageState extends State<GroupPage> {
             bool displayChatView = constraints.maxWidth > 1400;
             return LayoutView(
               controller: controller,
-              customHeader: CustomHeader(
-                title: room.name,
-                actionButton: [
-                  IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        context.pushRoute(SocialSettingsRoute(room: room));
-                      }),
-                ],
-              ),
+              customHeaderText: room.name,
+              customHeaderActionsButtons: [
+                IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      context.pushRoute(SocialSettingsRoute(room: room));
+                    }),
+              ],
               headerHeight: 300,
               room: room,
-              headerChildBuilder: ({required bool displaySideBar}) =>
-                  Container(),
               mainBuilder: (
                       {required bool displaySideBar,
                       required bool displayLeftBar}) =>
@@ -233,8 +232,8 @@ class GroupPageState extends State<GroupPage> {
                                   fontSize: 16,
                                   color:
                                       Theme.of(context).colorScheme.onPrimary)),
-                          if (widget.room.lastEvent?.text != null)
-                            Text(widget.room.lastEvent!.text,
+                          if (room.lastEvent?.text != null)
+                            Text(room.lastEvent!.text,
                                 maxLines: 2,
                                 style: TextStyle(
                                     fontSize: 14,
@@ -247,7 +246,7 @@ class GroupPageState extends State<GroupPage> {
                               context: context,
                               title: "Group",
                               builder: (context) => RoomPage(
-                                  roomId: widget.room.id, client: sclient));
+                                  roomId: widget.roomId, client: sclient));
                         }),
                   const H2Title("Images"),
                   SocialGalleryPreviewWigdet(room: room, timeline: timeline),

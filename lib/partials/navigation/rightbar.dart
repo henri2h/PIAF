@@ -5,7 +5,6 @@ import 'package:minestrix/partials/feed/minestrix_profile_not_created.dart';
 import 'package:minestrix/partials/minestrix_room_tile.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
@@ -33,13 +32,20 @@ class RightBar extends StatelessWidget {
 
                           return ListView(
                             children: [
-                              const H2Title("Groups"),
-                              for (final group in sgroups)
-                                Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child:
-                                      MinestrixRoomTileNavigator(room: group),
+                              Card(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const H2Title("Groups"),
+                                    for (final group in sgroups)
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: MinestrixRoomTileNavigator(
+                                            room: group),
+                                      ),
+                                  ],
                                 ),
+                              ),
                               const CardPanelList(),
                               if (client.userRoomCreated != true &&
                                   client.prevBatch != null)

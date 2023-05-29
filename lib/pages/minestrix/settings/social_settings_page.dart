@@ -1,8 +1,7 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/calendar_events/calendar_events_list_page.dart';
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_permissions.dart';
@@ -10,7 +9,12 @@ import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
 import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../../partials/calendar_events/calendar_event_create_widget.dart';
+import '../../../partials/components/layouts/custom_header.dart';
+import '../../../partials/components/minestrix/minestrix_title.dart';
+import '../../../partials/feed/topic_list_tile.dart';
+import '../../account/accounts_details_page.dart';
 
+@RoutePage()
 class SocialSettingsPage extends StatefulWidget {
   const SocialSettingsPage({Key? key, required this.room}) : super(key: key);
 
@@ -32,7 +36,7 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
                 title:
                     "${room.getLocalizedDisplayname(const MatrixDefaultLocalizations())} settings"),
             Wrap(
-              alignment: WrapAlignment.center,
+              alignment: WrapAlignment.start,
               children: [
                 if (room.feedType == FeedRoomType.calendar)
                   SizedBox(
@@ -42,6 +46,75 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
                   const SizedBox(
                     width: 12,
                   ),
+                if (room.isProfileRoom)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 800,
+                    ),
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ProfileSpaceCard(
+                          profile: room,
+                        ),
+                      ),
+                    ),
+                  ),
+                ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: SectionCard(
+                      text: "Info",
+                      children: [
+                        ListTile(
+                            title: const Text("Room name"),
+                            subtitle: Text(room.name),
+                            leading: const Icon(Icons.title),
+                            trailing: room.canSendDefaultStates
+                                ? const Icon(Icons.edit)
+                                : null,
+                            onTap: !room.canSendDefaultStates
+                                ? null
+                                : () async {
+                                    List<String>? results =
+                                        await showTextInputDialog(
+                                      context: context,
+                                      textFields: [
+                                        DialogTextField(
+                                            hintText: "Set room name",
+                                            initialText: room.name)
+                                      ],
+                                      title: "Set room name",
+                                    );
+                                    if (results?.isNotEmpty == true) {
+                                      await room.setName(results![0]);
+                                    }
+                                  }),
+                        ListTile(
+                            title: const Text("Room topic"),
+                            subtitle: TopicBody(room: room),
+                            leading: const Icon(Icons.topic),
+                            trailing: room.canSendDefaultStates
+                                ? const Icon(Icons.edit)
+                                : null,
+                            onTap: !room.canSendDefaultStates
+                                ? null
+                                : () async {
+                                    List<String>? results =
+                                        await showTextInputDialog(
+                                      context: context,
+                                      textFields: [
+                                        DialogTextField(
+                                            hintText: "Set event topic",
+                                            initialText: room.topic)
+                                      ],
+                                      title: "Set room topic",
+                                    );
+                                    if (results?.isNotEmpty == true) {
+                                      await room.setDescription(results![0]);
+                                    }
+                                  }),
+                      ],
+                    )),
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 500),
                   child: Column(

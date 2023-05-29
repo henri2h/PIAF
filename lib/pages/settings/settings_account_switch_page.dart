@@ -9,6 +9,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../router.gr.dart';
 import '../login_page.dart';
 
+@RoutePage()
 class SettingsAccountSwitchPage extends StatefulWidget {
   const SettingsAccountSwitchPage({Key? key, this.popOnUserSelected = false})
       : super(key: key);

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:auto_route/src/router/auto_router_x.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
@@ -12,6 +12,7 @@ import 'package:minestrix_chat/style/constants.dart';
 import '../../../partials/components/search/suggestion_list.dart';
 import '../../../utils/platforms_info.dart';
 
+@RoutePage()
 class ResearchPage extends StatefulWidget {
   const ResearchPage({Key? key, this.isPopup = false}) : super(key: key);
 
