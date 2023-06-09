@@ -8,8 +8,7 @@
 .buildlog/
 .history
 .svn/
-
-*.snap
+migrate_working_dir/
 
 # IntelliJ related
 *.iml
@@ -31,8 +30,7 @@
 .packages
 .pub-cache/
 .pub/
-build/
-ephemeral/
+/build/
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -47,5 +45,3 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-.vscode
-*.gr.dart

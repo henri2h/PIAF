@@ -1,0 +1,43 @@
+import 'package:flutter/material.dart';
+
+import 'package:matrix/matrix.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
+import '../../../matrix/matrix_user_item.dart';
+
+class ReadReceiptsList extends StatelessWidget {
+  const ReadReceiptsList({
+    Key? key,
+    required this.event,
+  }) : super(key: key);
+
+  final Event event;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        itemCount: event.receipts.length,
+        itemBuilder: (context, index) {
+          final r = event.receipts[index];
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: MatrixUserItem(
+                      name: r.user.displayName,
+                      userId: r.user.id,
+                      client: event.room.client,
+                      avatarUrl: r.user.avatarUrl),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(timeago.format(r.time)),
+              )
+            ],
+          );
+        });
+  }
+}
