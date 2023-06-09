@@ -28,7 +28,6 @@ class ChatPageRoomList extends StatelessWidget {
           builder: (context, snapshot) {
             final rooms = controller.getRoomList(client);
 
-           
             return RoomList(
                 controller: scrollController,
                 selectedRoomId: controller.selectedRoomID,
