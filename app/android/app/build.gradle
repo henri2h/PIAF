@@ -26,7 +26,9 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion 33
+    namespace "fr.henri2h.minestrix"
+    compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -42,9 +44,10 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "fr.henri2h.minestrix"
-        minSdkVersion 23 // flutter.minSdkVersion // override
+        // You can update the following values to match your application needs.
+        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -56,14 +59,6 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
         }
-    }
-
-    // Added on 12/08/2022 to fix android build. Ref: https://github.com/flutter/flutter/issues/108426 
-    lintOptions {
-        disable 'InvalidPackage'
-        disable "Instantiatable"
-        checkReleaseBuilds false
-        abortOnError false
     }
 }
 

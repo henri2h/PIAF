@@ -39,7 +39,7 @@ dependencies:
   provider: ^6.0.1
 
   # navigator
-  auto_route: ^6.0.0+1
+  auto_route: ^7.4.0
 
   # web navigator for SSO
   webview_flutter: ^4.0.1
@@ -75,7 +75,7 @@ dependencies:
   cupertino_icons: ^1.0.1
 
   # Notifications
-  flutter_local_notifications: ^12.0.2
+  flutter_local_notifications: ^14.1.1
   unifiedpush: ^5.0.0
   desktop_notifications: ^0.6.3
 
@@ -89,13 +89,14 @@ dependencies:
 
   minestrix_chat:
     path: ../lib
+  
   infinite_list:
     git:
       url: https://gitlab.com/minestrix/infinite-list.git
       ref: henri2h/enhancements
 
   collection: ^1.15.0-nullsafety.4
-  connectivity_plus: ^3.0.2
+  connectivity_plus: ^4.0.1
   just_audio: ^0.9.20
   flutter_ringtone_player: ^3.2.0
   desktop_lifecycle: ^0.1.0
@@ -112,7 +113,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   hive_generator: ^2.0.0
-  auto_route_generator: ^6.0.0
+  auto_route_generator: ^7.1.1
   build_runner: ^2.1.2
   import_sorter: ^4.6.0
   flutter_lints: ^2.0.1
