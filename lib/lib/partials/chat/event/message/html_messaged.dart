@@ -1,29 +1,31 @@
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:flutter_matrix_html/flutter_html.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html_table/flutter_html_table.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
+import 'package:linkify/linkify.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../event/matrix_image.dart';
+import '../../../../utils/matrix_widget.dart';
 
 class HtmlMessage extends StatelessWidget {
   final String html;
-  final int? maxLines;
   final Room room;
-  final TextStyle? defaultTextStyle;
-  final TextStyle? linkStyle;
-  final double? emoteSize;
+  final Color textColor;
 
   const HtmlMessage({
     Key? key,
     required this.html,
-    this.maxLines,
     required this.room,
-    this.defaultTextStyle,
-    this.linkStyle,
-    this.emoteSize,
+    this.textColor = Colors.black,
   }) : super(key: key);
-  Future<void> _launchURL(String url) async {
+
+  Future<void> _launchURL(String? url) async {
+    if (url == null) return;
     final uri = Uri.tryParse(url);
     if (uri == null) return;
     if (!await launchUrl(uri)) {
@@ -40,106 +42,412 @@ class HtmlMessage extends StatelessWidget {
     // miss-matching tags, and this way we actually correctly identify what we want to strip and, well,
     // strip it.
     final renderHtml = html.replaceAll(
-        RegExp('<mx-reply>.*</mx-reply>',
-            caseSensitive: false, multiLine: false, dotAll: true),
-        '');
+      RegExp(
+        '<mx-reply>.*</mx-reply>',
+        caseSensitive: false,
+        multiLine: false,
+        dotAll: true,
+      ),
+      '',
+    );
+
+    final linkifiedRenderHtml = linkify(
+      renderHtml,
+      options: const LinkifyOptions(humanize: false),
+    )
+        .map(
+          (element) {
+            if (element is! UrlElement ||
+                element.text.contains('<') ||
+                element.text.contains('>') ||
+                element.text.contains('"')) {
+              return element.text;
+            }
+            return '<a href="${element.url}">${element.text}</a>';
+          },
+        )
+        .join('')
+        .replaceAll('\n', '');
+
+    final linkColor = textColor.withAlpha(150);
 
     // there is no need to pre-validate the html, as we validate it while rendering
-
-    final client = room.client;
-
-    final themeData = Theme.of(context);
     return Html(
-      data: renderHtml,
-      defaultTextStyle: defaultTextStyle,
-      emoteSize: emoteSize,
-      onLinkTap: _launchURL,
-      linkStyle: linkStyle ??
-          themeData.textTheme.bodyText2!.copyWith(
-            color: themeData.colorScheme.secondary,
-            decoration: TextDecoration.underline,
+      data: linkifiedRenderHtml,
+      style: {
+        '*': Style(
+          color: textColor,
+          margin: Margins.all(0),
+        ),
+        'a': Style(color: linkColor, textDecorationColor: linkColor),
+        'blockquote': Style(
+          border: Border(
+            left: BorderSide(
+              width: 3,
+              color: textColor,
+            ),
           ),
-      shrinkToFit: true,
-      maxLines: maxLines,
-      getMxcUrl: (String mxc, double? width, double? height,
-          {bool? animated = false}) {
-        final ratio = MediaQuery.of(context).devicePixelRatio;
-        return Uri.parse(mxc)
-            .getThumbnail(
-              client,
-              width: (width ?? 800) * ratio,
-              height: (height ?? 800) * ratio,
-              method: ThumbnailMethod.scale,
-            )
-            .toString();
+          padding: HtmlPaddings.only(left: 6, bottom: 0),
+        ),
       },
-      onImageTap: (String mxc) => showDialog(
-          context: context,
-          useRootNavigator: false,
-          builder: (_) => MImageViewer(
-              event: Event(
-                  type: EventTypes.Message,
-                  content: <String, dynamic>{
-                    'body': mxc,
-                    'url': mxc,
-                    'msgtype': MessageTypes.Image,
-                  },
-                  senderId: room.client.userID!,
-                  originServerTs: DateTime.now(),
-                  eventId: 'fake_event',
-                  room: room))),
-      getPillInfo: (String url) async {
-        final identityParts = url.parseIdentifierIntoParts();
-        final identifier = identityParts?.primaryIdentifier;
-        if (identifier == null) {
-          return {};
-        }
-        if (identifier.sigil == '@') {
-          // we have a user pill
-          final user = room.getState('m.room.member', identifier);
-          if (user != null) {
-            return user.content;
-          }
-          // there might still be a profile...
-          final profile = await room.client.getProfileFromUserId(identifier);
-          return {
-            'displayname': profile.displayName,
-            'avatar_url': profile.avatarUrl.toString(),
-          };
-        }
-        if (identifier.sigil == '#') {
-          // we have an alias pill
-          for (final r in room.client.rooms) {
-            final state = r.getState('m.room.canonical_alias');
-            if (state != null &&
-                ((state.content['alias'] is String &&
-                        state.content['alias'] == identifier) ||
-                    (state.content['alt_aliases'] is List &&
-                        state.content['alt_aliases'].contains(identifier)))) {
-              // we have a room!
-              return {
-                'displayname': r.getLocalizedDisplayname(
-                    const MatrixDefaultLocalizations()),
-                'avatar_url': r.getState('m.room.avatar')?.content['url'],
-              };
-            }
-          }
-          return {};
-        }
-        if (identifier.sigil == '!') {
-          // we have a room ID pill
-          final r = room.client.getRoomById(identifier);
-          if (r == null) {
-            return {};
-          }
-          return {
-            'displayname':
-                r.getLocalizedDisplayname(const MatrixDefaultLocalizations()),
-            'avatar_url': r.getState('m.room.avatar')?.content['url'],
-          };
-        }
-        return {};
+      extensions: [
+        RoomPillExtension(context, room),
+        CodeExtension(),
+        MatrixMathExtension(
+          style: TextStyle(color: textColor),
+        ),
+        const TableHtmlExtension(),
+        SpoilerExtension(textColor: textColor),
+        const ImageExtension(),
+        FontColorExtension(),
+      ],
+      onLinkTap: (url, _, __) => _launchURL(url),
+      onlyRenderTheseTags: const {
+        ...allowedHtmlTags,
+        // Needed to make it work properly
+        'body',
+        'html',
       },
+      shrinkWrap: true,
+    );
+  }
+
+  /// Keep in sync with: https://spec.matrix.org/v1.6/client-server-api/#mroommessage-msgtypes
+  static const Set<String> allowedHtmlTags = {
+    'font',
+    'del',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'blockquote',
+    'p',
+    'a',
+    'ul',
+    'ol',
+    'sup',
+    'sub',
+    'li',
+    'b',
+    'i',
+    'u',
+    'strong',
+    'em',
+    'strike',
+    'code',
+    'hr',
+    'br',
+    'div',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+    'th',
+    'td',
+    'caption',
+    'pre',
+    'span',
+    'img',
+    'details',
+    'summary',
+    // Not in the allowlist of the matrix spec yet but should be harmless:
+    'ruby',
+    'rp',
+    'rt',
+  };
+}
+
+class FontColorExtension extends HtmlExtension {
+  static const String colorAttribute = 'color';
+  static const String mxColorAttribute = 'data-mx-color';
+  static const String bgColorAttribute = 'data-mx-bg-color';
+
+  @override
+  Set<String> get supportedTags => {'font', 'span'};
+
+  @override
+  bool matches(ExtensionContext context) {
+    if (!supportedTags.contains(context.elementName)) return false;
+    return context.element?.attributes.keys.any(
+          {
+            colorAttribute,
+            mxColorAttribute,
+            bgColorAttribute,
+          }.contains,
+        ) ??
+        false;
+  }
+
+  Color? hexToColor(String? hexCode) {
+    if (hexCode == null) return null;
+    if (hexCode.startsWith('#')) hexCode = hexCode.substring(1);
+    if (hexCode.length == 6) hexCode = 'FF$hexCode';
+    final colorValue = int.tryParse(hexCode, radix: 16);
+    return colorValue == null ? null : Color(colorValue);
+  }
+
+  @override
+  InlineSpan build(
+    ExtensionContext context,
+  ) {
+    final colorText = context.element?.attributes[colorAttribute] ??
+        context.element?.attributes[mxColorAttribute];
+    final bgColor = context.element?.attributes[bgColorAttribute];
+    return TextSpan(
+      style: TextStyle(
+        color: hexToColor(colorText),
+        backgroundColor: hexToColor(bgColor),
+      ),
+      text: context.innerHtml,
+    );
+  }
+}
+
+class ImageExtension extends HtmlExtension {
+  final double defaultDimension;
+
+  const ImageExtension({this.defaultDimension = 64});
+
+  @override
+  Set<String> get supportedTags => {'img'};
+
+  @override
+  InlineSpan build(ExtensionContext context) {
+    final mxcUrl = Uri.tryParse(context.attributes['src'] ?? '');
+    if (mxcUrl == null || mxcUrl.scheme != 'mxc') {
+      return TextSpan(text: context.attributes['alt']);
+    }
+
+    //final width = double.tryParse(context.attributes['width'] ?? '');
+    //final height = double.tryParse(context.attributes['height'] ?? '');
+    return WidgetSpan(
+        child: Text("Displaying text is not supported yet. mxc: $mxcUrl"));
+  }
+}
+
+class SpoilerExtension extends HtmlExtension {
+  final Color textColor;
+
+  const SpoilerExtension({required this.textColor});
+
+  @override
+  Set<String> get supportedTags => {'span'};
+
+  static const String customDataAttribute = 'data-mx-spoiler';
+
+  @override
+  bool matches(ExtensionContext context) {
+    if (context.elementName != 'span') return false;
+    return context.element?.attributes.containsKey(customDataAttribute) ??
+        false;
+  }
+
+  @override
+  InlineSpan build(ExtensionContext context) {
+    var obscure = true;
+    final children = context.inlineSpanChildren;
+    return WidgetSpan(
+      child: StatefulBuilder(
+        builder: (context, setState) {
+          return InkWell(
+            onTap: () => setState(() {
+              obscure = !obscure;
+            }),
+            child: RichText(
+              text: TextSpan(
+                style: obscure ? TextStyle(backgroundColor: textColor) : null,
+                children: children,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class MatrixMathExtension extends HtmlExtension {
+  final TextStyle? style;
+
+  MatrixMathExtension({this.style});
+  @override
+  Set<String> get supportedTags => {'div'};
+
+  @override
+  bool matches(ExtensionContext context) {
+    if (context.elementName != 'div') return false;
+    final mathData = context.element?.attributes['data-mx-maths'];
+    return mathData != null;
+  }
+
+  @override
+  InlineSpan build(ExtensionContext context) {
+    final data = context.element?.attributes['data-mx-maths'] ?? '';
+    return WidgetSpan(
+      child: Math.tex(
+        data,
+        textStyle: style,
+        onErrorFallback: (e) {
+          Logs().d('Flutter math parse error', e);
+          return Text(
+            data,
+            style: style,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class CodeExtension extends HtmlExtension {
+  @override
+  Set<String> get supportedTags => {'code'};
+
+  @override
+  InlineSpan build(ExtensionContext context) => WidgetSpan(
+        child: Material(
+          clipBehavior: Clip.hardEdge,
+          borderRadius: BorderRadius.circular(4),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: HighlightView(
+              context.element?.text ?? '',
+              language: context.element?.className
+                      .split(' ')
+                      .singleWhereOrNull(
+                        (className) => className.startsWith('language-'),
+                      )
+                      ?.split('language-')
+                      .last ??
+                  'md',
+              padding: EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: context.element?.parent?.localName == 'pre' ? 6 : 0,
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+class RoomPillExtension extends HtmlExtension {
+  final Room room;
+  final BuildContext context;
+
+  RoomPillExtension(this.context, this.room);
+  @override
+  Set<String> get supportedTags => {'a'};
+
+  @override
+  bool matches(ExtensionContext context) {
+    if (context.elementName != 'a') return false;
+    final userId = context.element?.attributes['href']
+        ?.parseIdentifierIntoParts()
+        ?.primaryIdentifier;
+    return userId != null;
+  }
+
+  static final _cachedUsers = <String, User?>{};
+
+  Future<User?> _fetchUser(String matrixId) async =>
+      _cachedUsers[room.id + matrixId] ??= await room.requestUser(matrixId);
+
+  @override
+  InlineSpan build(ExtensionContext context) {
+    final href = context.element?.attributes['href'];
+    final matrixId = href?.parseIdentifierIntoParts()?.primaryIdentifier;
+    if (href == null || matrixId == null) {
+      return TextSpan(text: context.innerHtml);
+    }
+    if (matrixId.sigil == '@') {
+      return WidgetSpan(
+        child: FutureBuilder<User?>(
+          future: _fetchUser(matrixId),
+          builder: (context, snapshot) => MatrixPill(
+            key: Key('user_pill_$matrixId'),
+            name: _cachedUsers[room.id + matrixId]?.calcDisplayname() ??
+                matrixId.localpart ??
+                matrixId,
+            avatar: _cachedUsers[room.id + matrixId]?.avatarUrl,
+            uri: href,
+            outerContext: this.context,
+          ),
+        ),
+      );
+    }
+    if (matrixId.sigil == '#' || matrixId.sigil == '!') {
+      final room = matrixId.sigil == '!'
+          ? this.room.client.getRoomById(matrixId)
+          : this.room.client.getRoomByAlias(matrixId);
+      if (room != null) {
+        return WidgetSpan(
+          child: MatrixPill(
+            name: room.getLocalizedDisplayname(),
+            avatar: room.avatar,
+            uri: href,
+            outerContext: this.context,
+          ),
+        );
+      }
+    }
+
+    return TextSpan(text: context.innerHtml);
+  }
+}
+
+class MatrixPill extends StatelessWidget {
+  final String name;
+  final BuildContext outerContext;
+  final Uri? avatar;
+  final String uri;
+
+  const MatrixPill({
+    super.key,
+    required this.name,
+    required this.outerContext,
+    this.avatar,
+    required this.uri,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        if (kDebugMode) {
+          print("Tapped on $uri");
+        }
+      },
+      child: Material(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            color: Theme.of(outerContext).colorScheme.onPrimaryContainer,
+            width: 0.5,
+          ),
+        ),
+        color: Theme.of(outerContext).colorScheme.primaryContainer,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MatrixImageAvatar(
+                client: Matrix.of(context).client,
+                defaultText: name,
+                url: avatar,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                name,
+                style: TextStyle(
+                  color: Theme.of(outerContext).colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

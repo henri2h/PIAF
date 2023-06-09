@@ -115,65 +115,73 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
                                                 room: room))),
                           ),
                       ]),
-                    SettingsSection(title: const Text('Room'), tiles: <
-                        SettingsTile>[
-                      if (!room.encrypted)
-                        SettingsTile.navigation(
-                          leading: const Icon(Icons.search),
-                          title: const Text('Search'),
-                          onPressed: (context) async {
-                            await AdaptativeDialogs.show(
-                                context: context,
-                                builder: (context) => RoomSearch(room: room));
-                          },
-                        ),
-                      SettingsTile.navigation(
-                        leading: const Icon(Icons.people),
-                        title: const Text('Users'),
-                        value: Text(
-                            "${room.summary.mJoinedMemberCount ?? 0} members"),
-                        onPressed: (context) async =>
-                            await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    ConvSettingsUsers(room: room))),
-                      ),
-                      SettingsTile.navigation(
-                          leading: const Icon(Icons.settings),
-                          title: const Text('Room settings'),
-                          onPressed: (context) async =>
-                              await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (context) => ConvSettingsRoom(
-                                          room: room,
-                                          onLeave: widget.onLeave)))),
-                      SettingsTile.navigation(
-                        leading: const Icon(Icons.image),
-                        title: const Text('Room media'),
-                        onPressed: (context) async =>
-                            await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    ConvSettingsRoomMedia(room: room))),
-                      ),
-                    ]),
-                    SettingsSection(title: const Text('Security'), tiles: <
-                        SettingsTile>[
-                      SettingsTile.navigation(
-                        leading: const Icon(Icons.check_circle),
-                        title: const Text('Roles & permissions'),
-                        onPressed: (context) async =>
-                            await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    ConvSettingsPermissions(room: room))),
-                      ),
-                      SettingsTile.navigation(
-                        leading: const Icon(Icons.lock),
-                        title: const Text('Room security'),
-                        onPressed: (context) async =>
-                            await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    ConvSettingsSecurity(room: room))),
-                      ),
-                    ]),
+                    SettingsSection(
+                        title: const Text('Room'),
+                        tiles: <SettingsTile>[
+                          if (!room.encrypted)
+                            SettingsTile.navigation(
+                              leading: const Icon(Icons.search),
+                              title: const Text('Search'),
+                              onPressed: (context) async {
+                                await AdaptativeDialogs.show(
+                                    context: context,
+                                    builder: (context) =>
+                                        RoomSearch(room: room));
+                              },
+                            ),
+                          SettingsTile.navigation(
+                            leading: const Icon(Icons.people),
+                            title: const Text('Users'),
+                            value: Text(
+                                "${room.summary.mJoinedMemberCount ?? 0} members"),
+                            onPressed: (context) async =>
+                                await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ConvSettingsUsers(room: room))),
+                          ),
+                          SettingsTile.navigation(
+                              leading: const Icon(Icons.settings),
+                              title: const Text('Room settings'),
+                              onPressed: (context) async =>
+                                  await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ConvSettingsRoom(
+                                                  room: room,
+                                                  onLeave: widget.onLeave)))),
+                          SettingsTile.navigation(
+                            leading: const Icon(Icons.image),
+                            title: const Text('Room media'),
+                            onPressed: (context) async =>
+                                await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ConvSettingsRoomMedia(room: room))),
+                          ),
+                        ]),
+                    SettingsSection(
+                        title: const Text('Security'),
+                        tiles: <SettingsTile>[
+                          SettingsTile.navigation(
+                            leading: const Icon(Icons.check_circle),
+                            title: const Text('Roles & permissions'),
+                            onPressed: (context) async => await Navigator.of(
+                                    context)
+                                .push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        ConvSettingsPermissions(room: room))),
+                          ),
+                          SettingsTile.navigation(
+                            leading: const Icon(Icons.lock),
+                            title: const Text('Room security'),
+                            onPressed: (context) async =>
+                                await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ConvSettingsSecurity(room: room))),
+                          ),
+                        ]),
                     SettingsSection(
                       title: const Text('Danger'),
                       tiles: <SettingsTile>[

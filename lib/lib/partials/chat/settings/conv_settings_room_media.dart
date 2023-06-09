@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/utils/l10n/event_localisation_extension.dart';
+
 import '../../event/matrix_image.dart';
 import 'items/conv_setting_back_button.dart';
 

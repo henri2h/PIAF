@@ -189,19 +189,19 @@ class LinuxMatrixVideoMessage extends StatefulWidget {
 
 class _LinuxMatrixVideoMessageState extends State<LinuxMatrixVideoMessage> {
   final player = Player();
-  VideoController? playerController;
+  late VideoController playerController;
 
   Future<bool>? initFuture;
 
   @override
   void initState() {
     super.initState();
+    playerController = VideoController(player);
+
     initFuture = init();
   }
 
   Future<bool> init() async {
-    playerController = await VideoController.create(player.handle);
-
     await player.open(
       Playlist(
         [
@@ -220,7 +220,6 @@ class _LinuxMatrixVideoMessageState extends State<LinuxMatrixVideoMessage> {
   @override
   void dispose() {
     player.dispose();
-    playerController?.dispose();
     super.dispose();
   }
 

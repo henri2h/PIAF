@@ -84,7 +84,7 @@ class TextMessageBubble extends StatelessWidget {
                   !e.redacted && e.isRichMessage
                       ? HtmlMessage(
                           html: e.formattedText,
-                          defaultTextStyle: TextStyle(color: colorPatch),
+                          textColor: colorPatch,
                           room: e.room,
                         )
                       : MarkdownContent(

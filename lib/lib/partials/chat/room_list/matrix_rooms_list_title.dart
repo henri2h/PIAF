@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import 'chat_search_button.dart';
-
 class MatrixRoomsListTitle extends StatelessWidget {
   const MatrixRoomsListTitle(
       {Key? key,

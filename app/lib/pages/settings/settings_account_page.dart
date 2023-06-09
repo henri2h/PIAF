@@ -175,8 +175,10 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                             value: Text(client.userID ?? "None"),
                             trailing: const Icon(Icons.copy),
                             onPressed: (context) async {
-                              await Clipboard.setData(
-                                  ClipboardData(text: client.userID));
+                              if (client.userID != null) {
+                                await Clipboard.setData(
+                                    ClipboardData(text: client.userID!));
+                              }
                             },
                           ),
                         ]),

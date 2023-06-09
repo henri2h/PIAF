@@ -33,5 +33,3 @@ flutter:
   uses-material-design: true
 
 dependency_overrides:
-  # Until all dependencies are compatible. Missing: file_picker_cross, flutter_matrix_html
-  ffi: ^2.0.0

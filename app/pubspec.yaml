@@ -140,6 +140,7 @@ flutter:
         - asset: fonts/NotoEmoji/NotoColorEmoji.ttf
 
 dependency_overrides:
-  # Until all dependencies are compatible. Missing: file_picker_cross, flutter_matrix_html
-  ffi: ^2.0.0
-  flutter_svg: ^1.1.5
+  macos_ui: # Waiting for a new version of https://pub.dev/packages/macos_ui/versions (current 1.12.2)
+    git:
+      url: https://github.com/Mayb3Nots/macos_ui.git
+      ref: dev

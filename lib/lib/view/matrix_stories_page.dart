@@ -224,7 +224,7 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
       return;
     }
     if (!currentSeenByUsers.any((u) => u.id == u.room.client.userID)) {
-      timeline!.setReadMarker(currentEvent.eventId);
+      timeline!.setReadMarker(eventId: currentEvent.eventId);
     }
   }
 

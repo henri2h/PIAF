@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../dialogs/adaptative_dialogs.dart';
@@ -55,7 +53,7 @@ class MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                         multipleUserSelectionEnabled: true,
                         onUserSelected: (_) {},
                         appBarBuilder: (bool isSearching) =>
-                            Column(children: const []),
+                            const Column(children: []),
                         controller: controller);
                   }),
             ),

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
 
 import '../../components/fake_text_field.dart';
 import '../../matrix/matrix_image_avatar.dart';

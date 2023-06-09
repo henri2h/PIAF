@@ -29,7 +29,6 @@ class FakeTextField extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(20))),
         child: SizedBox(
           height: 46,
-          
           child: Row(
             children: [
               Icon(icon, color: Colors.grey, size: 18),
