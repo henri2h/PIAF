@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../dialogs/adaptative_dialogs.dart';
-import '../room_list/user_room_list.dart';
+import '../../../dialogs/adaptative_dialogs.dart';
+import 'user_selector.dart';
 
 class MinesTrixUserSelection extends StatefulWidget {
   const MinesTrixUserSelection(

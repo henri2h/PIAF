@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-class MatrixRoomsListTitle extends StatelessWidget {
-  const MatrixRoomsListTitle(
+class RoomListTitle extends StatelessWidget {
+  const RoomListTitle(
       {Key? key,
       required this.client,
       required this.onRoomSelected,

@@ -5,8 +5,8 @@ import '../../components/fake_text_field.dart';
 import '../../matrix/matrix_image_avatar.dart';
 import '../search/matrix_chats_search.dart';
 
-class ChatsSearchButton extends StatelessWidget {
-  const ChatsSearchButton({
+class RoomListSearchButton extends StatelessWidget {
+  const RoomListSearchButton({
     Key? key,
     required this.client,
     required this.onSelection,

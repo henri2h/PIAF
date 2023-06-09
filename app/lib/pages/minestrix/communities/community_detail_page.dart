@@ -4,8 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/layout_view.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
-import 'package:minestrix_chat/view/room_settings_page.dart';
-
+import 'package:minestrix_chat/pages/room_settings_page.dart';
 import '../../../partials/minestrix_room_tile.dart';
 import '../../../utils/minestrix/minestrix_community_extension.dart';
 import 'layout_main_feed.dart';

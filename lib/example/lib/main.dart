@@ -49,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Future<void> _openChat() async {
     await Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const ChatPage()));
+        .push(MaterialPageRoute(builder: (context) => const HomeChatPage()));
   }
 
   Future<void> _logIn() async {

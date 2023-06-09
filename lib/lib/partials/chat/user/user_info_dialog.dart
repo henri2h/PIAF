@@ -6,20 +6,20 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../../dialogs/adaptative_dialogs.dart';
 import '../../matrix/matrix_image_avatar.dart';
-import '../room_list/matrix_rooms_list_tile.dart';
+import '../room_list/room_list_items/room_list_item.dart';
 import '../settings/room/room_encryption_settings.dart';
 
-class MatrixUserInfoDialog extends StatelessWidget {
+class UserInfoDialog extends StatelessWidget {
   static Future<void> show(
       {required User user, required BuildContext context}) async {
     await AdaptativeDialogs.show(
         context: context,
         bottomSheet: true,
-        builder: (context) => MatrixUserInfoDialog(user: user));
+        builder: (context) => UserInfoDialog(user: user));
   }
 
   final User user;
-  const MatrixUserInfoDialog({Key? key, required this.user}) : super(key: key);
+  const UserInfoDialog({Key? key, required this.user}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +89,7 @@ class MatrixUserInfoDialog extends StatelessWidget {
                     Builder(builder: (context) {
                       final room = client.getRoomById(roomId);
                       if (room == null) return Container();
-                      return MatrixRoomsListTile(
+                      return RoomListItem(
                           key: Key("room_${room.id}"),
                           room: room,
                           selected: room == user.room,

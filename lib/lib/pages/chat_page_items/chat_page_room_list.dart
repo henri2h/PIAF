@@ -2,12 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:matrix/matrix.dart';
 import 'package:provider/provider.dart';
 
-import '../../partials/chat/room_list/matrix_chats_list.dart';
-import 'room_list_widget.dart';
+import 'provider/chat_page_state.dart';
+import '../../partials/chat/room_list/room_list.dart';
 
-class RoomListBuilder extends StatelessWidget {
+class ChatPageRoomList extends StatelessWidget {
   final bool mobile;
-  const RoomListBuilder(
+  const ChatPageRoomList(
       {Key? key,
       this.mobile = false,
       required this.scrollController,
@@ -21,14 +21,14 @@ class RoomListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RoomListState>(builder: (context, controller, _) {
+    return Consumer<ChatPageState>(builder: (context, controller, _) {
       final client = controller.client;
       return StreamBuilder<Object>(
           stream: client.onSync.stream.where((up) => up.hasRoomUpdate),
           builder: (context, snapshot) {
             final rooms = controller.getRoomList(client);
 
-            return MatrixChatsList(
+            return RoomList(
                 controller: scrollController,
                 selectedRoomId: controller.selectedRoomID,
                 allowPop: controller.allowPop,

@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 
-import '../../../view/matrix_storie_create.dart';
+import '../../../pages/matrix_storie_create.dart';
 
 extension StoriesExtension on Client {
   static const String storiesRoomType = 'msc3588.stories.stories-room';

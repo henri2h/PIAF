@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../../../style/constants.dart';
-import '../../matrix/matrix_image_avatar.dart';
-import '../../matrix/matrix_user_item.dart';
+import '../../../../style/constants.dart';
+import '../../../matrix/matrix_image_avatar.dart';
+import '../../../matrix/matrix_user_item.dart';
 
 class UserSelectorController {
   List<String> selectedUsers = [];

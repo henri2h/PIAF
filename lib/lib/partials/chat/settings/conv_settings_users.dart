@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
 import '../../matrix/matrix_user_item.dart';
-import '../user/matrix_user_info_dialog.dart';
-import '../user/matrix_user_powerlevel_info_card.dart';
-import '../user/user_selector_dialog.dart';
+import '../user/user_info_dialog.dart';
+import '../user/user_powerlevel_info_card.dart';
+import '../user/selector/user_selector_dialog.dart';
 import 'items/conv_setting_back_button.dart';
 
 class ConvSettingsUsers extends StatefulWidget {
@@ -78,8 +78,7 @@ class ConvSettingsUsersState extends State<ConvSettingsUsers> {
                                           client: room.client,
                                           avatarUrl: u.avatarUrl,
                                           subtitle:
-                                              MatrixUserPowerLevelInfoCard(
-                                                  user: u)),
+                                              UserPowerLevelInfoCard(user: u)),
                                     ),
                                     if (u.canKick || u.canBan)
                                       PopupMenuButton<String>(
@@ -131,7 +130,7 @@ class ConvSettingsUsersState extends State<ConvSettingsUsers> {
                                   await Navigator.of(context).push(
                                       MaterialPageRoute(
                                           builder: (context) =>
-                                              MatrixUserInfoDialog(user: u)));
+                                              UserInfoDialog(user: u)));
                                 });
                           }),
                     ),

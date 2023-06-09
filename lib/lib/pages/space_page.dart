@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/chat/room_list/matrix_rooms_list_tile.dart';
+import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
-import '../../../style/constants.dart';
-import '../../dialogs/adaptative_dialogs.dart';
-import '../../matrix/matrix_image_avatar.dart';
-import '../room/room_participants_indicator.dart';
-import 'space_room_selection.dart';
+import '../style/constants.dart';
+import '../partials/dialogs/adaptative_dialogs.dart';
+import '../partials/matrix/matrix_image_avatar.dart';
+import '../partials/chat/room/room_participants_indicator.dart';
+import '../partials/chat/spaces/space_room_selection.dart';
 
-class RoomSpacePage extends StatefulWidget {
-  const RoomSpacePage(
+class SpacePage extends StatefulWidget {
+  const SpacePage(
       {Key? key, required this.spaceId, required this.client, this.onBack})
       : super(key: key);
 
@@ -18,10 +18,10 @@ class RoomSpacePage extends StatefulWidget {
   final void Function()? onBack;
 
   @override
-  State<RoomSpacePage> createState() => _RoomSpacePageState();
+  State<SpacePage> createState() => _SpacePageState();
 }
 
-class _RoomSpacePageState extends State<RoomSpacePage> {
+class _SpacePageState extends State<SpacePage> {
   Future<List<SpaceRoomsChunk>>? rooms;
   Future<List<SpaceRoomsChunk>> loadRoomHierarchy() async {
     try {

@@ -1,52 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
+import 'package:minestrix_chat/partials/chat/spaces/list/spaces_list.dart';
 import 'package:minestrix_chat/utils/client_information.dart';
-import 'package:provider/provider.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../config/matrix_types.dart';
-import '../../partials/chat/spaces_list/spaces_list.dart';
-import '../../utils/matrix_widget.dart';
+import '../../../config/matrix_types.dart';
 
-class RoomList extends StatelessWidget {
-  const RoomList(
-      {Key? key,
-      required this.child,
-      required this.client,
-      required this.allowPop,
-      required this.onRoomSelection,
-      required this.onLongPressedSpace,
-      required this.onSpaceSelection})
-      : super(key: key);
-
-  final Widget child;
-  final Client client;
-  final bool allowPop;
-  final void Function(String?)? onRoomSelection;
-  final void Function(String)? onSpaceSelection;
-  final void Function(String?) onLongPressedSpace;
-
-  /// Returns the (nearest) Client instance of your application.
-  static RoomListState of(BuildContext context) {
-    return Provider.of<RoomListState>(context, listen: false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => RoomListState(
-          context: context,
-          client: client,
-          allowPop: allowPop,
-          onLongPressedSpace: onLongPressedSpace,
-          onRoomSelection: onRoomSelection,
-          onSpaceSelection: onSpaceSelection),
-      child: child,
-    );
-  }
-}
-
-class RoomListState with ChangeNotifier {
+class ChatPageState with ChangeNotifier {
   final bool allowPop;
   final Client client;
   final BuildContext context;
@@ -59,7 +20,7 @@ class RoomListState with ChangeNotifier {
 
   bool spaceListExpanded = true;
 
-  RoomListState(
+  ChatPageState(
       {required this.allowPop,
       required this.client,
       required this.onRoomSelection,

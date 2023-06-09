@@ -14,7 +14,7 @@ import '../partials/chat/settings/conv_settings_room.dart';
 import '../partials/chat/settings/conv_settings_room_media.dart';
 import '../partials/chat/settings/conv_settings_security.dart';
 import '../partials/chat/settings/conv_settings_users.dart';
-import '../partials/chat/user/matrix_user_info_dialog.dart';
+import '../partials/chat/user/user_info_dialog.dart';
 import '../partials/dialogs/adaptative_dialogs.dart';
 import '../partials/matrix/matrix_image_avatar.dart';
 

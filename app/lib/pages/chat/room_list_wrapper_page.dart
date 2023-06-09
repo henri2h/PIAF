@@ -1,11 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:minestrix_chat/pages/chat_page_items/chat_page_room_list.dart';
+import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart';
+
+import 'package:minestrix_chat/pages/chat_page_items/provider/chat_page_provider.dart';
+
+
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
-import 'package:minestrix_chat/view/matrix_chat_creator.dart';
-import 'package:minestrix_chat/view/room_list/room_list_builder.dart';
-import 'package:minestrix_chat/view/room_list/room_list_spaces_list.dart';
-import 'package:minestrix_chat/view/room_list/room_list_widget.dart';
+import 'package:minestrix_chat/pages/room_creator_page.dart';
 import 'package:provider/provider.dart';
 
 import '../../router.gr.dart';
@@ -37,7 +40,7 @@ class RoomListWrapperPageState extends State<RoomListWrapperPage> {
   Widget build(BuildContext context) {
     return Provider(
       create: (_) => this,
-      child: RoomList(
+      child: ChatPageProvider(
         client: Matrix.of(context).client,
         allowPop: false,
         onRoomSelection: onRoomSelected,
@@ -60,19 +63,12 @@ class RoomListWrapperPageState extends State<RoomListWrapperPage> {
               return Row(
                 children: [
                   if (!mobile)
-                    Consumer<RoomListState>(
-                        builder: (context, state, _) => SizedBox(
-                            width: state.spaceListExpanded ? 280 : 60,
-                            child: RoomListSpacesList(
-                                mobile: false,
-                                scrollController: scrollControllerSpaces))),
-                  if (!mobile)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 400),
                           child: Card(
-                            child: RoomListBuilder(
+                            child: ChatPageRoomList(
                                 scrollController: scrollControllerRoomList,
                                 onAppBarClicked: () =>
                                     context.navigateTo(const SettingsRoute())),
@@ -87,7 +83,7 @@ class RoomListWrapperPageState extends State<RoomListWrapperPage> {
                   AdaptativeDialogs.show(
                       context: context,
                       title: "New message",
-                      builder: (_) => MatrixChatCreator(
+                      builder: (_) => RoomCreatorPage(
                           client: Matrix.of(context).client,
                           onRoomSelected: onRoomSelected));
                 },
@@ -95,7 +91,7 @@ class RoomListWrapperPageState extends State<RoomListWrapperPage> {
             drawer: Drawer(
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 child: SafeArea(
-                  child: RoomListSpacesList(
+                  child: ChatPageSpaceList(
                       mobile: true, scrollController: scrollControllerDrawer),
                 ))),
       ),

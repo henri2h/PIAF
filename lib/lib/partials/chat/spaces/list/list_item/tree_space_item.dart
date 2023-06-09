@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
 
-import '../../tree_view/tree_view.dart';
+import '../../../../tree_view/tree_view.dart';
 import 'matrix_space_icon_button.dart';
 
 class TreeSpaceItem extends StatefulWidget {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
 
-import '../partials/chat/room_list/user_room_list.dart';
+import '../partials/chat/user/selector/user_selector.dart';
 import '../partials/dialogs/adaptative_dialogs.dart';
 import 'matrix_create_group.dart';
 
-class MatrixChatCreator extends StatefulWidget {
-  const MatrixChatCreator(
+class RoomCreatorPage extends StatefulWidget {
+  const RoomCreatorPage(
       {Key? key, required this.onRoomSelected, required this.client})
       : super(key: key);
 
@@ -14,10 +14,10 @@ class MatrixChatCreator extends StatefulWidget {
   final Function(String?) onRoomSelected;
 
   @override
-  State<MatrixChatCreator> createState() => _MatrixChatCreatorState();
+  State<RoomCreatorPage> createState() => _RoomCreatorPageState();
 }
 
-class _MatrixChatCreatorState extends State<MatrixChatCreator> {
+class _RoomCreatorPageState extends State<RoomCreatorPage> {
   bool createGroup = false;
 
   bool _creating = false;

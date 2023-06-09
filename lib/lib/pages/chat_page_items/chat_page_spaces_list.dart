@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-import '../../partials/chat/spaces_list/spaces_list.dart';
-import 'room_list_widget.dart';
+import 'provider/chat_page_state.dart';
+import '../../partials/chat/spaces/list/spaces_list.dart';
 
-class RoomListSpacesList extends StatelessWidget {
-  const RoomListSpacesList(
+class ChatPageSpaceList extends StatelessWidget {
+  const ChatPageSpaceList(
       {Key? key, required this.mobile, required this.scrollController})
       : super(key: key);
   final bool mobile;
   final ScrollController scrollController;
   @override
   Widget build(BuildContext context) {
-    return Consumer<RoomListState>(
+    return Consumer<ChatPageState>(
         builder: (context, controller, _) => MatrixSpacesList(
               controller: scrollController,
               client: controller.client,

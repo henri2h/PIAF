@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/chat/room/matrix_room_title.dart';
+import 'package:minestrix_chat/partials/chat/room/room_title.dart';
 import 'package:minestrix_chat/partials/chat/room/room_timeline.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 

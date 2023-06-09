@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/extensions/datetime.dart';
 
-import '../../components/shimmer_widget.dart';
-import '../../matrix/matrix_image_avatar.dart';
-import '../../matrix/matrix_room_avatar.dart';
-import '../../matrix/matrix_user_avatar.dart';
-import '../matrix_notification_count_dot.dart';
+import '../../../components/shimmer_widget.dart';
+import '../../../matrix/matrix_image_avatar.dart';
+import '../../../matrix/matrix_room_avatar.dart';
+import '../../../matrix/matrix_user_avatar.dart';
+import '../../matrix_notification_count_dot.dart';
 
-class MatrixRoomsListTile extends StatelessWidget {
-  const MatrixRoomsListTile({
+class RoomListItem extends StatelessWidget {
+  const RoomListItem({
     Key? key,
     required this.room,
     required this.client,

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../../matrix/matrix_image_avatar.dart';
-import '../../matrix/matrix_user_item.dart';
+import '../../../matrix/matrix_image_avatar.dart';
+import '../../../matrix/matrix_user_item.dart';
 
-class UserPresenceListTile extends StatelessWidget {
-  const UserPresenceListTile({
+class RoomListItemPresence extends StatelessWidget {
+  const RoomListItemPresence({
     Key? key,
     required this.client,
     required this.presence,

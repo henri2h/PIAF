@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
+import 'package:minestrix_chat/pages/room_settings_page.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_permissions.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
-import 'package:minestrix_chat/view/room_settings_page.dart';
 
 import '../../../partials/calendar_events/calendar_event_create_widget.dart';
 import '../../../partials/components/layouts/custom_header.dart';

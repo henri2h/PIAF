@@ -1,18 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-import '../../partials/chat/spaces_list/space_page.dart';
-import 'room_list_widget.dart';
+import 'provider/chat_page_state.dart';
+import '../space_page.dart';
 
-class RoomListSpace extends StatelessWidget {
-  const RoomListSpace({Key? key}) : super(key: key);
+class ChatPageSpacePage extends StatelessWidget {
+  const ChatPageSpacePage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Consumer<RoomListState>(
+    return Consumer<ChatPageState>(
         builder: (context, controller, _) =>
             !controller.selectedSpace.startsWith("!")
                 ? Text("No room selected ${controller.selectedSpace}")
-                : RoomSpacePage(
+                : SpacePage(
                     key: Key("space_${controller.selectedSpace}"),
                     spaceId: controller.selectedSpace,
                     client: controller.client,

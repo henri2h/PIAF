@@ -2,19 +2,19 @@ library minestrix_chat;
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/view/room_list/room_list_room.dart';
+import 'package:minestrix_chat/pages/chat_page_items/chat_page_room.dart';
 
-import 'room_list_builder.dart';
-import 'room_list_spaces_list.dart';
-import 'room_list_widget.dart';
+import 'chat_page_items/provider/chat_page_provider.dart';
+import 'chat_page_items/chat_page_room_list.dart';
+import 'chat_page_items/chat_page_spaces_list.dart';
 
 /// An example implementation of the room list widget embeding
-class RoomsListPage extends StatefulWidget {
+class ChatPage extends StatefulWidget {
   /// Display the rooms for the logged user.
   /// [enableStories] allow enabling the story view.
   /// [onSelection] allows overriding that happens when the user click on a chat. Mobile view only.
   /// [allowPop] allow the page to call Navigation.pop()
-  const RoomsListPage(
+  const ChatPage(
       {Key? key,
       required this.client,
       this.enableStories = false,
@@ -29,10 +29,10 @@ class RoomsListPage extends StatefulWidget {
   final void Function(String?)? onSelection;
 
   @override
-  RoomsListPageState createState() => RoomsListPageState();
+  ChatPageState createState() => ChatPageState();
 }
 
-class RoomsListPageState extends State<RoomsListPage>
+class ChatPageState extends State<ChatPage>
     with SingleTickerProviderStateMixin {
   final scrollControllerSpaces = ScrollController();
   final scrollControllerRooms = ScrollController();
@@ -40,38 +40,33 @@ class RoomsListPageState extends State<RoomsListPage>
 
   @override
   Widget build(BuildContext context) {
-    return RoomList(
+    return ChatPageProvider(
         client: widget.client,
         allowPop: widget.allowPop,
         onRoomSelection: widget.onSelection,
         onSpaceSelection: (_) {}, // TODO
         onLongPressedSpace: (_) {}, // TODO
         child: Builder(builder: (context) {
-          final controller = RoomList.of(context);
+          final controller = ChatPageProvider.of(context);
 
           return Scaffold(
             body: LayoutBuilder(builder: (context, constraints) {
               if (constraints.maxWidth > 800) {
                 return Row(
                   children: [
-                    SizedBox(
-                        width: controller.spaceListExpanded ? 230 : 60,
-                        child: RoomListSpacesList(
-                            mobile: false,
-                            scrollController: scrollControllerSpaces)),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 380),
                       child: Card(
-                          child: RoomListBuilder(
+                          child: ChatPageRoomList(
                               scrollController: scrollControllerRooms)),
                     ),
                     if (controller.selectedRoomID != null)
-                      const Expanded(flex: 2, child: RoomListRoom()),
+                      const Expanded(flex: 2, child: ChatPageRoom()),
                     if (controller.selectedRoomID == null)
-                      Expanded(
+                      const Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Center(child: Icon(Icons.chat_outlined, size: 180)),
                           ],
                         ),
@@ -80,9 +75,9 @@ class RoomsListPageState extends State<RoomsListPage>
                 );
               } else {
                 if (controller.selectedRoomID != null) {
-                  return const RoomListRoom();
+                  return const ChatPageRoom();
                 } else {
-                  return RoomListBuilder(
+                  return ChatPageRoomList(
                       mobile: true, scrollController: scrollControllerRooms);
                 }
               }
@@ -90,7 +85,7 @@ class RoomsListPageState extends State<RoomsListPage>
             drawer: Drawer(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               child: SafeArea(
-                child: RoomListSpacesList(
+                child: ChatPageSpaceList(
                     mobile: true, scrollController: scrollControllerDrawer),
               ),
             ),

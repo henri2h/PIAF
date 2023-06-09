@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/matrix/mutual_rooms_extension.dart';
-import '../room_list/matrix_rooms_list_tile.dart';
+import '../room_list/room_list_items/room_list_item.dart';
 import 'items/conv_setting_back_button.dart';
 
 class ConvSettingsMutualRooms extends StatefulWidget {
@@ -43,7 +43,7 @@ class _ConvSettingsMutualRoomsState extends State<ConvSettingsMutualRooms> {
                     Builder(builder: (context) {
                       final r = widget.room.client.getRoomById(roomId);
                       if (r == null) return Container();
-                      return MatrixRoomsListTile(
+                      return RoomListItem(
                           key: Key("room_${r.id}"),
                           room: r,
                           selected: r == widget.room,

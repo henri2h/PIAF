@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/matrix/user_extension.dart';
 
-class MatrixUserPowerLevelInfoCard extends StatelessWidget {
-  const MatrixUserPowerLevelInfoCard({
+class UserPowerLevelInfoCard extends StatelessWidget {
+  const UserPowerLevelInfoCard({
     Key? key,
     required this.user,
   }) : super(key: key);

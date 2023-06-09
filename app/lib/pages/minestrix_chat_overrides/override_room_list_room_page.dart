@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix_chat/view/room_list/room_list_room.dart';
+
+import 'package:minestrix_chat/pages/chat_page_items/chat_page_room.dart';
 
 @RoutePage()
 class OverrideRoomListRoomPage extends StatelessWidget {
@@ -11,7 +12,7 @@ class OverrideRoomListRoomPage extends StatelessWidget {
   final bool displaySettingsOnDesktop;
   @override
   Widget build(BuildContext context) {
-    return RoomListRoom(
+    return ChatPageRoom(
       displaySettingsOnDesktop: displaySettingsOnDesktop,
     );
   }

@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-
 // ignore: implementation_imports
 import 'package:matrix/src/utils/cached_stream_controller.dart';
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/navigation/rightbar.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_community_extension.dart';
@@ -27,7 +25,6 @@ import '../../partials/feed/notfication_bell.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
 import '../../partials/post/post.dart';
-import '../../partials/post/post_writer_modal.dart';
 import '../../router.gr.dart';
 import '../../utils/settings.dart';
 import '../app_wrapper_page.dart';

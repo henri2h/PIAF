@@ -6,7 +6,7 @@ import 'package:matrix/src/utils/cached_stream_controller.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
-import 'package:minestrix_chat/partials/chat/user/user_selector_dialog.dart';
+import 'package:minestrix_chat/partials/chat/user/selector/user_selector_dialog.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';

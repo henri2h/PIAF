@@ -1,7 +1,7 @@
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 
-import '../../../view/room_list/room_list_widget.dart';
+import '../../../pages/chat_page_items/provider/chat_page_state.dart';
 
 extension ClientExtension on Client {
   Iterable<Room> filterRoomWithType(String type) {
@@ -13,7 +13,7 @@ extension ClientExtension on Client {
     int count = 0;
 
     for (var room in rooms) {
-      if (!RoomListState.ignoredRoomTypes.contains(room.type)) {
+      if (!ChatPageState.ignoredRoomTypes.contains(room.type)) {
         final roomCount = room.notificationCount;
         if (roomCount == 0 && room.isUnreadOrInvited) {
           count += 1;

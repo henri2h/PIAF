@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix_chat/view/room_list/room_list_builder.dart';
+import 'package:minestrix_chat/pages/chat_page_items/chat_page_room_list.dart';
 import 'package:provider/provider.dart';
 
 import '../../partials/minestrix_title.dart';
@@ -23,7 +23,7 @@ class _RoomListPageState extends State<RoomListPage> {
       final state =
           Provider.of<RoomListWrapperPageState>(context, listen: false);
       if (state.mobile) {
-        return RoomListBuilder(
+        return ChatPageRoomList(
           mobile: true,
           scrollController: scrollController,
           appBarColor: Theme.of(context).scaffoldBackgroundColor.withAlpha(220),

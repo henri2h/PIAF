@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/pages/chat_page_items/provider/chat_page_provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import '../../../utils/matrix_widget.dart';
-import '../../../view/room_list/room_list_widget.dart';
-import '../../dialogs/adaptative_dialogs.dart';
-import '../../matrix/matrix_image_avatar.dart';
-import '../spaces_list/spaces_list.dart';
+import '../../../../utils/matrix_widget.dart';
+import '../../../dialogs/adaptative_dialogs.dart';
+import '../../../matrix/matrix_image_avatar.dart';
+import '../../spaces/list/spaces_list.dart';
 
 class RoomListFilterMobile extends StatefulWidget {
   const RoomListFilterMobile({Key? key}) : super(key: key);
@@ -31,7 +31,7 @@ class RoomListFilterMobileState extends State<RoomListFilterMobile> {
     final client = Matrix.of(context).client;
     final rooms = client.rooms.where((room) => room.isSpace);
 
-    final roomList = RoomList.of(context);
+    final roomList = ChatPageProvider.of(context);
 
     return ListView(
       children: [

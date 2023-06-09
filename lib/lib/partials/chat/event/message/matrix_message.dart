@@ -16,7 +16,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../dialogs/adaptative_dialogs.dart';
 import '../../../matrix/reactions_list.dart';
-import '../../user/matrix_user_info_dialog.dart';
+import '../../user/user_info_dialog.dart';
 import 'call_message_dispaly.dart';
 import 'matrix_video_message.dart';
 import 'text_message_bubble.dart';
@@ -145,7 +145,7 @@ class MessageDisplayState extends State<MessageDisplay>
               child: widget.displayAvatar
                   ? MaterialButton(
                       onPressed: () async {
-                        await MatrixUserInfoDialog.show(
+                        await UserInfoDialog.show(
                             user: e.sender, context: context);
                       },
                       minWidth: 0,
