@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/managers/theme_manager.dart';
@@ -17,7 +16,6 @@ class SettingsThemePage extends StatefulWidget {
 class SettingsThemePageState extends State<SettingsThemePage> {
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).client;
     AppThemeMode? themeMode = context.read<ThemeNotifier>().mode;
     return Consumer<ThemeNotifier>(
       builder: (context, theme, _) => ListView(

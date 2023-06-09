@@ -4,15 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
-import 'package:minestrix_chat/utils/sentry_controller.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import 'settings/settings_labs_page.dart';
 import 'settings/settings_story_detail_page.dart';
 
 @RoutePage()

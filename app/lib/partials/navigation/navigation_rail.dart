@@ -1,16 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/minestrix/minestrix_community_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
-import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../pages/settings/settings_account_switch_page.dart';
 import '../../router.gr.dart';
-import '../components/minestrix/minestrix_title.dart';
-import '../minestrix_room_tile.dart';
 
 class MinestrixNavigationRailItem {
   final Widget icon;
