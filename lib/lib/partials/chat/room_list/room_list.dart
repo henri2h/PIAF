@@ -25,6 +25,7 @@ class RoomList extends StatelessWidget {
       required this.sortedRooms,
       required this.isMobile,
       required this.allowPop,
+      required this.displaySpaceList,
       this.appBarColor,
       this.onAppBarClicked})
       : super(key: key);
@@ -39,7 +40,7 @@ class RoomList extends StatelessWidget {
   final bool isMobile; // adapted for small screens
   final Color? appBarColor;
   final VoidCallback? onAppBarClicked;
-  final displaySpaceList = true;
+  final bool displaySpaceList;
 
   @override
   Widget build(BuildContext context) {

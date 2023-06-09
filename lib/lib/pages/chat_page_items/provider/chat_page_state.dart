@@ -18,6 +18,8 @@ class ChatPageState with ChangeNotifier {
   String? selectedRoomID;
   String selectedSpace = CustomSpacesTypes.home;
 
+  bool displaySpaceList = false;
+
   bool spaceListExpanded = true;
 
   ChatPageState(
@@ -74,6 +76,11 @@ class ChatPageState with ChangeNotifier {
   void toggleSpaceList() {
     spaceListExpanded = !spaceListExpanded;
 
+    notifyListeners();
+  }
+
+  void toggleDisplaySpaceList() {
+    displaySpaceList = !displaySpaceList;
     notifyListeners();
   }
 

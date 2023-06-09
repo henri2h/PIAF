@@ -5,7 +5,6 @@ import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart'
 
 import 'package:minestrix_chat/pages/chat_page_items/provider/chat_page_provider.dart';
 
-
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/pages/room_creator_page.dart';
