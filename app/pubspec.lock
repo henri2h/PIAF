@@ -673,18 +673,16 @@ packages:
   flutter_olm:
     dependency: "direct main"
     description:
-      name: flutter_olm
-      sha256: fef0c9476d02c0df25ef0a66680bc23ac529a36b4911505910bcd8711b449c81
-      url: "https://pub.dev"
-    source: hosted
+      path: "../../olm/flutter"
+      relative: true
+    source: path
     version: "1.2.0"
   flutter_openssl_crypto:
     dependency: "direct main"
     description:
-      name: flutter_openssl_crypto
-      sha256: b64a0825d79f10b6d5f5951f7ce2d5ddc12ed532129fc5a7e0ce472f5b97d78e
-      url: "https://pub.dev"
-    source: hosted
+      path: "../../flutter_openssl_crypto"
+      relative: true
+    source: path
     version: "0.1.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
@@ -1206,11 +1204,10 @@ packages:
   native_imaging:
     dependency: "direct main"
     description:
-      name: native_imaging
-      sha256: "9f96eafb6d84ec934262caf36b60e236d1c4507ed6555a1effc117d463ef5932"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0"
+      path: "../../native_imaging"
+      relative: true
+    source: path
+    version: "0.1.1"
   nested:
     dependency: transitive
     description:

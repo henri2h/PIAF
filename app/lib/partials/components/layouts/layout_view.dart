@@ -69,102 +69,112 @@ class LayoutView extends StatelessWidget {
             width: 1000, height: 800, method: ThumbnailMethod.scale)
         .toString();
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final displaySideBar =
-          constraints.maxWidth >= maxSidebarWidth && sidebarBuilder != null;
-      final displayChat = constraints.maxWidth >= maxChatWidth &&
-          this.displayChat &&
-          room != null;
+    return Scaffold(
+      drawer: Drawer(child: leftBar),
+      body: LayoutBuilder(builder: (context, constraints) {
+        final displaySideBar =
+            constraints.maxWidth >= maxSidebarWidth && sidebarBuilder != null;
+        final displayChat = constraints.maxWidth >= maxChatWidth &&
+            this.displayChat &&
+            room != null;
 
-      final displayLeftBar = constraints.maxWidth > maxHeaderWidth + 2 * 300;
-      final headerRounded = constraints.minWidth >= maxHeaderWidth;
+        final displayLaterals = constraints.maxWidth > maxHeaderWidth + 2 * 300;
+        final headerRounded = constraints.minWidth >= maxHeaderWidth;
 
-      final header = ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxHeaderWidth),
-        child: Padding(
-          padding: headerRounded && displayChat
-              ? const EdgeInsets.all(8.0)
-              : EdgeInsets.zero,
-          child: Container(
-            height: headerHeight,
-            decoration: BoxDecoration(
-              borderRadius: !headerRounded ? null : BorderRadius.circular(8),
-              image: roomUrl != null
-                  ? DecorationImage(
-                      image: CachedNetworkImageProvider(roomUrl),
-                      fit: BoxFit.cover)
-                  : null,
-              gradient: roomUrl != null ? null : noImageBoxDecoration(context),
-            ),
-            child: Column(
-              children: [
-                if (customHeaderText != null)
-                  CustomHeader(
-                    title: customHeaderText!,
-                    actionButton: customHeaderActionsButtons,
-                    child: customHeaderChild,
-                  ),
-                if (headerChildBuilder != null)
-                  headerChildBuilder!(displaySideBar: displaySideBar),
-              ],
+        final header = ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxHeaderWidth),
+          child: Padding(
+            padding: headerRounded && displayChat
+                ? const EdgeInsets.all(8.0)
+                : EdgeInsets.zero,
+            child: Container(
+              height: headerHeight,
+              decoration: BoxDecoration(
+                borderRadius: !headerRounded ? null : BorderRadius.circular(8),
+                image: roomUrl != null
+                    ? DecorationImage(
+                        image: CachedNetworkImageProvider(roomUrl),
+                        fit: BoxFit.cover)
+                    : null,
+                gradient:
+                    roomUrl != null ? null : noImageBoxDecoration(context),
+              ),
+              child: Column(
+                children: [
+                  if (headerChildBuilder != null)
+                    headerChildBuilder!(displaySideBar: displaySideBar),
+                ],
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (leftBar != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 6.0),
-              child: Card(
-                  margin: EdgeInsets.zero,
-                  child: SizedBox(width: 300, child: leftBar!)),
-            ),
-          Expanded(
-            child: ListView(controller: controller, children: [
-              header,
-              const SizedBox(
-                height: 10,
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (leftBar != null && displayLaterals)
+              Padding(
+                padding: const EdgeInsets.only(right: 6.0),
+                child: Card(
+                    margin: EdgeInsets.zero,
+                    child: SizedBox(width: 300, child: leftBar!)),
               ),
-              Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: maxHeaderWidth),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (displaySideBar)
-                        SizedBox(
-                            width: sidebarWidth,
-                            child: sidebarBuilder!(
-                                displayLeftBar: displayLeftBar)),
-                      Expanded(
-                        child: Center(
-                          child: ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: mainWidth),
-                              child: mainBuilder(
-                                  displaySideBar: displaySideBar,
-                                  displayLeftBar: displayLeftBar)),
+            Expanded(
+              child: Column(
+                children: [
+                  AppBar(
+                      title: Text(customHeaderText ?? ''),
+                      leading: customHeaderChild,
+                      actions: customHeaderActionsButtons),
+                  Expanded(
+                    child: ListView(controller: controller, children: [
+                      header,
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: maxHeaderWidth),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (displaySideBar)
+                                SizedBox(
+                                    width: sidebarWidth,
+                                    child: sidebarBuilder!(
+                                        displayLeftBar: displayLaterals)),
+                              Expanded(
+                                child: Center(
+                                  child: ConstrainedBox(
+                                      constraints:
+                                          BoxConstraints(maxWidth: mainWidth),
+                                      child: mainBuilder(
+                                          displaySideBar: displaySideBar,
+                                          displayLeftBar: displayLaterals)),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ],
+                    ]),
                   ),
-                ),
+                ],
               ),
-            ]),
-          ),
-          if (rightBar != null) SizedBox(width: 400, child: rightBar!),
-          if (displayChat)
-            SizedBox(
-                width: 400,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: RoomChatCard(room: room!),
-                ))
-        ],
-      );
-    });
+            ),
+            if (rightBar != null && displayLaterals)
+              SizedBox(width: 400, child: rightBar!),
+            if (displayChat)
+              SizedBox(
+                  width: 400,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: RoomChatCard(room: room!),
+                  ))
+          ],
+        );
+      }),
+    );
   }
 }

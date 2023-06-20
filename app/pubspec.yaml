@@ -30,8 +30,10 @@ dependencies:
       url: https://gitlab.com/minestrix/famedlysdk.git
       ref: henri2h/index-events-by-event-type
 
-  flutter_olm: ^1.1.2
-  flutter_openssl_crypto: ^0.1.0
+  flutter_olm:
+    path: ../../olm/flutter
+  flutter_openssl_crypto:
+    path: ../../flutter_openssl_crypto
 
   # Database
   hive_flutter: ^1.1.0
@@ -55,7 +57,8 @@ dependencies:
   image_picker:
   file_picker: ^5.2.5
   path_provider: ^2.0.5
-  native_imaging: ^0.1.0
+  native_imaging:
+    path: ../../native_imaging
 
   # time formating
   timeago: ^3.0.2

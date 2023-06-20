@@ -26,6 +26,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   Future<void>? loadFuture;
 
   static const displayAppBarList = {
+    "/",
     "/search",
     "/feed",
     "/rooms",
@@ -78,7 +79,9 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                   Expanded(
                     child: Column(
                       children: [
+                        if (isWideScreen)
                         const NavBarDesktop(),
+                        if (isWideScreen)
                         const SizedBox(
                           height: 6,
                         ),
