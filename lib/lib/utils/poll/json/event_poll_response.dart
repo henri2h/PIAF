@@ -23,6 +23,6 @@ class EventPollResponse {
   EventPollResponse();
 
   factory EventPollResponse.fromEvent(Event e) => _$EventPollResponseFromJson(
-      e.content[MatrixEventTypes.pollResponse] ?? {});
+      e.content.tryGetMap(MatrixEventTypes.pollResponse) ?? {});
   Map<String, dynamic> toJson() => _$EventPollResponseToJson(this);
 }

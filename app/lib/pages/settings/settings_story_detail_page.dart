@@ -178,5 +178,5 @@ extension SettingsTileRadio on SettingsTile {
 
 extension JoinRulesExtension on Room {
   String? get joinRulesString =>
-      getState(EventTypes.RoomJoinRules)?.content['join_rule'];
+      getState(EventTypes.RoomJoinRules)?.content.tryGet<String>('join_rule');
 }

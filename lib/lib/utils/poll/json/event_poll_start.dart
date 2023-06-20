@@ -36,8 +36,8 @@ class EventPollStart {
 
   EventPollStart();
 
-  factory EventPollStart.fromEvent(Event e) =>
-      _$EventPollStartFromJson(e.content[MatrixEventTypes.pollStart] ?? {});
+  factory EventPollStart.fromEvent(Event e) => _$EventPollStartFromJson(
+      e.content.tryGetMap(MatrixEventTypes.pollStart) ?? {});
   Map<String, dynamic> toJson() => _$EventPollStartToJson(this);
 }
 

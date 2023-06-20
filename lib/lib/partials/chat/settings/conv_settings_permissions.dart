@@ -254,7 +254,9 @@ class PermissionTile extends StatelessWidget {
     if (permissions != null &&
         (!isEvent || permissions["events"] is Map<String, dynamic>)) {
       if (isEvent) {
-        permissions["events"][eventType] = value;
+        final permissionsEventsMap =
+            permissions["events"] as Map<String, dynamic>;
+        permissionsEventsMap[eventType] = value;
       } else {
         permissions[eventType] = value;
       }
