@@ -14,47 +14,60 @@ class AppRouter extends $AppRouter {
 // we want to have the top navigation bar on the chat page when on desktop but not the bottom one on small screen
 // as it's distracting when typing messages
     AutoRoute(path: '/', page: AppWrapperRoute.page, children: [
-      AutoRoute(path: '', page: FeedRoute.page),
-      AutoRoute(path: 'feeds', page: FeedListRoute.page),
-      AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
-      AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
-      AutoRoute(path: 'user_feed', page: UserViewRoute.page),
-      AutoRoute(path: 'followers', page: FollowersRoute.page),
-      AutoRoute(path: 'post/image_gallery', page: PostGalleryRoute.page),
-      AutoRoute(path: 'events', page: CalendarEventListRoute.page),
-      AutoRoute(path: 'events/calendar', page: CalendarEventRoute.page),
-      AutoRoute(path: 'search', page: ResearchRoute.page),
-      AutoRoute(path: 'accounts', page: AccountsDetailsRoute.page),
-      AutoRoute(path: 'recommandations', page: FollowRecommendationsRoute.page),
-      AutoRoute(path: 'communities', page: CommunityRoute.page),
-      AutoRoute(path: 'community', page: CommunityDetailRoute.page),
-      AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
-      AutoRoute(path: 'settings', page: SettingsRoute.page, children: [
-        AutoRoute(
-          path: '',
-          page: SettingsPanelInnerRoute.page,
-        ),
-        AutoRoute(path: 'account', page: SettingsAccountRoute.page),
-        AutoRoute(
-            path: 'account_switch', page: SettingsAccountSwitchRoute.page),
-        AutoRoute(path: 'theme', page: SettingsThemeRoute.page),
-        AutoRoute(path: 'security', page: SettingsSecurityRoute.page),
-        AutoRoute(path: 'labs', page: SettingsLabsRoute.page),
-        AutoRoute(path: 'sync', page: SettingsSyncRoute.page),
-        AutoRoute(path: 'storys', page: SettingsStorysRoute.page),
-        AutoRoute(path: 'story', page: SettingsStorysDetailRoute.page),
+      AutoRoute(path: '', page: TabHomeRoute.page, children: [
+        AutoRoute(path: '', page: FeedRoute.page),
+        AutoRoute(path: 'feeds', page: FeedListRoute.page),
+        AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
+        AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
+        AutoRoute(path: 'user_feed', page: UserViewRoute.page),
+        AutoRoute(path: 'followers', page: FollowersRoute.page),
+        AutoRoute(path: 'post/image_gallery', page: PostGalleryRoute.page),
         AutoRoute(path: 'accounts', page: AccountsDetailsRoute.page),
-        AutoRoute(path: 'debug', page: DebugRoute.page)
+        AutoRoute(
+            path: 'recommandations', page: FollowRecommendationsRoute.page),
+        AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
+        AutoRoute(path: 'settings', page: SettingsRoute.page, children: [
+          AutoRoute(
+            path: '',
+            page: SettingsPanelInnerRoute.page,
+          ),
+          AutoRoute(path: 'account', page: SettingsAccountRoute.page),
+          AutoRoute(
+              path: 'account_switch', page: SettingsAccountSwitchRoute.page),
+          AutoRoute(path: 'theme', page: SettingsThemeRoute.page),
+          AutoRoute(path: 'security', page: SettingsSecurityRoute.page),
+          AutoRoute(path: 'labs', page: SettingsLabsRoute.page),
+          AutoRoute(path: 'sync', page: SettingsSyncRoute.page),
+          AutoRoute(path: 'storys', page: SettingsStorysRoute.page),
+          AutoRoute(path: 'story', page: SettingsStorysDetailRoute.page),
+          AutoRoute(path: 'accounts', page: AccountsDetailsRoute.page),
+          AutoRoute(path: 'debug', page: DebugRoute.page),
+          AutoRoute(path: 'chat/:roomId', page: OverrideRoomRoute.page),
+        ]),
+      ]),
+
+      AutoRoute(path: 'search', page: ResearchRoute.page),
+      AutoRoute(path: 'stories', page: TabStoriesRoute.page),
+
+      AutoRoute(path: 'events', page: TabCalendarRoute.page, children: [
+        AutoRoute(path: '', page: CalendarEventListRoute.page),
+        AutoRoute(path: 'events/calendar', page: CalendarEventRoute.page),
+      ]),
+
+      AutoRoute(path: 'community', page: TabCommunityRoute.page, children: [
+        AutoRoute(path: '', page: CommunityRoute.page),
+        AutoRoute(path: 'community', page: CommunityDetailRoute.page),
       ]),
 
       // chats
-      AutoRoute(path: 'chat/:roomId', page: OverrideRoomRoute.page),
-      AutoRoute(path: 'rooms', page: RoomListWrapperRoute.page, children: [
+
+      AutoRoute(path: 'chat', page: TabChatRoute.page, children: [
         AutoRoute(path: '', page: RoomListRoute.page),
         AutoRoute(path: 'space', page: OverrideRoomListSpaceRoute.page),
         AutoRoute(path: 'space/:spaceId', page: OverrideRoomSpaceRoute.page),
         AutoRoute(path: ':roomId', page: OverrideRoomListRoomRoute.page),
       ]),
+
       AutoRoute(path: 'login', page: LoginRoute.page),
       RedirectRoute(path: '*', redirectTo: 'feed')
     ]),

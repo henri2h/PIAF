@@ -1104,6 +1104,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
+  matrix:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "henri2h/index-events-by-event-type"
+      resolved-ref: d7f041839aa14cff2dfcf664d9c98d4bd4aacc81
+      url: "https://gitlab.com/minestrix/famedlysdk.git"
+    source: git
+    version: "0.20.5"
   matrix_api_lite:
     dependency: transitive
     description:

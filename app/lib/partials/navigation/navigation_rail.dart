@@ -36,6 +36,7 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
+
     final items = [
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.home),
@@ -62,7 +63,7 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.groups),
           label: const Text("Communities"),
-          path: "communities",
+          path: "community",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const CommunityRoute());
           }),
@@ -86,9 +87,9 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
                 }
               }),
           label: const Text("Chat"),
-          path: "rooms",
+          path: "chat",
           onDestinationSelected: (BuildContext context) async {
-            context.navigateTo(const RoomListWrapperRoute());
+            context.navigateTo(const TabChatRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.settings),

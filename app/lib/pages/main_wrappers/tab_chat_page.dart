@@ -13,14 +13,14 @@ import 'package:provider/provider.dart';
 import '../../router.gr.dart';
 
 @RoutePage()
-class RoomListWrapperPage extends StatefulWidget {
-  const RoomListWrapperPage({Key? key}) : super(key: key);
+class TabChatPage extends StatefulWidget {
+  const TabChatPage({Key? key}) : super(key: key);
 
   @override
-  State<RoomListWrapperPage> createState() => RoomListWrapperPageState();
+  State<TabChatPage> createState() => TabChatPageState();
 }
 
-class RoomListWrapperPageState extends State<RoomListWrapperPage> {
+class TabChatPageState extends State<TabChatPage> {
   final scrollControllerSpaces = ScrollController();
   final scrollControllerDrawer = ScrollController();
   final scrollControllerRoomList = ScrollController();

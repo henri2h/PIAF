@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +28,10 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     "/",
     "/search",
     "/feed",
-    "/rooms",
+    "/stories",
+    "/chat",
     "/events",
-    "/communities"
+    "/community"
   };
 
   /// bah dirty
@@ -60,14 +60,28 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
 
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 850;
-
       return SafeArea(
-        child: Scaffold(
-          extendBody: true,
-          body: Column(
-            children: [
-              Expanded(
-                  child: Row(
+        child: AutoTabsRouter(
+          builder: (context, widget) {
+            final path = AutoRouterDelegate.of(context).urlState.uri.toString();
+            controller?.add(path);
+
+            final shouldDisplayAppBar = displayAppBarList.contains(path);
+            final shouldDisplayNavigationRail = path.startsWith("/rooms");
+
+            if (displayAppBar != shouldDisplayAppBar ||
+                shouldDisplayNavigationRail != displayNavigationRail) {
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                setState(() {
+                  displayAppBar = shouldDisplayAppBar;
+                  displayNavigationRail = shouldDisplayNavigationRail;
+                });
+              });
+            }
+
+            final tabsRouter = AutoTabsRouter.of(context);
+            return Scaffold(
+              body: Row(
                 children: [
                   if (isWideScreen)
                     StreamBuilder<String>(
@@ -77,128 +91,72 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                               path: snapshot.data ?? '');
                         }),
                   Expanded(
-                    child: Column(
-                      children: [
-                        if (isWideScreen) const NavBarDesktop(),
-                        if (isWideScreen)
-                          const SizedBox(
-                            height: 6,
-                          ),
-                        Expanded(
-                          child: AutoRouter(
-                            builder: (context, widget) {
-                              final path = AutoRouterDelegate.of(context)
-                                  .urlState
-                                  .uri
-                                  .toString();
-                              controller?.add(path);
-
-                              final shouldDisplayAppBar =
-                                  displayAppBarList.contains(path);
-                              final shouldDisplayNavigationRail =
-                                  path.startsWith("/rooms");
-
-                              if (displayAppBar != shouldDisplayAppBar ||
-                                  shouldDisplayNavigationRail !=
-                                      displayNavigationRail) {
-                                SchedulerBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  setState(() {
-                                    displayAppBar = shouldDisplayAppBar;
-                                    displayNavigationRail =
-                                        shouldDisplayNavigationRail;
-                                  });
-                                });
-                              }
-                              return widget;
-                            },
-                          ),
+                      child: Column(
+                    children: [
+                      if (isWideScreen) const NavBarDesktop(),
+                      if (isWideScreen)
+                        const SizedBox(
+                          height: 6,
                         ),
+                      Expanded(child: widget),
+                    ],
+                  )),
+                ],
+              ),
+              bottomNavigationBar: isWideScreen || !displayAppBar
+                  ? null
+                  : NavigationBar(
+                      selectedIndex: tabsRouter.activeIndex,
+                      onDestinationSelected: (index) {
+                        // here we switch between tabs
+                        tabsRouter.setActiveIndex(index);
+                      },
+                      destinations: [
+                        NavigationDestination(
+                            icon: StreamBuilder(
+                                stream:
+                                    Matrix.of(context).onClientChange.stream,
+                                builder: (context, snap) {
+                                  return StreamBuilder(
+                                      stream: Matrix.of(context)
+                                          .client
+                                          .onSync
+                                          .stream,
+                                      builder: (context, _) {
+                                        int notif = Matrix.of(context)
+                                            .client
+                                            .totalNotificationsCount;
+                                        if (notif == 0) {
+                                          return const Icon(
+                                              Icons.message_outlined);
+                                        } else {
+                                          return Badge.count(
+                                              count: notif,
+                                              child: const Icon(Icons.message));
+                                        }
+                                      });
+                                }),
+                            label: "Chats"),
+                        const NavigationDestination(
+                            icon: Icon(Icons.feed), label: "Feed"),
+                        const NavigationDestination(
+                            icon: Icon(Icons.event), label: "Events "),
+                        const NavigationDestination(
+                            icon: Icon(Icons.group), label: "Community"),
+                        const NavigationDestination(
+                            icon: Icon(Icons.web_stories), label: "Stories"),
                       ],
                     ),
-                  ),
-                ],
-              )),
-            ],
-          ),
-          bottomNavigationBar: isWideScreen || !displayAppBar
-              ? null
-              : SizedBox(
-                  height: 58,
-                  child: ClipRRect(
-                      child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: BottomNavigationBar(
-                            backgroundColor: Theme.of(context)
-                                .scaffoldBackgroundColor
-                                .withAlpha(180),
-                            currentIndex: 0,
-                            showSelectedLabels: false,
-                            showUnselectedLabels: false,
-                            iconSize: 24,
-                            onTap: (pos) {
-                              switch (pos) {
-                                case 0:
-                                  context.navigateTo(const FeedRoute());
-                                  break;
-                                case 1:
-                                  context.navigateTo(
-                                      const CalendarEventListRoute());
-                                  break;
-                                case 2:
-                                  context.navigateTo(const CommunityRoute());
-                                  break;
-                                case 3:
-                                  context.navigateTo(ResearchRoute());
-                                  break;
-                                case 4:
-                                  context
-                                      .navigateTo(const RoomListWrapperRoute());
-                                  break;
-                                default:
-                              }
-                            },
-                            type: BottomNavigationBarType.fixed,
-                            items: [
-                              const BottomNavigationBarItem(
-                                  icon: Icon(Icons.list), label: "Feed"),
-                              const BottomNavigationBarItem(
-                                  icon: Icon(Icons.event), label: "Event"),
-                              const BottomNavigationBarItem(
-                                  icon: Icon(Icons.group), label: "Community"),
-                              const BottomNavigationBarItem(
-                                  icon: Icon(Icons.search), label: "Search"),
-                              BottomNavigationBarItem(
-                                  icon: StreamBuilder(
-                                      stream: Matrix.of(context)
-                                          .onClientChange
-                                          .stream,
-                                      builder: (context, snap) {
-                                        return StreamBuilder(
-                                            stream: Matrix.of(context)
-                                                .client
-                                                .onSync
-                                                .stream,
-                                            builder: (context, _) {
-                                              int notif = Matrix.of(context)
-                                                  .client
-                                                  .totalNotificationsCount;
-                                              if (notif == 0) {
-                                                return const Icon(
-                                                    Icons.message_outlined);
-                                              } else {
-                                                return Badge.count(
-                                                    count: notif,
-                                                    child: const Icon(
-                                                        Icons.message));
-                                              }
-                                            });
-                                      }),
-                                  label: "Chat"),
-                            ],
-                          ))),
-                ),
-          endDrawer: const NotificationView(),
+              endDrawer: const NotificationView(),
+            );
+          },
+          routes: const [
+            TabChatRoute(),
+            TabHomeRoute(),
+            TabCalendarRoute(),
+            TabCommunityRoute(),
+            TabStoriesRoute()
+          ],
         ),
       );
     });
