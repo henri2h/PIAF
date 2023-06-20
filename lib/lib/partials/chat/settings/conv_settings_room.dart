@@ -18,8 +18,8 @@ class ConvSettingsRoom extends StatelessWidget {
         builder: (context, snap) {
           return Column(
             children: [
-              Row(
-                children: const [
+              const Row(
+                children: [
                   ConvSettingsBackButton(),
                   Text("Room settings",
                       style:

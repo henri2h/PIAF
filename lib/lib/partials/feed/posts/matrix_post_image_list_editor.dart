@@ -86,10 +86,10 @@ class _MatrixPostImageListEditorState extends State<MatrixPostImageListEditor> {
                           setState(() {});
                         }
                       },
-                      child: Center(
+                      child: const Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(Icons.add_a_photo, size: 42),
                             SizedBox(
                               height: 20,

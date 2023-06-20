@@ -136,15 +136,14 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                       PostGalleryNavButton(
                           alignment: Alignment.centerLeft,
                           icon: Icons.keyboard_arrow_left,
-                          onPressed: pos > 0
-                              ? () => selectImage(pos - 1)
-                              : () => null),
+                          onPressed:
+                              pos > 0 ? () => selectImage(pos - 1) : () {}),
                       PostGalleryNavButton(
                           alignment: Alignment.centerRight,
                           icon: Icons.keyboard_arrow_right,
                           onPressed: (pos + 1) < imgCount
                               ? () => selectImage(pos + 1)
-                              : () => null),
+                              : () {}),
                       if (Navigator.of(context).canPop())
                         Positioned(
                             top: 8,

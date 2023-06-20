@@ -47,7 +47,7 @@ class UserAvatar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           fontSize: 16,
-                          color: Theme.of(context).textTheme.caption!.color)),
+                          color: Theme.of(context).textTheme.bodySmall!.color)),
                 ),
             ],
           ),

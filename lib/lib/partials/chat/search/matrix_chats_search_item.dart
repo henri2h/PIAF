@@ -56,7 +56,7 @@ class MatrixChatsRoomSearchItem extends StatelessWidget {
                       Text(search.displayname, maxLines: 1),
                       if (search.secondText.isNotEmpty)
                         Text(search.secondText,
-                            style: Theme.of(context).textTheme.caption,
+                            style: Theme.of(context).textTheme.bodySmall,
                             maxLines: 1)
                     ],
                   ),

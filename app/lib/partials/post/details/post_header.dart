@@ -63,7 +63,7 @@ class PostHeader extends StatelessWidget {
                                       style: TextButton.styleFrom(
                                           foregroundColor: Theme.of(context)
                                               .textTheme
-                                              .bodyText1!
+                                              .bodyLarge!
                                               .color),
                                       onPressed: () {
                                         context.navigateTo(UserViewRoute(
@@ -81,14 +81,14 @@ class PostHeader extends StatelessWidget {
                                               fontSize: 18,
                                               color: Theme.of(context)
                                                   .textTheme
-                                                  .bodyText1!
+                                                  .bodyLarge!
                                                   .color)),
                                     if (sender.id != feedOwner?.id)
                                       TextButton(
                                         style: TextButton.styleFrom(
                                             foregroundColor: Theme.of(context)
                                                 .textTheme
-                                                .bodyText1!
+                                                .bodyLarge!
                                                 .color),
                                         onPressed: () {
                                           context.navigateTo(
@@ -114,7 +114,7 @@ class PostHeader extends StatelessWidget {
                                               fontWeight: FontWeight.normal,
                                               color: Theme.of(context)
                                                   .textTheme
-                                                  .caption!
+                                                  .bodySmall!
                                                   .color)),
                                       const SizedBox(width: 4),
                                       if (room.joinRules == JoinRules.public)
@@ -122,14 +122,14 @@ class PostHeader extends StatelessWidget {
                                             size: 16,
                                             color: Theme.of(context)
                                                 .textTheme
-                                                .caption!
+                                                .bodySmall!
                                                 .color),
                                       if (room.encrypted)
                                         Icon(Icons.lock,
                                             size: 16,
                                             color: Theme.of(context)
                                                 .textTheme
-                                                .caption!
+                                                .bodySmall!
                                                 .color),
                                     ],
                                   ),
@@ -156,7 +156,7 @@ class PostHeader extends StatelessWidget {
                                       style: TextStyle(
                                           color: Theme.of(context)
                                               .textTheme
-                                              .bodyText1!
+                                              .bodyLarge!
                                               .color,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold)),
@@ -166,7 +166,7 @@ class PostHeader extends StatelessWidget {
                                         fontSize: 18,
                                         color: Theme.of(context)
                                             .textTheme
-                                            .bodyText1!
+                                            .bodyLarge!
                                             .color)),
                                 TextButton(
                                   onPressed: () async {
@@ -182,7 +182,7 @@ class PostHeader extends StatelessWidget {
                                       style: TextStyle(
                                           color: Theme.of(context)
                                               .textTheme
-                                              .bodyText1!
+                                              .bodyLarge!
                                               .color,
                                           fontSize: 18,
                                           fontWeight: FontWeight.w400)),
@@ -196,7 +196,7 @@ class PostHeader extends StatelessWidget {
                                         fontWeight: FontWeight.normal,
                                         color: Theme.of(context)
                                             .textTheme
-                                            .caption!
+                                            .bodySmall!
                                             .color)),
                                 const SizedBox(width: 4),
                                 if (room.joinRules == JoinRules.public)
@@ -204,14 +204,14 @@ class PostHeader extends StatelessWidget {
                                       size: 16,
                                       color: Theme.of(context)
                                           .textTheme
-                                          .caption!
+                                          .bodySmall!
                                           .color),
                                 if (room.encrypted)
                                   Icon(Icons.lock,
                                       size: 16,
                                       color: Theme.of(context)
                                           .textTheme
-                                          .caption!
+                                          .bodySmall!
                                           .color),
                               ],
                             ),
@@ -229,10 +229,10 @@ class PostHeader extends StatelessWidget {
                       PopupMenuButton<String>(
                           itemBuilder: (_) => [
                                 if (event.canRedact)
-                                  PopupMenuItem(
+                                  const PopupMenuItem(
                                       value: "edit",
                                       child: Row(
-                                        children: const [
+                                        children: [
                                           Icon(Icons.edit),
                                           SizedBox(width: 10),
                                           Text("Edit post"),
@@ -240,10 +240,10 @@ class PostHeader extends StatelessWidget {
                                       )),
                                 if (event.canRedact &&
                                     event.type == MatrixTypes.post)
-                                  PopupMenuItem(
+                                  const PopupMenuItem(
                                       value: "delete",
                                       child: Row(
-                                        children: const [
+                                        children: [
                                           Icon(Icons.delete, color: Colors.red),
                                           SizedBox(width: 10),
                                           Text("Delete post",

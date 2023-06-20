@@ -128,8 +128,8 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
         stream: streamController.stream,
         builder: (context, snap) {
           return Column(children: [
-            Row(
-              children: const [
+            const Row(
+              children: [
                 ConvSettingsBackButton(),
                 Text("Room media",
                     style:

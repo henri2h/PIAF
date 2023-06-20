@@ -121,7 +121,7 @@ class PollWidgetState extends State<PollWidget> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text("Final result based on ${responses.length} votes",
-                style: Theme.of(context).textTheme.caption),
+                style: Theme.of(context).textTheme.bodySmall),
           ),
       ],
     );

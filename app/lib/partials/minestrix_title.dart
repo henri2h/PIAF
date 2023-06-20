@@ -13,10 +13,10 @@ class MinestrixTitle extends StatelessWidget {
             Image.asset("assets/icon_512.png",
                 width: 72, height: 72, cacheWidth: 140),
             const SizedBox(width: 28),
-            Expanded(
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text("MinesTRIX",
                       style:
                           TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),

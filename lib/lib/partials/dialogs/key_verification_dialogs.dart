@@ -318,9 +318,9 @@ class KeyVerificationPageState extends State<KeyVerificationDialog> {
         );
         break;
       case KeyVerificationState.done:
-        body = Column(
+        body = const Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(Icons.check_circle_outlined, color: Colors.green, size: 200.0),
             SizedBox(height: 10),
             Text(

@@ -39,8 +39,8 @@ class ConvSettingsUsersState extends State<ConvSettingsUsers> {
 
           return Column(
             children: [
-              Row(
-                children: const [
+              const Row(
+                children: [
                   ConvSettingsBackButton(),
                   Text("Users",
                       style:
@@ -49,8 +49,8 @@ class ConvSettingsUsersState extends State<ConvSettingsUsers> {
               ),
               ElevatedButton(
                   onPressed: inviteUsers,
-                  child: Row(
-                    children: const [
+                  child: const Row(
+                    children: [
                       Icon(Icons.person_add),
                       SizedBox(width: 8),
                       Text("Invite"),
@@ -84,10 +84,10 @@ class ConvSettingsUsersState extends State<ConvSettingsUsers> {
                                       PopupMenuButton<String>(
                                           itemBuilder: (_) => [
                                                 if (u.canKick)
-                                                  PopupMenuItem(
+                                                  const PopupMenuItem(
                                                       value: "kick",
                                                       child: Row(
-                                                        children: const [
+                                                        children: [
                                                           Icon(Icons
                                                               .person_remove),
                                                           SizedBox(width: 10),
@@ -95,10 +95,10 @@ class ConvSettingsUsersState extends State<ConvSettingsUsers> {
                                                         ],
                                                       )),
                                                 if (u.canBan)
-                                                  PopupMenuItem(
+                                                  const PopupMenuItem(
                                                       value: "ban",
                                                       child: Row(
-                                                        children: const [
+                                                        children: [
                                                           Icon(
                                                               Icons
                                                                   .delete_forever,

@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';

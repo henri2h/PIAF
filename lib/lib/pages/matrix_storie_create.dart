@@ -185,9 +185,9 @@ class StorieContentCreatorState extends State<StorieContentCreator> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Column(
+                      child: const Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Padding(
                             padding: EdgeInsets.all(20),
                             child: Icon(Icons.image, size: 80),

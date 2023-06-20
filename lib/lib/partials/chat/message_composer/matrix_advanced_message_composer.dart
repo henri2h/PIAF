@@ -145,10 +145,10 @@ class MatrixAdvancedMessageComposerState
             room != null && room.membership.isJoin != true)
           Container(
               color: Theme.of(context).cardColor,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
+              child: const Padding(
+                padding: EdgeInsets.all(12),
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(Icons.privacy_tip),
                     SizedBox(
                       width: 14,
@@ -162,10 +162,10 @@ class MatrixAdvancedMessageComposerState
         if (room != null && room.encrypted && !room.client.encryptionEnabled)
           Container(
               color: Theme.of(context).cardColor,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
+              child: const Padding(
+                padding: EdgeInsets.all(12),
                 child: Row(
-                  children: const [
+                  children: [
                     Icon(Icons.privacy_tip),
                     SizedBox(
                       width: 14,

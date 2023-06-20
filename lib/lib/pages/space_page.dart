@@ -162,8 +162,8 @@ class _SpacePageState extends State<SpacePage> {
                               ],
                             ),
                             if (rooms == null)
-                              Column(
-                                children: const [
+                              const Column(
+                                children: [
                                   MatrixRoomsListTileShimmer(),
                                   MatrixRoomsListTileShimmer(),
                                   MatrixRoomsListTileShimmer(),

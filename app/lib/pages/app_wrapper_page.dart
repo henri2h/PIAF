@@ -79,12 +79,11 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                   Expanded(
                     child: Column(
                       children: [
+                        if (isWideScreen) const NavBarDesktop(),
                         if (isWideScreen)
-                        const NavBarDesktop(),
-                        if (isWideScreen)
-                        const SizedBox(
-                          height: 6,
-                        ),
+                          const SizedBox(
+                            height: 6,
+                          ),
                         Expanded(
                           child: AutoRouter(
                             builder: (context, widget) {

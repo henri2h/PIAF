@@ -72,7 +72,7 @@ class UserInfoDialog extends StatelessWidget {
           ListTile(
               title: const Text("Matrix Id"),
               subtitle:
-                  Text(user.id, style: Theme.of(context).textTheme.caption)),
+                  Text(user.id, style: Theme.of(context).textTheme.bodySmall)),
         ListTile(
             title: Text("Role in ${user.room.displayname}"),
             subtitle: Text(user.powerLevelText)),

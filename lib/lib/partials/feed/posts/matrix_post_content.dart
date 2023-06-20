@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_image_container.dart';
 
 import '../../../utils/extensions/minestrix/model/social_item.dart';
@@ -31,9 +30,9 @@ class MatrixPostContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (event.redacted)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: const [
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Icon(Icons.delete_forever, color: Colors.red),
                     SizedBox(width: 10),
                     Flexible(

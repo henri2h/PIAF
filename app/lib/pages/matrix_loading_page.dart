@@ -40,8 +40,9 @@ class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
             return StreamBuilder<SyncStatusUpdate>(
                 stream: sclient.onSyncStatus.stream,
                 builder: (context, snap) {
-                  if (!snap.hasData)
+                  if (!snap.hasData) {
                     return const Center(child: MinestrixTitle());
+                  }
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,

@@ -20,7 +20,7 @@ class _ConvSettingsEncryptionKeysState
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Row(children: const [
+      const Row(children: [
         ConvSettingsBackButton(),
         Text("Encryption keys",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),

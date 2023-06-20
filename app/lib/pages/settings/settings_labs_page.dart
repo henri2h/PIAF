@@ -31,9 +31,9 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
               },
               secondary: const Icon(Icons.people),
               title: const Text("Allow creating multiple feeds"),
-              subtitle: Column(
+              subtitle: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                       "Want to share post with a subset of you friends ? Then multiple feed support is the solution."),
                   InfoBadge(text: "WIP"),
@@ -49,9 +49,9 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
               },
               secondary: const Icon(Icons.list),
               title: const Text("Optimized feed"),
-              subtitle: Column(
+              subtitle: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text("Restart to reload the feed correctly"),
                   InfoBadge(text: "WIP"),
                   InfoBadge(text: "Need restart", color: Colors.orange),

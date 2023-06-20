@@ -361,11 +361,11 @@ class PostEditorPageState extends State<PostEditorPage>
                                         !displayImageListEditor;
                                   });
                                 },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
                                 horizontal: 8.0, vertical: 12),
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(Icons.add_a_photo),
                                 SizedBox(width: 10),
                                 Text("Add a picture"),

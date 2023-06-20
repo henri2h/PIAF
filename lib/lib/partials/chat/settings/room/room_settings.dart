@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
 
 import 'package:minestrix_chat/minestrix_chat.dart';
@@ -31,8 +30,8 @@ class _RoomSettingsState extends State<RoomSettings> {
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: uploadingFile
-              ? Row(
-                  children: const [
+              ? const Row(
+                  children: [
                     CircularProgressIndicator(),
                     SizedBox(width: 10),
                     Text("Uploading file")

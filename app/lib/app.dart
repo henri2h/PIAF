@@ -58,12 +58,12 @@ class MinestrixState extends State<Minestrix> {
                     builder: (context, snapshot) {
                       // Progress indicator while login in on web
                       if (webLogin != null && !snapshot.hasData) {
-                        return MaterialApp(
+                        return const MaterialApp(
                           home: Scaffold(
                             body: Center(
                                 child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 CircularProgressIndicator(),
                                 SizedBox(
                                   width: 12,

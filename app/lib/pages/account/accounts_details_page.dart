@@ -149,10 +149,10 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                               fontSize: 20, fontWeight: FontWeight.bold)),
                       if (room.topic.isNotEmpty) Text(room.topic),
                       if (room.joinRules == JoinRules.public)
-                        Padding(
-                          padding: const EdgeInsets.all(4.0),
+                        const Padding(
+                          padding: EdgeInsets.all(4.0),
                           child: Row(
-                            children: const [
+                            children: [
                               Text("Public profile space",
                                   style: TextStyle(fontSize: 12)),
                             ],
@@ -327,9 +327,9 @@ class NoProfileSpaceFound extends StatelessWidget {
                   Flexible(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 500),
-                      child: Column(
+                      child: const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text("No user space found",
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.w600)),
@@ -391,9 +391,9 @@ class RoomProfileListTile extends StatelessWidget {
         subtitle: RoomInfo(r: r),
         trailing: PopupMenuButton<String>(
             itemBuilder: (_) => [
-                  PopupMenuItem(
+                  const PopupMenuItem(
                       value: "settings",
-                      child: Row(children: const [
+                      child: Row(children: [
                         Icon(
                           Icons.settings,
                         ),
@@ -401,18 +401,18 @@ class RoomProfileListTile extends StatelessWidget {
                         Text("Settings"),
                       ])),
                   if (onRemoveFromProfile != null)
-                    PopupMenuItem(
+                    const PopupMenuItem(
                       value: "remove",
-                      child: Row(children: const [
+                      child: Row(children: [
                         Icon(Icons.remove),
                         SizedBox(width: 10),
                         Text("Remove from profile")
                       ]),
                     ),
-                  PopupMenuItem(
+                  const PopupMenuItem(
                       value: "leave",
                       child: Row(
-                        children: const [
+                        children: [
                           Icon(Icons.delete_forever, color: Colors.red),
                           SizedBox(width: 10),
                           Text("Leave", style: TextStyle(color: Colors.red)),
@@ -460,24 +460,24 @@ class RoomInfo extends StatelessWidget {
             child: Text(r.topic),
           ),
         if (r.joinRules == JoinRules.invite)
-          Row(
-            children: const [
+          const Row(
+            children: [
               Icon(Icons.person),
               SizedBox(width: 10),
               Text("Private"),
             ],
           ),
         if (r.joinRules == JoinRules.knock)
-          Row(
-            children: const [
+          const Row(
+            children: [
               Icon(Icons.person),
               SizedBox(width: 10),
               Text("Knock"),
             ],
           ),
         if (r.joinRules == JoinRules.public)
-          Row(
-            children: const [
+          const Row(
+            children: [
               Icon(Icons.public),
               SizedBox(width: 10),
               Text("Public"),
@@ -491,16 +491,16 @@ class RoomInfo extends StatelessWidget {
           ],
         ),
         if (r.encrypted)
-          Row(
-            children: const [
+          const Row(
+            children: [
               Icon(Icons.verified_user),
               SizedBox(width: 10),
               Text("Encrypted")
             ],
           ),
         if (!r.encrypted)
-          Row(
-            children: const [
+          const Row(
+            children: [
               Icon(Icons.no_encryption),
               SizedBox(width: 10),
               Text("Not encrypted")

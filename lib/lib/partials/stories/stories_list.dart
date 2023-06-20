@@ -3,7 +3,6 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/stories/stories_circle.dart';
-import 'package:minestrix_chat/pages/matrix_storie_create.dart';
 
 class StoriesList extends StatefulWidget {
   const StoriesList(
@@ -25,7 +24,7 @@ class StoriesList extends StatefulWidget {
 }
 
 class StoriesListState extends State<StoriesList> {
-  bool _creatingStorie = false;
+  final bool _creatingStorie = false;
 
   @override
   Widget build(BuildContext context) {

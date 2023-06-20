@@ -30,12 +30,12 @@ extension MinestrixNotifications on Client {
     List<Notification> notifications = [];
 
     // load friend requests
-    minestrixInvites.forEach((room) {
+    for (var room in minestrixInvites) {
       Notification n = Notification();
       n.body = "Friend request";
       n.type = NotificationType.friendRequest;
       notifications.add(n);
-    });
+    }
     return notifications;
   }
 
@@ -48,9 +48,9 @@ extension MinestrixNotifications on Client {
   int get totalNotificationsCount {
     int count = 0;
 
-    rooms.forEach((room) {
+    for (var room in rooms) {
       count += room.notificationCount;
-    });
+    }
     return count;
   }
 }
@@ -59,9 +59,9 @@ class Notification {
   String title = "";
   String body = "";
 
-  NotificationType type = NotificationType.Text;
+  NotificationType type = NotificationType.text;
   DateTime? timestamp;
   Profile? p;
 }
 
-enum NotificationType { Text, friendRequest }
+enum NotificationType { text, friendRequest }

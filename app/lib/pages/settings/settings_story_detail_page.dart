@@ -125,8 +125,8 @@ class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
                         const Expanded(child: Text("Info")),
                         ElevatedButton(
                             onPressed: () {},
-                            child: Row(
-                              children: const [
+                            child: const Row(
+                              children: [
                                 Icon(Icons.add, size: 18),
                                 SizedBox(width: 6),
                                 Text("Add"),

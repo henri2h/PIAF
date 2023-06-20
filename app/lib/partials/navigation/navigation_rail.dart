@@ -117,7 +117,7 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       destinations: [
         ...items
             .map((e) => NavigationRailDestination(
-                icon: e.icon, label: e.label, padding: EdgeInsets.all(6)))
+                icon: e.icon, label: e.label, padding: const EdgeInsets.all(6)))
             .toList()
       ],
 

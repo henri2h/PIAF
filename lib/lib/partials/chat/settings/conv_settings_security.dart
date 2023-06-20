@@ -44,8 +44,8 @@ class _ConvSettingsSecurityState extends State<ConvSettingsSecurity> {
         stream: room.client.onSync.stream.where((event) => event.hasRoomUpdate),
         builder: (context, snapshot) {
           return Column(children: [
-            Row(
-              children: const [
+            const Row(
+              children: [
                 ConvSettingsBackButton(),
                 Text("Security",
                     style:

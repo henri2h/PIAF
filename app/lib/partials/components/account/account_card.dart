@@ -78,7 +78,7 @@ class AccountCard extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context)
                                     .textTheme
-                                    .bodyText1!
+                                    .bodyLarge!
                                     .color)),
                       ),
                       if (displaySend)

@@ -32,9 +32,9 @@ class SyncStatusCard extends StatelessWidget {
                         if (snap.data?.status == SyncStatus.processing)
                           LinearProgressIndicator(value: snap.data!.progress),
                         if (snap.data?.status != SyncStatus.processing)
-                          Column(
+                          const Column(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [LinearProgressIndicator()],
+                            children: [LinearProgressIndicator()],
                           ),
 
                         // check if we need to create a user room for the user

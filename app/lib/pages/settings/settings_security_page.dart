@@ -56,7 +56,7 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
 
     if (result?.isNotEmpty == true && result?.first.isNotEmpty == true) {
       await context.showFutureInTryCatch(
-          () => client.updateDevice(deviceId!, displayName: result!.first));
+          () => client.updateDevice(deviceId, displayName: result!.first));
     }
   }
 
@@ -455,9 +455,9 @@ extension on BuildContext {
                       );
                     }
 
-                    return Row(
+                    return const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         CircularProgressIndicator(),
                         SizedBox(
                           width: 10,
@@ -485,5 +485,6 @@ extension on BuildContext {
         print(ex);
       }
     }
+    return null;
   }
 }

@@ -213,10 +213,10 @@ class RoomTimelineState extends State<RoomTimeline> {
                             )),
                   ),
                 )
-              : Center(
+              : const Center(
                   child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     CircularProgressIndicator(),
                     SizedBox(width: 16),
                     Text("Loading chat...")
@@ -464,8 +464,8 @@ class ItemBuilder extends StatelessWidget {
             ),
           ),
         if (event.eventId == fullyReadEventId && nextEvent != null)
-          Row(
-            children: const [
+          const Row(
+            children: [
               Expanded(
                   child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),

@@ -147,8 +147,8 @@ class _LayoutMainFeedState extends State<LayoutMainFeed> {
                                       ),
                                       ElevatedButton(
                                           onPressed: inviteUsers,
-                                          child: Row(
-                                            children: const [
+                                          child: const Row(
+                                            children: [
                                               Icon(Icons.person_add),
                                               SizedBox(width: 8),
                                               Text("Invite"),

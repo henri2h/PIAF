@@ -43,7 +43,7 @@ class CalendarAttendanceCardButton extends StatelessWidget {
                     Text(title),
                     Text(
                         "$participantsCount personne${participantsCount != 1 ? "s" : ""}",
-                        style: Theme.of(context).textTheme.caption)
+                        style: Theme.of(context).textTheme.bodySmall)
                   ],
                 ),
               ],

@@ -167,8 +167,8 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                                       ElevatedButton(
                                                           onPressed:
                                                               inviteUsers,
-                                                          child: Row(
-                                                            children: const [
+                                                          child: const Row(
+                                                            children: [
                                                               Icon(Icons
                                                                   .person_add),
                                                               SizedBox(

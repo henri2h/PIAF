@@ -35,20 +35,20 @@ class ContactView extends StatelessWidget {
             ? PopupMenuButton<String>(
                 itemBuilder: (_) => [
                       if (user.canKick)
-                        PopupMenuItem(
+                        const PopupMenuItem(
                             value: "kick",
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(Icons.person_remove),
                                 SizedBox(width: 10),
                                 Text("Kick"),
                               ],
                             )),
                       if (user.canBan)
-                        PopupMenuItem(
+                        const PopupMenuItem(
                             value: "ban",
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(Icons.delete_forever, color: Colors.red),
                                 SizedBox(width: 10),
                                 Text("Ban",
