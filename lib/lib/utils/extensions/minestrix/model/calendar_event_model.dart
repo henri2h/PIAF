@@ -16,11 +16,14 @@ class CalendarEvent {
   CalendarEvent();
 
   CalendarEvent.fromEvent(Event event) : e = event {
-    start = e!.content.containsKey(eventStartKey)
-        ? DateTime.fromMillisecondsSinceEpoch(e!.content[eventStartKey])
+    final startInt = int.tryParse(e!.content[eventStartKey].toString());
+    final endInt = int.tryParse(e!.content[eventEndKey].toString());
+
+    start = startInt != null
+        ? DateTime.fromMillisecondsSinceEpoch(startInt)
         : DateTime.now();
-    end = e!.content.containsKey(eventEndKey)
-        ? DateTime.fromMillisecondsSinceEpoch(e!.content[eventEndKey])
+    end = endInt != null
+        ? DateTime.fromMillisecondsSinceEpoch(endInt)
         : DateTime.now();
 
     pollId = e!.content.tryGet<String>(eventPollIdKey);
