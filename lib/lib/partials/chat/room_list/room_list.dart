@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/chat/room_list/room_list_title.dart';
 import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
-import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart';
 
 import '../spaces/list/spaces_list.dart';
@@ -86,7 +85,6 @@ class RoomList extends StatelessWidget {
                       ],
                     )),
               ),
-              RoomListFilter(client: client),
               Padding(
                 padding: const EdgeInsets.all(8),
                 child: RoomListSearchButton(
@@ -114,6 +112,16 @@ class RoomList extends StatelessWidget {
                           pinned: true,
                           elevation: 0,
                           automaticallyImplyLeading: isMobile,
+                          actions: [
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.folder),
+                              onPressed: () {},
+                            ),
+                          ],
                           backgroundColor: appBarColor ??
                               (isMobile
                                   ? Theme.of(context)
@@ -180,19 +188,12 @@ class RoomList extends StatelessWidget {
                                 client: client,
                                 onSelection: onSelection)),
                       ),
-                    if (selectedSpace == CustomSpacesTypes.home)
-                      SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                              (context, i) => ClipRRect(
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(8)),
-                                    child: Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 8.0),
-                                      child: StoriesList(client: client),
-                                    ),
-                                  ),
-                              childCount: 1)),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                        return RoomListFilter(client: client);
+                      }, childCount: 1),
+                    ),
                     if (presences != null)
                       SliverList(
                           delegate: SliverChildBuilderDelegate(
