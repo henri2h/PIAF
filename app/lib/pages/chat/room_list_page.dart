@@ -20,13 +20,11 @@ class _RoomListPageState extends State<RoomListPage> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (BuildContext context, _) {
-      final state =
-          Provider.of<TabChatPageState>(context, listen: false);
+      final state = Provider.of<TabChatPageState>(context, listen: false);
       if (state.mobile) {
         return ChatPageRoomList(
           mobile: true,
           scrollController: scrollController,
-          appBarColor: Theme.of(context).scaffoldBackgroundColor.withAlpha(220),
           onAppBarClicked: () => context.navigateTo(const SettingsRoute()),
         );
       }

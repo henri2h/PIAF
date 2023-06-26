@@ -1025,7 +1025,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
-
+  matrix:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "henri2h/index-events-by-event-type"
+      resolved-ref: d7f041839aa14cff2dfcf664d9c98d4bd4aacc81
+      url: "https://gitlab.com/minestrix/famedlysdk.git"
+    source: git
+    version: "0.20.5"
   matrix_api_lite:
     dependency: transitive
     description:
@@ -1110,11 +1118,10 @@ packages:
   native_imaging:
     dependency: "direct main"
     description:
-      name: native_imaging
-      sha256: "9f96eafb6d84ec934262caf36b60e236d1c4507ed6555a1effc117d463ef5932"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0"
+      path: "../../native_imaging"
+      relative: true
+    source: path
+    version: "0.1.1"
   nested:
     dependency: transitive
     description:

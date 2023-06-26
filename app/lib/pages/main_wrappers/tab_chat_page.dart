@@ -56,43 +56,35 @@ class TabChatPageState extends State<TabChatPage> {
                 spaceId: id, client: Matrix.of(context).client));
           }
         },
-        child: Scaffold(
-            body: LayoutBuilder(builder: (context, constraints) {
-              mobile = constraints.maxWidth < 800;
-              return Row(
-                children: [
-                  if (!mobile)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 400),
-                          child: Card(
-                            child: ChatPageRoomList(
-                                scrollController: scrollControllerRoomList,
-                                onAppBarClicked: () =>
-                                    context.navigateTo(const SettingsRoute())),
-                          )),
-                    ),
-                  const Expanded(child: AutoRouter()),
-                ],
-              );
-            }),
-            floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  AdaptativeDialogs.show(
-                      context: context,
-                      title: "New message",
-                      builder: (_) => RoomCreatorPage(
-                          client: Matrix.of(context).client,
-                          onRoomSelected: onRoomSelected));
-                },
-                child: const Icon(Icons.create)),
-            drawer: Drawer(
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                child: SafeArea(
-                  child: ChatPageSpaceList(
-                      mobile: true, scrollController: scrollControllerDrawer),
-                ))),
+        child: SafeArea(
+          child: Scaffold(
+              body: LayoutBuilder(builder: (context, constraints) {
+                mobile = constraints.maxWidth < 800;
+                return Row(
+                  children: [
+                    if (!mobile)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: Card(
+                              child: ChatPageRoomList(
+                                  scrollController: scrollControllerRoomList,
+                                  onAppBarClicked: () => context
+                                      .navigateTo(const SettingsRoute())),
+                            )),
+                      ),
+                    const Expanded(child: AutoRouter()),
+                  ],
+                );
+              }),
+              drawer: Drawer(
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  child: SafeArea(
+                    child: ChatPageSpaceList(
+                        mobile: true, scrollController: scrollControllerDrawer),
+                  ))),
+        ),
       ),
     );
   }

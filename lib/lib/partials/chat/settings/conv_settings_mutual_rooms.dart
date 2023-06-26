@@ -44,11 +44,13 @@ class _ConvSettingsMutualRoomsState extends State<ConvSettingsMutualRooms> {
                       final r = widget.room.client.getRoomById(roomId);
                       if (r == null) return Container();
                       return RoomListItem(
-                          key: Key("room_${r.id}"),
-                          room: r,
-                          selected: r == widget.room,
-                          client: r.client,
-                          onSelection: (_) {});
+                        key: Key("room_${r.id}"),
+                        room: r,
+                        open: r == widget.room,
+                        client: r.client,
+                        onSelection: (_) {},
+                        onLongPress: () {},
+                      );
                     }),
                 ],
               );

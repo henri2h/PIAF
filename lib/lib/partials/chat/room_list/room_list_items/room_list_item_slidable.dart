@@ -12,12 +12,14 @@ class RoomListItemSlidable extends StatefulWidget {
     required this.selectedRoomId,
     required this.client,
     required this.onSelection,
+    required this.onLongPress,
   }) : super(key: key);
 
   final Room r;
   final String? selectedRoomId;
   final Client client;
   final Function(String?) onSelection;
+  final VoidCallback onLongPress;
 
   @override
   RoomListItemSlidableState createState() => RoomListItemSlidableState();
@@ -87,11 +89,13 @@ class RoomListItemSlidableState extends State<RoomListItemSlidable> {
         ],
       ),
       child: RoomListItem(
-          key: Key("room_${widget.r.id}"),
-          room: widget.r,
-          selected: widget.r.id == widget.selectedRoomId,
-          client: widget.client,
-          onSelection: widget.onSelection),
+        key: Key("room_${widget.r.id}"),
+        room: widget.r,
+        open: widget.r.id == widget.selectedRoomId,
+        client: widget.client,
+        onSelection: widget.onSelection,
+        onLongPress: widget.onLongPress,
+      ),
     );
   }
 }

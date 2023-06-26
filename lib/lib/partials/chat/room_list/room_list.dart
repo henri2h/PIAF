@@ -6,13 +6,15 @@ import 'package:minestrix_chat/partials/chat/room_list/room_list_title.dart';
 import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart';
 
+import '../../../pages/room_creator_page.dart';
+import '../../dialogs/adaptative_dialogs.dart';
 import '../spaces/list/spaces_list.dart';
 import 'room_list_filter/room_list_filter.dart';
 import 'room_list_items/room_list_item_presence.dart';
 import 'room_list_items/room_list_item_slidable.dart';
 import 'room_list_search_button.dart';
 
-class RoomList extends StatelessWidget {
+class RoomList extends StatefulWidget {
   ///  [allowPop]
   const RoomList(
       {Key? key,
@@ -25,7 +27,6 @@ class RoomList extends StatelessWidget {
       required this.isMobile,
       required this.allowPop,
       required this.displaySpaceList,
-      this.appBarColor,
       this.onAppBarClicked})
       : super(key: key);
 
@@ -37,12 +38,52 @@ class RoomList extends StatelessWidget {
   final ScrollController controller;
   final bool allowPop;
   final bool isMobile; // adapted for small screens
-  final Color? appBarColor;
   final VoidCallback? onAppBarClicked;
   final bool displaySpaceList;
 
   @override
+  State<RoomList> createState() => _RoomListState();
+}
+
+class _RoomListState extends State<RoomList> {
+  Set<String> selectedRooms = {};
+  bool selectMode = false;
+
+  void enableSelection() {
+    if (!selectMode) {
+      setState(() {
+        selectMode = true;
+      });
+    }
+  }
+
+  void disableSelection() {
+    setState(() {
+      selectMode = false;
+    });
+    selectedRooms.clear();
+  }
+
+  void toggleElement(String roomId) {
+    if (selectedRooms.contains(roomId)) {
+      selectedRooms.remove(roomId);
+      if (selectedRooms.isEmpty) selectMode = false;
+    } else {
+      selectedRooms.add(roomId);
+    }
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final client = widget.client;
+    final isMobile = widget.isMobile;
+    final selectedSpace = widget.selectedSpace;
+    final onAppBarClicked = widget.onAppBarClicked;
+    final allowPop = widget.allowPop;
+    final onSelection = widget.onSelection;
+    final controller = widget.controller;
+
     List<CachedPresence>? presences;
 
     if (selectedSpace == CustomSpacesTypes.active) {
@@ -60,59 +101,31 @@ class RoomList extends StatelessWidget {
         });
     }
 
-    return Column(
-      children: [
-        if (!isMobile && selectedSpace == CustomSpacesTypes.home)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0),
-                child: ListTile(
-                    title: const Text("Your chats"),
-                    leading: const Icon(Icons.message),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.folder),
-                          onPressed: () {},
-                        ),
-                      ],
-                    )),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: RoomListSearchButton(
-                  client: client,
-                  onSelection: onSelection,
-                  onUserTap: onAppBarClicked,
-                ),
-              ),
-            ],
-          ),
-        Expanded(
-          child: displaySpaceList
-              ? ChatPageSpaceList(
-                  mobile: isMobile,
-                  scrollController: controller,
-                )
-              : CustomScrollView(
-                  cacheExtent: 400,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  controller: controller,
-                  slivers: [
-                    if (isMobile || selectedSpace != CustomSpacesTypes.home)
-                      SliverAppBar(
-                          key: const Key("room_list_title"),
-                          pinned: true,
-                          elevation: 0,
-                          automaticallyImplyLeading: isMobile,
-                          actions: [
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: widget.displaySpaceList
+          ? ChatPageSpaceList(
+              mobile: isMobile,
+              scrollController: controller,
+            )
+          : CustomScrollView(
+              cacheExtent: 400,
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: controller,
+              slivers: [
+                if (!isMobile || selectMode)
+                  SliverAppBar(
+                    key: const Key("room_list_title"),
+                    pinned: true,
+                    automaticallyImplyLeading: isMobile,
+                    forceElevated: !isMobile,
+                    actions: selectMode
+                        ? [
+                            IconButton(
+                                onPressed: disableSelection,
+                                icon: const Icon(Icons.close))
+                          ]
+                        : [
                             IconButton(
                               icon: const Icon(Icons.add),
                               onPressed: () {},
@@ -122,119 +135,111 @@ class RoomList extends StatelessWidget {
                               onPressed: () {},
                             ),
                           ],
-                          backgroundColor: appBarColor ??
-                              (isMobile
-                                  ? Theme.of(context)
-                                      .scaffoldBackgroundColor
-                                      .withAlpha(200)
-                                  : null),
-                          expandedHeight: 60,
-                          collapsedHeight: 60,
-                          flexibleSpace: Builder(builder: (context) {
-                            final result = SizedBox(
-                              height: 60,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    height: 4,
-                                    child: StreamBuilder<SyncStatusUpdate>(
-                                        stream: client.onSyncStatus.stream,
-                                        builder: (context, snap) {
-                                          if (snap.hasData) {
-                                            if (snap.data!.status ==
-                                                    SyncStatus.processing &&
-                                                ![null, 0, 1.0].contains(
-                                                    snap.data!.progress)) {
-                                              return LinearProgressIndicator(
-                                                  value: snap.data!.progress!);
-                                            }
-                                          }
-                                          return Container();
-                                        }),
-                                  ),
-                                  RoomListTitle(
+                    leading: selectMode
+                        ? null
+                        : StreamBuilder<SyncStatusUpdate>(
+                            stream: client.onSyncStatus.stream,
+                            builder: (context, snap) {
+                              if (snap.hasData) {
+                                if (snap.data!.status ==
+                                        SyncStatus.processing &&
+                                    ![null, 0, 1.0]
+                                        .contains(snap.data!.progress)) {
+                                  return LinearProgressIndicator(
+                                      value: snap.data!.progress!);
+                                }
+                              }
+                              return const Icon(Icons.message);
+                            }),
+                    title: selectMode
+                        ? const Text("Edit")
+                        : const Text("Your chats"),
+                  ),
+                if (selectMode == false)
+                  SliverAppBar(
+                    title: MobileSearchBar(
+                        client: client, onAppBarClicked: onAppBarClicked),
+                    automaticallyImplyLeading: false,
+                    forceElevated: !isMobile,
+                  ),
+                if (isMobile && selectedSpace == CustomSpacesTypes.home)
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                        (BuildContext context, int index) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 22),
+                            child: Text("Chats"),
+                          ),
+                          TextButton(
+                            child: const Text("Add"),
+                            onPressed: () {
+                              AdaptativeDialogs.show(
+                                  context: context,
+                                  title: "New message",
+                                  builder: (_) => RoomCreatorPage(
                                       client: client,
-                                      allowPop: allowPop,
-                                      mobile: isMobile,
-                                      selectedSpace: selectedSpace,
-                                      onRoomSelected: onSelection,
-                                      onTap: onAppBarClicked)
-                                ],
-                              ),
-                            );
-
-                            return isMobile
-                                ? ClipRect(
-                                    child: BackdropFilter(
-                                        filter: ImageFilter.blur(
-                                            sigmaX: 10, sigmaY: 10),
-                                        child: result),
-                                  )
-                                : result;
-                          })),
-                    if (isMobile && selectedSpace == CustomSpacesTypes.home)
-                      SliverAppBar(
-                        elevation: 0,
-                        expandedHeight: 76,
-                        collapsedHeight: 76,
-                        backgroundColor: appBarColor,
-                        automaticallyImplyLeading: false,
-                        flexibleSpace: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 14.0, horizontal: 14),
-                            child: RoomListSearchButton(
-                                onUserTap: onAppBarClicked,
-                                client: client,
-                                onSelection: onSelection)),
-                      ),
-                    SliverList(
+                                      onRoomSelected: onSelection));
+                            },
+                          ),
+                        ],
+                      );
+                    }, childCount: 1),
+                  ),
+                if (presences != null)
+                  SliverList(
                       delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {
-                        return RoomListFilter(client: client);
-                      }, childCount: 1),
-                    ),
-                    if (presences != null)
-                      SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                              (BuildContext context, int index) {
-                        final presence = presences![index];
-                        return RoomListItemPresence(
-                            client: client,
-                            presence: presence,
-                            onTap: () {
-                              final room = client
-                                  .getDirectChatFromUserId(presence.userid);
-                              onSelection(room ?? presence.userid);
-                            });
-                      }, childCount: presences.length)),
-                    if (presences == null)
-                      sortedRooms != null
-                          ? SliverPadding(
-                              padding: const EdgeInsets.only(bottom: 60),
-                              sliver: SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                      (BuildContext context, int i) {
-                                Room r = sortedRooms![i];
-                                return RoomListItemSlidable(
-                                    key: Key("room_${r.id}"),
-                                    r: r,
-                                    selectedRoomId: selectedRoomId,
-                                    client: client,
-                                    onSelection: onSelection);
-                              }, childCount: sortedRooms!.length)),
-                            )
-                          : SliverList(
-                              key: const Key("placeholder_list"),
+                    final presence = presences![index];
+                    return RoomListItemPresence(
+                        client: client,
+                        presence: presence,
+                        onTap: () {
+                          final room =
+                              client.getDirectChatFromUserId(presence.userid);
+                          onSelection(room ?? presence.userid);
+                        });
+                  }, childCount: presences.length)),
+                if (presences == null)
+                  widget.sortedRooms != null
+                      ? SliverPadding(
+                          padding: const EdgeInsets.only(bottom: 60),
+                          sliver: SliverList(
                               delegate: SliverChildBuilderDelegate(
-                                (BuildContext context, int i) =>
-                                    const MatrixRoomsListTileShimmer(),
-                                childCount: 5,
-                              ))
-                  ],
-                ),
-        ),
-      ],
+                                  (BuildContext context, int i) {
+                            Room r = widget.sortedRooms![i];
+                            return RoomListItem(
+                              key: Key("room_${r.id}"),
+                              room: r,
+                              open: !isMobile && r.id == widget.selectedRoomId,
+                              selected: selectedRooms.contains(r.id),
+                              client: widget.client,
+                              onSelection: (String text) {
+                                if (selectMode) {
+                                  toggleElement(r.id);
+                                } else {
+                                  widget.onSelection(text);
+                                }
+                              },
+                              onLongPress: () {
+                                selectedRooms.add(r.id);
+                                enableSelection();
+                              },
+                            );
+                          }, childCount: widget.sortedRooms!.length)),
+                        )
+                      : SliverList(
+                          key: const Key("placeholder_list"),
+                          delegate: SliverChildBuilderDelegate(
+                            (BuildContext context, int i) =>
+                                const MatrixRoomsListTileShimmer(),
+                            childCount: 5,
+                          ))
+              ],
+            ),
     );
   }
 }

@@ -14,13 +14,17 @@ class RoomListItem extends StatelessWidget {
     required this.room,
     required this.client,
     required this.onSelection,
-    required this.selected,
+    required this.open,
+    required this.onLongPress,
+    this.selected = false,
   }) : super(key: key);
 
   final Room room;
-  final bool selected;
+  final bool open;
   final Client client;
   final void Function(String) onSelection;
+  final VoidCallback onLongPress;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,8 @@ class RoomListItem extends StatelessWidget {
       onPressed: () {
         onSelection(room.id);
       },
-      color: selected ? Theme.of(context).highlightColor : null,
+      onLongPress: onLongPress,
+      color: open || selected ? Theme.of(context).highlightColor : null,
       minWidth: 0,
       padding: EdgeInsets.zero,
       elevation: 0,
@@ -48,7 +53,7 @@ class RoomListItem extends StatelessWidget {
           Container(
             width: 3.5,
             height: 60,
-            color: selected ? Theme.of(context).colorScheme.primary : null,
+            color: open ? Theme.of(context).colorScheme.primary : null,
           ),
           Expanded(
             child: Padding(
@@ -57,19 +62,23 @@ class RoomListItem extends StatelessWidget {
               child: ListTile(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                focusColor: Colors.grey,
-                hoverColor: Colors.grey,
-                enableFeedback: true,
-                leading: directChatMatrixID == null
-                    ? RoomAvatar(room: room, client: client)
-                    : MatrixUserAvatar(
-                        avatarUrl: room.avatar,
-                        userId: directChatMatrixID,
-                        name: room.displayname,
-                        client: client,
-                        height: MinestrixAvatarSizeConstants.avatar,
-                        width: MinestrixAvatarSizeConstants.avatar,
-                      ),
+                selected: selected,
+                leading: SizedBox(
+                  height: 46,
+                  width: 46,
+                  child: selected
+                      ? const CircleAvatar(child: Icon(Icons.check))
+                      : directChatMatrixID == null
+                          ? RoomAvatar(room: room, client: client)
+                          : MatrixUserAvatar(
+                              avatarUrl: room.avatar,
+                              userId: directChatMatrixID,
+                              name: room.displayname,
+                              client: client,
+                              height: MinestrixAvatarSizeConstants.avatar,
+                              width: MinestrixAvatarSizeConstants.avatar,
+                            ),
+                ),
                 title: Text(room.displayname,
                     maxLines: 1,
                     style: TextStyle(

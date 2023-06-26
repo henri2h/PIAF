@@ -92,8 +92,9 @@ class UserInfoDialog extends StatelessWidget {
                       return RoomListItem(
                           key: Key("room_${room.id}"),
                           room: room,
-                          selected: room == user.room,
+                          open: room == user.room,
                           client: room.client,
+                          onLongPress: () {},
                           onSelection: (_) {});
                     }),
                 ],

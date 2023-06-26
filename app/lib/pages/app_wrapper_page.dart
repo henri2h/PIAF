@@ -60,104 +60,99 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
 
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 850;
-      return SafeArea(
-        child: AutoTabsRouter(
-          builder: (context, widget) {
-            final path = AutoRouterDelegate.of(context).urlState.uri.toString();
-            controller?.add(path);
+      return AutoTabsRouter(
+        builder: (context, widget) {
+          final path = AutoRouterDelegate.of(context).urlState.uri.toString();
+          controller?.add(path);
 
-            final shouldDisplayAppBar = displayAppBarList.contains(path);
-            final shouldDisplayNavigationRail = path.startsWith("/rooms");
+          final shouldDisplayAppBar = displayAppBarList.contains(path);
+          final shouldDisplayNavigationRail = path.startsWith("/rooms");
 
-            if (displayAppBar != shouldDisplayAppBar ||
-                shouldDisplayNavigationRail != displayNavigationRail) {
-              SchedulerBinding.instance.addPostFrameCallback((_) {
-                setState(() {
-                  displayAppBar = shouldDisplayAppBar;
-                  displayNavigationRail = shouldDisplayNavigationRail;
-                });
+          if (displayAppBar != shouldDisplayAppBar ||
+              shouldDisplayNavigationRail != displayNavigationRail) {
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              setState(() {
+                displayAppBar = shouldDisplayAppBar;
+                displayNavigationRail = shouldDisplayNavigationRail;
               });
-            }
+            });
+          }
 
-            final tabsRouter = AutoTabsRouter.of(context);
-            return Scaffold(
-              body: Row(
-                children: [
-                  if (isWideScreen)
-                    StreamBuilder<String>(
-                        stream: controller?.stream,
-                        builder: (context, snapshot) {
-                          return MinestrixNavigationRail(
-                              path: snapshot.data ?? '');
-                        }),
-                  Expanded(
-                      child: Column(
-                    children: [
-                      if (isWideScreen) const NavBarDesktop(),
-                      if (isWideScreen)
-                        const SizedBox(
-                          height: 6,
-                        ),
-                      Expanded(child: widget),
-                    ],
-                  )),
-                ],
-              ),
-              bottomNavigationBar: isWideScreen || !displayAppBar
-                  ? null
-                  : NavigationBar(
-                      selectedIndex: tabsRouter.activeIndex,
-                      onDestinationSelected: (index) {
-                        // here we switch between tabs
-                        tabsRouter.setActiveIndex(index);
-                      },
-                      destinations: [
-                        NavigationDestination(
-                            icon: StreamBuilder(
-                                stream:
-                                    Matrix.of(context).onClientChange.stream,
-                                builder: (context, snap) {
-                                  return StreamBuilder(
-                                      stream: Matrix.of(context)
+          final tabsRouter = AutoTabsRouter.of(context);
+          return Scaffold(
+            body: Row(
+              children: [
+                if (isWideScreen)
+                  StreamBuilder<String>(
+                      stream: controller?.stream,
+                      builder: (context, snapshot) {
+                        return MinestrixNavigationRail(
+                            path: snapshot.data ?? '');
+                      }),
+                Expanded(
+                    child: Column(
+                  children: [
+                    if (isWideScreen) const NavBarDesktop(),
+                    if (isWideScreen)
+                      const SizedBox(
+                        height: 6,
+                      ),
+                    Expanded(child: widget),
+                  ],
+                )),
+              ],
+            ),
+            bottomNavigationBar: isWideScreen || !displayAppBar
+                ? null
+                : NavigationBar(
+                    selectedIndex: tabsRouter.activeIndex,
+                    onDestinationSelected: (index) {
+                      // here we switch between tabs
+                      tabsRouter.setActiveIndex(index);
+                    },
+                    destinations: [
+                      NavigationDestination(
+                          icon: StreamBuilder(
+                              stream: Matrix.of(context).onClientChange.stream,
+                              builder: (context, snap) {
+                                return StreamBuilder(
+                                    stream:
+                                        Matrix.of(context).client.onSync.stream,
+                                    builder: (context, _) {
+                                      int notif = Matrix.of(context)
                                           .client
-                                          .onSync
-                                          .stream,
-                                      builder: (context, _) {
-                                        int notif = Matrix.of(context)
-                                            .client
-                                            .totalNotificationsCount;
-                                        if (notif == 0) {
-                                          return const Icon(
-                                              Icons.message_outlined);
-                                        } else {
-                                          return Badge.count(
-                                              count: notif,
-                                              child: const Icon(Icons.message));
-                                        }
-                                      });
-                                }),
-                            label: "Chats"),
-                        const NavigationDestination(
-                            icon: Icon(Icons.feed), label: "Feed"),
-                        const NavigationDestination(
-                            icon: Icon(Icons.event), label: "Events "),
-                        const NavigationDestination(
-                            icon: Icon(Icons.group), label: "Community"),
-                        const NavigationDestination(
-                            icon: Icon(Icons.web_stories), label: "Stories"),
-                      ],
-                    ),
-              endDrawer: const NotificationView(),
-            );
-          },
-          routes: const [
-            TabChatRoute(),
-            TabHomeRoute(),
-            TabCalendarRoute(),
-            TabCommunityRoute(),
-            TabStoriesRoute()
-          ],
-        ),
+                                          .totalNotificationsCount;
+                                      if (notif == 0) {
+                                        return const Icon(
+                                            Icons.message_outlined);
+                                      } else {
+                                        return Badge.count(
+                                            count: notif,
+                                            child: const Icon(Icons.message));
+                                      }
+                                    });
+                              }),
+                          label: "Chats"),
+                      const NavigationDestination(
+                          icon: Icon(Icons.feed), label: "Feed"),
+                      const NavigationDestination(
+                          icon: Icon(Icons.event), label: "Events "),
+                      const NavigationDestination(
+                          icon: Icon(Icons.group), label: "Community"),
+                      const NavigationDestination(
+                          icon: Icon(Icons.web_stories), label: "Stories"),
+                    ],
+                  ),
+            endDrawer: const NotificationView(),
+          );
+        },
+        routes: const [
+          TabChatRoute(),
+          TabHomeRoute(),
+          TabCalendarRoute(),
+          TabCommunityRoute(),
+          TabStoriesRoute()
+        ],
       );
     });
   }

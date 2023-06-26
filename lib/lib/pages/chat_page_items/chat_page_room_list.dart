@@ -11,12 +11,10 @@ class ChatPageRoomList extends StatelessWidget {
       {Key? key,
       this.mobile = false,
       required this.scrollController,
-      this.appBarColor,
       this.onAppBarClicked})
       : super(key: key);
 
   final ScrollController scrollController;
-  final Color? appBarColor;
   final VoidCallback? onAppBarClicked;
 
   @override
@@ -37,7 +35,6 @@ class ChatPageRoomList extends StatelessWidget {
                 displaySpaceList: controller.displaySpaceList,
                 isMobile: mobile,
                 selectedSpace: controller.selectedSpace,
-                appBarColor: appBarColor,
                 onAppBarClicked: onAppBarClicked,
                 onSelection: (String? roomId) {
                   controller.selectRoom(roomId);
