@@ -46,97 +46,84 @@ class RoomListItem extends StatelessWidget {
       padding: EdgeInsets.zero,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(0),
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 3.5,
-            height: 60,
-            color: open ? Theme.of(context).colorScheme.primary : null,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8, right: 12, top: 2, bottom: 2),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+          selected: selected,
+          leading: SizedBox(
+            height: 46,
+            width: 46,
+            child: selected
+                ? const CircleAvatar(child: Icon(Icons.check))
+                : directChatMatrixID == null
+                    ? RoomAvatar(room: room, client: client)
+                    : MatrixUserAvatar(
+                        avatarUrl: room.avatar,
+                        userId: directChatMatrixID,
+                        name: room.displayname,
+                        client: client,
+                        height: MinestrixAvatarSizeConstants.avatar,
+                        width: MinestrixAvatarSizeConstants.avatar,
+                      ),
           ),
-          Expanded(
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 8, right: 12, top: 2, bottom: 2),
-              child: ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                selected: selected,
-                leading: SizedBox(
-                  height: 46,
-                  width: 46,
-                  child: selected
-                      ? const CircleAvatar(child: Icon(Icons.check))
-                      : directChatMatrixID == null
-                          ? RoomAvatar(room: room, client: client)
-                          : MatrixUserAvatar(
-                              avatarUrl: room.avatar,
-                              userId: directChatMatrixID,
-                              name: room.displayname,
-                              client: client,
-                              height: MinestrixAvatarSizeConstants.avatar,
-                              width: MinestrixAvatarSizeConstants.avatar,
-                            ),
-                ),
-                title: Text(room.displayname,
-                    maxLines: 1,
-                    style: TextStyle(
-                        fontWeight: isUnreadOrNewMessage
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 14)),
-                trailing: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                        lastEvent?.originServerTs != null
-                            ? lastEvent!.originServerTs.timeSinceAWeekOrDuration
-                            : "Invalid time",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: color,
-                          fontWeight: isUnreadOrNewMessage
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                        )),
-                    if (isUnread) NotificationCountDot(room: room),
-                    if (!isUnread && room.hasNewMessages)
-                      NotificationCountDot(
-                        room: room,
-                        unreadMessage: true,
-                      )
-                  ],
-                ),
-                subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (room.membership == Membership.invite)
-                        const Text(
-                          "Invited",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      Text(
-                          lastEvent?.getLocalizedBody(
-                                  const MatrixDefaultLocalizations(),
-                                  hideReply: true,
-                                  hideEdit: true,
-                                  withSenderNamePrefix: !room.isDirectChat ||
-                                      room.lastEvent?.senderId ==
-                                          room.client.userID) ??
-                              '',
-                          maxLines: 2,
-                          style: TextStyle(color: color, fontSize: 13.2)),
-                    ],
+          title: Text(room.displayname,
+              maxLines: 1,
+              style: TextStyle(
+                  fontWeight:
+                      isUnreadOrNewMessage ? FontWeight.bold : FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14)),
+          trailing: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                  lastEvent?.originServerTs != null
+                      ? lastEvent!.originServerTs.timeSinceAWeekOrDuration
+                      : "Invalid time",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: color,
+                    fontWeight: isUnreadOrNewMessage
+                        ? FontWeight.bold
+                        : FontWeight.w500,
+                  )),
+              if (isUnread) NotificationCountDot(room: room),
+              if (!isUnread && room.hasNewMessages)
+                NotificationCountDot(
+                  room: room,
+                  unreadMessage: true,
+                )
+            ],
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (room.membership == Membership.invite)
+                  const Text(
+                    "Invited",
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
-              ),
+                Text(
+                    lastEvent?.getLocalizedBody(
+                            const MatrixDefaultLocalizations(),
+                            hideReply: true,
+                            hideEdit: true,
+                            withSenderNamePrefix: !room.isDirectChat ||
+                                room.lastEvent?.senderId ==
+                                    room.client.userID) ??
+                        '',
+                    maxLines: 2,
+                    style: TextStyle(color: color, fontSize: 13.2)),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

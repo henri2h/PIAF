@@ -86,7 +86,7 @@ dependencies:
   another_flushbar: ^1.10.25
 
   #dialogs
-  adaptive_dialog: ^1.2.0
+  adaptive_dialog: ^1.9.0-0
 
   package_info_plus: ^3.0.2
 
@@ -142,8 +142,3 @@ flutter:
       fonts:
         - asset: fonts/NotoEmoji/NotoColorEmoji.ttf
 
-dependency_overrides:
-  macos_ui: # Waiting for a new version of https://pub.dev/packages/macos_ui/versions (current 1.12.2)
-    git:
-      url: https://github.com/Mayb3Nots/macos_ui.git
-      ref: dev

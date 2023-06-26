@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: adaptive_dialog
-      sha256: "570a517946abc252b79ca09ed95c7e397ccf669b052c76173448b981a3c4b207"
+      sha256: "4e163e4a8a68473f84b9886d27778e7b9b20e26cb1e4c51562be1035eb5661c5"
       url: "https://pub.dev"
     source: hosted
-    version: "1.8.3+1"
+    version: "1.9.0-no-macos.3"
   analyzer:
     dependency: transitive
     description:
@@ -253,10 +253,10 @@ packages:
     dependency: transitive
     description:
       name: dart_webrtc
-      sha256: a34e59ac1559cac954e48c9fe156164992163d2f4b7e75d5b0e927ee2f1e4922
+      sha256: "8949301071ac7c3fb8f78ef7dffc48652db16f2ec63d84078b608f2ca27cca38"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.16"
+    version: "1.0.17"
   dartx:
     dependency: transitive
     description:
@@ -353,6 +353,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.2.10"
+  file_selector_linux:
+    dependency: transitive
+    description:
+      name: file_selector_linux
+      sha256: "770eb1ab057b5ae4326d1c24cc57710758b9a46026349d021d6311bd27580046"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.2"
+  file_selector_macos:
+    dependency: transitive
+    description:
+      name: file_selector_macos
+      sha256: "7a6f1ae6107265664f3f7f89a66074882c4d506aef1441c9af313c1f7e6f41ce"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.3"
+  file_selector_platform_interface:
+    dependency: transitive
+    description:
+      name: file_selector_platform_interface
+      sha256: "412705a646a0ae90f33f37acfae6a0f7cbc02222d6cd34e479421c3e74d3853c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.0"
+  file_selector_windows:
+    dependency: transitive
+    description:
+      name: file_selector_windows
+      sha256: "1372760c6b389842b77156203308940558a2817360154084368608413835fc26"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -386,10 +418,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_foreground_task
-      sha256: "8d217e86488c94c713258c8dac7220562feefd345d0709ad0b0bfe4e236418e9"
+      sha256: "9d71e28c0f9657b7366d5c769a25b4c6efe1bb4080ee4c74764295e419036000"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.0"
+    version: "6.0.0+1"
   flutter_gen:
     dependency: transitive
     description:
@@ -610,10 +642,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_svg
-      sha256: "6ff8c902c8056af9736de2689f63f81c42e2d642b9f4c79dbf8790ae48b63012"
+      sha256: "8c5d68a82add3ca76d792f058b186a0599414f279f00ece4830b9b231b570338"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.6"
+    version: "2.0.7"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -623,10 +655,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_typeahead
-      sha256: d72e7079d01b4ec109a12b01b06a85c09a41ae4531f8a0ca5ef9f759ce4e64a2
+      sha256: a3539f7a90246b152f569029dedcf0b842532d3f2a440701b520e0bf2acbcf42
       url: "https://pub.dev"
     source: hosted
-    version: "4.6.1"
+    version: "4.6.2"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -636,10 +668,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_webrtc
-      sha256: c01334d8f8b0d8c520d4b2b6cc73a184212b72df472ec951794cd40d6e996b5f
+      sha256: "4a3194900981ac7a2aa1e68a37903d8910cc3459c7a1ab68ad0407310cea1642"
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.33"
+    version: "0.9.34"
   future_loading_dialog:
     dependency: transitive
     description:
@@ -724,42 +756,66 @@ packages:
     dependency: transitive
     description:
       name: image_picker
-      sha256: "9978d3510af4e6a902e545ce19229b926e6de6a1828d6134d3aab2e129a4d270"
+      sha256: b9603755b35253ccfad4be0762bb74d5e8bf9ff75edebf0ac3beec24fac1c5b5
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.7+5"
+    version: "1.0.0"
   image_picker_android:
     dependency: transitive
     description:
       name: image_picker_android
-      sha256: "1ec6830289f5b6aeff3aa8239ea737c71950178dda389342dc2215adb06b4bd8"
+      sha256: d2bab152deb2547ea6f53d82ebca9b7e77386bb706e5789e815d37e08ea475bb
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.6+20"
+    version: "0.8.7+3"
   image_picker_for_web:
     dependency: transitive
     description:
       name: image_picker_for_web
-      sha256: "98f50d6b9f294c8ba35e25cc0d13b04bfddd25dbc8d32fa9d566a6572f2c081c"
+      sha256: "869fe8a64771b7afbc99fc433a5f7be2fea4d1cb3d7c11a48b6b579eb9c797f0"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.12"
+    version: "2.2.0"
   image_picker_ios:
     dependency: transitive
     description:
       name: image_picker_ios
-      sha256: d779210bda268a03b57e923fb1e410f32f5c5e708ad256348bcbf1f44f558fd0
+      sha256: b3e2f21feb28b24dd73a35d7ad6e83f568337c70afab5eabac876e23803f264b
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.7+4"
+    version: "0.8.8"
+  image_picker_linux:
+    dependency: transitive
+    description:
+      name: image_picker_linux
+      sha256: "02cbc21fe1706b97942b575966e5fbbeaac535e76deef70d3a242e4afb857831"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
+  image_picker_macos:
+    dependency: transitive
+    description:
+      name: image_picker_macos
+      sha256: cee2aa86c56780c13af2c77b5f2f72973464db204569e1ba2dd744459a065af4
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   image_picker_platform_interface:
     dependency: transitive
     description:
       name: image_picker_platform_interface
-      sha256: fa04ce0917536f478c34a9febc3a49fca5466dfe3e04892119aec08fe87029a1
+      sha256: "7c7b96bb9413a9c28229e717e6fd1e3edd1cc5569c1778fcca060ecf729b65ee"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.8.0"
+  image_picker_windows:
+    dependency: transitive
+    description:
+      name: image_picker_windows
+      sha256: c3066601ea42113922232c7b7b3330a2d86f029f685bba99d82c30e799914952
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   infinite_list:
     dependency: transitive
     description:
@@ -857,14 +913,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
-  macos_ui:
-    dependency: transitive
-    description:
-      name: macos_ui
-      sha256: "57208eec8180656acd379e1c754e9b6d8830f32a020b94571ae2188f8112075b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.12.2"
   markdown:
     dependency: transitive
     description:
@@ -894,7 +942,7 @@ packages:
     description:
       path: "."
       ref: "henri2h/index-events-by-event-type"
-      resolved-ref: "479482ea51695d8700af20da240efaf6cadc34be"
+      resolved-ref: d7f041839aa14cff2dfcf664d9c98d4bd4aacc81
       url: "https://gitlab.com/minestrix/famedlysdk.git"
     source: git
     version: "0.20.5"
@@ -969,15 +1017,6 @@ packages:
       relative: true
     source: path
     version: "0.0.2"
-  modal_bottom_sheet:
-    dependency: transitive
-    description:
-      path: modal_bottom_sheet
-      ref: HEAD
-      resolved-ref: "2073bdd144be1d09a6e8cf5f07b263a867553d8b"
-      url: "https://github.com/jamesblasco/modal_bottom_sheet.git"
-    source: git
-    version: "3.0.0-pre"
   multi_split_view:
     dependency: transitive
     description:
@@ -1410,10 +1449,10 @@ packages:
     dependency: transitive
     description:
       name: sqflite_common
-      sha256: e77abf6ff961d69dfef41daccbb66b51e9983cdd5cb35bf30733598057401555
+      sha256: "8f7603f3f8f126740bc55c4ca2d1027aab4b74a1267a3e31ce51fe40e3b65b8f"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.5"
+    version: "2.4.5+1"
   stack_trace:
     dependency: transitive
     description:
@@ -1498,10 +1537,10 @@ packages:
     dependency: transitive
     description:
       name: tuple
-      sha256: "0ea99cd2f9352b2586583ab2ce6489d1f95a5f6de6fb9492faaf97ae2060f0aa"
+      sha256: a97ce2013f240b2f3807bcbaf218765b6f301c3eff91092bcfa23a039e7dd151
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "2.0.2"
   typed_data:
     dependency: transitive
     description:
@@ -1578,10 +1617,10 @@ packages:
     dependency: transitive
     description:
       name: url_launcher_android
-      sha256: eed4e6a1164aa9794409325c3b707ff424d4d1c2a785e7db67f8bbda00e36e51
+      sha256: "15f5acbf0dce90146a0f5a2c4a002b1814a6303c4c5c075aa2623b2d16156f03"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.35"
+    version: "6.0.36"
   url_launcher_ios:
     dependency: transitive
     description:
@@ -1610,10 +1649,10 @@ packages:
     dependency: transitive
     description:
       name: url_launcher_platform_interface
-      sha256: "6c9ca697a5ae218ce56cece69d46128169a58aa8653c1b01d26fcd4aad8c4370"
+      sha256: bfdfa402f1f3298637d71ca8ecfe840b4696698213d5346e9d12d4ab647ee2ea
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "2.1.3"
   url_launcher_web:
     dependency: transitive
     description:
@@ -1642,26 +1681,26 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: b96f10cbdfcbd03a65758633a43e7d04574438f059b1043104b5d61b23d38a4f
+      sha256: "670f6e07aca990b4a2bcdc08a784193c4ccdd1932620244c3a86bb72a0eac67f"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.6"
+    version: "1.1.7"
   vector_graphics_codec:
     dependency: transitive
     description:
       name: vector_graphics_codec
-      sha256: "57a8e6e24662a3bdfe3b3d61257db91768700c0b8f844e235877b56480f31c69"
+      sha256: "7451721781d967db9933b63f5733b1c4533022c0ba373a01bdd79d1a5457f69f"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.6"
+    version: "1.1.7"
   vector_graphics_compiler:
     dependency: transitive
     description:
       name: vector_graphics_compiler
-      sha256: "7430f5d834d0db4560d7b19863362cd892f1e52b43838553a3c5cdfc9ab28e5b"
+      sha256: "80a13c613c8bde758b1464a1755a7b3a8f2b6cec61fbf0f5a53c94c30f03ba2e"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.6"
+    version: "1.1.7"
   vector_math:
     dependency: transitive
     description:
@@ -1778,10 +1817,10 @@ packages:
     dependency: transitive
     description:
       name: webview_flutter_android
-      sha256: "57a22c86065375c1598b57224f92d6008141be0c877c64100de8bfb6f71083d8"
+      sha256: "532135f6f6b8030cd039f30eab23f340d650350e29f38e9b37d2eaad028f1018"
       url: "https://pub.dev"
     source: hosted
-    version: "3.7.1"
+    version: "3.8.0"
   webview_flutter_platform_interface:
     dependency: transitive
     description:
@@ -1794,10 +1833,10 @@ packages:
     dependency: transitive
     description:
       name: webview_flutter_wkwebview
-      sha256: "6bbc6ade302b842999b27cbaa7171241c273deea8a9c73f92ceb3d811c767de2"
+      sha256: "7b203961d6830f3e5ed1df4c4f0493fea8388a46c4d43716167c4a8ba8ecbe83"
       url: "https://pub.dev"
     source: hosted
-    version: "3.4.4"
+    version: "3.6.0"
   win32:
     dependency: transitive
     description:
@@ -1832,4 +1871,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.0.0 <4.0.0"
-  flutter: ">=3.7.0"
+  flutter: ">=3.10.0"

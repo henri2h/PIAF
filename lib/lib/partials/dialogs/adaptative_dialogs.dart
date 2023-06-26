@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-
 import '../../style/constants.dart';
 
 /// Special class to generate modals adapated to the screen size.
@@ -13,7 +11,7 @@ class AdaptativeDialogs {
       String? title}) async {
     if (bottomSheet &&
         [TargetPlatform.iOS].contains(Theme.of(context).platform)) {
-      return await showCupertinoModalBottomSheet(
+      return await showModalBottomSheet(
         context: context,
         builder: (context) => Column(
           children: [
@@ -48,7 +46,7 @@ class AdaptativeDialogs {
       );
     } else if (bottomSheet &&
         [TargetPlatform.android].contains(Theme.of(context).platform)) {
-      return await showMaterialModalBottomSheet(
+      return await showModalBottomSheet(
         context: context,
         builder: (context) => Column(
           children: [

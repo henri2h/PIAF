@@ -117,7 +117,7 @@ class _RoomListState extends State<RoomList> {
                   SliverAppBar(
                     key: const Key("room_list_title"),
                     pinned: true,
-                    automaticallyImplyLeading: isMobile,
+                    automaticallyImplyLeading: false,
                     forceElevated: !isMobile,
                     actions: selectMode
                         ? [
