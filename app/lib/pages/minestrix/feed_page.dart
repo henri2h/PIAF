@@ -23,7 +23,7 @@ import '../../partials/feed/minestrix_profile_not_created.dart';
 import '../../partials/feed/notfication_bell.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
-import '../../partials/post/post.dart';
+import '../../partials/post/post/post.dart';
 import '../../router.gr.dart';
 import '../../utils/settings.dart';
 import '../app_wrapper_page.dart';

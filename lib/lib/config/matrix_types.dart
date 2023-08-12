@@ -15,6 +15,9 @@ abstract class MatrixTypes {
   static const String blurhash = "xyz.amorgan.blurhash";
 
   static const String calendarEvent = "fr.emse.minitel.event";
+
+  static const String reference =
+      "m.reference"; // MSC: https://github.com/matrix-org/matrix-spec-proposals/pull/2836
 }
 
 abstract class MatrixEventTypes {

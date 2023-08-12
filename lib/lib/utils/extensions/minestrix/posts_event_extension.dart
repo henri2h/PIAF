@@ -15,16 +15,19 @@ extension PostsEventExtension on Event {
           .toSet();
 
   Set<Event>? getReplies(Timeline t) {
-    Set<Event>? events = aggregatedEvents(t, MatrixTypes.threadRelation);
-    events.addAll(aggregatedEvents(t, RelationshipTypes.reply).where(
-        (element) =>
-            element.content
-                .tryGet<Map<String, dynamic>>('m.relates_to')
-                ?.tryGet<String>('rel_type') ==
-            MatrixTypes.threadRelation));
-    return events.where((e) => !e.redacted).toSet();
+    return t.events.where((element) {
+      if (element.redacted) return false;
+      final relationship =
+          element.content.tryGet<Map<String, dynamic>>('m.relationship');
+
+      if (relationship?.tryGet<String>('rel_type') == MatrixTypes.reference) {
+        return relationship?.tryGet('event_id') == eventId;
+      }
+      return false;
+    }).toSet();
   }
 
+  // TODO: is it still usefull ?
   Map<Event, dynamic>? constructNestedReplies(
       Set<Event> data, String? eventId, int depth) {
     final nestedReplies = <Event, dynamic>{};
@@ -40,8 +43,7 @@ extension PostsEventExtension on Event {
       final event = data.elementAt(pos);
 
       String? val = event.content
-          .tryGetMap<String, dynamic>("m.relates_to")
-          ?.tryGetMap<String, dynamic>("m.in_reply_to")
+          .tryGetMap<String, dynamic>("m.relationship")
           ?.tryGet<String>("event_id");
 
       if (val == eventId) {
@@ -114,11 +116,13 @@ extension PostEventInRoomExtension on Room {
       {required String content, required Event post, Event? replyTo}) async {
     final result = {
       "body": content,
+      // for the comment hierarchy
       "m.relates_to": {
         "rel_type": MatrixTypes.threadRelation,
-        "event_id": post.eventId,
         "m.in_reply_to": {if (replyTo != null) "event_id": replyTo.eventId}
-      }
+      },
+      // to know to which post we are replying
+      "m.relationship": {"event_id": post.eventId, "rel_type": "m.reference"},
     };
 
     return await sendEvent(result, type: MatrixTypes.comment);

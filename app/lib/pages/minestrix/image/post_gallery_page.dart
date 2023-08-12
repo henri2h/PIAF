@@ -179,14 +179,7 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                               children: [
                                 PostHeader(
                                     event: widget.post, allowContext: false),
-                                if (event != null)
-                                  RepliesVue(
-                                      timeline: t,
-                                      enableMore: false,
-                                      event: event!,
-                                      replies: nestedReplies,
-                                      replyToMessageId: replyToMessageId,
-                                      setRepliedMessage: setRepliedMessage),
+                              
                               ],
                             ));
                       }),

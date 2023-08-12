@@ -10,7 +10,6 @@ import 'package:minestrix/partials/components/buttons/custom_text_future_button.
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix/partials/feed/minestrix_profile_not_created.dart';
 import 'package:minestrix/partials/feed/notfication_bell.dart';
-import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -28,6 +27,7 @@ import '../../pages/minestrix/friends/research_page.dart';
 import '../../utils/settings.dart';
 import '../components/layouts/custom_header.dart';
 import '../minestrix_title.dart';
+import '../post/post/post.dart';
 
 class MinestrixFeed extends StatefulWidget {
   const MinestrixFeed({Key? key}) : super(key: key);

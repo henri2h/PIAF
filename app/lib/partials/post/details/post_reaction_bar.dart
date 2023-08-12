@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
 import 'post_reactions.dart';
-import '../post.dart';
+import '../post/post_item.dart';
 import 'post_button.dart';
 
 class ReactionBar extends StatelessWidget {
   const ReactionBar({
     Key? key,
     required this.controller,
+    required this.reactions,
     required this.isMobile,
   }) : super(key: key);
 
-  final PostState controller;
+  final PostItemState controller;
+  final Set<Event>? reactions;
   final bool isMobile;
 
   @override
@@ -27,7 +30,7 @@ class ReactionBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                if (controller.reactions?.isNotEmpty ?? false)
+                if (reactions?.isNotEmpty ?? false)
                   Flexible(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -39,12 +42,12 @@ class ReactionBar extends StatelessWidget {
                             child: MaterialButton(
                                 child: PostReactions(
                                     event: controller.post,
-                                    reactions: controller.reactions!),
+                                    reactions: reactions!),
                                 onPressed: () async {
                                   await AdaptativeDialogs.show(
                                       context: context,
                                       builder: (context) => EventReactionList(
-                                          reactions: controller.reactions!),
+                                          reactions: reactions!),
                                       title: "Reactions");
                                 }),
                           ),
@@ -52,11 +55,6 @@ class ReactionBar extends StatelessWidget {
                       ),
                     ),
                   ),
-                if (controller.replies?.isNotEmpty ?? false)
-                  MaterialButton(
-                      onPressed: controller.toggleReplyView,
-                      child: Text(
-                          "${controller.showReplies ? "Hide " : "Show "}${controller.replies!.length} comments")),
               ],
             ),
           ),

@@ -4,7 +4,6 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/contact_view.dart';
 import 'package:minestrix/partials/components/buttons/custom_future_button.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
-import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -19,6 +18,8 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/layout_view.dart';
 import '../../../partials/feed/topic_list_tile.dart';
+import '../../../partials/post/post/post.dart';
+import '../../../partials/post/post/post_shimmer.dart';
 
 @RoutePage()
 class GroupPage extends StatefulWidget {

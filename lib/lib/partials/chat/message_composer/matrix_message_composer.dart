@@ -27,6 +27,9 @@ class MatrixMessageComposer extends StatefulWidget {
   final void Function(String text)? onEdit;
   final void Function(Room)? onRoomCreate;
 
+  /// Save message draft
+  final bool loadSavedText;
+
   const MatrixMessageComposer(
       {Key? key,
       required this.client,
@@ -39,7 +42,8 @@ class MatrixMessageComposer extends StatefulWidget {
       this.onSend,
       this.overrideSending,
       this.onRoomCreate,
-      this.onEdit})
+      this.onEdit,
+      this.loadSavedText = true})
       : super(key: key);
 
   @override
@@ -81,6 +85,7 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
   }
 
   Future<String?> loadText() async {
+    if (!widget.loadSavedText) return null;
     final text = await widget.client.getDraft(room?.id ?? widget.userId ?? '');
     if (text != null) {
       setState(() {

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
-import 'package:minestrix/partials/post/post.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/calendar_event/calendar_event_widget.dart';
@@ -18,6 +17,8 @@ import '../../partials/calendar_events/datetime_tile.dart';
 import '../../partials/calendar_events/duration_widget.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/feed/topic_list_tile.dart';
+import '../../partials/post/post/post.dart';
+import '../../partials/post/post/post_shimmer.dart';
 import '../../partials/post/post_writer_modal.dart';
 import '../../router.gr.dart';
 
