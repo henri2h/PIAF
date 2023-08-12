@@ -31,7 +31,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     "/stories",
     "/chat",
     "/events",
-    "/community"
+    "/community",
+    "/camera"
   };
 
   /// bah dirty
@@ -141,6 +142,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                           icon: Icon(Icons.group), label: "Community"),
                       const NavigationDestination(
                           icon: Icon(Icons.web_stories), label: "Stories"),
+                      const NavigationDestination(
+                          icon: Icon(Icons.camera_alt), label: "Camera")
                     ],
                   ),
             endDrawer: const NotificationView(),
@@ -151,7 +154,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           TabHomeRoute(),
           TabCalendarRoute(),
           TabCommunityRoute(),
-          TabStoriesRoute()
+          TabStoriesRoute(),
+          TabCameraRoute(),
         ],
       );
     });
