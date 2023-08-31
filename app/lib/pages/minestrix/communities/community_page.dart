@@ -28,106 +28,111 @@ class CommunityPageState extends State<CommunityPage> {
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
 
-    return StreamBuilder(
-        stream: client.onSync.stream.where((sync) => sync.hasRoomUpdate),
-        builder: (context, snapshot) {
-          final communities = client.getCommunities();
-          return Column(
-            children: [
-              const CustomHeader(title: "Communities"),
-              Expanded(
-                child: LayoutBuilder(builder: (context, constraints) {
-                  final feedOnly = constraints.maxWidth < 860;
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                            itemCount: communities.length,
-                            itemBuilder: (context, pos) {
-                              final community = communities[pos];
-                              final space = community.space;
+    return SafeArea(
+      child: StreamBuilder(
+          stream: client.onSync.stream.where((sync) => sync.hasRoomUpdate),
+          builder: (context, snapshot) {
+            final communities = client.getCommunities();
+            return Column(
+              children: [
+                const CustomHeader(title: "Communities"),
+                Expanded(
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    final feedOnly = constraints.maxWidth < 860;
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                              itemCount: communities.length,
+                              itemBuilder: (context, pos) {
+                                final community = communities[pos];
+                                final space = community.space;
 
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: MaterialButton(
-                                  onPressed: () async =>
-                                      await onCommunityPressed(space),
-                                  child: Card(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: 400,
-                                          child: FutureBuilder(
-                                              future: space.postLoad(),
-                                              builder: (context, snapshot) {
-                                                return Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    H2Title(space
-                                                        .getLocalizedDisplayname(
-                                                            const MatrixDefaultLocalizations())),
-                                                    Text(space.topic),
-                                                    MatrixImageAvatar(
-                                                      client: client,
-                                                      url: space.avatar,
-                                                      defaultText:
-                                                          space.displayname,
-                                                      shape:
-                                                          MatrixImageAvatarShape
-                                                              .rounded,
-                                                      width: 200,
-                                                      height: 200,
-                                                    ),
-                                                    ListTile(
-                                                      leading: const Icon(
-                                                          Icons.people),
-                                                      title:
-                                                          const Text("Members"),
-                                                      trailing: Text(
-                                                          space.summary
-                                                              .mJoinedMemberCount
-                                                              .toString(),
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
-                                                    )
-                                                  ],
-                                                );
-                                              }),
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: MaterialButton(
+                                      onPressed: () async =>
+                                          await onCommunityPressed(space),
+                                      child: Card(
+                                          child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Wrap(
+                                          children: [
+                                            SizedBox(
+                                              width: 300,
+                                              child: FutureBuilder(
+                                                  future: space.postLoad(),
+                                                  builder: (context, snapshot) {
+                                                    return Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        H2Title(space
+                                                            .getLocalizedDisplayname(
+                                                                const MatrixDefaultLocalizations())),
+                                                        Text(space.topic),
+                                                        MatrixImageAvatar(
+                                                          client: client,
+                                                          url: space.avatar,
+                                                          defaultText:
+                                                              space.displayname,
+                                                          shape:
+                                                              MatrixImageAvatarShape
+                                                                  .rounded,
+                                                          width: 200,
+                                                          height: 200,
+                                                        ),
+                                                        ListTile(
+                                                          leading: const Icon(
+                                                              Icons.people),
+                                                          title: const Text(
+                                                              "Members"),
+                                                          trailing: Text(
+                                                              space.summary
+                                                                  .mJoinedMemberCount
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold)),
+                                                        )
+                                                      ],
+                                                    );
+                                                  }),
+                                            ),
+                                            ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                  maxWidth: 500),
+                                              child: Column(
+                                                children: [
+                                                  for (final room
+                                                      in community.children)
+                                                    MinestrixRoomTileNavigator(
+                                                        room: room),
+                                                ],
+                                              ),
+                                            )
+                                          ],
                                         ),
-                                        Expanded(
-                                          child: Column(
-                                            children: [
-                                              for (final room
-                                                  in community.children)
-                                                MinestrixRoomTileNavigator(
-                                                    room: room),
-                                            ],
-                                          ),
-                                        )
-                                      ],
+                                      )),
                                     ),
-                                  )),
-                                ),
-                              );
-                            }),
-                      ),
-                      if (!feedOnly)
-                        ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 400),
-                            child: const RightBar()),
-                    ],
-                  );
-                }),
-              ),
-            ],
-          );
-        });
+                                  ),
+                                );
+                              }),
+                        ),
+                        if (!feedOnly)
+                          ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 400),
+                              child: const RightBar()),
+                      ],
+                    );
+                  }),
+                ),
+              ],
+            );
+          }),
+    );
   }
 }

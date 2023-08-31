@@ -139,8 +139,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                       const NavigationDestination(
                           icon: Icon(Icons.event), label: "Events "),
                       const NavigationDestination(
-                          icon: Icon(Icons.group), label: "Community"),
-                      const NavigationDestination(
                           icon: Icon(Icons.web_stories), label: "Stories"),
                       const NavigationDestination(
                           icon: Icon(Icons.camera_alt), label: "Camera")
@@ -153,7 +151,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           TabChatRoute(),
           TabHomeRoute(),
           TabCalendarRoute(),
-          TabCommunityRoute(),
           TabStoriesRoute(),
           TabCameraRoute(),
         ],

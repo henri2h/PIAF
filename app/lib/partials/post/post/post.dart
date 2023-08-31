@@ -44,29 +44,29 @@ class _PostState extends State<Post> {
     return LayoutBuilder(builder: (context, constraints) {
       final isMobile = constraints.maxWidth < 500;
 
-      final post = FutureBuilder<Timeline?>(
-          future: futureTimeline,
-          builder: (context, snap) {
-            return PostItem(
-                event: widget.event,
-                onReact: widget.onReact,
-                timeline: snap.data,
-                isMobile: isMobile);
-          });
+      final post = InkWell(
+        onTap: () {
+          if (timeline != null) {
+            context
+                .pushRoute(PostRoute(timeline: timeline!, event: widget.event));
+          }
+        },
+        child: FutureBuilder<Timeline?>(
+            future: futureTimeline,
+            builder: (context, snap) {
+              return PostItem(
+                  event: widget.event,
+                  onReact: widget.onReact,
+                  timeline: snap.data,
+                  isMobile: isMobile);
+            }),
+      );
 
       if (isMobile) {
         return post;
       }
 
-      return Card(
-          child: InkWell(
-              onTap: () {
-                if (timeline != null) {
-                  context.pushRoute(
-                      PostRoute(timeline: timeline!, event: widget.event));
-                }
-              },
-              child: post));
+      return Card(child: post);
     });
   }
 }
