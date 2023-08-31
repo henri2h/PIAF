@@ -293,16 +293,12 @@ class FeedPageState extends State<FeedPage> {
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (BuildContext c, int i,
                                     void Function(Offset, Event) onReact) {
-                                  return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                      ),
-                                      child: Post(
-                                          event: events![i],
-                                          key: Key(events![i].eventId +
-                                              events![i].status.toString()),
-                                          onReact: (Offset e) =>
-                                              onReact(e, events![i])));
+                                  return Post(
+                                      event: events![i],
+                                      key: Key(events![i].eventId +
+                                          events![i].status.toString()),
+                                      onReact: (Offset e) =>
+                                          onReact(e, events![i]));
                                 }));
               });
         });
