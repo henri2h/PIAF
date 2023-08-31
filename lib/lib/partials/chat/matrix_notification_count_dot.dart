@@ -13,17 +13,13 @@ class NotificationCountDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 15),
-      child: CircleAvatar(
-          radius: unreadMessage ? 7 : 11,
-          backgroundColor: unreadMessage ? Colors.grey : Colors.red,
-          child: unreadMessage
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+      child: Badge(
+          // backgroundColor: unreadMessage ? Colors.grey : Colors.red,
+          label: unreadMessage
               ? null
               : Text(room.notificationCount.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ))),
+                  style: const TextStyle(fontWeight: FontWeight.bold))),
     );
   }
 }

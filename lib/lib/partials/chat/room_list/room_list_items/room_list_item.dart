@@ -33,6 +33,7 @@ class RoomListItem extends StatelessWidget {
     final color = isUnreadOrNewMessage
         ? Theme.of(context).colorScheme.onSurface
         : Colors.grey.withAlpha(180);
+    final fontWeight = isUnreadOrNewMessage ? FontWeight.bold : null;
     final lastEvent = room.lastEvent;
     final directChatMatrixID = room.directChatMatrixID;
 
@@ -70,34 +71,13 @@ class RoomListItem extends StatelessWidget {
                         width: MinestrixAvatarSizeConstants.avatar,
                       ),
           ),
-          title: Text(room.displayname,
-              maxLines: 1,
-              style: TextStyle(
-                  fontWeight:
-                      isUnreadOrNewMessage ? FontWeight.bold : FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 14)),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                  lastEvent?.originServerTs != null
-                      ? lastEvent!.originServerTs.timeSinceAWeekOrDuration
-                      : "Invalid time",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: color,
-                    fontWeight: isUnreadOrNewMessage
-                        ? FontWeight.bold
-                        : FontWeight.w500,
-                  )),
-              if (isUnread) NotificationCountDot(room: room),
-              if (!isUnread && room.hasNewMessages)
-                NotificationCountDot(
-                  room: room,
-                  unreadMessage: true,
-                )
-            ],
+          title: Text(
+            room.displayname,
+            maxLines: 1,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: fontWeight, color: color),
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4.0),
@@ -110,18 +90,42 @@ class RoomListItem extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 Text(
-                    lastEvent?.getLocalizedBody(
-                            const MatrixDefaultLocalizations(),
-                            hideReply: true,
-                            hideEdit: true,
-                            withSenderNamePrefix: !room.isDirectChat ||
-                                room.lastEvent?.senderId ==
-                                    room.client.userID) ??
-                        '',
-                    maxLines: 2,
-                    style: TextStyle(color: color, fontSize: 13.2)),
+                  lastEvent?.getLocalizedBody(
+                          const MatrixDefaultLocalizations(),
+                          hideReply: true,
+                          hideEdit: true,
+                          withSenderNamePrefix: !room.isDirectChat ||
+                              room.lastEvent?.senderId == room.client.userID) ??
+                      '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(fontWeight: fontWeight, color: color),
+                ),
               ],
             ),
+          ),
+          trailing: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                  lastEvent?.originServerTs != null
+                      ? lastEvent!.originServerTs.timeSinceAWeekOrDuration
+                      : "Invalid time",
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: color,
+                        fontWeight: fontWeight,
+                      )),
+              if (isUnread) NotificationCountDot(room: room),
+              if (!isUnread && room.hasNewMessages)
+              
+                NotificationCountDot(
+                  room: room,
+                  unreadMessage: true,
+                )
+            ],
           ),
         ),
       ),
