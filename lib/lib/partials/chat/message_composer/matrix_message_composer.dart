@@ -194,6 +194,7 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
 
   @override
   Widget build(BuildContext context) {
+    double defaultHeight = 55;
     return LayoutBuilder(builder: (context, constraints) {
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -222,7 +223,7 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
             children: [
               if (constraints.maxWidth > 600)
                 SizedBox(
-                  height: 60,
+                  height: defaultHeight,
                   child: Padding(
                     padding: const EdgeInsets.all(8),
                     child: FutureBuilder(
@@ -247,7 +248,7 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
                   room != null &&
                   (!_isTyping || isAutoFocusEnabled))
                 SizedBox(
-                  height: 60,
+                  height: defaultHeight,
                   child: IconButton(
                     onPressed: () {
                       if (room != null) addImage(context, room!);
@@ -258,83 +259,84 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
                 ),
               Expanded(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 60),
-                  child: Center(
-                    child: RawKeyboardListener(
-                      focusNode: focusNode,
-                      onKey: (event) async {
-                        if (shouldResetView) {
-                          setState(() {
-                            _sendController.clear();
-                            shouldResetView = false;
-                            setMessageDraft("");
-                          });
-                        }
-
-                        if (event.isControlPressed) {
-                          if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                            _sendMessageOrCreate();
-                            shouldResetView = true;
+                  constraints: BoxConstraints(minHeight: defaultHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Center(
+                      child: RawKeyboardListener(
+                        focusNode: focusNode,
+                        onKey: (event) async {
+                          if (shouldResetView) {
+                            setState(() {
+                              _sendController.clear();
+                              shouldResetView = false;
+                              setMessageDraft("");
+                            });
                           }
 
-                          if (event.isKeyPressed(LogicalKeyboardKey.keyV)) {
-                            final imageBytes = await Pasteboard.image;
-                            if (imageBytes != null) {
-                              setState(() {
-                                file = PlatformFile(
-                                    name: "clipboard",
-                                    size: imageBytes.length,
-                                    bytes: imageBytes);
-                              });
+                          if (event.isControlPressed) {
+                            if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                              _sendMessageOrCreate();
+                              shouldResetView = true;
+                            }
+
+                            if (event.isKeyPressed(LogicalKeyboardKey.keyV)) {
+                              final imageBytes = await Pasteboard.image;
+                              if (imageBytes != null) {
+                                setState(() {
+                                  file = PlatformFile(
+                                      name: "clipboard",
+                                      size: imageBytes.length,
+                                      bytes: imageBytes);
+                                });
+                              }
                             }
                           }
-                        }
-                      },
-                      child: TextField(
-                          autofocus: isAutoFocusEnabled,
-                          focusNode: textFieldFocusNode,
-                          maxLines: 5,
-                          minLines: 1,
-                          controller: _sendController,
-                          onChanged: onEdit,
-                          keyboardType: TextInputType.multiline,
-                          textAlignVertical: TextAlignVertical.center,
-                          decoration: !_isTyping || isAutoFocusEnabled
-                              ? Constants.kTextFieldInputDecoration.copyWith(
-                                  prefixIcon: const Icon(Icons.message,
-                                      color: Colors.grey),
-                                  hintText: widget.hintText,
-                                )
-                              : InputDecoration(
-                                  isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 15, horizontal: 12),
-                                  border: InputBorder.none,
-                                  enabledBorder: const OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(14),
+                        },
+                        child: TextField(
+                            autofocus: isAutoFocusEnabled,
+                            focusNode: textFieldFocusNode,
+                            maxLines: 5,
+                            minLines: 1,
+                            controller: _sendController,
+                            onChanged: onEdit,
+                            keyboardType: TextInputType.multiline,
+                            textAlignVertical: TextAlignVertical.center,
+                            decoration: !_isTyping || isAutoFocusEnabled
+                                ? Constants.kTextFieldInputDecoration.copyWith(
+                                    prefixIcon: const Icon(
+                                      Icons.message,
                                     ),
-                                  ),
-                                  focusedBorder: const OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(14),
+                                    hintText: widget.hintText,
+                                  )
+                                : InputDecoration(
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 12),
+                                    border: InputBorder.none,
+                                    enabledBorder: const OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(22),
+                                      ),
                                     ),
-                                  ),
-                                  filled: true,
-                                  hintStyle:
-                                      const TextStyle(color: Colors.grey),
-                                  hintText: widget.hintText,
-                                  focusColor: Colors.grey,
-                                )),
+                                    focusedBorder: const OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(22),
+                                      ),
+                                    ),
+                                    filled: true,
+                                    hintText: widget.hintText,
+                                  )),
+                      ),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 4),
               SizedBox(
-                height: 60,
+                height: defaultHeight,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [

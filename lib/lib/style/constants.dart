@@ -8,12 +8,12 @@ class Constants {
 
   static const InputDecoration kBasicSearch = InputDecoration(
     isDense: true,
-    contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+    contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
     border: InputBorder.none,
     enabledBorder: OutlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.all(
-        Radius.circular(14),
+        Radius.circular(22),
       ),
     ),
     focusedBorder: OutlineInputBorder(
@@ -23,8 +23,6 @@ class Constants {
       ),
     ),
     filled: true,
-    focusColor: Colors.grey,
-    hintStyle: TextStyle(color: Colors.grey),
   );
 
   static const TextStyle kTextTitleStyle =

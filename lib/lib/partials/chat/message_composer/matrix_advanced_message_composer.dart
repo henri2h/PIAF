@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -130,7 +131,7 @@ class MatrixAdvancedMessageComposerState
                 (room.membership.isJoin == true &&
                     (!room.encrypted || room.client.encryptionEnabled))))
           Builder(builder: (context) {
-            return widget.isMobile
+            return widget.isMobile && Platform.isIOS
                 ? Container(
                     color: Theme.of(context)
                         .scaffoldBackgroundColor
@@ -139,7 +140,9 @@ class MatrixAdvancedMessageComposerState
                         child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: matrixComposerWidget)))
-                : matrixComposerWidget;
+                : Container(
+                    color: Theme.of(context).colorScheme.background,
+                    child: matrixComposerWidget);
           }),
         if (room?.canSendDefaultMessages == false ||
             room != null && room.membership.isJoin != true)
