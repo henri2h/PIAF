@@ -19,12 +19,15 @@ class PostItem extends StatefulWidget {
   final void Function(Offset) onReact;
   final Timeline? timeline;
   final bool isMobile;
+  final bool enableComment;
+
   const PostItem(
       {Key? key,
       required this.event,
       required this.onReact,
       required this.timeline,
-      required this.isMobile})
+      required this.isMobile,
+      this.enableComment = true})
       : super(key: key);
 
   @override
@@ -46,6 +49,8 @@ class PostItemState extends State<PostItem>
       widget.event.room.client.minestrixUserRoom.isNotEmpty;
 
   late Event post;
+
+  bool get canComment => widget.enableComment;
 
   @override
   void initState() {

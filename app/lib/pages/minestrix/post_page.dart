@@ -39,6 +39,7 @@ class _PostPageState extends State<PostPage> {
                     timeline: widget.timeline,
                     onReact: (Offset) {},
                     isMobile: false,
+                    enableComment:false
                   ),
                   const Divider(),
                   MatrixMessageComposer(

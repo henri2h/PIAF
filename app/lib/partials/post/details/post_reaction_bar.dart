@@ -70,6 +70,7 @@ class ReactionBar extends StatelessWidget {
             },
           ),
           const SizedBox(width: 9),
+          if(controller.canComment)
           PostButton(
             iconOnly: isMobile,
             text: "Comment",
