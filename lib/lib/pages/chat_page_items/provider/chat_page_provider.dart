@@ -8,7 +8,6 @@ class ChatPageProvider extends StatelessWidget {
       {Key? key,
       required this.child,
       required this.client,
-      required this.allowPop,
       required this.onRoomSelection,
       required this.onLongPressedSpace,
       required this.onSpaceSelection})
@@ -16,7 +15,6 @@ class ChatPageProvider extends StatelessWidget {
 
   final Widget child;
   final Client client;
-  final bool allowPop;
   final void Function(String?)? onRoomSelection;
   final void Function(String)? onSpaceSelection;
   final void Function(String?) onLongPressedSpace;
@@ -32,7 +30,6 @@ class ChatPageProvider extends StatelessWidget {
       create: (context) => ChatPageState(
           context: context,
           client: client,
-          allowPop: allowPop,
           onLongPressedSpace: onLongPressedSpace,
           onRoomSelection: onRoomSelection,
           onSpaceSelection: onSpaceSelection),

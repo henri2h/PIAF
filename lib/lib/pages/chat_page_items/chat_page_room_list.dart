@@ -29,7 +29,6 @@ class ChatPageRoomList extends StatelessWidget {
             return RoomList(
                 controller: scrollController,
                 selectedRoomId: controller.selectedRoomID,
-                allowPop: controller.allowPop,
                 client: client,
                 sortedRooms: rooms,
                 displaySpaceList: controller.displaySpaceList,

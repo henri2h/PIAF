@@ -41,7 +41,6 @@ class TabChatPageState extends State<TabChatPage> {
       create: (_) => this,
       child: ChatPageProvider(
         client: Matrix.of(context).client,
-        allowPop: false,
         onRoomSelection: onRoomSelected,
         onSpaceSelection: (String spaceId) async {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {

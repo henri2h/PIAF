@@ -18,13 +18,11 @@ class ChatPage extends StatefulWidget {
       {Key? key,
       required this.client,
       this.enableStories = false,
-      this.allowPop = true,
       this.onSelection})
       : super(key: key);
 
   final Client client;
   final bool enableStories;
-  final bool allowPop;
 
   final void Function(String?)? onSelection;
 
@@ -42,7 +40,6 @@ class ChatPageState extends State<ChatPage>
   Widget build(BuildContext context) {
     return ChatPageProvider(
         client: widget.client,
-        allowPop: widget.allowPop,
         onRoomSelection: widget.onSelection,
         onSpaceSelection: (_) {}, // TODO
         onLongPressedSpace: (_) {}, // TODO

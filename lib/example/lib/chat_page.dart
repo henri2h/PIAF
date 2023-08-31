@@ -15,7 +15,6 @@ class _HomeChatPageState extends State<HomeChatPage> {
     return Scaffold(
         appBar: AppBar(title: const Text("Chat view")),
         body: ChatPage(
-          allowPop: true,
           client: Matrix.of(context).client,
         ));
   }

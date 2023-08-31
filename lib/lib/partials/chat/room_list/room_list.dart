@@ -1,17 +1,12 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/chat/room_list/room_list_title.dart';
-import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart';
+import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
 import '../../../pages/room_creator_page.dart';
 import '../../dialogs/adaptative_dialogs.dart';
 import '../spaces/list/spaces_list.dart';
-import 'room_list_filter/room_list_filter.dart';
 import 'room_list_items/room_list_item_presence.dart';
-import 'room_list_items/room_list_item_slidable.dart';
 import 'room_list_search_button.dart';
 
 class RoomList extends StatefulWidget {
@@ -25,7 +20,6 @@ class RoomList extends StatefulWidget {
       required this.controller,
       required this.sortedRooms,
       required this.isMobile,
-      required this.allowPop,
       required this.displaySpaceList,
       this.onAppBarClicked})
       : super(key: key);
@@ -36,7 +30,6 @@ class RoomList extends StatefulWidget {
   final Client client;
   final List<Room>? sortedRooms;
   final ScrollController controller;
-  final bool allowPop;
   final bool isMobile; // adapted for small screens
   final VoidCallback? onAppBarClicked;
   final bool displaySpaceList;
@@ -80,7 +73,6 @@ class _RoomListState extends State<RoomList> {
     final isMobile = widget.isMobile;
     final selectedSpace = widget.selectedSpace;
     final onAppBarClicked = widget.onAppBarClicked;
-    final allowPop = widget.allowPop;
     final onSelection = widget.onSelection;
     final controller = widget.controller;
 

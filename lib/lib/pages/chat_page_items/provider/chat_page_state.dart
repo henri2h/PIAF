@@ -8,7 +8,6 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../../config/matrix_types.dart';
 
 class ChatPageState with ChangeNotifier {
-  final bool allowPop;
   final Client client;
   final BuildContext context;
   final void Function(String?)? onRoomSelection;
@@ -23,8 +22,7 @@ class ChatPageState with ChangeNotifier {
   bool spaceListExpanded = true;
 
   ChatPageState(
-      {required this.allowPop,
-      required this.client,
+      {required this.client,
       required this.onRoomSelection,
       required this.onSpaceSelection,
       required this.onLongPressedSpace,
