@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:infinite_list/infinite_list.dart';
 import 'package:matrix/matrix.dart';
 
@@ -156,6 +157,8 @@ class InfiniteCustomListViewWithEmojiState
   }
 
   void _onReact(Offset position, Event event) {
+    HapticFeedback.heavyImpact();
+    
     if (_previousEvent == event && _previousEvent != null) {
       _previousEvent = null;
       return;
