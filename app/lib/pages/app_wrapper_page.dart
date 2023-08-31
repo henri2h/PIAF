@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/home/notification_view.dart';
 import 'package:minestrix/partials/navigation/navbar.dart';
@@ -79,6 +81,10 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
             });
           }
 
+          final hideNavBar = isWideScreen || !displayAppBar;
+
+          setBellowNavigationBarColorForAndroid(context, hideNavBar);
+
           final tabsRouter = AutoTabsRouter.of(context);
           return Scaffold(
             body: Row(
@@ -103,7 +109,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                 )),
               ],
             ),
-            bottomNavigationBar: isWideScreen || !displayAppBar
+            bottomNavigationBar: hideNavBar
                 ? null
                 : NavigationBar(
                     selectedIndex: tabsRouter.activeIndex,
@@ -156,6 +162,31 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
         ],
       );
     });
+  }
+
+  /// For android, color the area bellow the navigation bar. See https://m3.material.io/components/navigation-bar/specs And the navigation_bar.dart file.
+  /// The use of the WidgetsBinding.instance.addPostFrameCallback is required so that the setSystemUIOverlayStyle is correctly called
+
+  void setBellowNavigationBarColorForAndroid(
+      BuildContext context, bool hideNavBar) {
+    if (Platform.isAndroid) {
+      final theme = Theme.of(context);
+
+      final backgroundColor =
+          theme.navigationBarTheme.backgroundColor ?? theme.colorScheme.surface;
+
+      final color = ElevationOverlay.applySurfaceTint(
+          backgroundColor,
+          theme.navigationBarTheme.surfaceTintColor ??
+              theme.colorScheme.surfaceTint,
+          theme.navigationBarTheme.elevation ?? 3);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+            systemNavigationBarColor: hideNavBar ? backgroundColor : color,
+            systemNavigationBarIconBrightness: theme.brightness));
+      });
+    }
   }
 }
 

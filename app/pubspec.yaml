@@ -112,6 +112,7 @@ dependencies:
   scroll_to_index: ^3.0.1
   video_player: ^2.5.3
   camera: ^0.10.5+2
+  dynamic_color: ^1.6.6
 
 dev_dependencies:
   flutter_test:
