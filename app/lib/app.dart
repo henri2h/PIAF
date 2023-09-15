@@ -112,13 +112,13 @@ class MinestrixState extends State<Minestrix> {
                                 theme: ThemeData(
                                   colorScheme:
                                       lightDynamic ?? _defaultLightColorScheme,
-                                  textTheme: theme.textTheme,
+                                  textTheme: theme.whiteTextTheme,
                                   useMaterial3: true,
                                 ),
                                 darkTheme: ThemeData(
                                   colorScheme:
                                       darkDynamic ?? _defaultDarkColorScheme,
-                                  textTheme: theme.textTheme,
+                                  textTheme: theme.darkTextTheme,
                                   useMaterial3: true,
                                 ),
                                 themeMode: theme.mode,

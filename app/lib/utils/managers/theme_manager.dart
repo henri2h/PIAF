@@ -7,7 +7,10 @@ import '../platforms_info.dart';
 enum AppThemeMode { dark, light, auto }
 
 class ThemeNotifier with ChangeNotifier {
-  TextTheme? get textTheme => PlatformInfos.isDesktop
+  TextTheme? get darkTextTheme => PlatformInfos.isDesktop
+      ? Typography.material2018().white.merge(ThemeNotifier.fallbackTextTheme)
+      : null;
+  TextTheme? get whiteTextTheme => PlatformInfos.isDesktop
       ? Typography.material2018().black.merge(ThemeNotifier.fallbackTextTheme)
       : null;
 
