@@ -130,100 +130,70 @@ class RoomPageState extends State<RoomPage> {
   Widget buildChatView(Room? room) {
     return LayoutBuilder(builder: (context, constraints) {
       bool isMobile = constraints.maxWidth < 600;
-      final view = Stack(
+      final view = Column(
         children: [
-          Builder(builder: (context) {
-            final roomTimeline = isSearch && room != null
-                ? RoomSearch(
-                    room: room,
-                    onClosePressed: () {
-                      setState(() {
-                        isSearch = false;
-                      });
-                    },
-                  )
-                : RoomTimeline(
-                    key: Key("room_timeline_$roomId"),
-                    isMobile: isMobile,
-                    room: room,
-                    userId: room?.id ?? widget.roomId,
-                    client: widget.client,
-                    timeline: timeline,
-                    updating: updating,
-                    onRoomCreate: (Room room) {
-                      timeline = null;
-                      futureTimeline = getTimeline(room);
-                      this.room = room;
-
-                      setState(() {
-                        roomId = room.id;
-                      });
-                    },
-                    setUpdating: (val) => mounted
-                        ? setState(() {
-                            updating = val;
-                          })
-                        : () {},
-                  );
-            if (isMobile) {
-              return roomTimeline;
-            }
-            return Card(
-                child: Padding(
-              padding: const EdgeInsets.only(top: 52),
-              child: roomTimeline,
-            ));
-          }),
-          Builder(builder: (context) {
-            final roomTitle = MatrixRoomTitle(
-                height: 52,
-                key: Key(room?.id ?? ""),
-                room: room,
-                client: widget.client,
-                userId: widget.roomId,
-                updating: updating,
-                isMobile: isMobile,
-                onBack: widget.onBack ??
-                    (widget.allowPop
-                        ? () => Navigator.of(context).pop()
-                        : null),
-                onSearchPressed: () {
-                  setState(() {
-                    isSearch = true;
-                  });
-                },
-                onToggleSettings: () async {
-                  if (isMobile) {
-                    await RoomSettingsPage.show(context: context, room: room!);
-                  } else {
-                    setState(() {
-                      _displayConvSettings = !_displayConvSettings;
-                    });
-                  }
+          MatrixRoomTitle(
+              height: 52,
+              key: Key(room?.id ?? ""),
+              room: room,
+              client: widget.client,
+              userId: widget.roomId,
+              updating: updating,
+              isMobile: isMobile,
+              onBack: widget.onBack ??
+                  (widget.allowPop ? () => Navigator.of(context).pop() : null),
+              onSearchPressed: () {
+                setState(() {
+                  isSearch = true;
                 });
+              },
+              onToggleSettings: () async {
+                if (isMobile) {
+                  await RoomSettingsPage.show(context: context, room: room!);
+                } else {
+                  setState(() {
+                    _displayConvSettings = !_displayConvSettings;
+                  });
+                }
+              }),
+          Expanded(
+              child: isSearch && room != null
+                  ? RoomSearch(
+                      room: room,
+                      onClosePressed: () {
+                        setState(() {
+                          isSearch = false;
+                        });
+                      },
+                    )
+                  : RoomTimeline(
+                      key: Key("room_timeline_$roomId"),
+                      isMobile: isMobile,
+                      room: room,
+                      userId: room?.id ?? widget.roomId,
+                      client: widget.client,
+                      timeline: timeline,
+                      updating: updating,
+                      onRoomCreate: (Room room) {
+                        timeline = null;
+                        futureTimeline = getTimeline(room);
+                        this.room = room;
 
-            return isMobile
-                ? Container(
-                    color: Theme.of(context)
-                        .scaffoldBackgroundColor
-                        .withAlpha(180),
-                    child: ClipRRect(
-                      key: const Key("room_title"),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                          child: roomTitle,
-                        ),
-                      ),
-                    ),
-                  )
-                : Container(child: roomTitle);
-          }),
+                        setState(() {
+                          roomId = room.id;
+                        });
+                      },
+                      setUpdating: (val) => mounted
+                          ? setState(() {
+                              updating = val;
+                            })
+                          : () {},
+                    )),
         ],
       );
 
       if (isMobile) return view;
+
       return MultiSplitViewTheme(
           data: MultiSplitViewThemeData(
               dividerPainter: DividerPainters.grooved1(
@@ -232,7 +202,7 @@ class RoomPageState extends State<RoomPage> {
           child: MultiSplitView(
             controller: _controller,
             children: [
-              view,
+              Card(child: view),
               if (_displayConvSettings && room != null)
                 Card(
                   child: ConvSettings(

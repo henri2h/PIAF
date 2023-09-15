@@ -30,70 +30,54 @@ class MatrixRoomTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (room != null) {
+      return AppBar(
+        leading: onBack != null
+            ? IconButton(onPressed: onBack, icon: const Icon(Icons.arrow_back))
+            : null,
+        title: MaterialButton(
+          onPressed: onToggleSettings,
+          child: Row(
+            children: [
+              MatrixImageAvatar(
+                  url: room!.avatar,
+                  defaultText: room!.displayname,
+                  fit: true,
+                  client: room!.client),
+              const SizedBox(
+                width: 8,
+              ),
+              Expanded(
+                child: Text(
+                  room!.displayname,
+                  style: Constants.kTextTitleStyle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          if (updating) const CircularProgressIndicator(),
+          if (room?.encrypted == false)
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: onSearchPressed,
+            ),
+          IconButton(
+            icon: const Icon(Icons.info),
+            onPressed: onToggleSettings,
+          ),
+        ],
+      );
+    }
+
     return SizedBox(
       height: height,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (onBack != null)
-            IconButton(onPressed: onBack, icon: const Icon(Icons.arrow_back)),
-          if (onBack == null)
-            const SizedBox(
-              width: 8,
-            ),
-          if (room != null)
-            Expanded(
-              child: SizedBox(
-                height: height,
-                child: MaterialButton(
-                  onPressed: onToggleSettings,
-                  child: Row(
-                    children: [
-                      MatrixImageAvatar(
-                          url: room!.avatar,
-                          defaultText: room!.displayname,
-                          fit: true,
-                          client: room!.client),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  room!.displayname,
-                                  style: Constants.kTextTitleStyle,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (!isMobile)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              if (updating) const CircularProgressIndicator(),
-                              if (room?.encrypted == false)
-                                IconButton(
-                                  icon: const Icon(Icons.search),
-                                  onPressed: onSearchPressed,
-                                ),
-                              IconButton(
-                                icon: const Icon(Icons.info),
-                                onPressed: onToggleSettings,
-                              ),
-                            ],
-                          ),
-                        )
-                    ],
-                  ),
-                ),
-              ),
-            ),
           if (room == null && userId?.isValidMatrixId == true)
             Expanded(
               child: FutureBuilder<Profile>(
