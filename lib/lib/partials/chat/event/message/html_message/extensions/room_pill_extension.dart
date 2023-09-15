@@ -39,14 +39,12 @@ class RoomPillExtension extends HtmlExtension {
       return WidgetSpan(
         child: FutureBuilder<User?>(
           future: _fetchUser(matrixId),
-          builder: (context, snapshot) => MatrixPill(
+          builder: (context, snapshot) => InkWell(
             key: Key('user_pill_$matrixId'),
-            name: _cachedUsers[room.id + matrixId]?.calcDisplayname() ??
-                matrixId.localpart ??
-                matrixId,
-            avatar: _cachedUsers[room.id + matrixId]?.avatarUrl,
-            uri: href,
-            outerContext: this.context,
+            child: Text(
+                "@${_cachedUsers[room.id + matrixId]?.calcDisplayname() ?? matrixId.localpart ?? matrixId}",
+                style: TextStyle(color: Colors.blue[800])),
+            onTap: () {},
           ),
         ),
       );
