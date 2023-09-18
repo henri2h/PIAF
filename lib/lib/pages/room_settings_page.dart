@@ -56,7 +56,7 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
       appBar: AppBar(
         title: Text(room.displayname),
         backgroundColor: backgroundColor,
-        forceMaterialTransparency: backgroundColor != null,
+        forceMaterialTransparency: true,
       ),
       body: ListView(
         children: [
