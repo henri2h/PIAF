@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
 import '../../event/matrix_image.dart';
-import 'items/conv_setting_back_button.dart';
 
 class ConvSettingsRoomMedia extends StatefulWidget {
   const ConvSettingsRoomMedia({Key? key, required this.room}) : super(key: key);
@@ -127,16 +126,10 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
     return StreamBuilder<List<Event>>(
         stream: streamController.stream,
         builder: (context, snap) {
-          return Column(children: [
-            const Row(
-              children: [
-                ConvSettingsBackButton(),
-                Text("Room media",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            Builder(builder: (context) {
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(title: const Text("Room media"), forceMaterialTransparency: true),
+            body: Builder(builder: (context) {
               if (!snap.hasData) return const CircularProgressIndicator();
               if (snap.hasError) return Text(snap.error.toString());
 
@@ -145,43 +138,40 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
                 return const ListTile(
                     leading: Icon(Icons.hourglass_empty), title: Text("Empty"));
               }
-              return Expanded(
-                child: ListView.builder(
-                    controller: controller,
-                    itemCount: events.length + (requesting ? 1 : 0),
-                    cacheExtent: 800,
-                    itemBuilder: (BuildContext context, int index) => index >=
-                            events.length
-                        ? const Center(child: CircularProgressIndicator())
-                        : Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(
-                                      "${events[index].senderFromMemoryOrFallback.calcDisplayname()} - ${events[index].getSize()}"),
-                                ),
-                                SizedBox(
-                                  height: 200,
-                                  child: MImageViewer(
-                                      event: events[index], fit: BoxFit.cover),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 8.0, vertical: 2),
-                                  child: Divider(),
-                                )
-                              ],
-                            ),
-                          )),
-              );
+              return ListView.builder(
+                  controller: controller,
+                  itemCount: events.length + (requesting ? 1 : 0),
+                  cacheExtent: 800,
+                  itemBuilder: (BuildContext context, int index) => index >=
+                          events.length
+                      ? const Center(child: CircularProgressIndicator())
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                    "${events[index].senderFromMemoryOrFallback.calcDisplayname()} - ${events[index].getSize()}"),
+                              ),
+                              SizedBox(
+                                height: 200,
+                                child: MImageViewer(
+                                    event: events[index], fit: BoxFit.cover),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 2),
+                                child: Divider(),
+                              )
+                            ],
+                          ),
+                        ));
             }),
-          ]);
+          );
         });
   }
 }

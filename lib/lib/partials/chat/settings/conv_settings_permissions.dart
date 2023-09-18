@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 
-import 'items/conv_setting_back_button.dart';
-
 class ConvSettingsPermissions extends StatefulWidget {
   const ConvSettingsPermissions({Key? key, required this.room})
       : super(key: key);
@@ -102,129 +100,113 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
         stream: room.client.onSync.stream.where((event) => event.hasRoomUpdate),
         builder: (context, snapshot) {
           permissions = room.getState(EventTypes.RoomPowerLevels, "")?.content;
-
-          if (permissions == null) {
-            return const Column(
-              children: [
-                ConvSettingsBackButton(),
-                Text("No premissions found")
-              ],
-            );
-          }
-          return Column(children: [
-            const Row(
-              children: [
-                ConvSettingsBackButton(),
-                Text("Roles & permissions",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ListView(
-                  children: [
-                    PermissionTile(
-                      eventType: 'users_default',
-                      icon: const Icon(Icons.power),
-                      permissionName: 'Default user power levels',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text("States permissions"),
-                    ),
-                    PermissionTile(
-                      eventType: 'invite',
-                      icon: const Icon(Icons.person_add),
-                      permissionName: 'Can invinte',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    PermissionTile(
-                      eventType: 'kick',
-                      icon: const Icon(Icons.person_remove),
-                      permissionName: 'Can kick',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    PermissionTile(
-                      eventType: 'redact',
-                      icon: const Icon(Icons.edit),
-                      permissionName: 'Can redact',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    PermissionTile(
-                      eventType: 'historical',
-                      icon: const Icon(Icons.history),
-                      permissionName: 'Can edit history',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    PermissionTile(
-                      eventType: 'ban',
-                      icon: const Icon(Icons.delete_forever),
-                      permissionName: 'Can ban',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    PermissionTile(
-                      eventType: 'state_default',
-                      icon: const Icon(Icons.title),
-                      permissionName: 'Default send state permissions',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    PermissionTile(
-                      eventType: 'events_default',
-                      icon: const Icon(Icons.message),
-                      permissionName: 'Default send events permissions',
-                      room: room,
-                      isEvent: false,
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text("Events permissions"),
-                    ),
-                    for (var item
-                        in permissions?.tryGetMap("events")?.keys ?? [])
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(title: const Text("Roles & permissions"), forceMaterialTransparency: true,),
+            body: permissions == null
+                ? const Text("No premissions found")
+                : ListView(
+                    children: [
                       PermissionTile(
-                        eventType: item.toString(),
-                        icon: getIconForPermission(item.toString()),
-                        permissionName: getNameForPermission(item.toString()),
+                        eventType: 'users_default',
+                        icon: const Icon(Icons.power),
+                        permissionName: 'Default user power levels',
                         room: room,
+                        isEvent: false,
                       ),
-                    ListTile(
-                        title: const Text("Room version"),
-                        subtitle: Text(room
-                                .getState(EventTypes.RoomCreate)
-                                ?.content["room_version"]
-                                .toString() ??
-                            '')),
-                    ListTile(
-                        title: const Text("Room creator"),
-                        subtitle: Text(room
-                                .getState(EventTypes.RoomCreate)
-                                ?.sender
-                                .calcDisplayname() ??
-                            '')),
-                    if (room.getState(EventTypes.RoomCreate)?.content["type"] !=
-                        null)
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("States permissions"),
+                      ),
+                      PermissionTile(
+                        eventType: 'invite',
+                        icon: const Icon(Icons.person_add),
+                        permissionName: 'Can invinte',
+                        room: room,
+                        isEvent: false,
+                      ),
+                      PermissionTile(
+                        eventType: 'kick',
+                        icon: const Icon(Icons.person_remove),
+                        permissionName: 'Can kick',
+                        room: room,
+                        isEvent: false,
+                      ),
+                      PermissionTile(
+                        eventType: 'redact',
+                        icon: const Icon(Icons.edit),
+                        permissionName: 'Can redact',
+                        room: room,
+                        isEvent: false,
+                      ),
+                      PermissionTile(
+                        eventType: 'historical',
+                        icon: const Icon(Icons.history),
+                        permissionName: 'Can edit history',
+                        room: room,
+                        isEvent: false,
+                      ),
+                      PermissionTile(
+                        eventType: 'ban',
+                        icon: const Icon(Icons.delete_forever),
+                        permissionName: 'Can ban',
+                        room: room,
+                        isEvent: false,
+                      ),
+                      PermissionTile(
+                        eventType: 'state_default',
+                        icon: const Icon(Icons.title),
+                        permissionName: 'Default send state permissions',
+                        room: room,
+                        isEvent: false,
+                      ),
+                      PermissionTile(
+                        eventType: 'events_default',
+                        icon: const Icon(Icons.message),
+                        permissionName: 'Default send events permissions',
+                        room: room,
+                        isEvent: false,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("Events permissions"),
+                      ),
+                      for (var item
+                          in permissions?.tryGetMap("events")?.keys ?? [])
+                        PermissionTile(
+                          eventType: item.toString(),
+                          icon: getIconForPermission(item.toString()),
+                          permissionName: getNameForPermission(item.toString()),
+                          room: room,
+                        ),
                       ListTile(
-                          title: const Text("Room type"),
+                          title: const Text("Room version"),
                           subtitle: Text(room
                                   .getState(EventTypes.RoomCreate)
-                                  ?.content["type"]
+                                  ?.content["room_version"]
                                   .toString() ??
-                              ''))
-                  ],
-                ),
-              ),
-            ),
-          ]);
+                              '')),
+                      ListTile(
+                          title: const Text("Room creator"),
+                          subtitle: Text(room
+                                  .getState(EventTypes.RoomCreate)
+                                  ?.sender
+                                  .calcDisplayname() ??
+                              '')),
+                      if (room
+                              .getState(EventTypes.RoomCreate)
+                              ?.content["type"] !=
+                          null)
+                        ListTile(
+                            title: const Text("Room type"),
+                            subtitle: Text(room
+                                    .getState(EventTypes.RoomCreate)
+                                    ?.content["type"]
+                                    .toString() ??
+                                ''))
+                    ],
+                  ),
+          );
         });
   }
 }

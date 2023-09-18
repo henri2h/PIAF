@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import 'items/conv_setting_back_button.dart';
 import 'room/room_encryption_settings.dart';
 
 class ConvSettingsEncryptionKeys extends StatefulWidget {
@@ -19,16 +18,16 @@ class _ConvSettingsEncryptionKeysState
     extends State<ConvSettingsEncryptionKeys> {
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      const Row(children: [
-        ConvSettingsBackButton(),
-        Text("Encryption keys",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      ]),
-      RoomUserDeviceKey(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        title: const Text("Encryption keys"),
+        forceMaterialTransparency: true,
+      ),
+      body: RoomUserDeviceKey(
         room: widget.room,
         userId: widget.room.directChatMatrixID!,
       ),
-    ]);
+    );
   }
 }
