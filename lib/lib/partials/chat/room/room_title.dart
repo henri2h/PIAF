@@ -11,20 +11,16 @@ class MatrixRoomTitle extends StatelessWidget {
   final bool updating;
   final VoidCallback? onBack;
   final VoidCallback? onToggleSettings;
-  final VoidCallback? onSearchPressed;
-  final bool isMobile;
   final double height;
 
   const MatrixRoomTitle(
       {Key? key,
       required this.room,
       required this.client,
-      required this.isMobile,
       required this.height,
       this.userId,
       this.updating = false,
       this.onBack,
-      this.onSearchPressed,
       this.onToggleSettings})
       : super(key: key);
 
@@ -32,6 +28,7 @@ class MatrixRoomTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     if (room != null) {
       return AppBar(
+        forceMaterialTransparency: true,
         leading: onBack != null
             ? IconButton(onPressed: onBack, icon: const Icon(Icons.arrow_back))
             : null,
@@ -60,11 +57,6 @@ class MatrixRoomTitle extends StatelessWidget {
         ),
         actions: [
           if (updating) const CircularProgressIndicator(),
-          if (room?.encrypted == false)
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: onSearchPressed,
-            ),
           IconButton(
             icon: const Icon(Icons.info),
             onPressed: onToggleSettings,

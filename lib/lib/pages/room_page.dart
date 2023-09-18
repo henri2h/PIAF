@@ -49,7 +49,6 @@ class RoomPageState extends State<RoomPage> {
   bool _displayConvSettings = true;
 
   bool updating = false;
-  bool isSearch = false;
 
   @override
   void initState() {
@@ -139,14 +138,8 @@ class RoomPageState extends State<RoomPage> {
               client: widget.client,
               userId: widget.roomId,
               updating: updating,
-              isMobile: isMobile,
               onBack: widget.onBack ??
                   (widget.allowPop ? () => Navigator.of(context).pop() : null),
-              onSearchPressed: () {
-                setState(() {
-                  isSearch = true;
-                });
-              },
               onToggleSettings: () async {
                 if (isMobile) {
                   await RoomSettingsPage.show(context: context, room: room!);
@@ -157,38 +150,29 @@ class RoomPageState extends State<RoomPage> {
                 }
               }),
           Expanded(
-              child: isSearch && room != null
-                  ? RoomSearch(
-                      room: room,
-                      onClosePressed: () {
-                        setState(() {
-                          isSearch = false;
-                        });
-                      },
-                    )
-                  : RoomTimeline(
-                      key: Key("room_timeline_$roomId"),
-                      isMobile: isMobile,
-                      room: room,
-                      userId: room?.id ?? widget.roomId,
-                      client: widget.client,
-                      timeline: timeline,
-                      updating: updating,
-                      onRoomCreate: (Room room) {
-                        timeline = null;
-                        futureTimeline = getTimeline(room);
-                        this.room = room;
+              child: RoomTimeline(
+            key: Key("room_timeline_$roomId"),
+            isMobile: isMobile,
+            room: room,
+            userId: room?.id ?? widget.roomId,
+            client: widget.client,
+            timeline: timeline,
+            updating: updating,
+            onRoomCreate: (Room room) {
+              timeline = null;
+              futureTimeline = getTimeline(room);
+              this.room = room;
 
-                        setState(() {
-                          roomId = room.id;
-                        });
-                      },
-                      setUpdating: (val) => mounted
-                          ? setState(() {
-                              updating = val;
-                            })
-                          : () {},
-                    )),
+              setState(() {
+                roomId = room.id;
+              });
+            },
+            setUpdating: (val) => mounted
+                ? setState(() {
+                    updating = val;
+                  })
+                : () {},
+          )),
         ],
       );
 
