@@ -20,7 +20,7 @@ class MatrixVideoMessage extends StatefulWidget {
 }
 
 class _MatrixVideoMessageState extends State<MatrixVideoMessage> {
-  bool get usePlayer => Platform.isLinux || Platform.isWindows;
+  bool get isDesktop => Platform.isLinux || Platform.isWindows;
 
   MatrixFile? file;
 
@@ -38,21 +38,21 @@ class _MatrixVideoMessageState extends State<MatrixVideoMessage> {
     }
   }
 
-  Future<bool>? future;
+  Future<bool>? mobileFuture;
 
   @override
   void initState() {
     super.initState();
 
-    if (!widget.event.isAttachmentEncrypted && usePlayer) {
-      future = getVideoPlayer();
+    if (!widget.event.isAttachmentEncrypted && !isDesktop) {
+      mobileFuture = getMobileVideoPlayer();
     }
   }
 
-  Future<bool> getVideoPlayer() async {
+  Future<bool> getMobileVideoPlayer() async {
     videoPlayerController = VideoPlayerController.network(
         widget.event.getAttachmentUrl().toString());
-    videoPlayerController!.initialize();
+    await videoPlayerController?.initialize();
 
     chewieController = ChewieController(
       videoPlayerController: videoPlayerController!,
@@ -95,7 +95,7 @@ class _MatrixVideoMessageState extends State<MatrixVideoMessage> {
     await f.writeAsBytes(file!.bytes);
     temporaryFiles.add(f);
 
-    if (!usePlayer) {
+    if (!isDesktop) {
       videoPlayerController = VideoPlayerController.file(f);
 
       await videoPlayerController!.initialize();
@@ -127,14 +127,16 @@ class _MatrixVideoMessageState extends State<MatrixVideoMessage> {
 
     if (!widget.event.isAttachmentEncrypted) {
       Widget? viewer;
-      if (usePlayer) {
+      if (isDesktop) {
         viewer = LinuxMatrixVideoMessage(
             media: widget.event.getAttachmentUrl().toString());
       } else {
         viewer = FutureBuilder<bool>(
-            future: future,
+            future: mobileFuture,
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return const CircularProgressIndicator();
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
               return Chewie(
                 controller: chewieController!,
               );
@@ -156,7 +158,7 @@ class _MatrixVideoMessageState extends State<MatrixVideoMessage> {
           }
 
           Widget? viewer;
-          if (usePlayer) {
+          if (isDesktop) {
             viewer = LinuxMatrixVideoMessage(
                 media: "file:///${snap.data!.path}",
                 key: Key("file:///${snap.data!.path}"));
