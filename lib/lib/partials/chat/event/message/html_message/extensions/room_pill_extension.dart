@@ -92,13 +92,13 @@ class MatrixPill extends StatelessWidget {
         }
       },
       child: Material(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         color: Theme.of(outerContext).colorScheme.primaryContainer,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
-              radius: 14,
+              radius: 10,
               child: MatrixImageAvatar(
                 client: Matrix.of(context).client,
                 defaultText: name,
