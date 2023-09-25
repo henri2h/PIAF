@@ -23,10 +23,9 @@ import '../../partials/feed/minestrix_profile_not_created.dart';
 import '../../partials/feed/notfication_bell.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
+import '../../partials/account_selection_button.dart';
 import '../../partials/post/post/post.dart';
-import '../../router.gr.dart';
 import '../../utils/settings.dart';
-import '../app_wrapper_page.dart';
 import 'friends/research_page.dart';
 import 'groups/create_group_page.dart';
 
@@ -40,6 +39,14 @@ class FeedPage extends StatefulWidget {
 
 class FeedPageState extends State<FeedPage> {
   ScrollController controller = ScrollController();
+  Future<void> launchCreatePostModal(BuildContext context) async {
+    final client = Matrix.of(context).client;
+    await AdaptativeDialogs.show(
+        context: context,
+        title: "Create post",
+        builder: (BuildContext context) =>
+            PostEditorPage(room: client.minestrixUserRoom));
+  }
 
   List<Event>? events;
   CachedStreamController<int> syncIdStream = CachedStreamController();
@@ -156,151 +163,168 @@ class FeedPageState extends State<FeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Object>(
-        stream: Matrix.of(context).onClientChange.stream,
-        builder: (context, snapshot) {
-          Client? client = Matrix.of(context).client;
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+          onPressed: () => launchCreatePostModal(context),
+          child: const Icon(Icons.edit)),
+      body: StreamBuilder<Object>(
+          stream: Matrix.of(context).onClientChange.stream,
+          builder: (context, snapshot) {
+            Client? client = Matrix.of(context).client;
 
-          if (client.userID != clientUserId) resetPage();
+            if (client.userID != clientUserId) resetPage();
 
-          return StreamBuilder<int>(
-              stream: syncIdStream.stream,
-              builder: (context, snap) {
-                return LayoutView(
-                    leftBar: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const H2Title("Communities"),
-                        for (final community in client.getCommunities())
-                          MinestrixRoomTileNavigator(room: community.space),
-                      ],
-                    ),
-                    rightBar: const RightBar(),
-                    customHeaderText: "Feed",
-                    customHeaderActionsButtons: [
-                      IconButton(
-                          icon: const Icon(Icons.create),
-                          onPressed: () {
-                            AdaptativeDialogs.show(
-                                context: context,
-                                builder: (context) => const CreateGroupPage());
-                          }),
-                      IconButton(
-                          onPressed: () async {
-                            await AdaptativeDialogs.show(
-                                title: 'Search',
-                                builder: (context) =>
-                                    const ResearchPage(isPopup: true),
-                                context: context);
-                          },
-                          icon: const Icon(Icons.search)),
-                      const NotificationBell()
-                    ],
-                    customHeaderChild: MaterialButton(
-                        minWidth: 0,
-                        shape: const CircleBorder(),
-                        child: AvatarBottomBar(key: Key(client.userID!)),
-                        onPressed: () {
-                          context.pushRoute(UserViewRoute(
-                              userID: Matrix.of(context).client.userID));
-                        }),
-                    mainBuilder: (
-                            {required bool displaySideBar,
-                            required bool displayLeftBar}) =>
-                        events?.isNotEmpty != true
-                            ? Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  ListView(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    children: [
-                                      const H1Title("Welcome in MinesTRIX"),
-                                      client.prevBatch == null
-                                          ? Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const MinestrixTitle(),
-                                                SyncStatusCard(client: client),
-                                              ],
-                                            )
-                                          : Column(
-                                              children: [
-                                                H2Title(events == null
-                                                    ? "First time here ?"
-                                                    : "Your timeline is empty"),
-                                                if (events != null)
-                                                  const Padding(
-                                                    padding:
-                                                        EdgeInsets.all(8.0),
-                                                    child:
-                                                        MinestrixProfileNotCreated(),
-                                                  ),
-                                                if (client.userRoomCreated ==
-                                                    true)
+            return StreamBuilder<int>(
+                stream: syncIdStream.stream,
+                builder: (context, snap) {
+                  return LayoutView(
+                      leftBar: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const H2Title("Communities"),
+                          for (final community in client.getCommunities())
+                            MinestrixRoomTileNavigator(room: community.space),
+                        ],
+                      ),
+                      rightBar: const RightBar(),
+                      mainBuilder: (
+                              {required bool displaySideBar,
+                              required bool displayLeftBar}) =>
+                          events?.isNotEmpty != true
+                              ? Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ListView(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      children: [
+                                        const H1Title("Welcome in MinesTRIX"),
+                                        client.prevBatch == null
+                                            ? Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const MinestrixTitle(),
+                                                  SyncStatusCard(
+                                                      client: client),
+                                                ],
+                                              )
+                                            : Column(
+                                                children: [
+                                                  H2Title(events == null
+                                                      ? "First time here ?"
+                                                      : "Your timeline is empty"),
+                                                  if (events != null)
+                                                    const Padding(
+                                                      padding:
+                                                          EdgeInsets.all(8.0),
+                                                      child:
+                                                          MinestrixProfileNotCreated(),
+                                                    ),
+                                                  if (client.userRoomCreated ==
+                                                      true)
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child:
+                                                          CustomTextFutureButton(
+                                                              icon: Icons
+                                                                  .post_add,
+                                                              text:
+                                                                  "Write your first post",
+                                                              onPressed:
+                                                                  () async {
+                                                                await PostEditorPage.show(
+                                                                    context:
+                                                                        context,
+                                                                    rooms: client
+                                                                        .minestrixUserRoom);
+                                                              }),
+                                                    ),
                                                   Padding(
                                                     padding:
                                                         const EdgeInsets.all(
                                                             8.0),
-                                                    child: CustomTextFutureButton(
-                                                        icon: Icons.post_add,
-                                                        text: "Write your first post",
-                                                        onPressed: () async {
-                                                          await PostEditorPage.show(
-                                                              context: context,
-                                                              rooms: client
-                                                                  .minestrixUserRoom);
-                                                        }),
+                                                    child:
+                                                        CustomTextFutureButton(
+                                                            icon:
+                                                                Icons.group_add,
+                                                            text:
+                                                                "Create a group",
+                                                            onPressed:
+                                                                () async {
+                                                              AdaptativeDialogs.show(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) =>
+                                                                          const CreateGroupPage());
+                                                            }),
                                                   ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: CustomTextFutureButton(
-                                                      icon: Icons.group_add,
-                                                      text: "Create a group",
-                                                      onPressed: () async {
-                                                        AdaptativeDialogs.show(
-                                                            context: context,
-                                                            builder: (context) =>
-                                                                const CreateGroupPage());
-                                                      }),
-                                                ),
-                                              ],
-                                            ),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      bottom: 50,
-                                      left: 8.0,
-                                      right: 8,
+                                                ],
+                                              ),
+                                      ],
                                     ),
-                                    child: CustomTextFutureButton(
-                                        icon: Icons.refresh,
-                                        text: "Refresh rooms",
-                                        onPressed: () async {
-                                          getEvents();
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 50,
+                                        left: 8.0,
+                                        right: 8,
+                                      ),
+                                      child: CustomTextFutureButton(
+                                          icon: Icons.refresh,
+                                          text: "Refresh rooms",
+                                          onPressed: () async {
+                                            getEvents();
+                                          }),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    const FeedAppBar(),
+                                    CustomListViewWithEmoji(
+                                        itemCount: events!.length,
+                                        controller: controller,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemBuilder: (BuildContext c,
+                                            int i,
+                                            void Function(Offset, Event)
+                                                onReact) {
+                                          return Post(
+                                              event: events![i],
+                                              key: Key(events![i].eventId +
+                                                  events![i].status.toString()),
+                                              onReact: (Offset e) =>
+                                                  onReact(e, events![i]));
                                         }),
-                                  ),
-                                ],
-                              )
-                            : CustomListViewWithEmoji(
-                                itemCount: events!.length,
-                                controller: controller,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemBuilder: (BuildContext c, int i,
-                                    void Function(Offset, Event) onReact) {
-                                  return Post(
-                                      event: events![i],
-                                      key: Key(events![i].eventId +
-                                          events![i].status.toString()),
-                                      onReact: (Offset e) =>
-                                          onReact(e, events![i]));
-                                }));
-              });
+                                  ],
+                                ));
+                });
+          }),
+    );
+  }
+}
+
+class FeedAppBar extends StatelessWidget {
+  const FeedAppBar({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SearchAnchor.bar(
+        barHintText: "Search",
+        barTrailing: const [AccountSelectionButton()],
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        suggestionsBuilder: (context, controller) {
+          return [];
         });
   }
 }

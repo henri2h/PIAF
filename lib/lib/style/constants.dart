@@ -16,6 +16,12 @@ class Constants {
         Radius.circular(22),
       ),
     ),
+    disabledBorder: OutlineInputBorder(
+      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.all(
+        Radius.circular(22),
+      ),
+    ),
     focusedBorder: OutlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.all(

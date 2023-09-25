@@ -121,10 +121,13 @@ class LayoutView extends StatelessWidget {
             Expanded(
               child: Column(
                 children: [
-                  AppBar(
-                      title: Text(customHeaderText ?? ''),
-                      leading: customHeaderChild,
-                      actions: customHeaderActionsButtons),
+                  if (!(customHeaderText == null &&
+                      customHeaderChild == null &&
+                      customHeaderActionsButtons == null))
+                    AppBar(
+                        title: Text(customHeaderText ?? ''),
+                        leading: customHeaderChild,
+                        actions: customHeaderActionsButtons),
                   Expanded(
                     child: ListView(controller: controller, children: [
                       header,
