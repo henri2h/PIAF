@@ -48,34 +48,42 @@ class AdaptativeDialogs {
         [TargetPlatform.android].contains(Theme.of(context).platform)) {
       return await showModalBottomSheet(
         context: context,
-        builder: (context) => Column(
-          children: [
-            Container(
-              color: Theme.of(context).cardColor,
-              padding: const EdgeInsets.all(8.0),
-              child: Row(children: [
-                SizedBox(
-                  width: 60,
-                  child: TextButton(
-                      child: const Text("Cancel"),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      }),
+        useSafeArea: false,
+        isScrollControlled: true,
+        builder: (context) => SafeArea(
+          child: FractionallySizedBox(
+            heightFactor: 0.9,
+            child: Column(
+              children: [
+                Container(
+                  color: Theme.of(context).cardColor,
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(children: [
+                    SizedBox(
+                      width: 60,
+                      child: TextButton(
+                          child: const Text("Cancel"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          }),
+                    ),
+                    Expanded(
+                        child: Text(title ?? '',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 16,
+                                color:
+                                    Theme.of(context).colorScheme.onPrimary))),
+                    const SizedBox(
+                      width: 60,
+                    )
+                  ]),
                 ),
-                Expanded(
-                    child: Text(title ?? '',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.onPrimary))),
-                const SizedBox(
-                  width: 60,
-                )
-              ]),
+                if (subtitle != null) subtitle,
+                Expanded(child: builder(context)),
+              ],
             ),
-            if (subtitle != null) subtitle,
-            Expanded(child: builder(context)),
-          ],
+          ),
         ),
       );
     }
