@@ -187,7 +187,9 @@ class MobileSearchBar extends StatelessWidget {
                 onSelection(text);
               },
               onLongPress: () {},
-            )
+            ),
+          const Text(
+              "All the results are local. Server search has not been implemented yet.")
         ];
       },
     );
