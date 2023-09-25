@@ -161,6 +161,11 @@ class FeedPageState extends State<FeedPage> {
     }
   }
 
+  Future<bool> roomsLoadingTest(BuildContext context) async {
+    await Matrix.of(context).client.roomsLoading;
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,123 +192,139 @@ class FeedPageState extends State<FeedPage> {
                         ],
                       ),
                       rightBar: const RightBar(),
-                      mainBuilder: (
-                              {required bool displaySideBar,
-                              required bool displayLeftBar}) =>
-                          events?.isNotEmpty != true
-                              ? Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    ListView(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
+                      mainBuilder:
+                          (
+                                  {required bool displaySideBar,
+                                  required bool displayLeftBar}) =>
+                              events?.isNotEmpty != true
+                                  ? Column(
                                       children: [
                                         const H1Title("Welcome in MinesTRIX"),
-                                        client.prevBatch == null
-                                            ? Column(
+                                        FutureBuilder(
+                                            future: roomsLoadingTest(context),
+                                            builder: (context, snap) {
+                                              if (!snap.hasData) {
+                                                return const CircularProgressIndicator();
+                                              }
+                                              return Column(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment.center,
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
                                                 children: [
-                                                  const MinestrixTitle(),
-                                                  SyncStatusCard(
-                                                      client: client),
-                                                ],
-                                              )
-                                            : Column(
-                                                children: [
-                                                  H2Title(events == null
-                                                      ? "First time here ?"
-                                                      : "Your timeline is empty"),
-                                                  if (events != null)
-                                                    const Padding(
-                                                      padding:
-                                                          EdgeInsets.all(8.0),
-                                                      child:
-                                                          MinestrixProfileNotCreated(),
-                                                    ),
-                                                  if (client.userRoomCreated ==
-                                                      true)
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child:
-                                                          CustomTextFutureButton(
-                                                              icon: Icons
-                                                                  .post_add,
-                                                              text:
-                                                                  "Write your first post",
-                                                              onPressed:
-                                                                  () async {
-                                                                await PostEditorPage.show(
-                                                                    context:
-                                                                        context,
-                                                                    rooms: client
-                                                                        .minestrixUserRoom);
-                                                              }),
-                                                    ),
+                                                  ListView(
+                                                    shrinkWrap: true,
+                                                    physics:
+                                                        const NeverScrollableScrollPhysics(),
+                                                    children: [
+                                                      client.prevBatch == null
+                                                          ? Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                const MinestrixTitle(),
+                                                                SyncStatusCard(
+                                                                    client:
+                                                                        client),
+                                                              ],
+                                                            )
+                                                          : Column(
+                                                              children: [
+                                                                H2Title(events ==
+                                                                        null
+                                                                    ? "First time here ?"
+                                                                    : "Your timeline is empty"),
+                                                                if (events !=
+                                                                    null)
+                                                                  const Padding(
+                                                                    padding:
+                                                                        EdgeInsets.all(
+                                                                            8.0),
+                                                                    child:
+                                                                        MinestrixProfileNotCreated(),
+                                                                  ),
+                                                                if (client
+                                                                        .userRoomCreated ==
+                                                                    true)
+                                                                  Padding(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                            8.0),
+                                                                    child: CustomTextFutureButton(
+                                                                        icon: Icons.post_add,
+                                                                        text: "Write your first post",
+                                                                        onPressed: () async {
+                                                                          await PostEditorPage.show(
+                                                                              context: context,
+                                                                              rooms: client.minestrixUserRoom);
+                                                                        }),
+                                                                  ),
+                                                                Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .all(
+                                                                          8.0),
+                                                                  child: CustomTextFutureButton(
+                                                                      icon: Icons.group_add,
+                                                                      text: "Create a group",
+                                                                      onPressed: () async {
+                                                                        AdaptativeDialogs.show(
+                                                                            context:
+                                                                                context,
+                                                                            builder: (context) =>
+                                                                                const CreateGroupPage());
+                                                                      }),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                    ],
+                                                  ),
                                                   Padding(
                                                     padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
+                                                        const EdgeInsets.only(
+                                                      bottom: 50,
+                                                      left: 8.0,
+                                                      right: 8,
+                                                    ),
                                                     child:
                                                         CustomTextFutureButton(
-                                                            icon:
-                                                                Icons.group_add,
+                                                            icon: Icons.refresh,
                                                             text:
-                                                                "Create a group",
+                                                                "Refresh rooms",
                                                             onPressed:
                                                                 () async {
-                                                              AdaptativeDialogs.show(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) =>
-                                                                          const CreateGroupPage());
+                                                              getEvents();
                                                             }),
                                                   ),
                                                 ],
-                                              ),
+                                              );
+                                            }),
                                       ],
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 50,
-                                        left: 8.0,
-                                        right: 8,
-                                      ),
-                                      child: CustomTextFutureButton(
-                                          icon: Icons.refresh,
-                                          text: "Refresh rooms",
-                                          onPressed: () async {
-                                            getEvents();
-                                          }),
-                                    ),
-                                  ],
-                                )
-                              : Column(
-                                  children: [
-                                    const FeedAppBar(),
-                                    CustomListViewWithEmoji(
-                                        itemCount: events!.length,
-                                        controller: controller,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemBuilder: (BuildContext c,
-                                            int i,
-                                            void Function(Offset, Event)
-                                                onReact) {
-                                          return Post(
-                                              event: events![i],
-                                              key: Key(events![i].eventId +
-                                                  events![i].status.toString()),
-                                              onReact: (Offset e) =>
-                                                  onReact(e, events![i]));
-                                        }),
-                                  ],
-                                ));
+                                    )
+                                  : Column(
+                                      children: [
+                                        const FeedAppBar(),
+                                        CustomListViewWithEmoji(
+                                            itemCount: events!.length,
+                                            controller: controller,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            itemBuilder: (BuildContext c,
+                                                int i,
+                                                void Function(Offset, Event)
+                                                    onReact) {
+                                              return Post(
+                                                  event: events![i],
+                                                  key: Key(events![i].eventId +
+                                                      events![i]
+                                                          .status
+                                                          .toString()),
+                                                  onReact: (Offset e) =>
+                                                      onReact(e, events![i]));
+                                            }),
+                                      ],
+                                    ));
                 });
           }),
     );
