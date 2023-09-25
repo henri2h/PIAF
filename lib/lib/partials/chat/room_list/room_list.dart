@@ -164,7 +164,9 @@ class _RoomListState extends State<RoomList> {
                       if (selectMode == false)
                         SliverAppBar(
                           title: MobileSearchBar(
-                              client: client, onAppBarClicked: onAppBarClicked),
+                              onSelection: onSelection,
+                              client: client,
+                              onAppBarClicked: onAppBarClicked),
                           automaticallyImplyLeading: false,
                           forceElevated: !isMobile,
                         ),

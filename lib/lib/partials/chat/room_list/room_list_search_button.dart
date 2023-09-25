@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/client_information.dart';
+import 'package:minestrix_chat/utils/text.dart';
 
 import '../../components/fake_text_field.dart';
 import '../../matrix/matrix_image_avatar.dart';
 import '../search/matrix_chats_search.dart';
 import 'room_list_filter/room_list_filter.dart';
+import 'room_list_items/room_list_item.dart';
 
 class RoomListSearchButton extends StatelessWidget {
   const RoomListSearchButton({
@@ -62,10 +64,12 @@ class MobileSearchBar extends StatelessWidget {
   const MobileSearchBar({
     required this.client,
     required this.onAppBarClicked,
+    required this.onSelection,
     super.key,
   });
   final Client client;
   final VoidCallback? onAppBarClicked;
+  final Function(String) onSelection;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +100,18 @@ class MobileSearchBar extends StatelessWidget {
             }),
       ],
       suggestionsBuilder: (BuildContext context, SearchController controller) {
-        final s = StreamController<String>();
+        final name = controller.text;
+        List<Room> rooms = client.rooms
+            .where((r) =>
+                !r.isExtinct &&
+                (r.displayname
+                        .toLowerCase()
+                        .removeDiacritics()
+                        .removeSpecialCharacters()
+                        .contains(name) ||
+                    r.canonicalAlias.contains(name) ||
+                    r.id.contains(name)))
+            .toList();
 
         return [
           RoomListFilter(client: client),
@@ -159,12 +174,20 @@ class MobileSearchBar extends StatelessWidget {
                     ),
                   );
                 }),
-          Divider()
-        ];
-        return [
-          ListTile(title: Text("yes")),
-          ListTile(title: Text("no")),
-          ListTile(title: Text("maybe"))
+          const Divider(),
+          for (final room in rooms)
+            RoomListItem(
+              key: Key("room_${room.id}"),
+              room: room,
+              open: false,
+              selected: false,
+              client: client,
+              onSelection: (String text) {
+                Navigator.of(context).pop(true);
+                onSelection(text);
+              },
+              onLongPress: () {},
+            )
         ];
       },
     );
