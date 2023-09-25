@@ -124,13 +124,19 @@ class MessageDisplayState extends State<MessageDisplay>
 
     final backgroundColor = e.sentByUser
         ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).cardColor;
+        : ElevationOverlay.applySurfaceTint(
+            Theme.of(context).colorScheme.surface,
+            Theme.of(context).colorScheme.surfaceTint,
+            20);
 
-    final messageBackgroundColor = e.messageType == MessageTypes.Notice
-        ? Theme.of(context).cardColor
+    final noticeBackgroundColor = e.messageType == MessageTypes.Notice
+        ? ElevationOverlay.applySurfaceTint(
+            Theme.of(context).colorScheme.surface,
+            Theme.of(context).colorScheme.surfaceTint,
+            10)
         : backgroundColor;
 
-    final messageForegroundColor = e.messageType == MessageTypes.Notice
+    final noticeForegroundColor = e.messageType == MessageTypes.Notice
         ? Theme.of(context).colorScheme.onSurface
         : foregroundColor;
 
@@ -194,6 +200,9 @@ class MessageDisplayState extends State<MessageDisplay>
                                       child: Text(
                                           "${e.senderLocalisedDisplayName} relpied to ${snapReplyEvent.data!.senderLocalisedDisplayName}",
                                           maxLines: 2,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelMedium,
                                           overflow: TextOverflow.ellipsis),
                                     ),
                                   ],
@@ -208,21 +217,26 @@ class MessageDisplayState extends State<MessageDisplay>
                                         ?.color)),
                         if (e.sentByUser == false && widget.displayName)
                           Text(" - ",
-                              style: TextStyle(
-                                  color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.color ??
-                                      Colors.grey)),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.color ??
+                                          Colors.grey)),
                         if (e.sentByUser == false && widget.displayName)
                           Text(timeago.format(e.originServerTs),
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.color ??
-                                      Colors.grey)),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.color ??
+                                          Colors.grey)),
                       ],
                     ),
                   ),
@@ -325,22 +339,27 @@ class MessageDisplayState extends State<MessageDisplay>
                                             : CrossAxisAlignment.start,
                                         children: [
                                           Opacity(
-                                            opacity: 0.6,
-                                            child: TextMessageBubble(
-                                                redacted: redacted,
-                                                e: replyEvent,
-                                                alignRight: e.sentByUser,
-                                                isReply: true,
-                                                color: Theme.of(context)
-                                                        .textTheme
-                                                        .bodySmall
-                                                        ?.color ??
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface,
-                                                backgroundColor:
-                                                    Theme.of(context)
-                                                        .cardColor),
+                                            opacity: 0.7,
+                                            child: ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                  maxHeight: 100),
+                                              child: ListView(
+                                                shrinkWrap: true,
+                                                physics:
+                                                    const NeverScrollableScrollPhysics(), // In order to prevent scrolling the replies
+                                                children: [
+                                                  TextMessageBubble(
+                                                      redacted: redacted,
+                                                      e: replyEvent,
+                                                      alignRight: e.sentByUser,
+                                                      isReply: true,
+                                                      color:
+                                                          foregroundColor, // TODO: correct color
+                                                      backgroundColor:
+                                                          backgroundColor)
+                                                ],
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -358,13 +377,15 @@ class MessageDisplayState extends State<MessageDisplay>
                                             widget.isLastMessage &&
                                                 e.sentByUser,
                                         edited: widget.edited,
-                                        color: messageForegroundColor,
-                                        backgroundColor: messageBackgroundColor,
+                                        color: noticeForegroundColor,
+                                        backgroundColor: noticeBackgroundColor,
                                         borderPadding: const EdgeInsets.all(3),
                                         borderColor: () {
+                                          // annimation when jumping to an event
+
                                           var pos = _resizableController.value;
                                           if (pos == 0 || pos == 1) {
-                                            return messageBackgroundColor;
+                                            return noticeBackgroundColor;
                                           }
 
                                           const duration = 0.15;
@@ -378,7 +399,7 @@ class MessageDisplayState extends State<MessageDisplay>
                                             pos = 1;
                                           }
                                           return Color.lerp(
-                                              messageBackgroundColor,
+                                              noticeBackgroundColor,
                                               Colors.blue.shade800,
                                               pos);
                                         }(),
@@ -524,7 +545,16 @@ class MessageDisplayState extends State<MessageDisplay>
       case EventTypes.RoomPowerLevels:
       case EventTypes.RoomCanonicalAlias:
       case EventTypes.GuestAccess:
-        return Text(event.getLocalizedBody(const MatrixDefaultLocalizations()));
+        return Padding(
+          padding: const EdgeInsets.all(1.0),
+          child: FutureBuilder(
+              future:
+                  event.calcLocalizedBody(const MatrixDefaultLocalizations()),
+              builder: (context, snap) {
+                return Text(snap.data ?? '',
+                    style: Theme.of(context).textTheme.labelMedium);
+              }),
+        );
       case EventTypes.RoomCreate:
         return buildRoomMessage(
             emoji: "🎉",
