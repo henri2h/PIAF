@@ -26,7 +26,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:pedantic/pedantic.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../utils/platform_infos.dart';
 import 'pip/pip_view.dart';
@@ -211,7 +211,7 @@ class MyCallingPage extends State<Calling> {
     if (call.type == CallType.kVideo) {
       try {
         // Enable wakelock (keep screen on)
-        unawaited(Wakelock.enable());
+        unawaited(WakelockPlus.enable());
       } catch (_) {}
     }
   }
@@ -223,7 +223,7 @@ class MyCallingPage extends State<Calling> {
     );
     if (call?.type == CallType.kVideo) {
       try {
-        unawaited(Wakelock.disable());
+        unawaited(WakelockPlus.disable());
       } catch (_) {}
     }
   }

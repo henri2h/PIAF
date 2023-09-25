@@ -351,6 +351,45 @@ class KeyVerificationPageState extends State<KeyVerificationDialog> {
           onPressed: () => Navigator.of(context, rootNavigator: false).pop(),
         ));
         break;
+      case KeyVerificationState.askChoice:
+        body = const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outlined, color: Colors.green, size: 200.0),
+            SizedBox(height: 10),
+            Text(
+              "Ask choice",
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+        break;
+      case KeyVerificationState.showQRSuccess:
+        body = const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outlined, color: Colors.green, size: 200.0),
+            SizedBox(height: 10),
+            Text(
+              "Show QR Success",
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+        break;
+      case KeyVerificationState.confirmQRScan:
+        body = const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outlined, color: Colors.green, size: 200.0),
+            SizedBox(height: 10),
+            Text(
+              "Confirm QRScan",
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+        break;
     }
     final content = SingleChildScrollView(
       scrollDirection: Axis.vertical,
