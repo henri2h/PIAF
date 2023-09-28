@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:infinite_list/infinite_list.dart';
 import 'package:matrix/matrix.dart';
@@ -8,6 +7,7 @@ import '../../dialogs/adaptative_dialogs.dart';
 import '../event/message/matrix_message.dart';
 import '../event/read_receipts/read_receipt_item.dart';
 import '../event/read_receipts/read_receipts_list.dart';
+import 'fully_read_indicator.dart';
 
 class ItemBuilder extends StatelessWidget {
   const ItemBuilder(
@@ -161,21 +161,7 @@ class ItemBuilder extends StatelessWidget {
             ),
           ),
         if (event.eventId == fullyReadEventId && nextEvent != null)
-          const Row(
-            children: [
-              Expanded(
-                  child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Divider(),
-              )),
-              Text("Fully read"),
-              Expanded(
-                  child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Divider(),
-              ))
-            ],
-          ),
+          const FullyReadIndicator(),
       ],
     );
   }
