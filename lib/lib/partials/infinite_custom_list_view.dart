@@ -53,6 +53,7 @@ class InfiniteCustomListViewWithEmojiState
   double _emojiItemHeight = 0;
 
   final GlobalKey key = GlobalKey();
+  Future<void>? res;
 
   void _detectTapedItem(PointerEvent event, {bool isEventPointerDown = false}) {
     final RenderBox? box = key.currentContext!.findRenderObject() as RenderBox?;
@@ -67,10 +68,15 @@ class InfiniteCustomListViewWithEmojiState
           final target = hit.target;
           if (target is EmojiPickerRenderProxy) {
             EmojiPickerRenderProxy t = target;
-            setState(() {
-              _selectedEmoji = t.index;
-            });
-            _emojiItemHeight = event.position.dy;
+            // did previously update?
+            if (t.index != _selectedEmoji) {
+              setState(() {
+                _selectedEmoji = t.index;
+              });
+
+              res = HapticFeedback.heavyImpact();
+              _emojiItemHeight = event.position.dy;
+            }
             return;
           }
         }
@@ -158,7 +164,7 @@ class InfiniteCustomListViewWithEmojiState
 
   void _onReact(Offset position, Event event) {
     HapticFeedback.heavyImpact();
-    
+
     if (_previousEvent == event && _previousEvent != null) {
       _previousEvent = null;
       return;

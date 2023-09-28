@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/services.dart';
 
 class MinestrixEmojiPicker extends StatefulWidget {
   final double height;
@@ -209,15 +210,18 @@ class MinestrixHoverPickerItemState extends State<MinestrixHoverPickerItem> {
               width: 30,
               child: Center(child: widget.builder(_isEmojiHovered))),
         ),
-        onEnter: (d) {
+        onEnter: (d) async {
           setState(() {
             _isEmojiHovered = true;
           });
+          await HapticFeedback.heavyImpact();
         },
-        onExit: (d) {
+        onExit: (d) async {
           setState(() {
             _isEmojiHovered = false;
           });
+
+          await HapticFeedback.heavyImpact();
         },
       ),
     );
