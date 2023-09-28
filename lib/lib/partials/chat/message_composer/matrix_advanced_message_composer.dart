@@ -2,10 +2,8 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-
 import 'package:minestrix_chat/partials/chat/message_composer/matrix_message_composer.dart';
 
 /// Allow the user to send a message in a room. If a userId is given, it will
@@ -86,41 +84,52 @@ class MatrixAdvancedMessageComposerState
                 }
               }),
         if (reply != null)
-          Container(
-            color: Theme.of(context).cardColor,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 4, left: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Replying",
-                            style: TextStyle(fontWeight: FontWeight.w400)),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 0, left: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Row(
                             children: [
-                              Text(reply.sender.calcDisplayname(),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600)),
-                              MarkdownBody(data: reply.body)
+                              Expanded(
+                                child: Text(
+                                    "Replying to ${reply.senderFromMemoryOrFallback.calcDisplayname()}",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16)),
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                          const Divider(),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 140),
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: MarkdownBody(data: reply.body),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                      icon: const Icon(Icons.cancel),
-                      onPressed: () {
-                        widget.removeReply();
-                        setState(() {});
-                      })
-                ],
+                    IconButton(
+                        icon: const Icon(Icons.cancel),
+                        onPressed: () {
+                          widget.removeReply();
+                          setState(() {});
+                        })
+                  ],
+                ),
               ),
             ),
           ),
