@@ -19,6 +19,7 @@ import '../../../matrix/reactions_list.dart';
 import '../../user/user_info_dialog.dart';
 import 'call_message_dispaly.dart';
 import 'matrix_video_message.dart';
+import 'room_message.dart';
 import 'text_message_bubble.dart';
 
 class MessageDisplay extends StatefulWidget {
@@ -545,20 +546,8 @@ class MessageDisplayState extends State<MessageDisplay>
       case EventTypes.RoomPowerLevels:
       case EventTypes.RoomCanonicalAlias:
       case EventTypes.GuestAccess:
-        return Padding(
-          padding: const EdgeInsets.all(1.0),
-          child: FutureBuilder(
-              future:
-                  event.calcLocalizedBody(const MatrixDefaultLocalizations()),
-              builder: (context, snap) {
-                return Text(snap.data ?? '',
-                    style: Theme.of(context).textTheme.labelMedium);
-              }),
-        );
       case EventTypes.RoomCreate:
-        return buildRoomMessage(
-            emoji: "🎉",
-            text: event.getLocalizedBody(const MatrixDefaultLocalizations()));
+        return RoomEventUpdate(event);
 
       case EventTypes.Encryption:
         return Card(
@@ -609,9 +598,7 @@ class MessageDisplayState extends State<MessageDisplay>
       default:
     }
     // unknown event
-    return buildRoomMessage(
-        emoji: "🤔",
-        text: event.getLocalizedBody(const MatrixDefaultLocalizations()));
+    return RoomEventUpdate(event);
   }
 
   bool hover = false;
