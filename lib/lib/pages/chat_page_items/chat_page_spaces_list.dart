@@ -14,22 +14,22 @@ class ChatPageSpaceList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatPageState>(
-        builder: (context, controller, _) => MatrixSpacesList(
+        builder: (context, pageState, _) => MatrixSpacesList(
               controller: scrollController,
-              client: controller.client,
+              client: pageState.client,
               mobile: mobile,
-              spaceListExpanded: controller.spaceListExpanded,
-              onExpandClick: controller.toggleSpaceList,
+              spaceListExpanded: pageState.spaceListExpanded,
+              onExpandClick: pageState.toggleSpaceList,
               onSpaceSelected: (String? id) {
                 if (mobile) {
                   Navigator.of(context).pop();
                 }
 
-                controller.selectSpace(id);
-                controller.selectRoom(null);
+                pageState.selectSpace(id);
+                pageState.selectRoom(null);
               },
-              selectedSpace: controller.selectedSpace,
-              onSpaceLongPressed: controller.onLongPressedSpace,
+              selectedSpace: pageState.selectedSpace,
+              onSpaceLongPressed: pageState.onLongPressedSpace,
             ));
   }
 }

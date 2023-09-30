@@ -20,6 +20,31 @@ class SpacesListView extends StatelessWidget {
     final spaces = client.rooms.where((Room r) => rootSpaces.contains(r.id));
 
     return ListView(children: [
+      ListTile(
+          title: const Text('All'),
+          leading: const Icon(Icons.home),
+          onTap: () => controller.onSpaceSelected(CustomSpacesTypes.home)),
+      ListTile(
+          title: const Text('Favorites'),
+          leading: const Icon(Icons.star),
+          onTap: () => controller.onSpaceSelected(CustomSpacesTypes.favorites)),
+      ListTile(
+          title: const Text('Unreads'),
+          leading: const Icon(Icons.notifications),
+          onTap: () => controller.onSpaceSelected(CustomSpacesTypes.unread)),
+      ListTile(
+          title: const Text('Active'),
+          leading: const Icon(Icons.person),
+          onTap: () => controller.onSpaceSelected(CustomSpacesTypes.dm)),
+      ListTile(
+          title: const Text('Direct message'),
+          leading: const Icon(Icons.people),
+          onTap: () => controller.onSpaceSelected(CustomSpacesTypes.dm)),
+      ListTile(
+          title: const Text('Low priority'),
+          leading: const Icon(Icons.notifications_off),
+          onTap: () =>
+              controller.onSpaceSelected(CustomSpacesTypes.lowPriority)),
       if (spaces.isNotEmpty && spaceListExpanded)
         for (Room r in spaces)
           spaceListExpanded

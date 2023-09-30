@@ -42,6 +42,8 @@ class _RoomListState extends State<RoomList> {
   Set<String> selectedRooms = {};
   bool selectMode = false;
 
+  final scrollControllerDrawer = ScrollController();
+
   void enableSelection() {
     if (!selectMode) {
       setState(() {
@@ -104,6 +106,13 @@ class _RoomListState extends State<RoomList> {
         },
         label: const Text("Start chat"),
         icon: const Icon(Icons.message),
+      ),
+      drawer: Drawer(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        child: SafeArea(
+          child: ChatPageSpaceList(
+              mobile: true, scrollController: scrollControllerDrawer),
+        ),
       ),
       body: Column(
         children: [
