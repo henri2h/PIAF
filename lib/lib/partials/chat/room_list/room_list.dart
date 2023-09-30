@@ -231,33 +231,60 @@ class _RoomListState extends State<RoomList> {
                         }, childCount: presences.length)),
                       if (presences == null)
                         widget.sortedRooms != null
-                            ? SliverPadding(
-                                padding:
-                                    const EdgeInsets.only(top: 8, bottom: 60),
-                                sliver: SliverList(
+                            ? widget.sortedRooms!.isEmpty
+                                ? SliverList(
+                                    key: const Key("placeholder_list"),
                                     delegate: SliverChildBuilderDelegate(
-                                        (BuildContext context, int i) {
-                                  Room r = widget.sortedRooms![i];
-                                  return RoomListItem(
-                                    key: Key("room_${r.id}"),
-                                    room: r,
-                                    open: !isMobile && r.id == selectedRoomId,
-                                    selected: selectedRooms.contains(r.id),
-                                    client: widget.client,
-                                    onSelection: (String text) {
-                                      if (selectMode) {
-                                        toggleElement(r.id);
-                                      } else {
-                                        onSelection(text);
-                                      }
-                                    },
-                                    onLongPress: () {
-                                      selectedRooms.add(r.id);
-                                      enableSelection();
-                                    },
-                                  );
-                                }, childCount: widget.sortedRooms!.length)),
-                              )
+                                      (BuildContext context, int i) => Center(
+                                          child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 80.0),
+                                        child: Column(
+                                          children: [
+                                            const Icon(Icons.message_outlined,
+                                                size: 60),
+                                            const SizedBox(
+                                              height: 30,
+                                            ),
+                                            Text(
+                                              "No rooms",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge,
+                                            ),
+                                          ],
+                                        ),
+                                      )),
+                                      childCount: 1,
+                                    ))
+                                : SliverPadding(
+                                    padding: const EdgeInsets.only(
+                                        top: 8, bottom: 60),
+                                    sliver: SliverList(
+                                        delegate: SliverChildBuilderDelegate(
+                                            (BuildContext context, int i) {
+                                      Room r = widget.sortedRooms![i];
+                                      return RoomListItem(
+                                        key: Key("room_${r.id}"),
+                                        room: r,
+                                        open:
+                                            !isMobile && r.id == selectedRoomId,
+                                        selected: selectedRooms.contains(r.id),
+                                        client: widget.client,
+                                        onSelection: (String text) {
+                                          if (selectMode) {
+                                            toggleElement(r.id);
+                                          } else {
+                                            onSelection(text);
+                                          }
+                                        },
+                                        onLongPress: () {
+                                          selectedRooms.add(r.id);
+                                          enableSelection();
+                                        },
+                                      );
+                                    }, childCount: widget.sortedRooms!.length)),
+                                  )
                             : SliverList(
                                 key: const Key("placeholder_list"),
                                 delegate: SliverChildBuilderDelegate(
