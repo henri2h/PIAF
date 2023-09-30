@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
@@ -23,16 +22,31 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
   TextEditingController? displayNameController;
   bool savingDisplayName = false;
 
+  void addAccount() async {
+    await AdaptativeDialogs.show(
+        context: context,
+        title: "Add an account",
+        builder: (context) =>
+            const LoginPage(popOnLogin: true, title: "Add a new account"));
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final m = Matrix.of(context);
 
-    return ListView(
-      children: [
-        const CustomHeader(title: "Switch account"),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Switch account"),
+        actions: [
+          IconButton(onPressed: addAccount, icon: const Icon(Icons.add))
+        ],
+      ),
+      body: ListView(
+        children: [
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (final c in m.widget.clients)
@@ -63,23 +77,10 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                         context.navigateTo(const FeedRoute());
                       }
                     }),
-              ListTile(
-                  title: const Text("Add an account"),
-                  trailing: const Icon(Icons.add),
-                  onTap: () async {
-                    await AdaptativeDialogs.show(
-                        context: context,
-                        bottomSheet: true,
-                        builder: (context) => const LoginPage(
-                            popOnLogin: true, title: "Add a new account"));
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  }),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -49,24 +49,22 @@ class AdaptativeDialogs {
         [TargetPlatform.android].contains(Theme.of(context).platform)) {
       return await showModalBottomSheet(
         context: context,
-        useSafeArea: false,
+        useSafeArea: true,
         isScrollControlled: true,
-        builder: (context) => SafeArea(
-          child: Column(
-            children: [
-              if (title != null || actions != null)
-                AppBar(
-                  title: Text(title ?? ''),
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  actions: actions,
+        builder: (context) => Column(
+          children: [
+            if (title != null || actions != null)
+              AppBar(
+                title: Text(title ?? ''),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
-              if (subtitle != null) subtitle,
-              Expanded(child: builder(context)),
-            ],
-          ),
+                actions: actions,
+              ),
+            if (subtitle != null) subtitle,
+            Expanded(child: builder(context)),
+          ],
         ),
       );
     }
