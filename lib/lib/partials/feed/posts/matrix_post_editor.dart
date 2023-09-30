@@ -1,6 +1,5 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
 import 'package:minestrix_chat/utils/extensions/minestrix/posts_event_extension.dart';
@@ -37,7 +36,6 @@ class PostEditorPage extends StatefulWidget {
   }) async {
     await AdaptativeDialogs.show(
         context: context,
-        title: "Share post",
         builder: (context) =>
             PostEditorPage(shareEvent: shareEvent, room: rooms));
   }
@@ -49,7 +47,6 @@ class PostEditorPage extends StatefulWidget {
   }) async {
     await AdaptativeDialogs.show(
         context: context,
-        title: "Create post",
         builder: (context) =>
             PostEditorPage(post: event, eventToEditId: eventToEdit?.eventId));
   }
@@ -152,258 +149,188 @@ class PostEditorPageState extends State<PostEditorPage>
     }
   }
 
+  void selectRoom(Room room) {
+    setState(() {
+      this.room = room;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Client client = room.client;
 
-    return SafeArea(
-      child: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TabBarView(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Create post"),
+        actions: [
+          if (!_isEdit)
+            MaterialButton(
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
+                onPressed: displayImageListEditor
+                    ? null
+                    : () {
+                        setState(() {
+                          displayImageListEditor = !displayImageListEditor;
+                        });
+                      },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
+                  child: Row(
                     children: [
-                      ListView(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text("Post on",
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold)),
-                          ),
-                          rooms.length > 1
-                              ? DropdownButton<Room>(
-                                  value: room,
-                                  icon: const Icon(Icons.arrow_downward),
-                                  elevation: 16,
-                                  itemHeight: 60,
-                                  isExpanded: true,
-                                  underline: Container(),
-                                  onChanged: (Room? room) {
-                                    if (room != null) {
-                                      setState(() {
-                                        this.room = room;
-                                      });
-                                    }
-                                  },
-                                  items: rooms
-                                      .map<DropdownMenuItem<Room>>((Room room) {
-                                    return DropdownMenuItem<Room>(
-                                        value: room,
-                                        child: MinestrixRoomTile(room: room));
-                                  }).toList(),
-                                )
-                              : MinestrixRoomTile(room: room),
-                          const SizedBox(height: 12),
-                          if (widget.shareEvent != null)
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("Sharing",
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold)),
-                                  MatrixPostContent(
-                                      event: widget.shareEvent!,
-                                      imageMaxHeight: 300,
-                                      imageMaxWidth: 300,
-                                      disablePadding: true,
-                                      onImagePressed: (item,
-                                          {Event? imageEvent, String? ref}) {}),
-                                ],
-                              ),
-                            ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      Icon(Icons.add_a_photo),
+                    ],
+                  ),
+                )),
+          Card(
+              color: !canSend ? Colors.grey : Colors.green,
+              child: IconButton(
+                  icon: _sending
+                      ? const Center(
+                          child: CircularProgressIndicator(color: Colors.white))
+                      : Icon(_isEdit ? Icons.edit : Icons.send,
+                          color: Colors.white),
+                  onPressed: canSend ? sendPost : null))
+        ],
+      ),
+      body: DefaultTabController(
+        length: 2,
+        child: ListView(
+          children: [
+            Card(
+              child: Column(
+                children: [
+                  FutureBuilder<Profile>(
+                      future: client.getProfileFromUserId(client.userID!),
+                      builder: (context, snap) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
                             children: [
-                              FutureBuilder<Profile>(
-                                  future: client
-                                      .getProfileFromUserId(client.userID!),
-                                  builder: (context, snap) {
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: MatrixImageAvatar(
-                                          client: client,
-                                          url: snap.data?.avatarUrl,
-                                          defaultText: snap.data?.displayName,
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .primary),
-                                    );
-                                  }),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: TextField(
-                                    minLines: 3,
-                                    controller: _textController,
-                                    cursorColor: Colors.grey,
-                                    //controller: _searchController,
-                                    onChanged: (value) {
-                                      final isTextNotEmptyNew =
-                                          value.isNotEmpty;
-                                      if (isTextNotEmpty != isTextNotEmptyNew) {
-                                        setState(() {
-                                          isTextNotEmpty = isTextNotEmptyNew;
-                                        });
-                                      }
-                                    },
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 12),
-                                      enabledBorder: const OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(15),
-                                        ),
-                                      ),
-                                      focusedBorder: const OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(15),
-                                        ),
-                                      ),
-                                      prefixIcon: const Icon(Icons.edit,
-                                          color: Colors.grey),
-                                      filled: true,
-                                      hintStyle:
-                                          const TextStyle(color: Colors.grey),
-                                      labelText: widget.sendImage
-                                          ? "Image caption"
-                                          : "Post content",
-                                      labelStyle:
-                                          const TextStyle(color: Colors.grey),
-                                      alignLabelWithHint: true,
-                                      hintText: widget.sendImage
-                                          ? "Image caption"
-                                          : "Post content",
-                                    ),
-                                    keyboardType: TextInputType.multiline,
-                                    maxLines: null,
-                                  ),
-                                ),
+                              MatrixImageAvatar(
+                                  client: client,
+                                  url: snap.data?.avatarUrl,
+                                  defaultText: snap.data?.displayName,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary),
+                              const SizedBox(
+                                width: 14,
                               ),
+                              Text("Post as ${snap.data?.displayName} on",
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
-                          if (_isEdit)
-                            const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child:
-                                  Text("Editing post images is not possible"),
-                            ),
-                          if (displayImageListEditor)
-                            MatrixPostImageListEditor(
-                                imageController: imageController,
-                                onClose: () {
-                                  setState(() {
-                                    displayImageListEditor = false;
-                                  });
-                                })
-                        ],
-                      ),
-                      ListView(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text("Text preview",
-                                style: TextStyle(fontSize: 20)),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: MarkdownBody(
-                                data: _textController.text,
-                                styleSheet: MarkdownStyleSheet.fromTheme(
-                                        Theme.of(context))
-                                    .copyWith(
-                                        blockquotePadding:
-                                            const EdgeInsets.only(left: 14),
-                                        blockquoteDecoration:
-                                            const BoxDecoration(
-                                                border: Border(
-                                                    left: BorderSide(
-                                                        color: Colors.white70,
-                                                        width: 4)))),
-                                onTapLink: (text, href, title) async {
-                                  if (href != null) {
-                                    await _launchURL(Uri.parse(href));
-                                  }
-                                }),
-                          ),
-                        ],
-                      )
-                    ],
-                  )),
+                        );
+                      }),
+                  InkWell(
+                    onTap: () async {
+                      await showModalBottomSheet(
+                          context: context,
+                          useSafeArea: true,
+                          builder: (context) => Column(children: [
+                                for (final room in rooms)
+                                  RadioListTile(
+                                    value: room,
+                                    groupValue: this.room,
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() {
+                                          this.room = val;
+                                        });
+                                        Navigator.of(context).pop();
+                                      }
+                                    },
+                                    title: MinestrixRoomTile(
+                                      room: room,
+                                      onTap: () {
+                                        selectRoom(room);
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ),
+                              ]));
+                    },
+                    child: MinestrixRoomTile(room: room),
+                  ),
+                ],
+              ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(22),
-              child: Card(
-                  child: Padding(
+            const SizedBox(height: 12),
+            if (widget.shareEvent != null)
+              Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (!_isEdit)
-                      MaterialButton(
-                          shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8))),
-                          onPressed: displayImageListEditor
-                              ? null
-                              : () {
-                                  setState(() {
-                                    displayImageListEditor =
-                                        !displayImageListEditor;
-                                  });
-                                },
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8.0, vertical: 12),
-                            child: Row(
-                              children: [
-                                Icon(Icons.add_a_photo),
-                                SizedBox(width: 10),
-                                Text("Add a picture"),
-                              ],
-                            ),
-                          )),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TabBar(
-                          tabs: [
-                            Tab(
-                                icon: Icon(Icons.edit,
-                                    color:
-                                        Theme.of(context).colorScheme.primary)),
-                            Tab(
-                                icon: Icon(Icons.preview,
-                                    color:
-                                        Theme.of(context).colorScheme.primary)),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Card(
-                        color: !canSend ? Colors.grey : Colors.green,
-                        child: IconButton(
-                            icon: _sending
-                                ? const Center(
-                                    child: CircularProgressIndicator(
-                                        color: Colors.white))
-                                : Icon(_isEdit ? Icons.edit : Icons.send,
-                                    color: Colors.white),
-                            onPressed: canSend ? sendPost : null))
+                    const Text("Sharing",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    MatrixPostContent(
+                        event: widget.shareEvent!,
+                        imageMaxHeight: 300,
+                        imageMaxWidth: 300,
+                        disablePadding: true,
+                        onImagePressed: (item,
+                            {Event? imageEvent, String? ref}) {}),
                   ],
                 ),
-              )),
+              ),
+            if (displayImageListEditor)
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 400),
+                child: MatrixPostImageListEditor(
+                    imageController: imageController,
+                    onClose: () {
+                      setState(() {
+                        displayImageListEditor = false;
+                      });
+                    }),
+              ),
+            TextField(
+              minLines: 3,
+              controller: _textController,
+              cursorColor: Colors.grey,
+              //controller: _searchController,
+              onChanged: (value) {
+                final isTextNotEmptyNew = value.isNotEmpty;
+                if (isTextNotEmpty != isTextNotEmptyNew) {
+                  setState(() {
+                    isTextNotEmpty = isTextNotEmptyNew;
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(15),
+                  ),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(15),
+                  ),
+                ),
+                filled: false,
+                hintStyle: const TextStyle(color: Colors.grey),
+                labelText: widget.sendImage ? "Image caption" : "Post content",
+                labelStyle: const TextStyle(color: Colors.grey),
+                alignLabelWithHint: true,
+                hintText: widget.sendImage ? "Image caption" : "Post content",
+              ),
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
             ),
+            if (_isEdit)
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text("Editing post images is not possible"),
+              ),
           ],
         ),
       ),
