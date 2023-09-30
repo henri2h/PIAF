@@ -73,7 +73,10 @@ class _RoomListState extends State<RoomList> {
   Widget build(BuildContext context) {
     final client = widget.client;
     final isMobile = widget.isMobile;
-    final selectedSpace = widget.selectedSpace;
+    final selectedSpace = (widget.selectedSpace != ""
+            ? widget.selectedSpace
+            : CustomSpacesTypes.home) ??
+        CustomSpacesTypes.home;
     final onAppBarClicked = widget.onAppBarClicked;
     final onSelection = widget.onSelection;
     final controller = widget.controller;
@@ -94,19 +97,22 @@ class _RoomListState extends State<RoomList> {
           return 0;
         });
     }
+    final isHome = selectedSpace == CustomSpacesTypes.home;
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await AdaptativeDialogs.show(
-              context: context,
-              title: "New message",
-              builder: (_) =>
-                  RoomCreatorPage(client: client, onRoomSelected: onSelection));
-        },
-        label: const Text("Start chat"),
-        icon: const Icon(Icons.message),
-      ),
+      floatingActionButton: isHome
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                await AdaptativeDialogs.show(
+                    context: context,
+                    title: "New message",
+                    builder: (_) => RoomCreatorPage(
+                        client: client, onRoomSelected: onSelection));
+              },
+              label: const Text("Start chat"),
+              icon: const Icon(Icons.message),
+            )
+          : null,
       drawer: Drawer(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         child: SafeArea(
@@ -171,14 +177,46 @@ class _RoomListState extends State<RoomList> {
                               : const Text("Your chats"),
                         ),
                       if (selectMode == false)
-                        SliverAppBar(
-                          title: MobileSearchBar(
-                              onSelection: onSelection,
-                              client: client,
-                              onAppBarClicked: onAppBarClicked),
-                          automaticallyImplyLeading: false,
-                          forceElevated: !isMobile,
-                        ),
+                        isHome
+                            ? SliverAppBar(
+                                title: MobileSearchBar(
+                                    onSelection: onSelection,
+                                    client: client,
+                                    onAppBarClicked: onAppBarClicked),
+                                automaticallyImplyLeading: false,
+                                forceElevated: !isMobile,
+                              )
+                            : Builder(builder: (context) {
+                                final spaceRoom =
+                                    client.getRoomById(selectedSpace);
+
+                                String title = "";
+                                if (selectedSpace.startsWith("!")) {
+                                  title =
+                                      "${spaceRoom?.getLocalizedDisplayname(const MatrixDefaultLocalizations())}";
+                                } else if (selectedSpace ==
+                                    CustomSpacesTypes.active) {
+                                  title = "Active";
+                                } else if (selectedSpace ==
+                                    CustomSpacesTypes.dm) {
+                                  title = "Direct message";
+                                } else if (selectedSpace ==
+                                    CustomSpacesTypes.favorites) {
+                                  title = "Favorites";
+                                } else if (selectedSpace ==
+                                    CustomSpacesTypes.lowPriority) {
+                                  title = "Low priority";
+                                } else if (selectedSpace ==
+                                    CustomSpacesTypes.unread) {
+                                  title = "Unreads";
+                                }
+                                return SliverAppBar(
+                                  key: const Key("space_title"),
+                                  pinned: true,
+                                  forceElevated: !isMobile,
+                                  title: Text(title),
+                                );
+                              }),
                       if (presences != null)
                         SliverList(
                             delegate: SliverChildBuilderDelegate(
