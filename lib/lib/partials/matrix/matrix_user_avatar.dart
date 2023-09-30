@@ -33,13 +33,19 @@ class MatrixUserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final presence = client?.presences[userId];
+    final accentColor = presence?.currentlyActive == true
+        ? Theme.of(context).colorScheme.primary
+        : ElevationOverlay.applySurfaceTint( // apply card color
+            Theme.of(context).colorScheme.surface,
+            Theme.of(context).colorScheme.surfaceTint,
+            60);
 
     return Stack(
       alignment: Alignment.topRight,
       children: [
         CircleAvatar(
           radius: height != null ? height! / 2 : null,
-          backgroundColor: Theme.of(context).colorScheme.primary,
+          backgroundColor: accentColor,
           child: Padding(
             padding: const EdgeInsets.all(2.0),
             child: CircleAvatar(
@@ -55,19 +61,12 @@ class MatrixUserAvatar extends StatelessWidget {
                   fit: true,
                   defaultIcon: const Icon(Icons.person, size: 40),
                   defaultText: name ?? userId,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  backgroundColor: accentColor,
                 ),
               ),
             ),
           ),
         ),
-        if (presence?.currentlyActive == true)
-          CircleAvatar(
-            radius: 7,
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            child:
-                const CircleAvatar(backgroundColor: Colors.green, radius: 5.5),
-          )
       ],
     );
   }
