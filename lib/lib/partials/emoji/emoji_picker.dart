@@ -39,62 +39,63 @@ class MinestrixEmojiPickerState extends State<MinestrixEmojiPicker> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!_open)
-            Row(
-              children: [
-                if (widget.enableReply)
-                  Card(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        MinestrixEmojiPickerItemIcon(
-                          Icons.reply,
-                          selected: widget.selectedEmoji,
-                          index: "reply",
-                        ),
-                      ],
-                    ),
+            Card(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MinestrixEmojiPickerItemEmoji("😄",
+                      selected: widget.selectedEmoji),
+                  MinestrixEmojiPickerItemEmoji("👍️",
+                      selected: widget.selectedEmoji),
+                  MinestrixEmojiPickerItemEmoji("❤️",
+                      selected: widget.selectedEmoji),
+                  MinestrixEmojiPickerItemEmoji("😇",
+                      selected: widget.selectedEmoji),
+                  MinestrixEmojiPickerItemIcon(
+                    Icons.expand_circle_down,
+                    selected: widget.selectedEmoji,
+                    index: "+",
                   ),
-                Card(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      MinestrixEmojiPickerItemEmoji("😄",
-                          selected: widget.selectedEmoji),
-                      MinestrixEmojiPickerItemEmoji("👍️",
-                          selected: widget.selectedEmoji),
-                      MinestrixEmojiPickerItemEmoji("❤️",
-                          selected: widget.selectedEmoji),
-                      MinestrixEmojiPickerItemEmoji("😇",
-                          selected: widget.selectedEmoji),
-                      MinestrixEmojiPickerItemIcon(
-                        Icons.expand_circle_down,
-                        selected: widget.selectedEmoji,
-                        index: "+",
-                      ),
-                    ],
-                  ),
-                ),
-                if (widget.enableEdit || widget.enableDelete)
-                  Card(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (widget.enableEdit)
-                          MinestrixEmojiPickerItemIcon(
-                            Icons.edit,
-                            selected: widget.selectedEmoji,
-                            index: "edit",
-                          ),
-                        if (widget.enableDelete)
-                          MinestrixEmojiPickerItemIcon(Icons.delete,
-                              selected: widget.selectedEmoji,
-                              index: "delete",
-                              color: Colors.red),
-                      ],
-                    ),
-                  ),
-              ],
+                ],
+              ),
             ),
+          if (!_open && widget.enableReply)
+            Card(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 160),
+                child: Column(
+                  children: [
+                    if (widget.enableReply)
+                      const ListTile(
+                        leading: Icon(Icons.reply),
+                        title: Text("Reply"),
+                      ),
+                    if (widget.enableEdit)
+                      ListTile(
+                        leading: const Icon(Icons.edit),
+                        title: const Text("Edit"),
+                        onTap: () {},
+                      ),
+                    ListTile(
+                      leading: const Icon(Icons.copy),
+                      title: const Text("Copy"),
+                      onTap: () {},
+                    ),
+                    if (widget.enableDelete)
+                      ListTile(
+                        leading: const Icon(Icons.delete, color: Colors.red),
+                        title: const Text(
+                          "Delete",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        onTap: () {},
+                      ),
+                  ],
+                ),
+              ),
+            )),
           if (_open)
             SizedBox(
               height: widget.height,
@@ -152,7 +153,7 @@ class MinestrixEmojiPickerItemEmoji extends StatelessWidget {
     return MinestrixHoverPickerItem(
         builder: (bool isEmojiHovered) => Text(
               emoji,
-              style: TextStyle(fontSize: isEmojiHovered ? 26 : 22),
+              style: TextStyle(fontSize: isEmojiHovered ? 36 : 30),
             ),
         index: emoji,
         selected: selected);
@@ -173,7 +174,7 @@ class MinestrixEmojiPickerItemIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return MinestrixHoverPickerItem(
         builder: (bool isEmojiHovered) =>
-            Icon(icon, size: isEmojiHovered ? 26 : 22, color: color),
+            Icon(icon, size: isEmojiHovered ? 36 : 30, color: color),
         index: index,
         selected: selected);
   }
@@ -205,10 +206,7 @@ class MinestrixHoverPickerItemState extends State<MinestrixHoverPickerItem> {
       child: MouseRegion(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: SizedBox(
-              height: 34,
-              width: 30,
-              child: Center(child: widget.builder(_isEmojiHovered))),
+          child: Center(child: widget.builder(_isEmojiHovered)),
         ),
         onEnter: (d) async {
           setState(() {

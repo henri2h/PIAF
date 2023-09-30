@@ -236,6 +236,8 @@ class InfiniteCustomListViewWithEmojiState
               selectedEdge: _emojiPickerEdge,
               enableDelete: (_selectedEvent?.canRedact ?? false) &&
                   !(_selectedEvent?.redacted ?? true),
+              //enableEdit: _selectedEvent?.canRedact ?? false,
+              //enableReply: true,
             )
         ],
       ),
