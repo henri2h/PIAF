@@ -193,7 +193,6 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                             title: const Text("Change password"),
                             leading: const Icon(Icons.password),
                             trailing: const Icon(Icons.edit),
-                            value: Text(p.data?.displayName ?? client.userID!),
                             onPressed: (context) => changePassword(),
                           ),
                           SettingsTile.navigation(
