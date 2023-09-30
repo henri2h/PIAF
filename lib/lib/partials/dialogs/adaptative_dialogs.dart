@@ -9,7 +9,8 @@ class AdaptativeDialogs {
       Widget? subtitle,
       List<Widget>? actions,
       bool bottomSheet = true,
-      String? title}) async {
+      String? title,
+      bool useSafeArea = true}) async {
     if (bottomSheet &&
         [TargetPlatform.iOS].contains(Theme.of(context).platform)) {
       return await showModalBottomSheet(
@@ -49,7 +50,7 @@ class AdaptativeDialogs {
         [TargetPlatform.android].contains(Theme.of(context).platform)) {
       return await showModalBottomSheet(
         context: context,
-        useSafeArea: true,
+        useSafeArea: useSafeArea,
         isScrollControlled: true,
         builder: (context) => Column(
           children: [

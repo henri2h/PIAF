@@ -7,7 +7,6 @@ import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/message_composer/matrix_message_composer.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 
-import '../partials/dialogs/adaptative_dialogs.dart';
 import '../utils/platform_infos.dart';
 
 class MatrixStoriesPage extends StatefulWidget {
@@ -15,15 +14,8 @@ class MatrixStoriesPage extends StatefulWidget {
   final Room room;
 
   static Future<void> show(BuildContext context, Room room) async {
-    final title = room
-            .getState(EventTypes.RoomCreate)
-            ?.senderFromMemoryOrFallback
-            .calcDisplayname() ??
-        'Story not found';
-    await AdaptativeDialogs.show(
-        context: context,
-        builder: (context) => MatrixStoriesPage(room),
-        title: title);
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => MatrixStoriesPage(room)));
   }
 
   @override
@@ -324,131 +316,161 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
           }
           final hash = event.infoMap['xyz.amorgan.blurhash'];
 
-          return Stack(
-            children: [
-              if (hash is String)
-                BlurHash(
-                  hash: hash,
-                  imageFit: BoxFit.cover,
-                ),
-              if (event.messageType == MessageTypes.Image)
-                FutureBuilder<MatrixFile>(
-                    future: downloadAndDecryptAttachment(event, false),
-                    builder: (context, fileSnap) {
-                      final matrixFile = fileSnap.data;
-                      if (matrixFile == null) {
-                        loadingModeOn();
-                        return Container();
-                      }
-                      loadingModeOff();
-                      return Container(
-                        constraints: const BoxConstraints.expand(),
-                        alignment: storyThemeData.fit == BoxFit.cover
-                            ? null
-                            : Alignment.center,
-                        child: Image.memory(
-                          matrixFile.bytes,
-                          fit: storyThemeData.fit,
-                        ),
-                      );
-                    }),
-              GestureDetector(
-                onTapDown: hold,
-                onTapUp: unhold,
-                onTapCancel: unhold,
-                onVerticalDragStart: hold,
-                onVerticalDragEnd: unhold,
-                onHorizontalDragStart: hold,
-                onHorizontalDragEnd: unhold,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: event.messageType == MessageTypes.Text
-                        ? LinearGradient(
-                            colors: [
-                              backgroundColorDark,
-                              backgroundColor,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          )
-                        : null,
+          return Scaffold(
+            body: Stack(
+              children: [
+                if (hash is String)
+                  BlurHash(
+                    hash: hash,
+                    imageFit: BoxFit.cover,
                   ),
-                  alignment: Alignment(
-                    storyThemeData.alignmentX.toDouble() / 100,
-                    storyThemeData.alignmentY.toDouble() / 100,
-                  ),
-                  child: Text(
-                    event.text,
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white,
-                      shadows: event.messageType == MessageTypes.Text
-                          ? null
-                          : textShadows,
+                Container(
+                    decoration: BoxDecoration(
+                      gradient: event.messageType == MessageTypes.Text
+                          ? LinearGradient(
+                              colors: [
+                                backgroundColorDark,
+                                backgroundColor,
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            )
+                          : null,
                     ),
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  for (final e in events)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(2),
-                        child: LinearProgressIndicator(
-                            value: e == event
-                                ? !loadingMode
-                                    ? _progress.inMilliseconds /
-                                        _storieMaxDuration.inMilliseconds
-                                    : null
-                                : 0),
-                      ),
-                    ),
-                ],
-              ),
-              if (event.senderId !=
-                  c.userID) // don't allow sending message to the actual user
-                Positioned(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 800),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 2.0, horizontal: 4),
-                            child: MatrixMessageComposer(
-                                client: event.room.client,
-                                room: event.room,
-                                onReplyTo: event,
-                                hintText: "Reply",
-                                allowSendingPictures: false,
-                                enableAutoFocusOnDesktop: false,
-                                overrideSending: (String text) async {
-                                  String roomId =
-                                      await c.startDirectChat(event.senderId);
-                                  Room? r = c.getRoomById(roomId);
-                                  await r?.sendTextEvent(text);
-                                },
-                                onEdit: (val) {
-                                  setState(() {
-                                    timerEnabled = val == "";
-                                  });
-                                },
-                                onSend: () {
-                                  setState(() {
-                                    timerEnabled = true;
-                                  });
-                                }),
+                    child: ListView(
+                      children: [],
+                    )),
+                SafeArea(
+                  child: Stack(
+                    children: [
+                      if (event.messageType == MessageTypes.Image)
+                        FutureBuilder<MatrixFile>(
+                            future: downloadAndDecryptAttachment(event, false),
+                            builder: (context, fileSnap) {
+                              final matrixFile = fileSnap.data;
+                              if (matrixFile == null) {
+                                loadingModeOn();
+                                return Container();
+                              }
+                              loadingModeOff();
+                              return Container(
+                                constraints: const BoxConstraints.expand(),
+                                alignment: storyThemeData.fit == BoxFit.cover
+                                    ? null
+                                    : Alignment.center,
+                                child: Image.memory(
+                                  matrixFile.bytes,
+                                  fit: storyThemeData.fit,
+                                ),
+                              );
+                            }),
+                      GestureDetector(
+                        onTapDown: hold,
+                        onTapUp: unhold,
+                        onTapCancel: unhold,
+                        onVerticalDragStart: hold,
+                        onVerticalDragEnd: unhold,
+                        onHorizontalDragStart: hold,
+                        onHorizontalDragEnd: unhold,
+                        child: Container(
+                          alignment: Alignment(
+                            storyThemeData.alignmentX.toDouble() / 100,
+                            storyThemeData.alignmentY.toDouble() / 100,
+                          ),
+                          child: Text(
+                            event.text,
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: Colors.white,
+                              shadows: event.messageType == MessageTypes.Text
+                                  ? null
+                                  : textShadows,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      Column(
+                        children: [
+                          ListTile(
+                            leading: IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            title: Text(widget.room
+                                    .getState(EventTypes.RoomCreate)
+                                    ?.senderFromMemoryOrFallback
+                                    .calcDisplayname() ??
+                                'Story not found'),
+                          ),
+                          Row(
+                            children: [
+                              for (final e in events)
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(2),
+                                    child: LinearProgressIndicator(
+                                        value: e == event
+                                            ? !loadingMode
+                                                ? _progress.inMilliseconds /
+                                                    _storieMaxDuration
+                                                        .inMilliseconds
+                                                : null
+                                            : 0),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      if (event.senderId !=
+                          c.userID) // don't allow sending message to the actual user
+                        Positioned(
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 800),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 2.0, horizontal: 4),
+                                    child: MatrixMessageComposer(
+                                        client: event.room.client,
+                                        room: event.room,
+                                        onReplyTo: event,
+                                        hintText: "Reply",
+                                        allowSendingPictures: false,
+                                        enableAutoFocusOnDesktop: false,
+                                        overrideSending: (String text) async {
+                                          String roomId = await c
+                                              .startDirectChat(event.senderId);
+                                          Room? r = c.getRoomById(roomId);
+                                          await r?.sendTextEvent(text);
+                                        },
+                                        onEdit: (val) {
+                                          setState(() {
+                                            timerEnabled = val == "";
+                                          });
+                                        },
+                                        onSend: () {
+                                          setState(() {
+                                            timerEnabled = true;
+                                          });
+                                        }),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-            ],
+              ],
+            ),
           );
         });
   }
