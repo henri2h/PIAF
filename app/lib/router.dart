@@ -18,6 +18,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: '', page: FeedRoute.page),
         AutoRoute(path: 'feeds', page: FeedListRoute.page),
         AutoRoute(path: 'post', page: PostRoute.page),
+        AutoRoute(path: 'research', page: ResearchRoute.page),
         AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
         AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
         AutoRoute(path: 'user_feed', page: UserViewRoute.page),

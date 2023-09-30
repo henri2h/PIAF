@@ -23,7 +23,6 @@ class ResearchPage extends StatefulWidget {
 
 class ResearchPageState extends State<ResearchPage> {
   final c = TextEditingController();
-
   final discoveryStream = StreamController<SearchUserDirectoryResponse>();
 
   Future<void> _callSearch() async {
@@ -42,17 +41,18 @@ class ResearchPageState extends State<ResearchPage> {
   @override
   void dispose() {
     _debounce?.cancel();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     Client? client = Matrix.of(context).client;
-    return Column(
-      children: [
-        if (!widget.isPopup) const CustomHeader(title: "Search"),
-        Expanded(
-          child: ListView(children: [
+    return Scaffold(
+      appBar: AppBar(title: const Text("Search")),
+      body: ListView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
@@ -89,8 +89,6 @@ class ResearchPageState extends State<ResearchPage> {
                   );
                 })
           ]),
-        ),
-      ],
     );
   }
 }

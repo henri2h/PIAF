@@ -6,9 +6,9 @@ import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list
 
 import '../../../pages/room_creator_page.dart';
 import '../../dialogs/adaptative_dialogs.dart';
+import '../search/matrix_chats_search.dart';
 import '../spaces/list/spaces_list.dart';
 import 'room_list_items/room_list_item_presence.dart';
-import 'room_list_search_button.dart';
 
 class RoomList extends StatefulWidget {
   ///  [allowPop]
@@ -99,6 +99,14 @@ class _RoomListState extends State<RoomList> {
           return 0;
         });
     }
+    final spaceRoom = client.getRoomById(selectedSpace);
+
+    String title = selectedSpace;
+
+    if (spaceRoom != null) {
+      title =
+          spaceRoom.getLocalizedDisplayname(const MatrixDefaultLocalizations());
+    }
 
     return Scaffold(
       floatingActionButton: isHome
@@ -121,6 +129,36 @@ class _RoomListState extends State<RoomList> {
               mobile: true, scrollController: scrollControllerDrawer),
         ),
       ),
+      appBar: selectMode == true
+          ? AppBar(
+              actions: [
+                  IconButton(
+                      onPressed: disableSelection,
+                      icon: const Icon(Icons.close))
+                ],
+              automaticallyImplyLeading: !selectMode,
+              title: const Text("Edit"))
+          : AppBar(
+              title: Text(title),
+              actions: [
+                if (isHome)
+                  IconButton(
+                      onPressed: () async {
+                        final id =
+                            await MatrixChatsSearch.show(context, client);
+                        if (id != null) {
+                          widget.controller.selectRoom(id);
+                        }
+                      },
+                      icon: const Icon(Icons.search)),
+                if (spaceRoom != null)
+                  IconButton(
+                      onPressed: () {
+                        widget.controller.onLongPressedSpace(selectedSpace);
+                      },
+                      icon: const Icon(Icons.info))
+              ],
+            ),
       body: Column(
         children: [
           StreamBuilder<SyncStatusUpdate>(
@@ -149,72 +187,6 @@ class _RoomListState extends State<RoomList> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     controller: widget.scrollController,
                     slivers: [
-                      if (!isMobile || selectMode)
-                        SliverAppBar(
-                          key: const Key("room_list_title"),
-                          pinned: true,
-                          automaticallyImplyLeading: false,
-                          forceElevated: !isMobile,
-                          actions: selectMode
-                              ? [
-                                  IconButton(
-                                      onPressed: disableSelection,
-                                      icon: const Icon(Icons.close))
-                                ]
-                              : [
-                                  IconButton(
-                                    icon: const Icon(Icons.add),
-                                    onPressed: () {},
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.folder),
-                                    onPressed: () {},
-                                  ),
-                                ],
-                          leading:
-                              selectMode ? null : const Icon(Icons.message),
-                          title: selectMode
-                              ? const Text("Edit")
-                              : const Text("Your chats"),
-                        ),
-                      if (selectMode == false)
-                        isHome
-                            ? SliverAppBar(
-                                title: MobileSearchBar(
-                                    onSelection: onSelection,
-                                    client: client,
-                                    onAppBarClicked: onAppBarClicked),
-                                automaticallyImplyLeading: false,
-                                forceElevated: !isMobile,
-                              )
-                            : Builder(builder: (context) {
-                                final spaceRoom =
-                                    client.getRoomById(selectedSpace);
-
-                                String title = selectedSpace;
-
-                                if (spaceRoom != null) {
-                                  title = spaceRoom.getLocalizedDisplayname(
-                                      const MatrixDefaultLocalizations());
-                                }
-
-                                return SliverAppBar(
-                                  key: const Key("space_title"),
-                                  pinned: true,
-                                  forceElevated: !isMobile,
-                                  title: Text(title),
-                                  actions: [
-                                    if (spaceRoom != null)
-                                      IconButton(
-                                          onPressed: () {
-                                            widget.controller
-                                                .onLongPressedSpace(
-                                                    selectedSpace);
-                                          },
-                                          icon: const Icon(Icons.info))
-                                  ],
-                                );
-                              }),
                       if (presences != null)
                         SliverList(
                             delegate: SliverChildBuilderDelegate(

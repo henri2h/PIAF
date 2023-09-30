@@ -6,6 +6,7 @@ import 'package:matrix/matrix.dart';
 // ignore: implementation_imports
 import 'package:matrix/src/utils/cached_stream_controller.dart';
 import 'package:minestrix/partials/navigation/rightbar.dart';
+import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_community_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
@@ -16,17 +17,15 @@ import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
+import '../../partials/account_selection_button.dart';
 import '../../partials/components/buttons/custom_text_future_button.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/components/minestrix/minestrix_title.dart';
 import '../../partials/feed/minestrix_profile_not_created.dart';
-import '../../partials/feed/notfication_bell.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
-import '../../partials/account_selection_button.dart';
 import '../../partials/post/post/post.dart';
 import '../../utils/settings.dart';
-import 'friends/research_page.dart';
 import 'groups/create_group_page.dart';
 
 @RoutePage()
@@ -172,6 +171,14 @@ class FeedPageState extends State<FeedPage> {
       floatingActionButton: FloatingActionButton(
           onPressed: () => launchCreatePostModal(context),
           child: const Icon(Icons.edit)),
+      appBar: AppBar(title: const Text("Feed"), actions: [
+        IconButton(
+            onPressed: () async {
+              await context.navigateTo(ResearchRoute());
+            },
+            icon: const Icon(Icons.search)),
+        const AccountSelectionButton()
+      ]),
       body: StreamBuilder<Object>(
           stream: Matrix.of(context).onClientChange.stream,
           builder: (context, snapshot) {
@@ -304,7 +311,6 @@ class FeedPageState extends State<FeedPage> {
                                     )
                                   : Column(
                                       children: [
-                                        const FeedAppBar(),
                                         CustomListViewWithEmoji(
                                             itemCount: events!.length,
                                             controller: controller,
@@ -328,24 +334,5 @@ class FeedPageState extends State<FeedPage> {
                 });
           }),
     );
-  }
-}
-
-class FeedAppBar extends StatelessWidget {
-  const FeedAppBar({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SearchAnchor.bar(
-        barHintText: "Search",
-        barTrailing: const [AccountSelectionButton()],
-        onTap: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        suggestionsBuilder: (context, controller) {
-          return [];
-        });
   }
 }
