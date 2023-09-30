@@ -7,6 +7,7 @@ class AdaptativeDialogs {
       {required BuildContext context,
       required Widget Function(BuildContext) builder,
       Widget? subtitle,
+      List<Widget>? actions,
       bool bottomSheet = true,
       String? title}) async {
     if (bottomSheet &&
@@ -51,38 +52,20 @@ class AdaptativeDialogs {
         useSafeArea: false,
         isScrollControlled: true,
         builder: (context) => SafeArea(
-          child: FractionallySizedBox(
-            heightFactor: 0.9,
-            child: Column(
-              children: [
-                Container(
-                  color: Theme.of(context).cardColor,
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(children: [
-                    SizedBox(
-                      width: 60,
-                      child: TextButton(
-                          child: const Text("Cancel"),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          }),
-                    ),
-                    Expanded(
-                        child: Text(title ?? '',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 16,
-                                color:
-                                    Theme.of(context).colorScheme.onPrimary))),
-                    const SizedBox(
-                      width: 60,
-                    )
-                  ]),
+          child: Column(
+            children: [
+              if (title != null || actions != null)
+                AppBar(
+                  title: Text(title ?? ''),
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  actions: actions,
                 ),
-                if (subtitle != null) subtitle,
-                Expanded(child: builder(context)),
-              ],
-            ),
+              if (subtitle != null) subtitle,
+              Expanded(child: builder(context)),
+            ],
           ),
         ),
       );

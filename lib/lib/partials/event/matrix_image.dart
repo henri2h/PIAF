@@ -35,10 +35,11 @@ class MImageViewer extends StatelessWidget {
         AdaptativeDialogs.show(
             context: context,
             title: "Image display ${event.body}",
-            subtitle: ListTile(
-                onTap: () => saveImage(context),
-                title: const Text("Download image"),
-                leading: const Icon(Icons.download)),
+            actions: [
+              IconButton(
+                  onPressed: () => saveImage(context),
+                  icon: const Icon(Icons.download)),
+            ],
             builder: (context) => InteractiveViewer(
                 minScale: 0.01,
                 maxScale: 4,
