@@ -183,7 +183,7 @@ class MobileSearchBar extends StatelessWidget {
               selected: false,
               client: client,
               onSelection: (String text) {
-                controller.closeView(text);
+                controller.closeView("");
                 onSelection(text);
               },
               onLongPress: () {},
