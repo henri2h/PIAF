@@ -193,9 +193,9 @@ class _RoomListState extends State<RoomList> {
 
                                 String title = selectedSpace;
 
-                                if (selectedSpace.startsWith("!")) {
-                                  title =
-                                      "${spaceRoom?.getLocalizedDisplayname(const MatrixDefaultLocalizations())}";
+                                if (spaceRoom != null) {
+                                  title = spaceRoom.getLocalizedDisplayname(
+                                      const MatrixDefaultLocalizations());
                                 }
 
                                 return SliverAppBar(
@@ -203,6 +203,16 @@ class _RoomListState extends State<RoomList> {
                                   pinned: true,
                                   forceElevated: !isMobile,
                                   title: Text(title),
+                                  actions: [
+                                    if (spaceRoom != null)
+                                      IconButton(
+                                          onPressed: () {
+                                            widget.controller
+                                                .onLongPressedSpace(
+                                                    selectedSpace);
+                                          },
+                                          icon: const Icon(Icons.info))
+                                  ],
                                 );
                               }),
                       if (presences != null)
