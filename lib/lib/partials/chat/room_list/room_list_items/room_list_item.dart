@@ -120,7 +120,6 @@ class RoomListItem extends StatelessWidget {
                       )),
               if (isUnread) NotificationCountDot(room: room),
               if (!isUnread && room.hasNewMessages)
-              
                 NotificationCountDot(
                   room: room,
                   unreadMessage: true,

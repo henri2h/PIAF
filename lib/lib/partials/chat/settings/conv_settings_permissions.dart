@@ -102,7 +102,10 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
           permissions = room.getState(EventTypes.RoomPowerLevels, "")?.content;
           return Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: AppBar(title: const Text("Roles & permissions"), forceMaterialTransparency: true,),
+            appBar: AppBar(
+              title: const Text("Roles & permissions"),
+              forceMaterialTransparency: true,
+            ),
             body: permissions == null
                 ? const Text("No premissions found")
                 : ListView(

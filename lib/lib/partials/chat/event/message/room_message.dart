@@ -39,7 +39,8 @@ class RoomEventUpdate extends StatelessWidget {
               case RoomMemberChangeType.invite:
                 icon = Icons.person_add;
                 break;
-                default:break;
+              default:
+                break;
             }
           } else if (event.type == EventTypes.RoomCreate) {
             icon = Icons.create_new_folder;

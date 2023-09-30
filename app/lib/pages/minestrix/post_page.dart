@@ -35,12 +35,11 @@ class _PostPageState extends State<PostPage> {
               body: ListView(
                 children: [
                   PostItem(
-                    event: widget.event,
-                    timeline: widget.timeline,
-                    onReact: (Offset) {},
-                    isMobile: false,
-                    enableComment:false
-                  ),
+                      event: widget.event,
+                      timeline: widget.timeline,
+                      onReact: (Offset) {},
+                      isMobile: false,
+                      enableComment: false),
                   const Divider(),
                   MatrixMessageComposer(
                     client: widget.event.room.client,

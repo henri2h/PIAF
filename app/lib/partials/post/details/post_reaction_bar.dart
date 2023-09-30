@@ -70,13 +70,13 @@ class ReactionBar extends StatelessWidget {
             },
           ),
           const SizedBox(width: 9),
-          if(controller.canComment)
-          PostButton(
-            iconOnly: isMobile,
-            text: "Comment",
-            icon: Icons.comment_outlined,
-            onPressed: controller.replyButtonClick,
-          ),
+          if (controller.canComment)
+            PostButton(
+              iconOnly: isMobile,
+              text: "Comment",
+              icon: Icons.comment_outlined,
+              onPressed: controller.replyButtonClick,
+            ),
           if (controller.canShare)
             Padding(
               padding: const EdgeInsets.only(left: 9.0),

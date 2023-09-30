@@ -378,7 +378,7 @@ class UserViewPageState extends State<UserViewPage>
                                                         Padding(
                                                           padding:
                                                               const EdgeInsets
-                                                                      .only(
+                                                                  .only(
                                                                   left: 4.0),
                                                           child: MessageButton(
                                                               userId: userId!),
@@ -467,7 +467,7 @@ class UserViewPageState extends State<UserViewPage>
                                                     events.length) {
                                                   return Padding(
                                                       padding: const EdgeInsets
-                                                              .symmetric(
+                                                          .symmetric(
                                                           vertical: 2,
                                                           horizontal: 12),
                                                       child: Builder(

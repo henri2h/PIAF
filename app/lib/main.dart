@@ -28,7 +28,7 @@ void main(List<String> args) async {
   if (PlatformInfos.isMobile) {
     BackgroundPush.clientOnly(clients.first);
   }
- 
+
   runMinestrix(clients);
 }
 

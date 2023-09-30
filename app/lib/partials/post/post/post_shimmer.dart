@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:minestrix_chat/partials/components/shimmer_widget.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';

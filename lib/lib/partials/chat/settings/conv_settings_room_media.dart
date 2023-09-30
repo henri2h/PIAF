@@ -128,7 +128,9 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
         builder: (context, snap) {
           return Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: AppBar(title: const Text("Room media"), forceMaterialTransparency: true),
+            appBar: AppBar(
+                title: const Text("Room media"),
+                forceMaterialTransparency: true),
             body: Builder(builder: (context) {
               if (!snap.hasData) return const CircularProgressIndicator();
               if (snap.hasError) return Text(snap.error.toString());

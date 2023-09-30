@@ -178,7 +178,6 @@ class _PostGalleryPageState extends State<PostGalleryPage> {
                               children: [
                                 PostHeader(
                                     event: widget.post, allowContext: false),
-                              
                               ],
                             ));
                       }),

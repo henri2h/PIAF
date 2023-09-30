@@ -44,8 +44,7 @@ class QuickLinksBarState extends State<QuickLinksBar>
                         name: "Chats",
                         icon: Icons.chat,
                         onPressed: () async {
-                          await context
-                              .navigateTo(const TabChatRoute());
+                          await context.navigateTo(const TabChatRoute());
                         }),
                     QuickLinkButton(
                         name: "Search",

@@ -30,7 +30,8 @@ class _AccountSelectionButtonState extends State<AccountSelectionButton> {
       return IconButton(
         key: anchorKey,
         onPressed: () {
-          Navigator.of(context).push(_AccountSelectionRoute(anchorKey: anchorKey));
+          Navigator.of(context)
+              .push(_AccountSelectionRoute(anchorKey: anchorKey));
         },
         icon: FutureBuilder<Profile>(
             future: client.fetchOwnProfile(),
@@ -167,10 +168,12 @@ class _AccountSelectionRouteContent extends StatefulWidget {
   const _AccountSelectionRouteContent({required this.rect});
   final Rect rect;
   @override
-  State<_AccountSelectionRouteContent> createState() => _AccountSelectionRouteContentState();
+  State<_AccountSelectionRouteContent> createState() =>
+      _AccountSelectionRouteContentState();
 }
 
-class _AccountSelectionRouteContentState extends State<_AccountSelectionRouteContent> {
+class _AccountSelectionRouteContentState
+    extends State<_AccountSelectionRouteContent> {
   Future<void> launchCreateGroupModal(BuildContext context) async {
     AdaptativeDialogs.show(
         context: context, builder: (context) => const CreateGroupPage());

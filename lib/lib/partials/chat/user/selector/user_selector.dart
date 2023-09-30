@@ -149,7 +149,7 @@ class _UserSelectorState extends State<UserSelector> {
                                                         }),
                                                     child: Padding(
                                                       padding: const EdgeInsets
-                                                              .symmetric(
+                                                          .symmetric(
                                                           vertical: 2,
                                                           horizontal: 4),
                                                       child: FutureBuilder<
