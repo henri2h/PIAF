@@ -38,8 +38,9 @@ extension MinestrixClientExtension on Client {
       .where((room) => room.membership == Membership.invite)
       .toList(); // friends requests*/
 
-  List<Room> get minestrixUserRoom =>
-      srooms.where((r) => r.creatorId == userID).toList();
+  List<Room> get minestrixUserRoom => srooms
+      .where((r) => r.creatorId == userID && r.feedType == FeedRoomType.user)
+      .toList();
 
   bool get userRoomCreated => minestrixUserRoom.isNotEmpty;
 

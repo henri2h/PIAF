@@ -40,11 +40,8 @@ class FeedPageState extends State<FeedPage> {
   ScrollController controller = ScrollController();
   Future<void> launchCreatePostModal(BuildContext context) async {
     final client = Matrix.of(context).client;
-    await AdaptativeDialogs.show(
-        context: context,
-        title: "Create post",
-        builder: (BuildContext context) =>
-            PostEditorPage(room: client.minestrixUserRoom));
+    await PostEditorPage.show(
+        context: context, rooms: client.minestrixUserRoom);
   }
 
   List<Event>? events;
