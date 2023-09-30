@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart';
+import 'package:minestrix_chat/pages/chat_page_items/provider/chat_page_state.dart';
 import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
 import '../../../pages/room_creator_page.dart';
@@ -13,36 +14,43 @@ class RoomList extends StatefulWidget {
   ///  [allowPop]
   const RoomList(
       {Key? key,
-      required this.onSelection,
       required this.client,
-      required this.selectedRoomId,
-      required this.selectedSpace,
-      required this.controller,
+      required this.scrollController,
       required this.sortedRooms,
       required this.isMobile,
-      required this.displaySpaceList,
-      this.onAppBarClicked})
+      this.onAppBarClicked,
+      required this.controller})
       : super(key: key);
 
-  final Function(String?) onSelection;
-  final String? selectedRoomId;
-  final String? selectedSpace;
+  final ChatPageState controller;
+
   final Client client;
   final List<Room>? sortedRooms;
-  final ScrollController controller;
+  final ScrollController scrollController;
   final bool isMobile; // adapted for small screens
   final VoidCallback? onAppBarClicked;
-  final bool displaySpaceList;
 
   @override
   State<RoomList> createState() => _RoomListState();
 }
 
 class _RoomListState extends State<RoomList> {
+  Function(String?) get onSelection => (String? roomId) {
+        widget.controller.selectRoom(roomId);
+      };
+
+  String? get selectedRoomId => widget.controller.selectedRoomID;
+  String get selectedSpace {
+    final id = widget.controller.selectedSpace;
+    return id != "" ? id : CustomSpacesTypes.home;
+  }
+
   Set<String> selectedRooms = {};
   bool selectMode = false;
 
   final scrollControllerDrawer = ScrollController();
+
+  bool get isHome => selectedSpace == CustomSpacesTypes.home;
 
   void enableSelection() {
     if (!selectMode) {
@@ -73,14 +81,8 @@ class _RoomListState extends State<RoomList> {
   Widget build(BuildContext context) {
     final client = widget.client;
     final isMobile = widget.isMobile;
-    final selectedSpace = (widget.selectedSpace != ""
-            ? widget.selectedSpace
-            : CustomSpacesTypes.home) ??
-        CustomSpacesTypes.home;
-    final onAppBarClicked = widget.onAppBarClicked;
-    final onSelection = widget.onSelection;
-    final controller = widget.controller;
 
+    final onAppBarClicked = widget.onAppBarClicked;
     List<CachedPresence>? presences;
 
     if (selectedSpace == CustomSpacesTypes.active) {
@@ -97,7 +99,6 @@ class _RoomListState extends State<RoomList> {
           return 0;
         });
     }
-    final isHome = selectedSpace == CustomSpacesTypes.home;
 
     return Scaffold(
       floatingActionButton: isHome
@@ -138,15 +139,15 @@ class _RoomListState extends State<RoomList> {
                 return Container();
               }),
           Expanded(
-            child: widget.displaySpaceList
+            child: widget.controller.displaySpaceList
                 ? ChatPageSpaceList(
                     mobile: isMobile,
-                    scrollController: controller,
+                    scrollController: widget.scrollController,
                   )
                 : CustomScrollView(
                     cacheExtent: 400,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    controller: controller,
+                    controller: widget.scrollController,
                     slivers: [
                       if (!isMobile || selectMode)
                         SliverAppBar(
@@ -190,26 +191,13 @@ class _RoomListState extends State<RoomList> {
                                 final spaceRoom =
                                     client.getRoomById(selectedSpace);
 
-                                String title = "";
+                                String title = selectedSpace;
+
                                 if (selectedSpace.startsWith("!")) {
                                   title =
                                       "${spaceRoom?.getLocalizedDisplayname(const MatrixDefaultLocalizations())}";
-                                } else if (selectedSpace ==
-                                    CustomSpacesTypes.active) {
-                                  title = "Active";
-                                } else if (selectedSpace ==
-                                    CustomSpacesTypes.dm) {
-                                  title = "Direct message";
-                                } else if (selectedSpace ==
-                                    CustomSpacesTypes.favorites) {
-                                  title = "Favorites";
-                                } else if (selectedSpace ==
-                                    CustomSpacesTypes.lowPriority) {
-                                  title = "Low priority";
-                                } else if (selectedSpace ==
-                                    CustomSpacesTypes.unread) {
-                                  title = "Unreads";
                                 }
+
                                 return SliverAppBar(
                                   key: const Key("space_title"),
                                   pinned: true,
@@ -243,15 +231,14 @@ class _RoomListState extends State<RoomList> {
                                   return RoomListItem(
                                     key: Key("room_${r.id}"),
                                     room: r,
-                                    open: !isMobile &&
-                                        r.id == widget.selectedRoomId,
+                                    open: !isMobile && r.id == selectedRoomId,
                                     selected: selectedRooms.contains(r.id),
                                     client: widget.client,
                                     onSelection: (String text) {
                                       if (selectMode) {
                                         toggleElement(r.id);
                                       } else {
-                                        widget.onSelection(text);
+                                        onSelection(text);
                                       }
                                     },
                                     onLongPress: () {

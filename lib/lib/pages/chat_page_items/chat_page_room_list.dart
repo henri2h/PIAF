@@ -27,17 +27,13 @@ class ChatPageRoomList extends StatelessWidget {
             final rooms = controller.getRoomList(client);
 
             return RoomList(
-                controller: scrollController,
-                selectedRoomId: controller.selectedRoomID,
-                client: client,
-                sortedRooms: rooms,
-                displaySpaceList: controller.displaySpaceList,
-                isMobile: mobile,
-                selectedSpace: controller.selectedSpace,
-                onAppBarClicked: onAppBarClicked,
-                onSelection: (String? roomId) {
-                  controller.selectRoom(roomId);
-                });
+              controller: controller,
+              scrollController: scrollController,
+              client: client,
+              sortedRooms: rooms,
+              isMobile: mobile,
+              onAppBarClicked: onAppBarClicked,
+            );
           });
     });
   }
