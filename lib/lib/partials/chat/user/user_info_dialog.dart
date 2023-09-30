@@ -24,89 +24,77 @@ class UserInfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = user.room.client;
-    return ListView(
-      children: [
-        SizedBox(
-          height: 250,
-          child: Stack(
-            children: [
-              MatrixImageAvatar(
-                  client: user.room.client,
-                  url: user.avatarUrl,
-                  unconstraigned: true,
-                  shape: MatrixImageAvatarShape.none,
-                  defaultText: user.calcDisplayname(),
-                  width: MinestrixAvatarSizeConstants.big,
-                  height: MinestrixAvatarSizeConstants.big),
-              Container(
-                color: Colors.black45,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_downward),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      Text(user.calcDisplayname(),
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: () async {
-                          final roomId = await user.startDirectChat();
-                          // TODO: navigate and display direct chat
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          user.calcDisplayname(),
         ),
-        PresenceIndicator(room: user.room, userID: user.id),
-        if (user.displayName != null)
-          ListTile(
-              title: const Text("Matrix Id"),
-              subtitle:
-                  Text(user.id, style: Theme.of(context).textTheme.bodySmall)),
-        ListTile(
-            title: Text("Role in ${user.room.displayname}"),
-            subtitle: Text(user.powerLevelText)),
-        FutureBuilder<List<String>?>(
-            future: user.room.client.getMutualRoomsWithUser(user.id),
-            builder: (context, snap) {
-              if (!snap.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final list = snap.data!;
-              return Column(
-                children: [
-                  for (final roomId in list)
-                    Builder(builder: (context) {
-                      final room = client.getRoomById(roomId);
-                      if (room == null) return Container();
-                      return RoomListItem(
-                          key: Key("room_${room.id}"),
-                          room: room,
-                          open: room == user.room,
-                          client: room.client,
-                          onLongPress: () {},
-                          onSelection: (_) {});
-                    }),
-                ],
-              );
-            }),
-        ExpansionTile(title: const Text("User Keys"), children: [
-          RoomUserDeviceKey(
-            room: user.room,
-            userId: user.senderId,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: () async {
+              final roomId = await user.startDirectChat();
+              // TODO: navigate and display direct chat
+            },
           ),
-        ]),
-      ],
+        ],
+      ),
+      body: ListView(
+        children: [
+          SizedBox(
+            height: 250,
+            child: MatrixImageAvatar(
+                client: user.room.client,
+                url: user.avatarUrl,
+                unconstraigned: true,
+                thumnailOnly: false,
+                shape: MatrixImageAvatarShape.none,
+                defaultText: user.calcDisplayname(),
+                width: MinestrixAvatarSizeConstants.big,
+                height: MinestrixAvatarSizeConstants.big),
+          ),
+          PresenceIndicator(room: user.room, userID: user.id),
+          if (user.displayName != null)
+            ListTile(
+                title: const Text("Matrix Id"),
+                subtitle: Text(user.id,
+                    style: Theme.of(context).textTheme.bodySmall)),
+          ListTile(
+              title: Text("Role in ${user.room.displayname}"),
+              subtitle: Text(user.powerLevelText)),
+          if (user.room.client.userID != user.id)
+            FutureBuilder<List<String>?>(
+                future: user.room.client.getMutualRoomsWithUser(user.id),
+                builder: (context, snap) {
+                  if (!snap.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final list = snap.data!;
+                  return Column(
+                    children: [
+                      for (final roomId in list)
+                        Builder(builder: (context) {
+                          final room = client.getRoomById(roomId);
+                          if (room == null) return Container();
+                          return RoomListItem(
+                              key: Key("room_${room.id}"),
+                              room: room,
+                              open: room == user.room,
+                              client: room.client,
+                              onLongPress: () {},
+                              onSelection: (_) {});
+                        }),
+                    ],
+                  );
+                }),
+          ExpansionTile(title: const Text("User Keys"), children: [
+            RoomUserDeviceKey(
+              room: user.room,
+              userId: user.senderId,
+            ),
+          ]),
+        ],
+      ),
     );
   }
 }
