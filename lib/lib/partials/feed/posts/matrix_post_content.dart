@@ -67,25 +67,6 @@ class MatrixPostContent extends StatelessWidget {
                     )
                   ]),
                 ),
-              Padding(
-                padding: disablePadding
-                    ? EdgeInsets.zero
-                    : const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (event.body.isNotEmpty)
-                      Padding(
-                        padding: disablePadding
-                            ? EdgeInsets.zero
-                            : const EdgeInsets.all(8),
-                        child: MarkdownBody(
-                          data: event.body,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
               if (event.imagesRefEventId.isNotEmpty)
                 LayoutBuilder(builder: (context, constraints) {
                   // display single or double image smaller than 3
@@ -105,6 +86,16 @@ class MatrixPostContent extends StatelessWidget {
                         onImagePressed: onImagePressed),
                   );
                 }),
+              if (event.body.isNotEmpty)
+                Padding(
+                  padding: disablePadding
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(
+                          horizontal: 12.0, vertical: 8),
+                  child: MarkdownBody(
+                    data: event.body,
+                  ),
+                ),
             ],
           ),
         ),

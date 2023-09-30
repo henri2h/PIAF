@@ -5,9 +5,6 @@ import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/event/matrix_image.dart';
 import 'package:minestrix_chat/utils/extensions/minestrix/model/social_item.dart';
 
-import '../../../partials/post/details/post_header.dart';
-import '../../../partials/post/gallery/post_gallery_nav_button.dart';
-
 @RoutePage()
 class PostGalleryPage extends StatefulWidget {
   final Event post;
@@ -22,168 +19,128 @@ class PostGalleryPage extends StatefulWidget {
   State<PostGalleryPage> createState() => _PostGalleryPageState();
 }
 
-class _PostGalleryPageState extends State<PostGalleryPage> {
-  bool get modeRef => selectedImageEventId != null;
+class _PostGalleryPageState extends State<PostGalleryPage>
+    with SingleTickerProviderStateMixin {
   Timeline? timeline;
 
   Set<Event>? reactions;
   Set<Event>? replies;
   Map<Event, dynamic>? nestedReplies;
 
-  String? _replyToMessageId;
-  String? get replyToMessageId =>
-      _replyToMessageId ??
-      (modeRef ? selectedImageEventId : widget.post.eventId);
-  Event? get event => modeRef ? _event : widget.post;
-
-  Future<Timeline> getTimeline() async {
+  Future<Timeline> getTimeline(Event selectedEvent) async {
     if (timeline != null) return timeline!;
     timeline = await widget.post.room.getTimeline(onUpdate: () {
       if (timeline != null) {
-        loadPost(timeline!);
+        loadReactionForEvent(timeline!, selectedEvent);
         if (mounted) setState(() {});
       }
     });
 
-    loadPost(timeline!);
+    loadReactionForEvent(timeline!, selectedEvent);
     return timeline!;
   }
 
-  void loadPost(Timeline t) {
+  void loadReactionForEvent(Timeline t, Event event) {
     reactions = event?.getReactions(t);
     replies = event?.getReplies(t);
     if (replies != null) nestedReplies = event?.getNestedReplies(replies!);
   }
 
-  void setRepliedMessage(String? value) => setState(() {
-        _replyToMessageId = value;
-      });
+  final Map<String, Event?> _eventList = {};
 
-  String? selectedImageEventId;
-  Event? selectedImage;
-  Event? _event;
-  Future<Event?>? futureImage;
-  Future<Event?> getImage() async {
-    if (selectedImage != null) return selectedImage;
-
-    if (selectedImageEventId != null) {
-      _event = await widget.post.room.getEventById(selectedImageEventId!);
-      return _event;
-    }
-
-    return null;
+  Future<Event?> getImage(String id) async {
+    if (_eventList[id] != null) return _eventList[id];
+    return _eventList[id] = await widget.post.room.getEventById(id);
   }
 
   @override
   void initState() {
-    selectedImage = widget.image;
-    selectedImageEventId = widget.selectedImageEventId;
-
-    if (selectedImage == null &&
-        selectedImageEventId == null &&
-        widget.post.imagesRefEventId.isNotEmpty) {
-      selectedImageEventId = widget.post.imagesRefEventId.first;
-    }
-
-    futureImage = getImage();
-
+    _controller = TabController(length: imgCount, vsync: this);
+    _controller?.addListener(() {
+      setState(() {});
+    });
     super.initState();
   }
 
-  void selectImage(int pos) {
-    if (!modeRef) {
-      selectedImage = widget.image;
-    } else {
-      selectedImageEventId = widget.post.imagesRefEventId[pos];
-      _replyToMessageId = null;
-    }
-    futureImage = getImage();
-    setState(() {});
-  }
-
   int get imgCount => widget.post.imagesRefEventId.length;
-  int get pos => widget.post.imagesRefEventId.indexOf(selectedImageEventId!);
+  TabController? _controller;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Event?>(
-        future: futureImage,
-        builder: (context, snap) {
-          return LayoutBuilder(builder: (context, constraints) {
-            return Row(
-              children: [
-                Expanded(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    fit: StackFit.expand,
-                    children: [
-                      Builder(builder: (context) {
-                        if (!snap.hasData) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        final image = snap.data!;
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text("Images"),
+        ),
+        body: LayoutBuilder(builder: (context, constraints) {
+          return Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    TabBarView(
+                      controller: _controller,
+                      children: [
+                        for (final imgId in widget.post.imagesRefEventId)
+                          FutureBuilder<Event?>(
+                              future: getImage(imgId),
+                              builder: (context, snap) {
+                                return Builder(builder: (context) {
+                                  if (!snap.hasData) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  }
+                                  final image = snap.data!;
 
-                        return MatrixEventImage(
-                          key: Key("img_event_${image.eventId}"),
-                          fit: BoxFit.contain,
-                          borderRadius: BorderRadius.zero,
-                          getThumbnail: false,
-                          event: image,
-                        );
-                      }),
-                      PostGalleryNavButton(
-                          alignment: Alignment.centerLeft,
-                          icon: Icons.keyboard_arrow_left,
-                          onPressed:
-                              pos > 0 ? () => selectImage(pos - 1) : () {}),
-                      PostGalleryNavButton(
-                          alignment: Alignment.centerRight,
-                          icon: Icons.keyboard_arrow_right,
-                          onPressed: (pos + 1) < imgCount
-                              ? () => selectImage(pos + 1)
-                              : () {}),
-                      if (Navigator.of(context).canPop())
-                        Positioned(
-                            top: 8,
-                            right: 8,
-                            child: MaterialButton(
-                                minWidth: 0,
-                                child: const Icon(Icons.close,
-                                    size: 40, color: Colors.white),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                })),
-                      Positioned(
-                          bottom: 12,
-                          right: 12,
-                          child: Text(
-                            "${pos + 1}/$imgCount",
-                            style: const TextStyle(
-                                fontSize: 26,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600),
-                          ))
-                    ],
-                  ),
+                                  return InteractiveViewer(
+                                    minScale: 0.01,
+                                    maxScale: 4,
+                                    child: MatrixEventImage(
+                                      key: Key("img_event_${image.eventId}"),
+                                      fit: BoxFit.contain,
+                                      borderRadius: BorderRadius.zero,
+                                      getThumbnail: false,
+                                      event: image,
+                                    ),
+                                  );
+                                });
+                              }),
+                      ],
+                    ),
+                    Positioned(
+                        top: 12,
+                        right: 12,
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              "${_controller!.index + 1}/$imgCount",
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ))
+                  ],
                 ),
-                if (constraints.maxWidth > 1000)
-                  FutureBuilder<Timeline>(
-                      future: getTimeline(),
-                      builder: (context, snapshot) {
-                        final t = snapshot.data;
-                        return SizedBox(
-                            width: 340,
-                            child: ListView(
-                              children: [
-                                PostHeader(
-                                    event: widget.post, allowContext: false),
-                              ],
-                            ));
-                      }),
-              ],
-            );
-          });
-        });
+              ),
+              /*
+          if (constraints.maxWidth > 1000)
+            FutureBuilder<Timeline>(
+                future: getTimeline(),
+                builder: (context, snapshot) {
+                  final t = snapshot.data;
+                  return SizedBox(
+                      width: 340,
+                      child: ListView(
+                        children: [
+                          PostHeader(event: widget.post, allowContext: false),
+                        ],
+                      ));
+                }),*/
+              Center(
+                child: TabPageSelector(controller: _controller),
+              ),
+            ],
+          );
+        }));
   }
 }
