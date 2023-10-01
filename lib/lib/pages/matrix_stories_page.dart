@@ -262,217 +262,220 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
 
     if (widget.room.lastEvent == null) const Text("No data");
 
-    return FutureBuilder(
-        future: loadStory,
-        builder: (context, snapshot) {
-          final error = snapshot.error;
-          if (error != null) {
-            return Center(child: Text(error.toString()));
-          }
+    return Scaffold(
+      body: FutureBuilder(
+          future: loadStory,
+          builder: (context, snapshot) {
+            final error = snapshot.error;
+            if (error != null) {
+              return Center(child: Text(error.toString()));
+            }
 
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-                child: CircularProgressIndicator.adaptive(
-              strokeWidth: 2,
-            ));
-          }
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(
+                  child: CircularProgressIndicator.adaptive(
+                strokeWidth: 2,
+              ));
+            }
 
-          if (events.isEmpty) {
-            return Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  MatrixImageAvatar(
-                    height: 128,
-                    width: 128,
-                    client: widget.room.client,
-                    defaultText: widget.room.creator?.calcDisplayname(),
-                    url: widget.room.creator?.avatarUrl,
-                  ),
-                  const SizedBox(height: 32),
-                  const Text(
-                    "This user hasn't sent any stories yet",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
+            if (events.isEmpty) {
+              return Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    MatrixImageAvatar(
+                      height: 128,
+                      width: 128,
+                      client: widget.room.client,
+                      defaultText: widget.room.creator?.calcDisplayname(),
+                      url: widget.room.creator?.avatarUrl,
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final event = events[index];
-          final backgroundColor = storyThemeData.color1 ??
-              event.content.tryGet<String>('body')?.color ??
-              Theme.of(context).colorScheme.primary;
-          final backgroundColorDark = storyThemeData.color2 ??
-              event.content.tryGet<String>('body')?.darkColor ??
-              Theme.of(context).colorScheme.primary;
-          if (event.messageType == MessageTypes.Text) {
-            loadingModeOff();
-          }
-          final hash = event.infoMap['xyz.amorgan.blurhash'];
-
-          return Scaffold(
-            body: Stack(
-              children: [
-                if (hash is String)
-                  BlurHash(
-                    hash: hash,
-                    imageFit: BoxFit.cover,
-                  ),
-                Container(
-                    decoration: BoxDecoration(
-                      gradient: event.messageType == MessageTypes.Text
-                          ? LinearGradient(
-                              colors: [
-                                backgroundColorDark,
-                                backgroundColor,
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            )
-                          : null,
-                    ),
-                    child: ListView(
-                      children: [],
-                    )),
-                SafeArea(
-                  child: Stack(
-                    children: [
-                      if (event.messageType == MessageTypes.Image)
-                        FutureBuilder<MatrixFile>(
-                            future: downloadAndDecryptAttachment(event, false),
-                            builder: (context, fileSnap) {
-                              final matrixFile = fileSnap.data;
-                              if (matrixFile == null) {
-                                loadingModeOn();
-                                return Container();
-                              }
-                              loadingModeOff();
-                              return Container(
-                                constraints: const BoxConstraints.expand(),
-                                alignment: storyThemeData.fit == BoxFit.cover
-                                    ? null
-                                    : Alignment.center,
-                                child: Image.memory(
-                                  matrixFile.bytes,
-                                  fit: storyThemeData.fit,
-                                ),
-                              );
-                            }),
-                      GestureDetector(
-                        onTapDown: hold,
-                        onTapUp: unhold,
-                        onTapCancel: unhold,
-                        onVerticalDragStart: hold,
-                        onVerticalDragEnd: unhold,
-                        onHorizontalDragStart: hold,
-                        onHorizontalDragEnd: unhold,
-                        child: Container(
-                          alignment: Alignment(
-                            storyThemeData.alignmentX.toDouble() / 100,
-                            storyThemeData.alignmentY.toDouble() / 100,
-                          ),
-                          child: Text(
-                            event.text,
-                            style: TextStyle(
-                              fontSize: 24,
-                              color: Colors.white,
-                              shadows: event.messageType == MessageTypes.Text
-                                  ? null
-                                  : textShadows,
-                            ),
-                          ),
-                        ),
+                    const SizedBox(height: 32),
+                    const Text(
+                      "This user hasn't sent any stories yet",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
                       ),
-                      Column(
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            final event = events[index];
+            final backgroundColor = storyThemeData.color1 ??
+                event.content.tryGet<String>('body')?.color ??
+                Theme.of(context).colorScheme.primary;
+            final backgroundColorDark = storyThemeData.color2 ??
+                event.content.tryGet<String>('body')?.darkColor ??
+                Theme.of(context).colorScheme.primary;
+            if (event.messageType == MessageTypes.Text) {
+              loadingModeOff();
+            }
+            final hash = event.infoMap['xyz.amorgan.blurhash'];
+
+            return Container(
+              decoration: BoxDecoration(
+                gradient: event.messageType == MessageTypes.Text
+                    ? LinearGradient(
+                        colors: [
+                          backgroundColorDark,
+                          backgroundColor,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      )
+                    : null,
+              ),
+              child: GestureDetector(
+                onTapDown: hold,
+                onTapUp: unhold,
+                onTapCancel: unhold,
+                onVerticalDragStart: hold,
+                onVerticalDragEnd: unhold,
+                onHorizontalDragStart: hold,
+                onHorizontalDragEnd: unhold,
+                child: Stack(
+                  children: [
+                    if (hash is String)
+                      BlurHash(
+                        hash: hash,
+                        imageFit: BoxFit.cover,
+                      ),
+                    SafeArea(
+                      child: Stack(
                         children: [
-                          ListTile(
-                            leading: IconButton(
-                              icon: const Icon(Icons.close),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
+                          if (event.messageType == MessageTypes.Image)
+                            FutureBuilder<MatrixFile>(
+                                future:
+                                    downloadAndDecryptAttachment(event, false),
+                                builder: (context, fileSnap) {
+                                  final matrixFile = fileSnap.data;
+                                  if (matrixFile == null) {
+                                    loadingModeOn();
+                                    return Container();
+                                  }
+                                  loadingModeOff();
+                                  return Container(
+                                    constraints: const BoxConstraints.expand(),
+                                    alignment:
+                                        storyThemeData.fit == BoxFit.cover
+                                            ? null
+                                            : Alignment.center,
+                                    child: Image.memory(
+                                      matrixFile.bytes,
+                                      fit: storyThemeData.fit,
+                                    ),
+                                  );
+                                }),
+                          Container(
+                            alignment: Alignment(
+                              storyThemeData.alignmentX.toDouble() / 100,
+                              storyThemeData.alignmentY.toDouble() / 100,
                             ),
-                            title: Text(widget.room
-                                    .getState(EventTypes.RoomCreate)
-                                    ?.senderFromMemoryOrFallback
-                                    .calcDisplayname() ??
-                                'Story not found'),
+                            child: Text(
+                              event.text,
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: Colors.white,
+                                shadows: event.messageType == MessageTypes.Text
+                                    ? null
+                                    : textShadows,
+                              ),
+                            ),
                           ),
-                          Row(
+                          Column(
                             children: [
-                              for (final e in events)
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(2),
-                                    child: LinearProgressIndicator(
-                                        value: e == event
-                                            ? !loadingMode
-                                                ? _progress.inMilliseconds /
-                                                    _storieMaxDuration
-                                                        .inMilliseconds
-                                                : null
-                                            : 0),
-                                  ),
+                              ListTile(
+                                leading: IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
                                 ),
+                                title: Text(widget.room
+                                        .getState(EventTypes.RoomCreate)
+                                        ?.senderFromMemoryOrFallback
+                                        .calcDisplayname() ??
+                                    'Story not found'),
+                              ),
+                              Row(
+                                children: [
+                                  for (final e in events)
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(2),
+                                        child: LinearProgressIndicator(
+                                            value: e == event
+                                                ? !loadingMode
+                                                    ? _progress.inMilliseconds /
+                                                        _storieMaxDuration
+                                                            .inMilliseconds
+                                                    : null
+                                                : 0),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
-                      ),
-                      if (event.senderId !=
-                          c.userID) // don't allow sending message to the actual user
-                        Positioned(
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 800),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Card(
+                          if (event.senderId !=
+                              c.userID) // don't allow sending message to the actual user
+                            Positioned(
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 800),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 2.0, horizontal: 4),
-                                    child: MatrixMessageComposer(
-                                        client: event.room.client,
-                                        room: event.room,
-                                        onReplyTo: event,
-                                        hintText: "Reply",
-                                        allowSendingPictures: false,
-                                        enableAutoFocusOnDesktop: false,
-                                        overrideSending: (String text) async {
-                                          String roomId = await c
-                                              .startDirectChat(event.senderId);
-                                          Room? r = c.getRoomById(roomId);
-                                          await r?.sendTextEvent(text);
-                                        },
-                                        onEdit: (val) {
-                                          setState(() {
-                                            timerEnabled = val == "";
-                                          });
-                                        },
-                                        onSend: () {
-                                          setState(() {
-                                            timerEnabled = true;
-                                          });
-                                        }),
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Card(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 2.0, horizontal: 4),
+                                        child: MatrixMessageComposer(
+                                            client: event.room.client,
+                                            room: event.room,
+                                            onReplyTo: event,
+                                            hintText: "Reply",
+                                            allowSendingPictures: false,
+                                            enableAutoFocusOnDesktop: false,
+                                            overrideSending:
+                                                (String text) async {
+                                              String roomId =
+                                                  await c.startDirectChat(
+                                                      event.senderId);
+                                              Room? r = c.getRoomById(roomId);
+                                              await r?.sendTextEvent(text);
+                                            },
+                                            onEdit: (val) {
+                                              setState(() {
+                                                timerEnabled = val == "";
+                                              });
+                                            },
+                                            onSend: () {
+                                              setState(() {
+                                                timerEnabled = true;
+                                              });
+                                            }),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        });
+              ),
+            );
+          }),
+    );
   }
 
   @override
