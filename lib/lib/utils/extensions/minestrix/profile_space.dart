@@ -65,7 +65,7 @@ extension ProfileRoom on Room {
 
   /// Create new stories room and add it to the profile room directory
   Future<String> createAndAddStoriesRoomToSpace({List<String>? invite}) async {
-    String id = await client.createProfileRoom(invite: invite);
+    String id = await client.createStoryRoom(invite: invite);
 
     // and add it to the room directory
     await setSpaceChild(id);

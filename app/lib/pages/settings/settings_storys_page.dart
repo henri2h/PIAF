@@ -6,7 +6,6 @@ import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import '../../partials/components/layouts/custom_header.dart';
 import '../../router.gr.dart';
 
 @RoutePage()
@@ -21,31 +20,40 @@ class _SettingsStorysPageState extends State<SettingsStorysPage> {
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
-    return ListView(children: [
-      const CustomHeader(title: "Storys"),
-      SettingsList(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          lightTheme: const SettingsThemeData(
-              settingsListBackground: Colors.transparent),
-          darkTheme: const SettingsThemeData(
-              settingsListBackground: Colors.transparent),
-          sections: [
-            SettingsSection(
-              tiles: <SettingsTile>[
-                for (final room
-                    in client.getStorieRoomsFromUser(userID: client.userID!))
-                  SettingsTile.navigation(
-                    leading: RoomAvatar(room: room, client: client),
-                    title: Text(room.getLocalizedDisplayname(
-                        const MatrixDefaultLocalizations())),
-                    value: Text("${room.summary.mJoinedMemberCount} followers"),
-                    onPressed: (context) => context
-                        .navigateTo(SettingsStorysDetailRoute(room: room)),
-                  ),
-              ],
-            ),
-          ]),
-    ]);
+    return Scaffold(
+      appBar: AppBar(title: const Text("Storys"), actions: [
+        IconButton(
+            onPressed: () async {
+              await client.createStoryRoom();
+            },
+            icon: const Icon(Icons.add))
+      ]),
+      body: ListView(children: [
+        SettingsList(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            lightTheme: const SettingsThemeData(
+                settingsListBackground: Colors.transparent),
+            darkTheme: const SettingsThemeData(
+                settingsListBackground: Colors.transparent),
+            sections: [
+              SettingsSection(
+                tiles: <SettingsTile>[
+                  for (final room
+                      in client.getStorieRoomsFromUser(userID: client.userID!))
+                    SettingsTile.navigation(
+                      leading: RoomAvatar(room: room, client: client),
+                      title: Text(room.getLocalizedDisplayname(
+                          const MatrixDefaultLocalizations())),
+                      value:
+                          Text("${room.summary.mJoinedMemberCount} followers"),
+                      onPressed: (context) => context
+                          .navigateTo(SettingsStorysDetailRoute(room: room)),
+                    ),
+                ],
+              ),
+            ]),
+      ]),
+    );
   }
 }

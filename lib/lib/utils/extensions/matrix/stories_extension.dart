@@ -16,7 +16,7 @@ extension StoriesExtension on Client {
   /// Create a new stories room
   /// [waitForCreation] Indicate if the funtion must return only if the room has been added
   /// And setup encryption in that room
-  Future<String> createProfileRoom(
+  Future<String> createStoryRoom(
       {bool waitForCreation = true, List<String>? invite}) async {
     final p = await getProfileFromUserId(userID!);
     final id = await createRoom(
@@ -69,7 +69,7 @@ extension StoriesExtension on Client {
             'Seems that you don\'t have a story room currently. Should we create one?',
       );
       if (result == OkCancelResult.ok) {
-        await createProfileRoom(waitForCreation: true);
+        await createStoryRoom(waitForCreation: true);
         userStorieRooms = getStorieRoomsFromUser(userID: userID!);
       }
     }
@@ -77,7 +77,6 @@ extension StoriesExtension on Client {
     if (userStorieRooms.isNotEmpty) {
       await AdaptativeDialogs.show(
           context: context,
-          title: "Create a story",
           builder: (context) =>
               MatrixCreateStoriePage(client: this, r: userStorieRooms.first));
     }

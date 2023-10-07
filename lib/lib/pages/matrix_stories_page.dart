@@ -106,7 +106,7 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
     isHold = false;
     if (DateTime.now().millisecondsSinceEpoch -
             _holdedAt.millisecondsSinceEpoch <
-        200) {
+        600) {
       skip();
       return;
     }
@@ -262,24 +262,22 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
 
     if (widget.room.lastEvent == null) const Text("No data");
 
-    return Scaffold(
-      body: FutureBuilder(
-          future: loadStory,
-          builder: (context, snapshot) {
-            final error = snapshot.error;
-            if (error != null) {
-              return Center(child: Text(error.toString()));
-            }
+    return FutureBuilder(
+        future: loadStory,
+        builder: (context, snapshot) {
+          final error = snapshot.error;
+          if (error != null) {
+            return Scaffold(
+                appBar: AppBar(
+                    title: const Text("Snap! Something unexpected happened")),
+                body: Center(child: Text(error.toString())));
+          }
 
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(
-                  child: CircularProgressIndicator.adaptive(
-                strokeWidth: 2,
-              ));
-            }
-
-            if (events.isEmpty) {
-              return Center(
+          if (events.isEmpty ||
+              snapshot.connectionState != ConnectionState.done) {
+            return Scaffold(
+              appBar: AppBar(title: const Text("Story")),
+              body: Center(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -292,32 +290,38 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
                       url: widget.room.creator?.avatarUrl,
                     ),
                     const SizedBox(height: 32),
-                    const Text(
-                      "This user hasn't sent any stories yet",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
-                    ),
+                    snapshot.connectionState != ConnectionState.done
+                        ? const CircularProgressIndicator.adaptive(
+                            strokeWidth: 2,
+                          )
+                        : const Text(
+                            "This user hasn't sent any stories yet",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.white,
+                            ),
+                          ),
                   ],
                 ),
-              );
-            }
+              ),
+            );
+          }
 
-            final event = events[index];
-            final backgroundColor = storyThemeData.color1 ??
-                event.content.tryGet<String>('body')?.color ??
-                Theme.of(context).colorScheme.primary;
-            final backgroundColorDark = storyThemeData.color2 ??
-                event.content.tryGet<String>('body')?.darkColor ??
-                Theme.of(context).colorScheme.primary;
-            if (event.messageType == MessageTypes.Text) {
-              loadingModeOff();
-            }
-            final hash = event.infoMap['xyz.amorgan.blurhash'];
+          final event = events[index];
+          final backgroundColor = storyThemeData.color1 ??
+              event.content.tryGet<String>('body')?.color ??
+              Theme.of(context).colorScheme.primary;
+          final backgroundColorDark = storyThemeData.color2 ??
+              event.content.tryGet<String>('body')?.darkColor ??
+              Theme.of(context).colorScheme.primary;
+          if (event.messageType == MessageTypes.Text) {
+            loadingModeOff();
+          }
+          final hash = event.infoMap['xyz.amorgan.blurhash'];
 
-            return Container(
+          return Scaffold(
+            body: Container(
               decoration: BoxDecoration(
                 gradient: event.messageType == MessageTypes.Text
                     ? LinearGradient(
@@ -473,9 +477,9 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
                   ],
                 ),
               ),
-            );
-          }),
-    );
+            ),
+          );
+        });
   }
 
   @override
