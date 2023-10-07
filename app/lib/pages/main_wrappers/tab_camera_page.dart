@@ -292,7 +292,7 @@ class _TabCameraPageState extends State<TabCameraPage>
                         '${directory.path}/$currentUnix.$fileFormat',
                       );
                     },
-                    child: Stack(
+                    child: const Stack(
                       alignment: Alignment.center,
                       children: [
                         Icon(Icons.circle, color: Colors.white38, size: 80),

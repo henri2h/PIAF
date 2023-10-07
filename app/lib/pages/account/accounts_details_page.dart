@@ -9,7 +9,6 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/components/buttons/custom_future_button.dart';
 import '../../partials/components/buttons/custom_text_future_button.dart';
-import '../../partials/components/layouts/custom_header.dart';
 import '../../router.gr.dart';
 import '../../utils/settings.dart';
 

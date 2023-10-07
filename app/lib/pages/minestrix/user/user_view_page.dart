@@ -11,13 +11,11 @@ import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
-import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/minestrix/minestrix_title.dart';
 import '../../../partials/feed/topic_list_tile.dart';
 import '../../../partials/minestrix_title.dart';

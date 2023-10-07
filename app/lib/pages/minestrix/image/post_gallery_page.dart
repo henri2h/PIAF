@@ -41,9 +41,9 @@ class _PostGalleryPageState extends State<PostGalleryPage>
   }
 
   void loadReactionForEvent(Timeline t, Event event) {
-    reactions = event?.getReactions(t);
-    replies = event?.getReplies(t);
-    if (replies != null) nestedReplies = event?.getNestedReplies(replies!);
+    reactions = event.getReactions(t);
+    replies = event.getReplies(t);
+    if (replies != null) nestedReplies = event.getNestedReplies(replies!);
   }
 
   final Map<String, Event?> _eventList = {};

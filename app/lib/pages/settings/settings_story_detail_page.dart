@@ -6,7 +6,6 @@ import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import '../../partials/components/layouts/custom_header.dart';
 import '../../partials/feed/topic_list_tile.dart';
 
 @RoutePage()
