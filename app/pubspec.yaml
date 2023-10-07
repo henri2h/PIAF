@@ -27,7 +27,7 @@ dependencies:
   # Matrix
   matrix:
     git:
-      url: https://gitlab.com/minestrix/famedlysdk.git
+      url: https://github.com/MinesTRIX/matrix-dart-sdk.git
       ref: henri2h/index-events-by-event-type
 
   flutter_olm:
@@ -78,7 +78,7 @@ dependencies:
   cupertino_icons: ^1.0.1
 
   # Notifications
-  flutter_local_notifications: ^15.1.1
+  flutter_local_notifications: ^16.1.0
   unifiedpush: ^5.0.0
   desktop_notifications: ^0.6.3
 

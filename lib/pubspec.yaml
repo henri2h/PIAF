@@ -12,7 +12,7 @@ dependencies:
     
   matrix:
     git:
-      url: https://gitlab.com/minestrix/famedlysdk.git
+      url: https://github.com/MinesTRIX/matrix-dart-sdk.git
       ref: henri2h/index-events-by-event-type
 
   # images
@@ -59,7 +59,7 @@ dependencies:
   hive_flutter: ^1.1.0
   
   package_info_plus: ^4.0.2
-  flutter_local_notifications: ^15.1.1
+  flutter_local_notifications: ^16.1.0
   universal_html: ^2.0.8
   provider: ^6.0.2
   desktop_notifications: ^0.6.3
