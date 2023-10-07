@@ -72,7 +72,7 @@ class LayoutView extends StatelessWidget {
       appBar: !(customHeaderText == null &&
               customHeaderChild == null &&
               customHeaderActionsButtons == null)
-          ? AppBar(
+          ?    AppBar(
               title: Text(customHeaderText ?? ''),
               leading: customHeaderChild,
               actions: customHeaderActionsButtons)

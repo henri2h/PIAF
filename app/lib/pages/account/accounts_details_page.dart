@@ -26,80 +26,84 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
   Widget build(BuildContext context) {
     Client client = Matrix.of(context).client;
 
-    return StreamBuilder(
-        stream: client.onSync.stream.where((event) => event.hasRoomUpdate),
-        builder: (context, _) {
-          Room? profile = client.getProfileSpace();
+    return Scaffold(
+      appBar: AppBar(title: const Text("Your profiles space")),
+      body: StreamBuilder(
+          stream: client.onSync.stream.where((event) => event.hasRoomUpdate),
+          builder: (context, _) {
+            Room? profile = client.getProfileSpace();
 
-          // room not in our profile space
-          final roomsNotInOurSpace = client.srooms
-              .where((sroom) =>
-                  sroom.creatorId == client.userID &&
-                  sroom.feedType == FeedRoomType.user &&
-                  (profile?.spaceChildren.indexWhere(
-                              (final sc) => sc.roomId == sroom.id) ??
-                          -1) ==
-                      -1)
-              .toSet();
+            // room not in our profile space
+            final roomsNotInOurSpace = client.srooms
+                .where((sroom) =>
+                    sroom.creatorId == client.userID &&
+                    sroom.feedType == FeedRoomType.user &&
+                    (profile?.spaceChildren.indexWhere(
+                                (final sc) => sc.roomId == sroom.id) ??
+                            -1) ==
+                        -1)
+                .toSet();
 
-          return ListView(
-            children: [
-              const CustomHeader(title: "Your profiles space"),
-              profile == null
-                  ? NoProfileSpaceFound(client: client)
-                  : Card(
-                      child: Wrap(
-                        children: [
-                          ProfileSpaceCard(profile: profile),
-                        ],
-                      ),
-                    ),
-              for (Room room in roomsNotInOurSpace)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Builder(builder: (context) {
-                    return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 6),
-                        child: Row(
+            return ListView(
+              children: [
+                profile == null
+                    ? NoProfileSpaceFound(client: client)
+                    : Card(
+                        child: Wrap(
                           children: [
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  RoomProfileListTile(room, onLeave: () async {
-                                    if (profile != null &&
-                                        profile.spaceChildren.indexWhere(
-                                                (final sc) =>
-                                                    sc.roomId == room.id) !=
-                                            -1) {
-                                      await profile.removeSpaceChild(room.id);
-                                    }
-                                    setState(() {});
-                                  }),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: CustomTextFutureButton(
-                                  icon: Icons.add,
-                                  onPressed: () async {
-                                    await profile?.setSpaceChild(room.id);
-                                  },
-                                  expanded: false,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  text: "Add to profile"),
-                            ),
+                            ProfileSpaceCard(profile: profile),
                           ],
                         ),
                       ),
-                    );
-                  }),
-                ),
-            ],
-          );
-        });
+                for (Room room in roomsNotInOurSpace)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Builder(builder: (context) {
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 6),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    RoomProfileListTile(room,
+                                        onLeave: () async {
+                                      if (profile != null &&
+                                          profile.spaceChildren.indexWhere(
+                                                  (final sc) =>
+                                                      sc.roomId == room.id) !=
+                                              -1) {
+                                        await profile.removeSpaceChild(room.id);
+                                      }
+                                      setState(() {});
+                                    }),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CustomTextFutureButton(
+                                    icon: Icons.add,
+                                    onPressed: () async {
+                                      await profile?.setSpaceChild(room.id);
+                                    },
+                                    expanded: false,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    text: "Add to profile"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+              ],
+            );
+          }),
+    );
   }
 }
 
@@ -385,8 +389,11 @@ class RoomProfileListTile extends StatelessWidget {
         title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text((r.name),
-                  style: const TextStyle(fontWeight: FontWeight.bold))
+              Text(
+                r.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 2,
+              )
             ]),
         subtitle: RoomInfo(r: r),
         trailing: PopupMenuButton<String>(
@@ -457,7 +464,10 @@ class RoomInfo extends StatelessWidget {
         if (r.topic != "")
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Text(r.topic),
+            child: Text(r.topic,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium),
           ),
         if (r.joinRules == JoinRules.invite)
           const Row(
