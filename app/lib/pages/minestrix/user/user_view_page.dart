@@ -266,7 +266,8 @@ class UserViewPageState extends State<UserViewPage>
                                 ),
                             ],
                           ),
-                          customHeaderText: isUserPage ? null : "User Feed",
+                          customHeaderText:
+                              isUserPage ? "My feed" : "User Feed",
                           customHeaderActionsButtons: [
                             if (isUserPage)
                               IconButton(
@@ -285,18 +286,6 @@ class UserViewPageState extends State<UserViewPage>
                                     }
                                   }),
                           ],
-                          customHeaderChild: isUserPage
-                              ? FutureBuilder<Profile>(
-                                  future: client.fetchOwnProfile(),
-                                  builder: (context, snap) {
-                                    return MatrixUserItem(
-                                      name: snap.data?.displayName,
-                                      userId: client.userID!,
-                                      avatarUrl: snap.data?.avatarUrl,
-                                      client: client,
-                                    );
-                                  })
-                              : null,
                           headerChildBuilder: (
                                   {required bool displaySideBar}) =>
                               headerChildBuilder(
@@ -421,8 +410,8 @@ class UserViewPageState extends State<UserViewPage>
                                         if (_tabController.index == 1 &&
                                             timeline != null) {
                                           final room = timeline.room;
-                                          return FollowersTab(
-                                              mroom: mroom, room: room);
+
+                                          return UserFriendsCard(room: room);
                                         } else if (_tabController.index == 2 &&
                                             timeline != null) {
                                           return ImagesTab(
@@ -573,37 +562,6 @@ class ImagesTab extends StatelessWidget {
       children: [
         const H2Title("Images"),
         SocialGalleryPreviewWigdet(room: mroom!.room!, timeline: timeline),
-      ],
-    );
-  }
-}
-
-class FollowersTab extends StatelessWidget {
-  const FollowersTab({
-    Key? key,
-    required this.mroom,
-    required this.room,
-  }) : super(key: key);
-
-  final RoomWithSpace? mroom;
-  final Room room;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.0),
-          child: H2Title("Followers"),
-        ),
-        Wrap(alignment: WrapAlignment.start, children: [
-          for (User user in room.getParticipants().where((User u) =>
-              u.membership == Membership.join &&
-              u.id != room.client.userID &&
-              u.id != room.creatorId))
-            AccountCard(user: user),
-        ]),
       ],
     );
   }

@@ -69,7 +69,7 @@ class LayoutView extends StatelessWidget {
         .toString();
 
     return Scaffold(
-      drawer: Drawer(child: leftBar),
+      drawer: SafeArea(child: Drawer(child: leftBar)),
       body: LayoutBuilder(builder: (context, constraints) {
         final displaySideBar =
             constraints.maxWidth >= maxSidebarWidth && sidebarBuilder != null;
