@@ -205,6 +205,13 @@ class _AccountSelectionRouteContentState
                           child: Text("Choose an account"),
                         ),
                         ListTile(
+                            onTap: () async {
+                              await context.navigateTo(UserViewRoute(
+                                  userID: Matrix.of(context).client.userID));
+                            },
+                            title: const Text("My account"),
+                            leading: const Icon(Icons.person)),
+                        ListTile(
                             onTap: () {
                               launchCreateGroupModal(context);
                             },

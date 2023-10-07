@@ -46,26 +46,18 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
             context.navigateTo(const FeedRoute());
           }),
       MinestrixNavigationRailItem(
-          icon: const Icon(Icons.person),
-          label: const Text("My account"),
-          path: "user_feed",
-          onDestinationSelected: (BuildContext context) async {
-            await context.navigateTo(
-                UserViewRoute(userID: Matrix.of(context).client.userID));
-          }),
-      MinestrixNavigationRailItem(
           icon: const Icon(Icons.event),
-          label: const Text("Event"),
+          label: const Text("Events"),
           path: "events",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const CalendarEventListRoute());
           }),
       MinestrixNavigationRailItem(
-          icon: const Icon(Icons.groups),
-          label: const Text("Communities"),
-          path: "community",
+          icon: const Icon(Icons.web_stories),
+          label: const Text("Stories"),
+          path: "Stories",
           onDestinationSelected: (BuildContext context) async {
-            context.navigateTo(const CommunityRoute());
+            context.navigateTo(const TabStoriesRoute());
           }),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.people),
@@ -90,13 +82,6 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
           path: "chat",
           onDestinationSelected: (BuildContext context) async {
             context.navigateTo(const TabChatRoute());
-          }),
-      MinestrixNavigationRailItem(
-          icon: const Icon(Icons.settings),
-          label: const Text("Settings"),
-          path: "settings",
-          onDestinationSelected: (BuildContext context) async {
-            context.navigateTo(const SettingsRoute());
           }),
     ];
 
