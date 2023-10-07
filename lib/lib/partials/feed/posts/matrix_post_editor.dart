@@ -193,146 +193,144 @@ class PostEditorPageState extends State<PostEditorPage>
                   onPressed: canSend ? sendPost : null))
         ],
       ),
-      body: DefaultTabController(
-        length: 2,
-        child: ListView(
-          children: [
-            Card(
+      body: ListView(
+        children: [
+          Card(
+            child: Column(
+              children: [
+                FutureBuilder<Profile>(
+                    future: client.getProfileFromUserId(client.userID!),
+                    builder: (context, snap) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            MatrixImageAvatar(
+                                client: client,
+                                url: snap.data?.avatarUrl,
+                                defaultText: snap.data?.displayName,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary),
+                            const SizedBox(
+                              width: 14,
+                            ),
+                            Text("Post as ${snap.data?.displayName} on",
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      );
+                    }),
+                InkWell(
+                  onTap: rooms.length == 1
+                      ? null
+                      : () async {
+                          await showModalBottomSheet(
+                              context: context,
+                              useSafeArea: true,
+                              builder: (context) => Column(children: [
+                                    for (final room in rooms)
+                                      RadioListTile(
+                                        value: room,
+                                        groupValue: this.room,
+                                        onChanged: (val) {
+                                          if (val != null) {
+                                            setState(() {
+                                              this.room = val;
+                                            });
+                                            Navigator.of(context).pop();
+                                          }
+                                        },
+                                        title: MinestrixRoomTile(
+                                          room: room,
+                                          onTap: () {
+                                            selectRoom(room);
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ),
+                                  ]));
+                        },
+                  child: MinestrixRoomTile(room: room),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (widget.shareEvent != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  FutureBuilder<Profile>(
-                      future: client.getProfileFromUserId(client.userID!),
-                      builder: (context, snap) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              MatrixImageAvatar(
-                                  client: client,
-                                  url: snap.data?.avatarUrl,
-                                  defaultText: snap.data?.displayName,
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary),
-                              const SizedBox(
-                                width: 14,
-                              ),
-                              Text("Post as ${snap.data?.displayName} on",
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        );
-                      }),
-                  InkWell(
-                    onTap: () async {
-                      await showModalBottomSheet(
-                          context: context,
-                          useSafeArea: true,
-                          builder: (context) => Column(children: [
-                                for (final room in rooms)
-                                  RadioListTile(
-                                    value: room,
-                                    groupValue: this.room,
-                                    onChanged: (val) {
-                                      if (val != null) {
-                                        setState(() {
-                                          this.room = val;
-                                        });
-                                        Navigator.of(context).pop();
-                                      }
-                                    },
-                                    title: MinestrixRoomTile(
-                                      room: room,
-                                      onTap: () {
-                                        selectRoom(room);
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ),
-                              ]));
-                    },
-                    child: MinestrixRoomTile(room: room),
-                  ),
+                  const Text("Sharing",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  MatrixPostContent(
+                      event: widget.shareEvent!,
+                      imageMaxHeight: 300,
+                      imageMaxWidth: 300,
+                      disablePadding: true,
+                      onImagePressed: (item,
+                          {Event? imageEvent, String? ref}) {}),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            if (widget.shareEvent != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Sharing",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    MatrixPostContent(
-                        event: widget.shareEvent!,
-                        imageMaxHeight: 300,
-                        imageMaxWidth: 300,
-                        disablePadding: true,
-                        onImagePressed: (item,
-                            {Event? imageEvent, String? ref}) {}),
-                  ],
-                ),
-              ),
-            if (displayImageListEditor)
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 400),
-                child: MatrixPostImageListEditor(
-                    imageController: imageController,
-                    onClose: () {
-                      setState(() {
-                        displayImageListEditor = false;
-                      });
-                    }),
-              ),
-            TextField(
-              minLines: 3,
-              controller: _textController,
-              cursorColor: Colors.grey,
-              //controller: _searchController,
-              onChanged: (value) {
-                final isTextNotEmptyNew = value.isNotEmpty;
-                if (isTextNotEmpty != isTextNotEmptyNew) {
-                  setState(() {
-                    isTextNotEmpty = isTextNotEmptyNew;
-                  });
-                }
-              },
-              decoration: InputDecoration(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(15),
-                  ),
-                ),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(15),
-                  ),
-                ),
-                filled: false,
-                hintStyle: const TextStyle(color: Colors.grey),
-                labelText: widget.sendImage ? "Image caption" : "Post content",
-                labelStyle: const TextStyle(color: Colors.grey),
-                alignLabelWithHint: true,
-                hintText: widget.sendImage ? "Image caption" : "Post content",
-              ),
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
+          if (displayImageListEditor)
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 400),
+              child: MatrixPostImageListEditor(
+                  imageController: imageController,
+                  onClose: () {
+                    setState(() {
+                      displayImageListEditor = false;
+                    });
+                  }),
             ),
-            if (_isEdit)
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text("Editing post images is not possible"),
+          TextField(
+            minLines: 3,
+            controller: _textController,
+            cursorColor: Colors.grey,
+            //controller: _searchController,
+            onChanged: (value) {
+              final isTextNotEmptyNew = value.isNotEmpty;
+              if (isTextNotEmpty != isTextNotEmptyNew) {
+                setState(() {
+                  isTextNotEmpty = isTextNotEmptyNew;
+                });
+              }
+            },
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+              enabledBorder: const OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15),
+                ),
               ),
-          ],
-        ),
+              focusedBorder: const OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15),
+                ),
+              ),
+              filled: false,
+              hintStyle: const TextStyle(color: Colors.grey),
+              labelText: widget.sendImage ? "Image caption" : "Post content",
+              labelStyle: const TextStyle(color: Colors.grey),
+              alignLabelWithHint: true,
+              hintText: widget.sendImage ? "Image caption" : "Post content",
+            ),
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+          ),
+          if (_isEdit)
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text("Editing post images is not possible"),
+            ),
+        ],
       ),
     );
   }

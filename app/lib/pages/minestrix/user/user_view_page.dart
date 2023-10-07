@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/layout_view.dart';
@@ -9,6 +10,7 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
+import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_item.dart';
 import 'package:minestrix_chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
@@ -196,6 +198,60 @@ class UserViewPageState extends State<UserViewPage>
     );
   }
 
+  void displaySelectRoomModal() async {
+    final client = Matrix.of(context).client;
+
+    await showModalBottomSheet(
+        context: context,
+        useSafeArea: true,
+        builder: (context) {
+          final rooms = client.sroomsByUserId[userId!]?.toList() ?? [];
+
+          return FutureBuilder<List<SpaceRoomsChunk>?>(
+              future: client.getProfileSpaceHierarchy(userId!),
+              builder: (context, snap) {
+                final results =
+                    rooms.map((e) => RoomWithSpace(room: e)).toList();
+                final discoveredRooms = snap.data;
+
+                discoveredRooms?.forEach((space) {
+                  final res = results.firstWhereOrNull(
+                      (item) => item.room?.id == space.roomId);
+                  if (res != null) {
+                    res.space = space;
+                  } else {
+                    if (space.roomType == MatrixTypes.account) {
+                      results.add(RoomWithSpace(space: space, creator: userId));
+                    }
+                  }
+                });
+
+                return Column(children: [
+                  for (final room in rooms)
+                    RadioListTile(
+                      value: room,
+                      groupValue: mroom?.room,
+                      onChanged: (Room? val) {
+                        if (val != null) {
+                          selectRoom(RoomWithSpace(room: val));
+
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      title: MinestrixRoomTile(
+                        room: room,
+                        onTap: () {
+                          selectRoom(RoomWithSpace(room: room));
+
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                ]);
+              });
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     updateIfWidgetArgumentChanged();
@@ -285,6 +341,10 @@ class UserViewPageState extends State<UserViewPage>
                                           SocialSettingsRoute(room: space));
                                     }
                                   }),
+                            if (userId != null)
+                              IconButton(
+                                  icon: const Icon(Icons.list),
+                                  onPressed: displaySelectRoomModal)
                           ],
                           headerChildBuilder: (
                                   {required bool displaySideBar}) =>
@@ -317,26 +377,15 @@ class UserViewPageState extends State<UserViewPage>
                                               child: Row(
                                                 children: [
                                                   Expanded(
-                                                      child: constraints
-                                                                      .maxWidth <=
-                                                                  900 &&
-                                                              userId != null
-                                                          ? UserProfileSelection(
-                                                              userId: userId!,
-                                                              dense: true,
-                                                              onRoomSelected:
-                                                                  selectRoom,
-                                                              roomSelectedId:
-                                                                  mroom?.id)
-                                                          : Text(
-                                                              mroom?.displayname ??
-                                                                  '',
-                                                              maxLines: 1,
-                                                              style: const TextStyle(
-                                                                  fontSize: 24,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600))),
+                                                      child: Text(
+                                                          mroom?.displayname ??
+                                                              '',
+                                                          maxLines: 1,
+                                                          style: const TextStyle(
+                                                              fontSize: 24,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600))),
                                                   if (mroom?.creatorId ==
                                                       client.userID)
                                                     IconButton(
