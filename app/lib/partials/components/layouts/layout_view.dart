@@ -69,7 +69,14 @@ class LayoutView extends StatelessWidget {
         .toString();
 
     return Scaffold(
-      drawer: SafeArea(child: Drawer(child: leftBar)),
+      appBar: !(customHeaderText == null &&
+              customHeaderChild == null &&
+              customHeaderActionsButtons == null)
+          ? AppBar(
+              title: Text(customHeaderText ?? ''),
+              leading: customHeaderChild,
+              actions: customHeaderActionsButtons)
+          : null,
       body: LayoutBuilder(builder: (context, constraints) {
         final displaySideBar =
             constraints.maxWidth >= maxSidebarWidth && sidebarBuilder != null;
@@ -119,51 +126,38 @@ class LayoutView extends StatelessWidget {
                     child: SizedBox(width: 300, child: leftBar!)),
               ),
             Expanded(
-              child: Column(
-                children: [
-                  if (!(customHeaderText == null &&
-                      customHeaderChild == null &&
-                      customHeaderActionsButtons == null))
-                    AppBar(
-                        title: Text(customHeaderText ?? ''),
-                        leading: customHeaderChild,
-                        actions: customHeaderActionsButtons),
-                  Expanded(
-                    child: ListView(controller: controller, children: [
-                      header,
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Center(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: maxHeaderWidth),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (displaySideBar)
-                                SizedBox(
-                                    width: sidebarWidth,
-                                    child: sidebarBuilder!(
-                                        displayLeftBar: displayLaterals)),
-                              Expanded(
-                                child: Center(
-                                  child: ConstrainedBox(
-                                      constraints:
-                                          BoxConstraints(maxWidth: mainWidth),
-                                      child: mainBuilder(
-                                          displaySideBar: displaySideBar,
-                                          displayLeftBar: displayLaterals)),
-                                ),
-                              ),
-                            ],
+              child: ListView(controller: controller, children: [
+                header,
+                const SizedBox(
+                  height: 10,
+                ),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxHeaderWidth),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (displaySideBar)
+                          SizedBox(
+                              width: sidebarWidth,
+                              child: sidebarBuilder!(
+                                  displayLeftBar: displayLaterals)),
+                        Expanded(
+                          child: Center(
+                            child: ConstrainedBox(
+                                constraints:
+                                    BoxConstraints(maxWidth: mainWidth),
+                                child: mainBuilder(
+                                    displaySideBar: displaySideBar,
+                                    displayLeftBar: displayLaterals)),
                           ),
                         ),
-                      ),
-                    ]),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ]),
             ),
             if (rightBar != null && displayLaterals)
               SizedBox(width: 400, child: rightBar!),
