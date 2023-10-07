@@ -115,6 +115,14 @@ dependencies:
   dynamic_color: ^1.6.6
   media_kit: ^1.1.7
 
+# Override due to https://github.com/mogol/flutter_secure_storage/issues/616
+dependency_overrides:
+  flutter_secure_storage_linux:
+    git:
+      url: https://github.com/tomekit/flutter_secure_storage.git
+      ref: develop
+      path: flutter_secure_storage_linux
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
