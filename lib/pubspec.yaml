@@ -105,6 +105,7 @@ dependencies:
   flutter_highlighter: ^0.1.1
   linkify: ^5.0.0
   flutter_html_table: ^3.0.0-beta.2
+  fcm_shared_isolate: ^0.1.0
   
 
 dev_dependencies:

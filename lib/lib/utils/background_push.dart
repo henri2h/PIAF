@@ -22,6 +22,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:fcm_shared_isolate/fcm_shared_isolate.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -54,7 +55,7 @@ class BackgroundPush {
 
   final pendingTests = <String, Completer<void>>{};
 
-  final dynamic firebase = null; //FcmSharedIsolate();
+  final firebase = FcmSharedIsolate();
 
   DateTime? lastReceivedPush;
 
