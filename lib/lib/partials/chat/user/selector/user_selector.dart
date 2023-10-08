@@ -212,75 +212,75 @@ class _UserSelectorState extends State<UserSelector> {
                       ),
                       SliverList(
                         delegate: SliverChildBuilderDelegate(
-                            (context, index) =>
-                                (state.selectedUsers.isNotEmpty && !isSearching)
-                                    ? Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 2.0, horizontal: 6),
-                                            child: SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: Row(children: [
-                                                for (final userId
-                                                    in state.selectedUsers)
-                                                  InkWell(
-                                                      onTap: () => setState(() {
-                                                            state.selectedUsers
-                                                                .remove(userId);
-                                                          }),
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                vertical: 2,
-                                                                horizontal: 4),
-                                                        child: FutureBuilder<
-                                                                Profile>(
-                                                            future: widget
-                                                                .client
-                                                                .getProfileFromUserId(
-                                                                    userId),
-                                                            builder:
-                                                                (context,
-                                                                        snap) =>
-                                                                    Stack(
-                                                                      children: [
-                                                                        MatrixImageAvatar(
-                                                                          client:
-                                                                              widget.client,
-                                                                          url: snap
-                                                                              .data
-                                                                              ?.avatarUrl,
-                                                                          defaultText: snap
-                                                                              .data
-                                                                              ?.displayName,
-                                                                        ),
-                                                                        Positioned(
-                                                                            top:
-                                                                                0,
-                                                                            right:
-                                                                                0,
-                                                                            child: CircleAvatar(
-                                                                                radius: 7,
-                                                                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                                                                child: Icon(Icons.remove, size: 12, color: Theme.of(context).colorScheme.onPrimary)))
-                                                                      ],
-                                                                    )),
-                                                      ))
-                                              ]),
-                                            ),
-                                          ),
-                                          const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 8.0),
-                                            child: Divider(),
-                                          ),
-                                        ],
-                                      )
-                                    : widget.appBarBuilder(isSearching),
+                            (context, index) => (state.selectedUsers.isNotEmpty)
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 2.0, horizontal: 6),
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(children: [
+                                            for (final userId
+                                                in state.selectedUsers)
+                                              InkWell(
+                                                  onTap: () => setState(() {
+                                                        state.selectedUsers
+                                                            .remove(userId);
+                                                      }),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 2,
+                                                        horizontal: 4),
+                                                    child: FutureBuilder<
+                                                            Profile>(
+                                                        future: widget.client
+                                                            .getProfileFromUserId(
+                                                                userId),
+                                                        builder:
+                                                            (context, snap) =>
+                                                                Stack(
+                                                                  children: [
+                                                                    MatrixImageAvatar(
+                                                                      client: widget
+                                                                          .client,
+                                                                      url: snap
+                                                                          .data
+                                                                          ?.avatarUrl,
+                                                                      defaultText: snap
+                                                                          .data
+                                                                          ?.displayName,
+                                                                    ),
+                                                                    Positioned(
+                                                                        top: 0,
+                                                                        right:
+                                                                            0,
+                                                                        child: CircleAvatar(
+                                                                            radius:
+                                                                                7,
+                                                                            backgroundColor: Theme.of(context)
+                                                                                .colorScheme
+                                                                                .primary,
+                                                                            child: Icon(Icons.remove,
+                                                                                size: 12,
+                                                                                color: Theme.of(context).colorScheme.onPrimary)))
+                                                                  ],
+                                                                )),
+                                                  ))
+                                          ]),
+                                        ),
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: Divider(),
+                                      ),
+                                    ],
+                                  )
+                                : widget.appBarBuilder(isSearching),
                             childCount: 1),
                       ),
                       if (suggestions.isNotEmpty == true && !isSearching)
