@@ -4,7 +4,7 @@ import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart'
 import 'package:minestrix_chat/pages/chat_page_items/provider/chat_page_state.dart';
 import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
-import '../../../pages/room_creator_page.dart';
+import '../../../pages/room_create/create_chat_page.dart';
 import '../../dialogs/adaptative_dialogs.dart';
 import '../search/matrix_chats_search.dart';
 import '../spaces/list/spaces_list.dart';
@@ -112,11 +112,9 @@ class _RoomListState extends State<RoomList> {
       floatingActionButton: isHome
           ? FloatingActionButton.extended(
               onPressed: () async {
-                await AdaptativeDialogs.show(
-                    context: context,
-                    title: "New message",
-                    builder: (_) => RoomCreatorPage(
-                        client: client, onRoomSelected: onSelection));
+                await Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => CreateChatPage(
+                        client: client, onRoomSelected: onSelection)));
               },
               label: const Text("Start chat"),
               icon: const Icon(Icons.message),

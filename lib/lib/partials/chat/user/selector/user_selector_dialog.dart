@@ -54,7 +54,7 @@ class MinesTrixUserSelectionState extends State<MinesTrixUserSelection> {
                         onUserSelected: (_) {},
                         appBarBuilder: (bool isSearching) =>
                             const Column(children: []),
-                        controller: controller);
+                        state: controller);
                   }),
             ),
           ],

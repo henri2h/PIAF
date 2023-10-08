@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/utils/text.dart';
 
 import '../../../../style/constants.dart';
 import '../../../matrix/matrix_image_avatar.dart';
@@ -19,12 +21,12 @@ class UserSelector extends StatefulWidget {
       required this.onUserSelected,
       required this.appBarBuilder,
       this.ignoreUsers = const [],
-      required this.controller})
+      required this.state})
       : super(key: key);
 
   final Client client;
   final bool multipleUserSelectionEnabled;
-  final UserSelectorController controller;
+  final UserSelectorController state;
   final Function(String) onUserSelected;
   final Widget Function(bool isSearching) appBarBuilder;
   final List<String> ignoreUsers;
@@ -33,31 +35,54 @@ class UserSelector extends StatefulWidget {
 }
 
 class _UserSelectorState extends State<UserSelector> {
-  final controller = TextEditingController();
+  UserSelectorController get state => widget.state;
+
+  final textController = TextEditingController();
 
   bool isSearching = false;
-
-  Future<List<Profile>>? profiles;
-
   Timer? _debounce;
+
+  Future<List<Profile>>? _searchResultProfiles;
+  List<String> get directChats => widget.client.directChats.keys.toList();
+
+  Future<List<Profile>>? get profiles => _searchResultProfiles;
+
+/*
+/// It has been tried to display the list of all the directChats users. However due to their important
+/// amount, it is inpossible. Indeed doing so takes too much time to do the network request and processing.
+/// Therefore, this approach is inpracticable. :(
+  Future<List<Profile>> loadList() async {
+    final list = <Profile>[];
+    for (final userId in directChats) {
+      try {
+        final profile = await widget.client.getProfileFromUserId(userId);
+        list.add(profile);
+      } catch (e) {
+        Logs().e("Could not get $userId profile", e);
+      }
+    }
+    return list
+      ..sortBy((element) =>
+          element.displayName?.toLowerCase().removeDiacritics() ?? '');
+  }*/
 
   void onTextChanged(String text) {
     final oldState = isSearching;
     isSearching = text.isNotEmpty;
+
+    if (text.isEmpty) {
+      _searchResultProfiles = null;
+      _debounce = null;
+    }
 
     if (isSearching != oldState) {
       setState(() {});
     }
 
     if (isSearching) {
-      if (profiles == null) {
-        profiles = search();
-        return;
-      }
-
       if (!(_debounce?.isActive ?? false)) {
         _debounce = Timer(const Duration(milliseconds: 300), () async {
-          profiles = search();
+          _searchResultProfiles = search();
           if (mounted) setState(() {});
         });
       }
@@ -65,178 +90,264 @@ class _UserSelectorState extends State<UserSelector> {
   }
 
   Future<List<Profile>> search() async {
-    final result = await widget.client.searchUserDirectory(controller.text);
-
+    final result = await widget.client.searchUserDirectory(textController.text);
     return result.results;
   }
 
+  void toggleUser(String userId) =>
+      setUser(userId, !state.selectedUsers.contains(userId));
+
+  void setUser(String userId, bool value) => value
+      ? state.selectedUsers.add(userId)
+      : state.selectedUsers.remove(userId);
+
   Widget buildItem(Widget item, String userId) {
     if (widget.multipleUserSelectionEnabled) {
-      return CheckboxListTile(
-        title: item,
-        value: widget.controller.selectedUsers.contains(userId),
-        onChanged: (bool? value) {
-          setState(() {
-            if (value == true) {
-              widget.controller.selectedUsers.add(userId);
-            } else {
-              widget.controller.selectedUsers.remove(userId);
-            }
-          });
-        },
+      return InkWell(
+        onTap: () => setState(() {
+          toggleUser(userId);
+        }),
+        child: Row(
+          children: [
+            Expanded(child: item),
+            Radio(
+              value: state.selectedUsers.contains(userId),
+              groupValue: true,
+              toggleable: true,
+              onChanged: (bool? value) {
+                setState(() {
+                  setUser(userId, !(value ?? true));
+                });
+              },
+            ),
+          ],
+        ),
       );
     }
-    return ListTile(title: item, onTap: () => widget.onUserSelected(userId));
+    return InkWell(onTap: () => widget.onUserSelected(userId), child: item);
   }
 
   @override
   Widget build(BuildContext context) {
-    final chats = widget.client.directChats.keys
-        .toList()
-        .where((userId) => !widget.ignoreUsers.contains(userId))
-        .toList();
-    return Column(
-      children: [
-        Expanded(
-            child: FutureBuilder<List<Profile>>(
-                future: profiles,
-                builder: (context, snapProfiles) {
-                  final profileChats = snapProfiles.data
-                      ?.where(
-                          (user) => !widget.ignoreUsers.contains(user.userId))
-                      .toList();
+    final suggestions = directChats.take(20).toList();
+    // TODO: Implement a smarter way to do chat suggestions
 
-                  return CustomScrollView(
-                      cacheExtent: 400,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        SliverAppBar(
-                          automaticallyImplyLeading: false,
-                          flexibleSpace: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextField(
-                              controller: controller,
-                              onChanged: onTextChanged,
-                              decoration: Constants.kTextFieldInputDecoration
-                                  .copyWith(
-                                      labelText: "Search",
-                                      prefixIcon: const Icon(Icons.search)),
-                            ),
-                          ),
-                        ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                              (context, index) => (widget.controller
-                                          .selectedUsers.isNotEmpty &&
-                                      !isSearching)
-                                  ? Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 2.0, horizontal: 6),
-                                          child: SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: Row(children: [
-                                              for (final userId in widget
-                                                  .controller.selectedUsers)
-                                                InkWell(
-                                                    onTap: () => setState(() {
-                                                          widget.controller
-                                                              .selectedUsers
-                                                              .remove(userId);
-                                                        }),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 2,
-                                                          horizontal: 4),
-                                                      child: FutureBuilder<
-                                                              Profile>(
-                                                          future: widget.client
-                                                              .getProfileFromUserId(
-                                                                  userId),
-                                                          builder:
-                                                              (context, snap) =>
-                                                                  Stack(
-                                                                    children: [
-                                                                      MatrixImageAvatar(
-                                                                        client:
-                                                                            widget.client,
-                                                                        url: snap
-                                                                            .data
-                                                                            ?.avatarUrl,
-                                                                        defaultText: snap
-                                                                            .data
-                                                                            ?.displayName,
-                                                                      ),
-                                                                      Positioned(
-                                                                          top:
-                                                                              0,
-                                                                          right:
-                                                                              0,
-                                                                          child: CircleAvatar(
-                                                                              radius: 7,
-                                                                              backgroundColor: Theme.of(context).colorScheme.primary,
-                                                                              child: Icon(Icons.remove, size: 12, color: Theme.of(context).colorScheme.onPrimary)))
-                                                                    ],
-                                                                  )),
-                                                    ))
-                                            ]),
-                                          ),
-                                        ),
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 8.0),
-                                          child: Divider(),
-                                        ),
-                                      ],
-                                    )
-                                  : widget.appBarBuilder(isSearching),
-                              childCount: 1),
-                        ),
-                        SliverList(
-                            delegate: !isSearching
-                                ? SliverChildBuilderDelegate(
-                                    (context, pos) {
-                                      final id = chats[pos];
-                                      return FutureBuilder<Profile>(
-                                          future: widget.client
-                                              .getProfileFromUserId(id),
-                                          builder: (context, snap) {
-                                            final user = snap.data;
-                                            final item = MatrixUserItem(
-                                                avatarUrl: user?.avatarUrl,
-                                                client: widget.client,
-                                                name: user?.displayName,
-                                                userId: id);
+    return FutureBuilder<List<Profile>>(
+        future: profiles,
+        builder: (context, snapProfiles) {
+          final allProfiles = snapProfiles.data
+              ?.where((user) => !widget.ignoreUsers.contains(user.userId));
+          final profiles = allProfiles
+                  ?.where((element) => directChats.contains(element.userId))
+                  .toList() ??
+              [];
+          final internetProfiles = allProfiles
+                  ?.where((element) => !directChats.contains(element.userId))
+                  .toList() ??
+              [];
 
-                                            return buildItem(item, id);
-                                          });
-                                    },
-                                    childCount: chats.length,
-                                  )
-                                : profileChats == null
-                                    ? SliverChildBuilderDelegate(
-                                        (context, pos) => const ListTile(
-                                            title: MatrixUserItemShimmer()),
-                                        childCount: 3)
-                                    : SliverChildBuilderDelegate(
-                                        (context, pos) {
-                                          final user = profileChats[pos];
-                                          final item = MatrixUserItem(
-                                              avatarUrl: user.avatarUrl,
-                                              client: widget.client,
-                                              name: user.displayName,
-                                              userId: user.userId);
-                                          return buildItem(item, user.userId);
-                                        },
-                                        childCount: chats.length,
-                                      )),
-                      ]);
-                })),
-      ],
-    );
+          if (snapProfiles.hasError) return Text(snapProfiles.error.toString());
+
+          return CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              cacheExtent: 400,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  flexibleSpace: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: textController,
+                      onChanged: onTextChanged,
+                      decoration: Constants.kTextFieldInputDecoration.copyWith(
+                          labelText: "Search",
+                          prefixIcon: const Icon(Icons.search)),
+                    ),
+                  ),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                      (context, index) =>
+                          (state.selectedUsers.isNotEmpty && !isSearching)
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 2.0, horizontal: 6),
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(children: [
+                                          for (final userId
+                                              in state.selectedUsers)
+                                            InkWell(
+                                                onTap: () => setState(() {
+                                                      state.selectedUsers
+                                                          .remove(userId);
+                                                    }),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      vertical: 2,
+                                                      horizontal: 4),
+                                                  child: FutureBuilder<Profile>(
+                                                      future: widget.client
+                                                          .getProfileFromUserId(
+                                                              userId),
+                                                      builder:
+                                                          (context, snap) =>
+                                                              Stack(
+                                                                children: [
+                                                                  MatrixImageAvatar(
+                                                                    client: widget
+                                                                        .client,
+                                                                    url: snap
+                                                                        .data
+                                                                        ?.avatarUrl,
+                                                                    defaultText: snap
+                                                                        .data
+                                                                        ?.displayName,
+                                                                  ),
+                                                                  Positioned(
+                                                                      top: 0,
+                                                                      right: 0,
+                                                                      child: CircleAvatar(
+                                                                          radius:
+                                                                              7,
+                                                                          backgroundColor: Theme.of(context)
+                                                                              .colorScheme
+                                                                              .primary,
+                                                                          child: Icon(
+                                                                              Icons.remove,
+                                                                              size: 12,
+                                                                              color: Theme.of(context).colorScheme.onPrimary)))
+                                                                ],
+                                                              )),
+                                                ))
+                                        ]),
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Divider(),
+                                    ),
+                                  ],
+                                )
+                              : widget.appBarBuilder(isSearching),
+                      childCount: 1),
+                ),
+                if (suggestions.isNotEmpty == true && !isSearching)
+                  SliverList.list(children: const [
+                    ListTile(
+                      title: Text("Suggestions"),
+                    )
+                  ]),
+                if (suggestions.isNotEmpty == true && !isSearching)
+                  SliverList.builder(
+                      itemBuilder: (context, pos) => FutureBuilder<Profile>(
+                          future: widget.client
+                              .getProfileFromUserId(suggestions[pos]),
+                          builder: (context, snapshot) {
+                            if (snapshot.data == null) {
+                              return const MatrixUserItemShimmer();
+                            }
+                            return buildProfile(snapshot.data!);
+                          }),
+                      itemCount: suggestions.length),
+                if (profiles.isNotEmpty == true)
+                  SliverList.list(children: const [
+                    ListTile(
+                      title: Text("Contacts"),
+                    )
+                  ]),
+                if (profiles.isNotEmpty == true)
+                  SliverList.builder(
+                    itemBuilder: (context, pos) {
+                      final user = profiles[pos];
+
+                      return Column(
+                        children: [
+                          buildProfile(user),
+                        ],
+                      );
+                    },
+                    itemCount: profiles.length,
+                  ),
+                if (isSearching && !snapProfiles.hasData)
+                  SliverList.builder(
+                      itemBuilder: (context, pos) =>
+                          const ListTile(title: MatrixUserItemShimmer()),
+                      itemCount: 3),
+                if (internetProfiles.isNotEmpty == true)
+                  SliverList.list(children: const [
+                    ListTile(
+                      title: Text("More contacts"),
+                    )
+                  ]),
+                SliverList.builder(
+                    itemBuilder: (context, pos) =>
+                        buildProfile(internetProfiles[pos]),
+                    itemCount: internetProfiles.length)
+              ]);
+        });
+  }
+
+  Widget buildProfile(Profile user) {
+    return buildItem(
+        MatrixUserItem(
+            avatarUrl: user.avatarUrl,
+            client: widget.client,
+            name: user.displayName,
+            userId: user.userId),
+        user.userId);
   }
 }
+
+
+/* In order to display the sorted profile list with name separators
+SliverChildBuilderDelegate(
+                                (context, pos) {
+                                  final user = profiles[pos];
+                                  final id = user.userId;
+
+                                  final item = MatrixUserItem(
+                                      avatarUrl: user.avatarUrl,
+                                      client: widget.client,
+                                      name: user.displayName,
+                                      userId: id);
+
+                                  String? userBefore;
+                                  if (pos > 0) {
+                                    userBefore = profiles[pos - 1]
+                                        .displayName
+                                        ?.substring(0, 1)
+                                        .toLowerCase()
+                                        .removeDiacritics();
+                                  }
+                                  final letter = user.displayName
+                                      ?.substring(0, 1)
+                                      .toLowerCase()
+                                      .removeDiacritics();
+
+                                  final shouldDisplayLetter =
+                                      userBefore != letter;
+
+                                  return shouldDisplayLetter
+                                      ? Column(
+                                          children: [
+                                            if (shouldDisplayLetter)
+                                              ListTile(
+                                                title: Text(
+                                                    letter?.toUpperCase() ??
+                                                        "Error"),
+                                              ),
+                                            buildItem(item, id),
+                                          ],
+                                        )
+                                      : buildItem(item, id);
+                                },
+                                childCount: profiles.length,
+                              )
+                               */
