@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/text.dart';
@@ -43,9 +42,8 @@ class _UserSelectorState extends State<UserSelector> {
   Timer? _debounce;
 
   Future<List<Profile>>? _searchResultProfiles;
+  Future<List<Profile>>? _searchResultLocalProfiles;
   List<String> get directChats => widget.client.directChats.keys.toList();
-
-  Future<List<Profile>>? get profiles => _searchResultProfiles;
 
 /*
 /// It has been tried to display the list of all the directChats users. However due to their important
@@ -70,8 +68,10 @@ class _UserSelectorState extends State<UserSelector> {
     final oldState = isSearching;
     isSearching = text.isNotEmpty;
 
-    if (text.isEmpty) {
-      _searchResultProfiles = null;
+    if (!isSearching) {
+      _debounce?.cancel();
+      _searchResultLocalProfiles = Future(() => []);
+      _searchResultProfiles = Future(() => []);
       _debounce = null;
     }
 
@@ -82,15 +82,53 @@ class _UserSelectorState extends State<UserSelector> {
     if (isSearching) {
       if (!(_debounce?.isActive ?? false)) {
         _debounce = Timer(const Duration(milliseconds: 300), () async {
-          _searchResultProfiles = search();
+          _searchResultProfiles = search(textController.text);
+          _searchResultLocalProfiles = searchLocal(textController.text);
           if (mounted) setState(() {});
         });
       }
     }
   }
 
-  Future<List<Profile>> search() async {
-    final result = await widget.client.searchUserDirectory(textController.text);
+  Future<List<Profile>> searchLocal(String searchTerm) async {
+    searchTerm =
+        searchTerm.toLowerCase().removeDiacritics().removeSpecialCharacters();
+    List<String?> users = widget.client.rooms
+        .where((r) =>
+            !r.isExtinct &&
+            r.isDirectChat &&
+            (r
+                    .getLocalizedDisplayname()
+                    .toLowerCase()
+                    .removeDiacritics()
+                    .removeSpecialCharacters()
+                    .contains(searchTerm) ||
+                r.canonicalAlias.contains(searchTerm) ||
+                r.id.contains(searchTerm)))
+        .map((e) => e.directChatMatrixID)
+        .toList();
+
+    final profiles = <Profile>[];
+
+    for (final userId in users) {
+      if (userId != null) {
+        try {
+          final user = await widget.client.getProfileFromUserId(userId);
+          profiles.add(user);
+        } catch (_) {}
+      }
+    }
+    return profiles;
+  }
+
+  Future<List<Profile>> search(String searchTerm) async {
+    final result = await widget.client.searchUserDirectory(searchTerm);
+    if (searchTerm.isValidMatrixId) {
+      try {
+        final user = await widget.client.getProfileFromUserId(searchTerm);
+        result.results.add(user);
+      } catch (_) {}
+    }
     return result.results;
   }
 
@@ -133,164 +171,174 @@ class _UserSelectorState extends State<UserSelector> {
     // TODO: Implement a smarter way to do chat suggestions
 
     return FutureBuilder<List<Profile>>(
-        future: profiles,
-        builder: (context, snapProfiles) {
-          final allProfiles = snapProfiles.data
-              ?.where((user) => !widget.ignoreUsers.contains(user.userId));
-          final profiles = allProfiles
-                  ?.where((element) => directChats.contains(element.userId))
-                  .toList() ??
-              [];
-          final internetProfiles = allProfiles
-                  ?.where((element) => !directChats.contains(element.userId))
+        future: _searchResultLocalProfiles,
+        builder: (context, snapLocal) {
+          final localProfiles = snapLocal.data
+                  ?.where((user) => !widget.ignoreUsers.contains(user.userId))
                   .toList() ??
               [];
 
-          if (snapProfiles.hasError) return Text(snapProfiles.error.toString());
+          return FutureBuilder<List<Profile>>(
+              future: _searchResultProfiles,
+              builder: (context, snapProfiles) {
+                final allProfiles = snapProfiles.data?.where(
+                    (user) => !widget.ignoreUsers.contains(user.userId));
+                // Filter all the local profiles
+                final internetProfiles = allProfiles
+                        ?.where(
+                            (element) => !directChats.contains(element.userId))
+                        .toList() ??
+                    [];
 
-          return CustomScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              cacheExtent: 400,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverAppBar(
-                  automaticallyImplyLeading: false,
-                  flexibleSpace: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: textController,
-                      onChanged: onTextChanged,
-                      decoration: Constants.kTextFieldInputDecoration.copyWith(
-                          labelText: "Search",
-                          prefixIcon: const Icon(Icons.search)),
-                    ),
-                  ),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                      (context, index) =>
-                          (state.selectedUsers.isNotEmpty && !isSearching)
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 2.0, horizontal: 6),
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Row(children: [
-                                          for (final userId
-                                              in state.selectedUsers)
-                                            InkWell(
-                                                onTap: () => setState(() {
-                                                      state.selectedUsers
-                                                          .remove(userId);
-                                                    }),
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      vertical: 2,
-                                                      horizontal: 4),
-                                                  child: FutureBuilder<Profile>(
-                                                      future: widget.client
-                                                          .getProfileFromUserId(
-                                                              userId),
-                                                      builder:
-                                                          (context, snap) =>
-                                                              Stack(
-                                                                children: [
-                                                                  MatrixImageAvatar(
-                                                                    client: widget
-                                                                        .client,
-                                                                    url: snap
-                                                                        .data
-                                                                        ?.avatarUrl,
-                                                                    defaultText: snap
-                                                                        .data
-                                                                        ?.displayName,
-                                                                  ),
-                                                                  Positioned(
-                                                                      top: 0,
-                                                                      right: 0,
-                                                                      child: CircleAvatar(
-                                                                          radius:
-                                                                              7,
-                                                                          backgroundColor: Theme.of(context)
-                                                                              .colorScheme
-                                                                              .primary,
-                                                                          child: Icon(
-                                                                              Icons.remove,
-                                                                              size: 12,
-                                                                              color: Theme.of(context).colorScheme.onPrimary)))
-                                                                ],
-                                                              )),
-                                                ))
-                                        ]),
-                                      ),
-                                    ),
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Divider(),
-                                    ),
-                                  ],
-                                )
-                              : widget.appBarBuilder(isSearching),
-                      childCount: 1),
-                ),
-                if (suggestions.isNotEmpty == true && !isSearching)
-                  SliverList.list(children: const [
-                    ListTile(
-                      title: Text("Suggestions"),
-                    )
-                  ]),
-                if (suggestions.isNotEmpty == true && !isSearching)
-                  SliverList.builder(
-                      itemBuilder: (context, pos) => FutureBuilder<Profile>(
-                          future: widget.client
-                              .getProfileFromUserId(suggestions[pos]),
-                          builder: (context, snapshot) {
-                            if (snapshot.data == null) {
-                              return const MatrixUserItemShimmer();
-                            }
-                            return buildProfile(snapshot.data!);
-                          }),
-                      itemCount: suggestions.length),
-                if (profiles.isNotEmpty == true)
-                  SliverList.list(children: const [
-                    ListTile(
-                      title: Text("Contacts"),
-                    )
-                  ]),
-                if (profiles.isNotEmpty == true)
-                  SliverList.builder(
-                    itemBuilder: (context, pos) {
-                      final user = profiles[pos];
+                return CustomScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    cacheExtent: 400,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverAppBar(
+                        automaticallyImplyLeading: false,
+                        flexibleSpace: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            controller: textController,
+                            onChanged: onTextChanged,
+                            decoration: Constants.kTextFieldInputDecoration
+                                .copyWith(
+                                    labelText: "Search",
+                                    prefixIcon: const Icon(Icons.search)),
+                          ),
+                        ),
+                      ),
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                            (context, index) =>
+                                (state.selectedUsers.isNotEmpty && !isSearching)
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 2.0, horizontal: 6),
+                                            child: SingleChildScrollView(
+                                              scrollDirection: Axis.horizontal,
+                                              child: Row(children: [
+                                                for (final userId
+                                                    in state.selectedUsers)
+                                                  InkWell(
+                                                      onTap: () => setState(() {
+                                                            state.selectedUsers
+                                                                .remove(userId);
+                                                          }),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 2,
+                                                                horizontal: 4),
+                                                        child: FutureBuilder<
+                                                                Profile>(
+                                                            future: widget
+                                                                .client
+                                                                .getProfileFromUserId(
+                                                                    userId),
+                                                            builder:
+                                                                (context,
+                                                                        snap) =>
+                                                                    Stack(
+                                                                      children: [
+                                                                        MatrixImageAvatar(
+                                                                          client:
+                                                                              widget.client,
+                                                                          url: snap
+                                                                              .data
+                                                                              ?.avatarUrl,
+                                                                          defaultText: snap
+                                                                              .data
+                                                                              ?.displayName,
+                                                                        ),
+                                                                        Positioned(
+                                                                            top:
+                                                                                0,
+                                                                            right:
+                                                                                0,
+                                                                            child: CircleAvatar(
+                                                                                radius: 7,
+                                                                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                                                                child: Icon(Icons.remove, size: 12, color: Theme.of(context).colorScheme.onPrimary)))
+                                                                      ],
+                                                                    )),
+                                                      ))
+                                              ]),
+                                            ),
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: Divider(),
+                                          ),
+                                        ],
+                                      )
+                                    : widget.appBarBuilder(isSearching),
+                            childCount: 1),
+                      ),
+                      if (suggestions.isNotEmpty == true && !isSearching)
+                        SliverList.list(children: const [
+                          ListTile(
+                            title: Text("Suggestions"),
+                          )
+                        ]),
+                      if (suggestions.isNotEmpty == true && !isSearching)
+                        SliverList.builder(
+                            itemBuilder: (context, pos) =>
+                                FutureBuilder<Profile>(
+                                    future: widget.client
+                                        .getProfileFromUserId(suggestions[pos]),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.data == null) {
+                                        return const MatrixUserItemShimmer();
+                                      }
+                                      return buildProfile(snapshot.data!);
+                                    }),
+                            itemCount: suggestions.length),
+                      if (localProfiles.isNotEmpty == true)
+                        SliverList.list(children: const [
+                          ListTile(
+                            title: Text("Contacts"),
+                          )
+                        ]),
+                      if (localProfiles.isNotEmpty == true)
+                        SliverList.builder(
+                          itemBuilder: (context, pos) {
+                            final user = localProfiles[pos];
 
-                      return Column(
-                        children: [
-                          buildProfile(user),
-                        ],
-                      );
-                    },
-                    itemCount: profiles.length,
-                  ),
-                if (isSearching && !snapProfiles.hasData)
-                  SliverList.builder(
-                      itemBuilder: (context, pos) =>
-                          const ListTile(title: MatrixUserItemShimmer()),
-                      itemCount: 3),
-                if (internetProfiles.isNotEmpty == true)
-                  SliverList.list(children: const [
-                    ListTile(
-                      title: Text("More contacts"),
-                    )
-                  ]),
-                SliverList.builder(
-                    itemBuilder: (context, pos) =>
-                        buildProfile(internetProfiles[pos]),
-                    itemCount: internetProfiles.length)
-              ]);
+                            return Column(
+                              children: [
+                                buildProfile(user),
+                              ],
+                            );
+                          },
+                          itemCount: localProfiles.length,
+                        ),
+                      if (isSearching && !snapProfiles.hasData)
+                        SliverList.builder(
+                            itemBuilder: (context, pos) =>
+                                const ListTile(title: MatrixUserItemShimmer()),
+                            itemCount: 3),
+                      if (internetProfiles.isNotEmpty == true)
+                        SliverList.list(children: const [
+                          ListTile(
+                            title: Text("More contacts"),
+                          )
+                        ]),
+                      if (internetProfiles.isNotEmpty == true)
+                        SliverList.builder(
+                            itemBuilder: (context, pos) =>
+                                buildProfile(internetProfiles[pos]),
+                            itemCount: internetProfiles.length)
+                    ]);
+              });
         });
   }
 
