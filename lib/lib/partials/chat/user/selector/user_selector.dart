@@ -353,7 +353,6 @@ class _UserSelectorState extends State<UserSelector> {
   }
 }
 
-
 /* In order to display the sorted profile list with name separators
 SliverChildBuilderDelegate(
                                 (context, pos) {
