@@ -1,8 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/mobile_stepper/mobile_stepper.dart';
 import 'package:minestrix_chat/partials/stories/stories_user_selection.dart';
+import 'package:photo_manager/photo_manager.dart';
+
+import '../utils/platform_infos.dart';
+import 'device_media_gallery.dart';
 
 class MatrixCreateStoriePage extends StatefulWidget {
   const MatrixCreateStoriePage(
@@ -79,11 +82,24 @@ class StorieContentCreator extends StatefulWidget {
 
 class StorieContentCreatorState extends State<StorieContentCreator> {
   void addImage() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.image, withData: true);
+    if (PlatformInfos.isAndroid) {
+      final result = await Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const DeviceMediaGallery()));
+      if (result is List<AssetEntity> && result.isNotEmpty) {
+        final returnedFile = await result.first.file;
+        final data = await returnedFile?.readAsBytes();
+        if (data != null) {
+          widget.onImgChanged(PlatformFile(
+              name: result.first.title ?? '', size: data.length, bytes: data));
+        }
+      }
+    } else {
+      FilePickerResult? result = await FilePicker.platform
+          .pickFiles(type: FileType.image, withData: true);
 
-    if (result != null) {
-      widget.onImgChanged(result.files.first);
+      if (result != null) {
+        widget.onImgChanged(result.files.first);
+      }
     }
   }
 
