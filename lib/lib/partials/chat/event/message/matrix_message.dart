@@ -141,6 +141,26 @@ class MessageDisplayState extends State<MessageDisplay>
         ? Theme.of(context).colorScheme.onSurface
         : foregroundColor;
 
+    Future<void> displayReactionDialog() async {
+      if (widget.reactions == null) return;
+      await AdaptativeDialogs.show(
+        context: context,
+        title: "Reactions",
+        builder: (context) => EventReactionList(reactions: widget.reactions!),
+      );
+    }
+
+    Future<void> sendReaction(String key) async {
+      final userEvent = getUserReactionEvent(key);
+
+      if (userEvent == null) {
+        // prevent the user from sending the reaction twice. (Won't be accepted by the server)
+        await e.room.sendReaction(e.eventId, key);
+      } else {
+        await userEvent.redactEvent();
+      }
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -435,52 +455,30 @@ class MessageDisplayState extends State<MessageDisplay>
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 4, horizontal: 4),
                                       child: GestureDetector(
-                                        child: MaterialButton(
-                                            minWidth: 8,
-                                            height: 0,
-                                            padding: const EdgeInsets.only(),
-                                            materialTapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
-                                            child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(key.key!,
-                                                      style: const TextStyle(
-                                                          fontSize: 12)),
-                                                  const SizedBox(width: 2),
-                                                  Text(key.value.toString(),
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall)
-                                                ]),
-                                            onPressed: () async {
-                                              final userEvent =
-                                                  getUserReactionEvent(
-                                                      key.key!);
-
-                                              if (userEvent == null) {
-                                                // prevent the user from sending the reaction twice. (Won't be accepted by the server)
-                                                await e.room.sendReaction(
-                                                    e.eventId, key.key!);
-                                              } else {
-                                                await userEvent.redactEvent();
-                                              }
-                                            }),
-                                        onLongPress: () async {
-                                          if (widget.reactions == null) return;
-                                          await AdaptativeDialogs.show(
-                                            context: context,
-                                            title: "Reactions",
-                                            builder: (context) =>
-                                                EventReactionList(
-                                                    reactions:
-                                                        widget.reactions!),
-                                          );
-                                        },
-                                      ),
+                                          onLongPress: displayReactionDialog,
+                                          child: MaterialButton(
+                                              minWidth: 8,
+                                              height: 0,
+                                              padding: const EdgeInsets.only(),
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              onPressed: displayReactionDialog,
+                                              child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(key.key!,
+                                                        style: const TextStyle(
+                                                            fontSize: 12)),
+                                                    const SizedBox(width: 2),
+                                                    Text(key.value.toString(),
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall)
+                                                  ]))),
                                     ),
                                   ),
                                 ),
