@@ -144,6 +144,12 @@
 @import permission_handler_apple;
 #endif
 
+#if __has_include(<photo_manager/PhotoManagerPlugin.h>)
+#import <photo_manager/PhotoManagerPlugin.h>
+#else
+@import photo_manager;
+#endif
+
 #if __has_include(<screen_brightness_ios/ScreenBrightnessIosPlugin.h>)
 #import <screen_brightness_ios/ScreenBrightnessIosPlugin.h>
 #else
@@ -224,6 +230,7 @@
   [PasteboardPlugin registerWithRegistrar:[registry registrarForPlugin:@"PasteboardPlugin"]];
   [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
   [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];
+  [PhotoManagerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PhotoManagerPlugin"]];
   [ScreenBrightnessIosPlugin registerWithRegistrar:[registry registrarForPlugin:@"ScreenBrightnessIosPlugin"]];
   [FLTSharePlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTSharePlusPlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];

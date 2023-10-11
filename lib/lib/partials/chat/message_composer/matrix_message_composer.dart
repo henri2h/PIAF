@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/pages/device_media_gallery.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/client_information.dart';
 import 'package:pasteboard/pasteboard.dart';
@@ -105,6 +106,9 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
   }
 
   void addImage(BuildContext context, Room room) async {
+    await Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const DeviceMediaGallery()));
+    /*
     final f = (await FilePicker.platform
             .pickFiles(type: FileType.image, withData: true))
         ?.files
@@ -112,7 +116,7 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
 
     setState(() {
       file = f;
-    });
+    });*/
   }
 
   Future<void> sendImage() async {

@@ -136,6 +136,11 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin permission_handler_android, com.baseflow.permissionhandler.PermissionHandlerPlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.fluttercandies.photo_manager.PhotoManagerPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin photo_manager, com.fluttercandies.photo_manager.PhotoManagerPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.aaassseee.screen_brightness_android.ScreenBrightnessAndroidPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin screen_brightness_android, com.aaassseee.screen_brightness_android.ScreenBrightnessAndroidPlugin", e);
