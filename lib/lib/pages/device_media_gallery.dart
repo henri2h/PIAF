@@ -84,7 +84,9 @@ class _DeviceMediaGalleryState extends State<DeviceMediaGallery> {
       floatingActionButton: selectedFiles.isEmpty
           ? null
           : FloatingActionButton.extended(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pop(selectedFiles);
+              },
               icon: const Icon(Icons.check),
               label: const Text("Validate"),
             ),
@@ -142,8 +144,10 @@ class _DeviceMediaGalleryState extends State<DeviceMediaGallery> {
                             selectedFiles.add(item);
                           }
                         });
-                        await HapticFeedback.heavyImpact();
+                      } else {
+                        Navigator.of(context).pop([item]);
                       }
+                      await HapticFeedback.heavyImpact();
                     },
                     onLongPress: () async {
                       setState(() {

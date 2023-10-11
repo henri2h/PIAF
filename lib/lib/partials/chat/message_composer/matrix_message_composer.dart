@@ -8,6 +8,7 @@ import 'package:minestrix_chat/pages/device_media_gallery.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/client_information.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 import '../../../style/constants.dart';
 import '../../../utils/platform_infos.dart';
@@ -106,23 +107,35 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
   }
 
   void addImage(BuildContext context, Room room) async {
-    await Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const DeviceMediaGallery()));
-    /*
-    final f = (await FilePicker.platform
-            .pickFiles(type: FileType.image, withData: true))
-        ?.files
-        .first;
+    if (PlatformInfos.isAndroid) {
+      final result = await Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const DeviceMediaGallery()));
+      if (result is List<AssetEntity> && result.isNotEmpty) {
+        final returnedFile = await result.first.file;
+        final data = await returnedFile?.readAsBytes();
+        if (data != null) {
+          setState(() {
+            file = PlatformFile(
+                name: result.first.title ?? '', size: data.length, bytes: data);
+          });
+        }
+      }
+    } else {
+      final f = (await FilePicker.platform
+              .pickFiles(type: FileType.image, withData: true))
+          ?.files
+          .first;
 
-    setState(() {
-      file = f;
-    });*/
+      setState(() {
+        file = f;
+      });
+    }
   }
 
   Future<void> sendImage() async {
     if (file?.bytes != null) {
       await room?.sendFileEvent(
-          MatrixImageFile(bytes: file!.bytes!, name: file!.path!));
+          MatrixImageFile(bytes: file!.bytes!, name: file!.name));
     }
   }
 
