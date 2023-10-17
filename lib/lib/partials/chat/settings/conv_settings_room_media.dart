@@ -140,38 +140,24 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
                 return const ListTile(
                     leading: Icon(Icons.hourglass_empty), title: Text("Empty"));
               }
-              return ListView.builder(
-                  controller: controller,
-                  itemCount: events.length + (requesting ? 1 : 0),
-                  cacheExtent: 800,
-                  itemBuilder: (BuildContext context, int index) => index >=
-                          events.length
-                      ? const Center(child: CircularProgressIndicator())
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text(
-                                    "${events[index].senderFromMemoryOrFallback.calcDisplayname()} - ${events[index].getSize()}"),
-                              ),
-                              SizedBox(
-                                height: 200,
-                                child: MImageViewer(
-                                    event: events[index], fit: BoxFit.cover),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0, vertical: 2),
-                                child: Divider(),
-                              )
-                            ],
+              return GridView.builder(
+                controller: controller,
+                itemCount: events.length + (requesting ? 1 : 0),
+                cacheExtent: 800,
+                itemBuilder: (BuildContext context, int index) =>
+                    index >= events.length
+                        ? const Center(child: CircularProgressIndicator())
+                        : Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: SizedBox(
+                              height: 100,
+                              child: MImageViewer(
+                                  event: events[index], fit: BoxFit.cover),
+                            ),
                           ),
-                        ));
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 100),
+              );
             }),
           );
         });
