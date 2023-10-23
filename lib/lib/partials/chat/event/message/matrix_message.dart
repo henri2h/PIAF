@@ -584,10 +584,7 @@ class MessageDisplayState extends State<MessageDisplay>
         }
         break;
       case MatrixEventTypes.pollResponse:
-        return buildRoomMessage(
-            emoji: "🎉",
-            text:
-                "${event.sender.displayName ?? event.sender.senderId} responded to a poll");
+        return Container();
       case EventTypes.CallInvite:
         if (widget.timeline != null) {
           return CallMessageDisplay(event, timeline: widget.timeline!);
