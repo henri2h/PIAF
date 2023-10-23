@@ -4,7 +4,7 @@ import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/reactions_list.dart';
 
 import 'post_reactions.dart';
-import '../post/post_item.dart';
+import '../post_item.dart';
 import 'post_button.dart';
 
 class ReactionBar extends StatelessWidget {

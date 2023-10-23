@@ -10,9 +10,9 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../../router.gr.dart';
 import '../../../utils/settings.dart';
-import '../details/post_content.dart';
-import '../details/post_header.dart';
-import '../details/post_reaction_bar.dart';
+import 'content/post_content.dart';
+import 'content/post_header.dart';
+import 'content/post_reaction_bar.dart';
 
 class PostItem extends StatefulWidget {
   final Event event;

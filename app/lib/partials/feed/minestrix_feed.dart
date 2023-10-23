@@ -27,7 +27,7 @@ import '../../pages/minestrix/friends/research_page.dart';
 import '../../utils/settings.dart';
 import '../components/layouts/custom_header.dart';
 import '../minestrix_title.dart';
-import '../post/post/post.dart';
+import '../post/post.dart';
 
 class MinestrixFeed extends StatefulWidget {
   const MinestrixFeed({Key? key}) : super(key: key);

@@ -24,7 +24,7 @@ import '../../partials/components/minestrix/minestrix_title.dart';
 import '../../partials/feed/minestrix_profile_not_created.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
-import '../../partials/post/post/post.dart';
+import '../../partials/post/post.dart';
 import '../../utils/settings.dart';
 import 'groups/create_group_page.dart';
 

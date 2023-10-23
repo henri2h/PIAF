@@ -18,8 +18,8 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../../partials/components/account/account_card.dart';
 import '../../../partials/components/layouts/layout_view.dart';
 import '../../../partials/feed/topic_list_tile.dart';
-import '../../../partials/post/post/post.dart';
-import '../../../partials/post/post/post_shimmer.dart';
+import '../../../partials/post/post.dart';
+import '../../../partials/post/post_shimmer.dart';
 
 @RoutePage()
 class GroupPage extends StatefulWidget {
