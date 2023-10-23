@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_encryption_keys.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_mutual_rooms.dart';
+import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 import '../partials/chat/room/room_search.dart';
@@ -58,157 +59,204 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
         backgroundColor: backgroundColor,
         forceMaterialTransparency: true,
       ),
-      body: ListView(
-        children: [
-          SizedBox(
-            height: 260,
-            child: MatrixImageAvatar(
-                url: room.avatar,
-                client: widget.room.client,
-                defaultText: room.displayname,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                thumnailOnly: false,
-                unconstraigned: true,
-                shape: MatrixImageAvatarShape.none,
-                width: MinestrixAvatarSizeConstants.big,
-                height: MinestrixAvatarSizeConstants.big),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: FutureBuilder(
+          future: room.postLoad(),
+          builder: (context, snapshot) {
+            return ListView(
               children: [
-                if (room.topic.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(room.topic, style: const TextStyle(fontSize: 16)),
-                      ],
-                    ),
-                  ),
-                if (room.isDirectChat) DirectChatWidget(room: room),
-                SettingsList(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    lightTheme: const SettingsThemeData(
-                        settingsListBackground: Colors.transparent),
-                    darkTheme: const SettingsThemeData(
-                        settingsListBackground: Colors.transparent),
-                    sections: [
-                      if (room.isDirectChat)
-                        SettingsSection(title: const Text("User"), tiles: [
-                          SettingsTile.navigation(
-                            leading: const Icon(Icons.room),
-                            title: const Text('Mutual rooms'),
-                            onPressed: (context) async =>
-                                await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            ConvSettingsMutualRooms(
-                                              room: room,
-                                            ))),
+                SizedBox(
+                  height: 260,
+                  child: MatrixImageAvatar(
+                      url: room.avatar,
+                      client: widget.room.client,
+                      defaultText: room.displayname,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      thumnailOnly: false,
+                      unconstraigned: true,
+                      shape: MatrixImageAvatarShape.none,
+                      width: MinestrixAvatarSizeConstants.big,
+                      height: MinestrixAvatarSizeConstants.big),
+                ),
+                if (room.states["m.bridge"] != null)
+                  for (final event
+                      in room.states["m.bridge"]?.values.toList() ?? [])
+                    RoomBridgeInfo(event: event),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (room.topic.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(room.topic,
+                                  style: const TextStyle(fontSize: 16)),
+                            ],
                           ),
-                          if (room.encrypted)
-                            SettingsTile.navigation(
-                              leading: const Icon(Icons.lock_sharp),
-                              title: const Text('Encryption keys'),
-                              onPressed: (context) async =>
-                                  await Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              ConvSettingsEncryptionKeys(
-                                                  room: room))),
-                            ),
-                        ]),
-                      SettingsSection(
-                          title: const Text('Room'),
-                          tiles: <SettingsTile>[
-                            if (!room.encrypted)
-                              SettingsTile.navigation(
-                                leading: const Icon(Icons.search),
-                                title: const Text('Search'),
-                                onPressed: (context) async {
-                                  await AdaptativeDialogs.show(
-                                      context: context,
-                                      builder: (context) =>
-                                          RoomSearch(room: room));
-                                },
-                              ),
-                            SettingsTile.navigation(
-                              leading: const Icon(Icons.people),
-                              title: const Text('Users'),
-                              value: Text(
-                                  "${room.summary.mJoinedMemberCount ?? 0} members"),
-                              onPressed: (context) async =>
-                                  await Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              ConvSettingsUsers(room: room))),
-                            ),
-                            SettingsTile.navigation(
-                                leading: const Icon(Icons.settings),
-                                title: const Text('Room settings'),
-                                onPressed: (context) async =>
-                                    await Navigator.of(context).push(
-                                        MaterialPageRoute(
+                        ),
+                      if (room.isDirectChat) DirectChatWidget(room: room),
+                      SettingsList(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          lightTheme: const SettingsThemeData(
+                              settingsListBackground: Colors.transparent),
+                          darkTheme: const SettingsThemeData(
+                              settingsListBackground: Colors.transparent),
+                          sections: [
+                            if (room.isDirectChat)
+                              SettingsSection(
+                                  title: const Text("User"),
+                                  tiles: [
+                                    SettingsTile.navigation(
+                                      leading: const Icon(Icons.room),
+                                      title: const Text('Mutual rooms'),
+                                      onPressed: (context) async =>
+                                          await Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ConvSettingsMutualRooms(
+                                                        room: room,
+                                                      ))),
+                                    ),
+                                    if (room.encrypted)
+                                      SettingsTile.navigation(
+                                        leading: const Icon(Icons.lock_sharp),
+                                        title: const Text('Encryption keys'),
+                                        onPressed: (context) async =>
+                                            await Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ConvSettingsEncryptionKeys(
+                                                            room: room))),
+                                      ),
+                                  ]),
+                            SettingsSection(
+                                title: const Text('Room'),
+                                tiles: <SettingsTile>[
+                                  if (!room.encrypted)
+                                    SettingsTile.navigation(
+                                      leading: const Icon(Icons.search),
+                                      title: const Text('Search'),
+                                      onPressed: (context) async {
+                                        await AdaptativeDialogs.show(
+                                            context: context,
                                             builder: (context) =>
-                                                ConvSettingsRoom(
-                                                    room: room,
-                                                    onLeave: widget.onLeave)))),
-                            SettingsTile.navigation(
-                              leading: const Icon(Icons.image),
-                              title: const Text('Room media'),
-                              onPressed: (context) async => await Navigator.of(
-                                      context)
-                                  .push(MaterialPageRoute(
-                                      builder: (context) =>
-                                          ConvSettingsRoomMedia(room: room))),
+                                                RoomSearch(room: room));
+                                      },
+                                    ),
+                                  SettingsTile.navigation(
+                                    leading: const Icon(Icons.people),
+                                    title: const Text('Users'),
+                                    value: Text(
+                                        "${room.summary.mJoinedMemberCount ?? 0} members"),
+                                    onPressed: (context) async =>
+                                        await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ConvSettingsUsers(
+                                                        room: room))),
+                                  ),
+                                  SettingsTile.navigation(
+                                      leading: const Icon(Icons.settings),
+                                      title: const Text('Room settings'),
+                                      onPressed: (context) async =>
+                                          await Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ConvSettingsRoom(
+                                                          room: room,
+                                                          onLeave: widget
+                                                              .onLeave)))),
+                                  SettingsTile.navigation(
+                                    leading: const Icon(Icons.image),
+                                    title: const Text('Room media'),
+                                    onPressed: (context) async =>
+                                        await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ConvSettingsRoomMedia(
+                                                        room: room))),
+                                  ),
+                                ]),
+                            SettingsSection(
+                                title: const Text('Security'),
+                                tiles: <SettingsTile>[
+                                  SettingsTile.navigation(
+                                    leading: const Icon(Icons.check_circle),
+                                    title: const Text('Roles & permissions'),
+                                    onPressed: (context) async =>
+                                        await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ConvSettingsPermissions(
+                                                        room: room))),
+                                  ),
+                                  SettingsTile.navigation(
+                                    leading: const Icon(Icons.lock),
+                                    title: const Text('Room security'),
+                                    onPressed: (context) async =>
+                                        await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ConvSettingsSecurity(
+                                                        room: room))),
+                                  ),
+                                ]),
+                            SettingsSection(
+                              title: const Text('Danger'),
+                              tiles: <SettingsTile>[
+                                SettingsTile(
+                                    leading: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
+                                    title: const Text('Leave'),
+                                    onPressed: (context) async {
+                                      await widget.room.leave();
+                                      widget.onLeave();
+                                    }),
+                              ],
                             ),
                           ]),
-                      SettingsSection(
-                          title: const Text('Security'),
-                          tiles: <SettingsTile>[
-                            SettingsTile.navigation(
-                              leading: const Icon(Icons.check_circle),
-                              title: const Text('Roles & permissions'),
-                              onPressed: (context) async => await Navigator.of(
-                                      context)
-                                  .push(MaterialPageRoute(
-                                      builder: (context) =>
-                                          ConvSettingsPermissions(room: room))),
-                            ),
-                            SettingsTile.navigation(
-                              leading: const Icon(Icons.lock),
-                              title: const Text('Room security'),
-                              onPressed: (context) async => await Navigator.of(
-                                      context)
-                                  .push(MaterialPageRoute(
-                                      builder: (context) =>
-                                          ConvSettingsSecurity(room: room))),
-                            ),
-                          ]),
-                      SettingsSection(
-                        title: const Text('Danger'),
-                        tiles: <SettingsTile>[
-                          SettingsTile(
-                              leading: const Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                              ),
-                              title: const Text('Leave'),
-                              onPressed: (context) async {
-                                await widget.room.leave();
-                                widget.onLeave();
-                              }),
-                        ],
-                      ),
-                    ]),
+                    ],
+                  ),
+                ),
               ],
+            );
+          }),
+    );
+  }
+}
+
+class RoomBridgeInfo extends StatelessWidget {
+  const RoomBridgeInfo({
+    super.key,
+    required this.event,
+  });
+
+  final Event event;
+
+  @override
+  Widget build(BuildContext context) {
+    final protocol = event.content.tryGetMap<String, Object?>("protocol");
+    final protocolDisplayName = protocol?.tryGet<String>("displayname") ?? '';
+    final protocolId = protocol?.tryGet<String>("id") ?? '';
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Card(
+        elevation: 4,
+        child: ListTile(
+            leading: MatrixUserAvatar(
+              avatarUrl: Uri.tryParse(protocol?.tryGet("avatar_url") ?? ''),
+              client: event.room.client,
+              userId: protocolId,
+              name: protocolDisplayName,
             ),
-          ),
-        ],
+            title: const Text("Bridged with"),
+            subtitle: Text(protocolDisplayName)),
       ),
     );
   }
