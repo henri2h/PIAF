@@ -4,13 +4,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/pages/device_media_gallery.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/client_information.dart';
 import 'package:pasteboard/pasteboard.dart';
-import 'package:photo_manager/photo_manager.dart';
 
 import '../../../style/constants.dart';
+import '../../../utils/files_picker.dart';
 import '../../../utils/platform_infos.dart';
 
 class MatrixMessageComposer extends StatefulWidget {
@@ -107,27 +106,10 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
   }
 
   void addImage(BuildContext context, Room room) async {
-    if (PlatformInfos.isAndroid) {
-      final result = await Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const DeviceMediaGallery()));
-      if (result is List<AssetEntity> && result.isNotEmpty) {
-        final returnedFile = await result.first.file;
-        final data = await returnedFile?.readAsBytes();
-        if (data != null) {
-          setState(() {
-            file = PlatformFile(
-                name: result.first.title ?? '', size: data.length, bytes: data);
-          });
-        }
-      }
-    } else {
-      final f = (await FilePicker.platform
-              .pickFiles(type: FileType.image, withData: true))
-          ?.files
-          .first;
-
+    final result = await FilesPicker.pick(context);
+    if (result?.isNotEmpty == true) {
       setState(() {
-        file = f;
+        file = result?.first;
       });
     }
   }

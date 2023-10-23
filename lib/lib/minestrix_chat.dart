@@ -6,3 +6,4 @@ export "utils/extensions/matrix/stories_extension.dart";
 export "utils/extensions/minestrix/calendar_extension.dart";
 export "utils/extensions/minestrix/posts_event_extension.dart";
 export "utils/extensions/minestrix/profile_space.dart";
+export 'utils/files_picker.dart';

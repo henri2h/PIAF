@@ -1,9 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
-import 'package:minestrix_chat/utils/extensions/minestrix/posts_event_extension.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../utils/extensions/minestrix/model/social_item.dart';
 import '../../dialogs/adaptative_dialogs.dart';
@@ -57,6 +56,13 @@ class PostEditorPage extends StatefulWidget {
 
 class ImageListController {
   List<PlatformFile> imagesToAdd = [];
+
+  Future<void> addPictures(BuildContext context) async {
+    final files = await FilesPicker.pick(context);
+    if (files != null) {
+      imagesToAdd.addAll(files);
+    }
+  }
 }
 
 class PostEditorPageState extends State<PostEditorPage>
@@ -64,21 +70,12 @@ class PostEditorPageState extends State<PostEditorPage>
   final _textController = TextEditingController();
   final imageController = ImageListController();
   final List<String> imagesRefEventId = [];
+  double? uploadingStatus;
 
   bool _sending = false;
   bool get _isEdit => post != null;
 
   List<Room> get rooms => widget.room ?? [room];
-
-  bool displayImageListEditor = false;
-
-  Future<void> _launchURL(Uri url) async {
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
 
   late Room room;
   Event? post;
@@ -115,10 +112,16 @@ class PostEditorPageState extends State<PostEditorPage>
       if (file.bytes == null) {
         continue;
       }
-      var img =
-          await MatrixImageFile.shrink(bytes: file.bytes!, name: file.name);
+      final img = MatrixFile.fromMimeType(bytes: file.bytes!, name: file.name);
 
       final imageEventId = await room.sendFileEvent(img);
+
+      if (mounted) {
+        setState(() {
+          uploadingStatus =
+              imagesRefEventId.length / imageController.imagesToAdd.length;
+        });
+      }
 
       // add image to the post image list
       if (imageEventId != null) {
@@ -167,13 +170,10 @@ class PostEditorPageState extends State<PostEditorPage>
             MaterialButton(
                 shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(8))),
-                onPressed: displayImageListEditor
-                    ? null
-                    : () {
-                        setState(() {
-                          displayImageListEditor = !displayImageListEditor;
-                        });
-                      },
+                onPressed: () async {
+                  await imageController.addPictures(context);
+                  if (mounted) setState(() {});
+                },
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
                   child: Row(
@@ -186,8 +186,11 @@ class PostEditorPageState extends State<PostEditorPage>
               color: !canSend ? Colors.grey : Colors.green,
               child: IconButton(
                   icon: _sending
-                      ? const Center(
-                          child: CircularProgressIndicator(color: Colors.white))
+                      ? Center(
+                          child: CircularProgressIndicator(
+                          color: Colors.white,
+                          value: uploadingStatus,
+                        ))
                       : Icon(_isEdit ? Icons.edit : Icons.send,
                           color: Colors.white),
                   onPressed: canSend ? sendPost : null))
@@ -243,10 +246,6 @@ class PostEditorPageState extends State<PostEditorPage>
                                         },
                                         title: MinestrixRoomTile(
                                           room: room,
-                                          onTap: () {
-                                            selectRoom(room);
-                                            Navigator.of(context).pop();
-                                          },
                                         ),
                                       ),
                                   ]));
@@ -276,15 +275,14 @@ class PostEditorPageState extends State<PostEditorPage>
                 ],
               ),
             ),
-          if (displayImageListEditor)
+          if (imageController.imagesToAdd.isNotEmpty)
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 400),
               child: MatrixPostImageListEditor(
                   imageController: imageController,
                   onClose: () {
-                    setState(() {
-                      displayImageListEditor = false;
-                    });
+                    imageController.imagesToAdd.clear();
+                    setState(() {});
                   }),
             ),
           TextField(

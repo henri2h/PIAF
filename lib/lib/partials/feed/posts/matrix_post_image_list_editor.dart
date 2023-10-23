@@ -32,7 +32,7 @@ class _MatrixPostImageListEditorState extends State<MatrixPostImageListEditor> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Add images",
+                  Text("Post images",
                       style: Theme.of(context).textTheme.titleMedium),
                   IconButton(
                       icon: const Icon(Icons.close), onPressed: widget.onClose)
@@ -40,76 +40,41 @@ class _MatrixPostImageListEditorState extends State<MatrixPostImageListEditor> {
               ),
             ),
             Expanded(
-              child: DefaultTabController(
-                length: images.length + 1,
-                child: TabBarView(
-                  children: [
-                    for (var file in images)
-                      Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Stack(
-                          children: [
-                            if (file.bytes != null)
-                              Center(
-                                child: ClipRRect(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(15)),
-                                  child: Image.memory(file.bytes!,
-                                      fit: BoxFit.cover),
-                                ),
-                              ),
-                            Positioned(
-                              top: 6,
-                              right: 6,
-                              child: IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () {
-                                    setState(() {
-                                      widget.imageController.imagesToAdd
-                                          .remove(file);
-                                    });
-                                  }),
-                            ),
-                          ],
-                        ),
-                      ),
+              child: GridView(
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    mainAxisExtent: 180, maxCrossAxisExtent: 200),
+                children: [
+                  for (var file in images)
                     Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: SizedBox(
-                        height: 160,
-                        width: 160,
-                        child: Card(
-                            child: MaterialButton(
-                          onPressed: () async {
-                            FilePickerResult? result = await FilePicker.platform
-                                .pickFiles(
-                                    type: FileType.image, withData: true);
-
-                            if (result != null) {
-                              PlatformFile file = result.files.first;
-                              widget.imageController.imagesToAdd.add(file);
-                              setState(() {});
-                            }
-                          },
-                          child: const Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.add_a_photo, size: 42),
-                                SizedBox(
-                                  height: 20,
-                                ),
-                                Text("Add a picture")
-                              ],
+                      padding: const EdgeInsets.all(2.0),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (file.bytes != null)
+                            ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4)),
+                              child:
+                                  Image.memory(file.bytes!, fit: BoxFit.cover),
                             ),
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  setState(() {
+                                    widget.imageController.imagesToAdd
+                                        .remove(file);
+                                  });
+                                }),
                           ),
-                        )),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                ],
               ),
-            )
+            ),
           ],
         ),
       ),
