@@ -11,6 +11,8 @@ import 'package:minestrix_chat/partials/login/login_input.dart';
 import 'package:minestrix_chat/utils/login/web_login_interface.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'matrix_server_chooser.dart';
+
 class LoginMatrixCard extends StatefulWidget {
   final Client client;
   final bool popOnLogin;
@@ -28,30 +30,29 @@ class LoginMatrixCard extends StatefulWidget {
 
 class LoginMatrixCardState extends State<LoginMatrixCard> {
   final TextEditingController _usernameController = TextEditingController(),
-      _passwordController = TextEditingController(),
-      _hostNameController = TextEditingController();
+      _passwordController = TextEditingController();
 
-  late Client client;
+  final domainController = MatrixServerChooserController();
+
+  Client get client => widget.client;
 
   String? _errorText;
+
+  Uri? get domain => domainController.domain;
+  bool get serverSelected => domain != null;
+
   bool _isLoading = false;
   bool _credentialsEdited = false;
-  String domain = "";
 
-  List<String?> loginFlowsSupported = [];
-
-  bool get ssoLogin => loginFlowsSupported.contains(AuthenticationTypes.sso);
-  bool get passwordLogin =>
-      loginFlowsSupported.contains(AuthenticationTypes.password);
-  bool get _serverIsValid => domain != '';
-
-  int verificationTrial = 0;
+  bool get ssoLogin =>
+      domainController.loginFlowsSupported.contains(AuthenticationTypes.sso);
+  bool get passwordLogin => domainController.loginFlowsSupported
+      .contains(AuthenticationTypes.password);
 
   @override
   void initState() {
-    client = widget.client;
-    _hostNameController.text = widget.defaultServer;
-    _verifyDomain(client);
+    domainController.setUrl(client, widget.defaultServer);
+
     super.initState();
   }
 
@@ -63,20 +64,6 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
         _credentialsEdited = value;
       });
     }
-  }
-
-  void onServerChanged() {
-    if (_errorText == null) {
-      setState(() {
-        _errorText = null;
-      });
-    }
-
-    verifyDomainCallback?.cancel();
-    verifyDomainCallback = Timer(const Duration(milliseconds: 500), () async {
-      // check to log in using .wellknown informations
-      await _verifyDomain(client);
-    });
   }
 
   @override
@@ -92,13 +79,18 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
-          LoginInput(
-              name: "Homeserver",
-              icon: Icons.cloud,
-              tController: _hostNameController,
-              onChanged: (_) => onServerChanged()),
+          MatrixServerChooser(
+            onChanged: (value) {
+              setState(() {
+                _passwordController.clear();
+                _usernameController.clear();
+              });
+            },
+            client: client,
+            controller: domainController,
+          ),
           const SizedBox(height: 25),
-          if (_serverIsValid)
+          if (serverSelected)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -131,13 +123,7 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
                       obscureText: true),
               ],
             ),
-          if (!_serverIsValid && !_isLoading)
-            const ListTile(
-                leading: Icon(Icons.error),
-                title: Text("Invalid server"),
-                subtitle: Text(
-                    "Please enter a valid Matrix server or check your internet connection")),
-          if (_serverIsValid && _errorText != null)
+          if (serverSelected && _errorText != null)
             ListTile(
                 leading: const Icon(Icons.error),
                 title: const Text("Whoops something wrong happened"),
@@ -228,10 +214,12 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
 
       webview.setOnHistoryChangedCallback((canGoBack, canGoForward) {});
     } else {
+      if (domain == null) return;
       String nav = await (Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => MobileSSOLogin(url: url, domain: domain))));
+              builder: (context) =>
+                  MobileSSOLogin(url: url, domain: domain!.toString()))));
 
       loginWithToken(nav);
     }
@@ -242,57 +230,6 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
     _loginAction(client,
         token: tokenUrl.queryParameters["loginToken"], useSsoLogin: true);
   }
-
-  void updateDomain(HomeserverSummary? server, String? url) {
-    domain = url ?? '';
-
-    if (server != null) {
-      // update UI according to server capabilities
-      loginFlowsSupported = server.loginFlows.map((e) => e.type).toList();
-    } else {
-      _usernameController.clear();
-      _passwordController.clear();
-    }
-
-    setState(() {
-      // change if hostname hasn't be set by user
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _verifyDomain(Client client) async {
-    final serverUrl = _hostNameController.text;
-
-    verificationTrial++;
-    int localVerificationNumber =
-        verificationTrial; // check if we use the result of the verification for the last input of the user
-
-    setState(() {
-      _isLoading = true;
-      _errorText = null;
-    });
-
-    try {
-      final homeserver = await client.checkHomeserver(
-          serverUrl.startsWith("http")
-              ? Uri.parse(serverUrl)
-              : Uri.https(serverUrl, ""));
-
-      // check  if info is not null and
-      // if we are the last try (prevent an old request to modify the results)
-      if (localVerificationNumber == verificationTrial) {
-        updateDomain(homeserver, client.homeserver?.toString());
-        return;
-      }
-    } catch (e, s) {
-      Logs().e("[Login] : an error happend", e, s);
-      _errorText = e.toString();
-
-      updateDomain(null, null);
-    }
-  }
-
-  Timer? verifyDomainCallback;
 }
 
 class MobileSSOLogin extends StatelessWidget {

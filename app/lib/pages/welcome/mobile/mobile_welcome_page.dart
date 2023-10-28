@@ -41,19 +41,36 @@ class MobileWelcomePage extends StatelessWidget {
             ),
             Padding(
               padding:
-                  const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 60),
+                  const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20),
               child: FilledButton(
                 child: Center(
                     child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Text(
                     "Sign In",
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary),
                   ),
                 )),
                 onPressed: () async {
                   await context.pushRoute(MobileLoginRoute());
+                },
+              ),
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 60),
+              child: FilledButton.tonal(
+                child: Center(
+                    child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    "Create a new account",
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                )),
+                onPressed: () async {
+                  await context.pushRoute(const MobileCreateAccountRoute());
                 },
               ),
             )

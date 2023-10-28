@@ -21,48 +21,52 @@ class LoginButton extends StatefulWidget {
 
 class _LoginButtonState extends State<LoginButton> {
   bool _isLoading = false;
-  void onPressed() => _isLoading
-      ? null
-      : () async {
-          if (_isLoading) return;
 
-          setState(() {
-            _isLoading = true;
-          });
-          try {
-            await widget.onPressed();
-          } finally {
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          }
-        };
+  void onPressed() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await widget.onPressed();
+    } finally {
+      _isLoading = false;
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
 
   Widget get child => Padding(
         padding: const EdgeInsets.symmetric(
           vertical: 14.0,
         ),
-        child: Row(
-          children: [
-            Icon(widget.icon),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(widget.text,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize:
-                          Theme.of(context).textTheme.bodyLarge?.fontSize)),
-            ),
-          ],
-        ),
+        child: _isLoading
+            ? const CircularProgressIndicator()
+            : Row(
+                children: [
+                  Icon(widget.icon),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(widget.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.fontSize)),
+                  ),
+                ],
+              ),
       );
   @override
   Widget build(BuildContext context) {
     return widget.filled
-        ? FilledButton(onPressed: onPressed, child: child)
-        : FilledButton.tonal(onPressed: onPressed, child: child);
+        ? FilledButton(onPressed: _isLoading ? null : onPressed, child: child)
+        : FilledButton.tonal(
+            onPressed: _isLoading ? null : onPressed, child: child);
   }
 }

@@ -94,9 +94,11 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
     if (result != OkCancelResult.ok) {
       return;
     }
+    if (!mounted) return;
 
     final auth = await client.getAuthData(context);
     if (auth != null) {
+      if (!mounted) return;
       await context.showFutureInTryCatch(
           () async => client.deleteDevices(devicesList, auth: auth));
     }

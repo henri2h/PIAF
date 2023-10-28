@@ -81,7 +81,8 @@ class AppRouter extends $AppRouter {
 
     AutoRoute(page: MobileWelcomeRouter.page, children: [
       AutoRoute(path: '', page: MobileWelcomeRoute.page),
-      AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page)
+      AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page),
+      AutoRoute(path: 'mobile_create_account', page: MobileCreateAccountRoute.page)
     ]),
   ];
 }
