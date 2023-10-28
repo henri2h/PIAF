@@ -225,7 +225,7 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                               onPressed: (context) async {
                                 final res = await showOkCancelAlertDialog(
                                     context: context,
-                                    title: "Logout",
+                                    title: "Delete your account",
                                     message:
                                         "Are you sure you want to delete your account? This operation cannot be undone.",
                                     okLabel: "Yes");

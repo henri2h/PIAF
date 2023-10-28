@@ -35,11 +35,15 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
 
   String? _errorText;
   bool _isLoading = false;
+  bool _credentialsEdited = false;
   String domain = "";
 
-  bool ssoLogin = false;
-  bool passwordLogin = false;
-  bool _serverIsValid = false;
+  List<String?> loginFlowsSupported = [];
+
+  bool get ssoLogin => loginFlowsSupported.contains(AuthenticationTypes.sso);
+  bool get passwordLogin =>
+      loginFlowsSupported.contains(AuthenticationTypes.password);
+  bool get _serverIsValid => domain != '';
 
   int verificationTrial = 0;
 
@@ -49,6 +53,16 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
     _hostNameController.text = widget.defaultServer;
     _verifyDomain(client);
     super.initState();
+  }
+
+  void onTextChanged() {
+    final value = _usernameController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty;
+    if (_credentialsEdited != value && mounted) {
+      setState(() {
+        _credentialsEdited = value;
+      });
+    }
   }
 
   void onServerChanged() {
@@ -75,10 +89,7 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
             padding: const EdgeInsets.all(8.0),
             child: Text(
               "Homeserver",
-              style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface),
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
           LoginInput(
@@ -94,11 +105,8 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "Login",
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface),
+                    "Credentials",
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
                 if (passwordLogin)
@@ -107,8 +115,10 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
                       Flexible(
                         child: LoginInput(
                             name: "username",
+                            hintText: "@john.doe:example.com",
                             icon: Icons.account_circle,
-                            tController: _usernameController),
+                            tController: _usernameController,
+                            onChanged: (_) => onTextChanged()),
                       ),
                     ],
                   ),
@@ -117,6 +127,7 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
                       name: "password",
                       icon: Icons.lock_outline,
                       tController: _passwordController,
+                      onChanged: (_) => onTextChanged(),
                       obscureText: true),
               ],
             ),
@@ -136,22 +147,31 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
               padding: EdgeInsets.all(8.0),
               child: LinearProgressIndicator(),
             ),
-          if (_serverIsValid) const SizedBox(height: 25),
-          if (_serverIsValid)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+            child: Row(
               children: [
-                if (passwordLogin)
-                  LoginButton(
-                      icon: Icons.login,
-                      onPressed: () async =>
-                          await _loginAction(client, useSsoLogin: false),
-                      text: "Login"),
                 if (ssoLogin)
-                  LoginButton(
-                      icon: Icons.web, onPressed: _ssoLogin, text: "SSO Login")
+                  Expanded(
+                    child: LoginButton(
+                        icon: Icons.web,
+                        onPressed: _ssoLogin,
+                        text: "SSO Login"),
+                  ),
+                if (ssoLogin && passwordLogin && _credentialsEdited)
+                  const SizedBox(width: 12),
+                if (passwordLogin && _credentialsEdited)
+                  Expanded(
+                    child: LoginButton(
+                        icon: Icons.login,
+                        onPressed: () async =>
+                            await _loginAction(client, useSsoLogin: false),
+                        text: "Sign In",
+                        filled: true),
+                  ),
               ],
             ),
+          ),
         ]);
   }
 
@@ -224,26 +244,11 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
   }
 
   void updateDomain(HomeserverSummary? server, String? url) {
-    final serverIsValid = url != null;
-    _serverIsValid = serverIsValid;
     domain = url ?? '';
 
-    passwordLogin = false;
-    ssoLogin = false;
-
-    if (serverIsValid && server != null) {
+    if (server != null) {
       // update UI according to server capabilities
-      for (final loginFlow in server.loginFlows) {
-        switch (loginFlow.type) {
-          case AuthenticationTypes.sso:
-            ssoLogin = true;
-            break;
-          case AuthenticationTypes.password:
-            passwordLogin = true;
-            break;
-          default:
-        }
-      }
+      loginFlowsSupported = server.loginFlows.map((e) => e.type).toList();
     } else {
       _usernameController.clear();
       _passwordController.clear();

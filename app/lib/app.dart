@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
@@ -96,8 +98,10 @@ class MinestrixState extends State<Minestrix> {
                                         const AppWrapperRoute()
 
                                       // if they are not logged in, bring them to the Login page
+                                      else if (Platform.isAndroid)
+                                        const MobileWelcomeRouter()
                                       else
-                                        LoginRoute()
+                                        DesktopLoginRoute()
                                     ];
                                   },
                                 ),

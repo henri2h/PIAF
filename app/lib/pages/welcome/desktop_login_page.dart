@@ -7,8 +7,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key, this.title, this.onLogin, this.popOnLogin = false})
+class DesktopLoginPage extends StatefulWidget {
+  const DesktopLoginPage(
+      {Key? key, this.title, this.onLogin, this.popOnLogin = false})
       : super(key: key);
   final String? title;
   final Function(bool isLoggedIn)? onLogin;
@@ -16,10 +17,10 @@ class LoginPage extends StatefulWidget {
   final bool popOnLogin;
 
   @override
-  LoginPageState createState() => LoginPageState();
+  DesktopLoginPageState createState() => DesktopLoginPageState();
 }
 
-class LoginPageState extends State<LoginPage> {
+class DesktopLoginPageState extends State<DesktopLoginPage> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {

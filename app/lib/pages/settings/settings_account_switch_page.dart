@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../router.gr.dart';
-import '../login_page.dart';
+import '../welcome/desktop_login_page.dart';
 
 @RoutePage()
 class SettingsAccountSwitchPage extends StatefulWidget {
@@ -26,8 +26,8 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
     await AdaptativeDialogs.show(
         context: context,
         title: "Add an account",
-        builder: (context) =>
-            const LoginPage(popOnLogin: true, title: "Add a new account"));
+        builder: (context) => const DesktopLoginPage(
+            popOnLogin: true, title: "Add a new account"));
     if (mounted) {
       setState(() {});
     }

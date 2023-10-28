@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../style/constants.dart';
-
 class LoginInput extends StatelessWidget {
   const LoginInput(
       {Key? key,
@@ -10,14 +8,18 @@ class LoginInput extends StatelessWidget {
       this.tController,
       this.errorText,
       this.obscureText = false,
-      this.onChanged})
+      this.onChanged,
+      this.hintText})
       : super(key: key);
+
   final String? name;
   final IconData? icon;
   final TextEditingController? tController;
   final String? errorText;
   final bool obscureText;
   final void Function(String)? onChanged;
+  final String? hintText;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -28,11 +30,12 @@ class LoginInput extends StatelessWidget {
         obscureText: obscureText,
         onChanged: onChanged,
         autocorrect: false,
-        decoration: Constants.kTextFieldInputDecoration.copyWith(
-          errorText: errorText,
-          prefixIcon: Icon(icon),
-          labelText: name,
-        ),
+        decoration: InputDecoration(
+            errorText: errorText,
+            prefixIcon: Icon(icon),
+            labelText: name,
+            hintText: hintText,
+            border: const OutlineInputBorder()),
       ),
     );
   }

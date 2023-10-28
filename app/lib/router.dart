@@ -71,10 +71,17 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: ':roomId', page: OverrideRoomListRoomRoute.page),
       ]),
 
-      AutoRoute(path: 'login', page: LoginRoute.page),
+      AutoRoute(path: 'desktop_login', page: DesktopLoginRoute.page),
+      AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page),
+
       RedirectRoute(path: '*', redirectTo: 'feed')
     ]),
 
-    AutoRoute(path: '/login', page: LoginRoute.page)
+    AutoRoute(path: '/desktop_login', page: DesktopLoginRoute.page),
+
+    AutoRoute(page: MobileWelcomeRouter.page, children: [
+      AutoRoute(path: '', page: MobileWelcomeRoute.page),
+      AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page)
+    ]),
   ];
 }

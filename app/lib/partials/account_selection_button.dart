@@ -9,7 +9,7 @@ import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../pages/login_page.dart';
+import '../pages/welcome/desktop_login_page.dart';
 import '../pages/minestrix/groups/create_group_page.dart';
 import '../router.gr.dart';
 
@@ -268,7 +268,7 @@ class _AccountSelectionRouteContentState
                                             context: context,
                                             bottomSheet: true,
                                             builder: (context) =>
-                                                const LoginPage(
+                                                const DesktopLoginPage(
                                                     popOnLogin: true,
                                                     title:
                                                         "Add a new account"));
