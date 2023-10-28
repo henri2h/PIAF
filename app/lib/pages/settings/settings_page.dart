@@ -179,11 +179,11 @@ class SettingsPanel extends StatelessWidget {
                   ),
                   SettingsTile.navigation(
                       leading: const Icon(Icons.logout, color: Colors.red),
-                      title: const Text('Logout'),
+                      title: const Text('Sign out'),
                       onPressed: (context) async {
                         final res = await showOkCancelAlertDialog(
                             context: context,
-                            title: "Logout",
+                            title: "Sign out",
                             message: "Are you sure ?",
                             okLabel: "Yes");
 
