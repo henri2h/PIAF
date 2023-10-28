@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
@@ -109,6 +110,11 @@ class MatrixServerChooserState extends State<MatrixServerChooser> {
   @override
   void initState() {
     super.initState();
+
+    if (widget.client.baseUri != null) {
+      widget.controller.setUrl(widget.client, widget.client.baseUri.toString());
+    }
+
     widget.controller.addListener(() {
       if (!widget.controller.isLoading) {
         widget.onChanged(controller.domain);
@@ -128,11 +134,27 @@ class MatrixServerChooserState extends State<MatrixServerChooser> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        LoginInput(
-            name: "Homeserver",
-            icon: Icons.cloud,
-            tController: widget.controller.textController,
-            onChanged: (_) => onServerChanged()),
+        ListTile(
+          leading: const Icon(Icons.cloud),
+          trailing: const Icon(Icons.edit),
+          title: const Text("Homeserver"),
+          subtitle: Text(widget.controller.textController.text),
+          onTap: () async {
+            List<String>? results = await showTextInputDialog(
+              context: context,
+              textFields: [
+                DialogTextField(
+                    hintText: "Homeserver url",
+                    initialText: widget.controller.textController.text)
+              ],
+              title: "Set homeserver url",
+            );
+            if (results?.isNotEmpty == true) {
+              widget.controller.textController.text = results![0];
+              onServerChanged();
+            }
+          },
+        ),
         if (_isLoading) const CircularProgressIndicator(),
         if (_errorText != null && !_isLoading)
           const ListTile(

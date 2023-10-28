@@ -103,6 +103,7 @@ class _CreateAccountCardState extends State<CreateAccountCard> {
     final client = Matrix.of(context).getLoginClient();
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         MatrixServerChooser(
             controller: domainController,
@@ -113,6 +114,15 @@ class _CreateAccountCardState extends State<CreateAccountCard> {
                 _usernameController.clear();
               });
             }),
+        const SizedBox(height: 25),
+        if (passwordLogin)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Credentials",
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
         if (passwordLogin)
           Row(
             children: [
@@ -147,9 +157,6 @@ class _CreateAccountCardState extends State<CreateAccountCard> {
                 text: "Create account",
                 filled: true),
           ),
-        FilledButton(
-            onPressed: () async => await createAccount(client),
-            child: Text("hey"))
       ],
     );
   }

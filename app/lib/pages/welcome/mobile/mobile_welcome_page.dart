@@ -10,6 +10,16 @@ class MobileWelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.explore),
+            onPressed: () async {
+              await context.pushRoute(const MobileExploreRoute());
+            },
+          )
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -45,7 +55,7 @@ class MobileWelcomePage extends StatelessWidget {
               child: FilledButton(
                 child: Center(
                     child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Text(
                     "Sign In",
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -63,7 +73,7 @@ class MobileWelcomePage extends StatelessWidget {
               child: FilledButton.tonal(
                 child: Center(
                     child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Text(
                     "Create a new account",
                     style: Theme.of(context).textTheme.titleLarge,

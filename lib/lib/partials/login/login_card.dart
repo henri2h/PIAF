@@ -51,7 +51,9 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
 
   @override
   void initState() {
-    domainController.setUrl(client, widget.defaultServer);
+    if (client.baseUri == null) {
+      domainController.setUrl(client, widget.defaultServer);
+    }
 
     super.initState();
   }
@@ -72,13 +74,6 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Homeserver",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
           MatrixServerChooser(
             onChanged: (value) {
               setState(() {
