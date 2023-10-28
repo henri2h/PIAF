@@ -114,6 +114,7 @@ dependencies:
   camera: ^0.10.5+2
   dynamic_color: ^1.6.6
   media_kit: ^1.1.7
+  video_compress: ^3.1.2
 
 # Override due to https://github.com/mogol/flutter_secure_storage/issues/616
 dependency_overrides:

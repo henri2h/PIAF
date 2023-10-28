@@ -1,8 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:future_loading_dialog/future_loading_dialog.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
+import 'package:minestrix_chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
+import 'package:minestrix_chat/utils/matrix_sdk_extension/matrix_video_file_extension.dart';
 
 import '../../../utils/extensions/minestrix/model/social_item.dart';
 import '../../dialogs/adaptative_dialogs.dart';
@@ -108,13 +111,26 @@ class PostEditorPageState extends State<PostEditorPage>
 
     // upload file content
 
-    for (var file in imageController.imagesToAdd) {
-      if (file.bytes == null) {
+    for (var fileToAdd in imageController.imagesToAdd) {
+      if (fileToAdd.bytes == null) {
         continue;
       }
-      final img = MatrixFile.fromMimeType(bytes: file.bytes!, name: file.name);
 
-      final imageEventId = await room.sendFileEvent(img);
+      var file = MatrixFile(bytes: fileToAdd.bytes!, name: fileToAdd.name)
+          .detectFileType;
+      MatrixImageFile? thumbnail;
+
+      if (file is MatrixVideoFile && file.bytes.length > 20 * 1024) {
+        // don't compress video of less than 1024 kb
+        await showFutureLoadingDialog(
+          context: context,
+          future: () async {
+            file = await file.resizeVideo();
+            thumbnail = await file.getVideoThumbnail();
+          },
+        );
+      }
+      final imageEventId = await room.sendFileEvent(file, thumbnail: thumbnail);
 
       if (mounted) {
         setState(() {

@@ -36,4 +36,17 @@ extension MatrixFileExtension on MatrixFile {
     );
     return;
   }
+
+   MatrixFile get detectFileType {
+    if (msgType == MessageTypes.Image) {
+      return MatrixImageFile(bytes: bytes, name: name);
+    }
+    if (msgType == MessageTypes.Video) {
+      return MatrixVideoFile(bytes: bytes, name: name);
+    }
+    if (msgType == MessageTypes.Audio) {
+      return MatrixAudioFile(bytes: bytes, name: name);
+    }
+    return this;
+  }
 }
