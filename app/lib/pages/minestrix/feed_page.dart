@@ -171,6 +171,11 @@ class FeedPageState extends State<FeedPage> {
       appBar: AppBar(title: const Text("Feed"), actions: [
         IconButton(
             onPressed: () async {
+              await context.navigateTo(const RoomsExploreRoute());
+            },
+            icon: const Icon(Icons.explore)),
+        IconButton(
+            onPressed: () async {
               await context.navigateTo(ResearchRoute());
             },
             icon: const Icon(Icons.search)),
