@@ -15,7 +15,7 @@ class ChatPageState with ChangeNotifier {
   final void Function(String?) onLongPressedSpace;
 
   String? selectedRoomID;
-  String selectedSpace = CustomSpacesTypes.home;
+  String selectedSpace;
 
   bool displaySpaceList = false;
 
@@ -26,7 +26,8 @@ class ChatPageState with ChangeNotifier {
       required this.onRoomSelection,
       required this.onSpaceSelection,
       required this.onLongPressedSpace,
-      required this.context}) {
+      required this.context,
+      this.selectedSpace = CustomSpacesTypes.home}) {
     // close the chat view if we leave the room
     client.onSync.stream.where((up) => up.hasRoomUpdate).listen(onRoomSync);
   }

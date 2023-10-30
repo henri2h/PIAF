@@ -74,6 +74,10 @@ class SettingsPanel extends StatelessWidget {
       body: FutureBuilder<TokenOwnerInfo>(
           future: client.getTokenOwner(),
           builder: (context, snapToken) {
+            if (snapToken.hasData) {
+              Matrix.of(context).setGuest(snapToken.data?.isGuest);
+            }
+
             return ListView(
               children: [
                 FutureBuilder(

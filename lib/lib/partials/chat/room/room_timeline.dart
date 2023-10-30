@@ -140,31 +140,17 @@ class RoomTimelineState extends State<RoomTimeline> {
       });
     }
 
-    final filteredEvents = widget.timeline?.events
-        .where((e) =>
-            !{RelationshipTypes.edit, RelationshipTypes.reaction}
-                .contains(e.relationshipType) &&
-            !{
-              EventTypes.Reaction,
-              EventTypes.Redaction,
-              EventTypes.CallCandidates,
-              EventTypes.CallHangup,
-              EventTypes.CallReject,
-              EventTypes.CallNegotiate,
-              EventTypes.CallAnswer,
-              "m.call.select_answer",
-              "org.matrix.call.sdp_stream_metadata_changed"
-            }.contains(e.type))
-        .toList();
+    final filteredEvents = filter(widget.timeline?.events);
 
     events.clear();
+
     if (filteredEvents != null) {
       events.addAll(filteredEvents);
     }
 
     return Stack(children: [
-      room != null
-          ? widget.timeline != null
+      filteredEvents != null
+          ? filteredEvents != null
               ? Padding(
                   padding: EdgeInsets.only(
                       bottom: widget.isMobile ? 0 : bottomPadding),
@@ -180,12 +166,12 @@ class RoomTimelineState extends State<RoomTimeline> {
                         itemBuilder: (BuildContext context, int index,
                                 ItemPositions position, onReact) =>
                             ItemBuilder(
-                              key: index < filteredEvents.length
+                              key: index < filteredEvents!.length
                                   ? Key("item_${filteredEvents[index].eventId}")
                                   : null,
                               room: room!,
-                              filteredEvents: filteredEvents,
-                              t: widget.timeline!,
+                              filteredEvents: filteredEvents!,
+                              t: widget.timeline,
                               i: index,
                               onReact: onReact,
                               position: position,
@@ -218,7 +204,7 @@ class RoomTimelineState extends State<RoomTimeline> {
                     Text("Loading chat...")
                   ],
                 ))
-          : widget.userId?.isValidMatrixId == true
+          : widget.userId?.startsWith("@") == true // Is a user
               ? FutureBuilder<Profile>(
                   future: widget.client.getProfileFromUserId(widget.userId!),
                   builder: (context, snap) {
@@ -275,6 +261,23 @@ class RoomTimelineState extends State<RoomTimeline> {
       )
     ]);
   }
+
+  List<Event>? filter(List<Event>? events) => events
+      ?.where((e) =>
+          !{RelationshipTypes.edit, RelationshipTypes.reaction}
+              .contains(e.relationshipType) &&
+          !{
+            EventTypes.Reaction,
+            EventTypes.Redaction,
+            EventTypes.CallCandidates,
+            EventTypes.CallHangup,
+            EventTypes.CallReject,
+            EventTypes.CallNegotiate,
+            EventTypes.CallAnswer,
+            "m.call.select_answer",
+            "org.matrix.call.sdp_stream_metadata_changed"
+          }.contains(e.type))
+      .toList();
 
   /// send a read event if we have read the last event
   Future<bool> markLastRead({required Room room}) async {

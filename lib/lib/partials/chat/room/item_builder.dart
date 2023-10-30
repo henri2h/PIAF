@@ -29,7 +29,7 @@ class ItemBuilder extends StatelessWidget {
       : super(key: key);
 
   final Room room;
-  final Timeline t;
+  final Timeline? t;
   final List<Event> filteredEvents;
   final bool displayAvatar;
   final bool displayName;
@@ -55,7 +55,7 @@ class ItemBuilder extends StatelessWidget {
     Event event = filteredEvents[i];
 
     Set<Event> reactions =
-        event.aggregatedEvents(t, RelationshipTypes.reaction);
+        t == null ? {} : event.aggregatedEvents(t!, RelationshipTypes.reaction);
 
     final prevEvent =
         i < filteredEvents.length - 1 ? filteredEvents[i + 1] : null;
@@ -107,7 +107,9 @@ class ItemBuilder extends StatelessWidget {
       );
     }
     final oldEvent = event;
-    event = event.getDisplayEvent(t);
+    if (t != null) {
+      event = event.getDisplayEvent(t!);
+    }
     final edited = event.eventId != oldEvent.eventId;
 
     if (displayTime) {

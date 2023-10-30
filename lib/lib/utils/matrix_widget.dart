@@ -61,6 +61,8 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
   Store store = Store();
   late BuildContext navigatorContext;
 
+  final Map<int, bool?> _isGuest = {};
+
   HomeserverSummary? loginHomeserverSummary;
   XFile? loginAvatar;
   String? loginUsername;
@@ -77,6 +79,14 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
       return currentBundle!.first!;
     }
     return widget.clients[_activeClient];
+  }
+
+  bool? get isGuest {
+    return _isGuest[_activeClient];
+  }
+
+  void setGuest(bool? value) {
+    _isGuest[_activeClient] = value;
   }
 
   bool get webrtcIsSupported =>

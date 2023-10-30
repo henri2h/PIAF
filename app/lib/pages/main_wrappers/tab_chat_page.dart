@@ -4,6 +4,7 @@ import 'package:minestrix_chat/pages/chat_page_items/chat_page_room_list.dart';
 import 'package:minestrix_chat/pages/chat_page_items/chat_page_spaces_list.dart';
 
 import 'package:minestrix_chat/pages/chat_page_items/provider/chat_page_provider.dart';
+import 'package:minestrix_chat/partials/chat/spaces/list/spaces_list.dart';
 
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:provider/provider.dart';
@@ -35,10 +36,16 @@ class TabChatPageState extends State<TabChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Provider(
-      create: (_) => this,
+    return Provider.value(
+      value: this,
       child: ChatPageProvider(
         client: Matrix.of(context).client,
+
+        // Open the explore view by default for guests
+        selectedSpace: Matrix.of(context).isGuest == true
+            ? CustomSpacesTypes.explore
+            : CustomSpacesTypes.home,
+
         onRoomSelection: onRoomSelected,
         onSpaceSelection: (String spaceId) async {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {

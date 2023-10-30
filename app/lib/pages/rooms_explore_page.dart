@@ -23,7 +23,6 @@ class _RoomsExplorePageState extends State<RoomsExplorePage> {
   Future<List> getPublicRooms(Client client) async {
     final response = await client.queryPublicRooms(
         since: nextBatch,
-        limit: 20,
         filter: PublicRoomQueryFilter(roomTypes: [
           MatrixTypes.account,
           MatrixTypes.group,

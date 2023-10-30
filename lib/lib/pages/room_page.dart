@@ -1,15 +1,13 @@
 library minestrix_chat;
 
-import 'dart:ui';
-
+import 'package:matrix/src/models/timeline_chunk.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/chat/room/room_title.dart';
 import 'package:minestrix_chat/partials/chat/room/room_timeline.dart';
+import 'package:minestrix_chat/partials/chat/room/room_title.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
-import '../partials/chat/room/room_search.dart';
 import '../partials/chat/settings/conv_settings.dart';
 import 'room_settings_page.dart';
 
@@ -65,6 +63,11 @@ class RoomPageState extends State<RoomPage> {
     timeline = null;
 
     room = widget.client.getRoomById(widget.roomId);
+
+    if (widget.roomId.startsWith("!")) {
+      room = Room(id: widget.roomId, client: widget.client);
+    }
+
     if (room != null) {
       futureTimeline = getTimeline(room!);
     }
@@ -82,6 +85,37 @@ class RoomPageState extends State<RoomPage> {
   }
 
   Future<Timeline> getTimeline(Room room) async {
+    if (room.prev_batch == null) {
+      final res = await room.client.getRoomEvents(room.id, Direction.b);
+
+      final timeline = Timeline(
+          room: room,
+          chunk: TimelineChunk(
+              events: res.chunk.reversed
+                  .toList() // we display the event in the other sence
+                  .map((e) => Event.fromMatrixEvent(e, room))
+                  .toList()));
+
+      room.prev_batch = res.end;
+
+      // Apply states
+      res.state?.forEach((event) {
+        room.setState(Event.fromMatrixEvent(
+          event,
+          room,
+        ));
+      });
+
+      for (var event in res.chunk) {
+        room.setState(Event.fromMatrixEvent(
+          event,
+          room,
+        ));
+      }
+
+      return timeline;
+    }
+
     return await room.getTimeline(onInsert: (i) {
       if (mounted) {
         setState(() {
