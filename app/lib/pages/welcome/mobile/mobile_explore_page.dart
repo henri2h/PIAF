@@ -24,11 +24,17 @@ class _MobileExplorePageState extends State<MobileExplorePage> {
     const kind = AccountKind.guest;
 
     // domain has already been checked
-
-    await client.register(
-      initialDeviceDisplayName: initialDeviceName,
-      kind: kind,
-    );
+    try {
+      await client.register(
+        initialDeviceDisplayName: initialDeviceName,
+        kind: kind,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   @override

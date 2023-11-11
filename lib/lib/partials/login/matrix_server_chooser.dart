@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-
-import 'login_input.dart';
+import 'package:matrix_homeserver_recommendations/matrix_homeserver_recommendations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MatrixServerChooserController extends ChangeNotifier {
   void setUrl(Client client, String value) {
@@ -112,11 +112,11 @@ class MatrixServerChooserState extends State<MatrixServerChooser> {
     super.initState();
 
     if (widget.client.baseUri != null) {
-      widget.controller.setUrl(widget.client, widget.client.baseUri.toString());
+      controller.setUrl(widget.client, widget.client.baseUri.toString());
     }
 
-    widget.controller.addListener(() {
-      if (!widget.controller.isLoading) {
+    controller.addListener(() {
+      if (!controller.isLoading) {
         widget.onChanged(controller.domain);
       }
 
@@ -130,6 +130,24 @@ class MatrixServerChooserState extends State<MatrixServerChooser> {
     controller.verifyDomain(widget.client);
   }
 
+  var joinMatrixParser = const JoinmatrixOrgParser();
+
+  Future<void> enterCustomServerURL() async {
+    List<String>? results = await showTextInputDialog(
+      context: context,
+      textFields: [
+        DialogTextField(
+            hintText: "Homeserver url",
+            initialText: widget.controller.textController.text)
+      ],
+      title: "Set homeserver url",
+    );
+    if (results?.isNotEmpty == true) {
+      widget.controller.textController.text = results![0];
+      onServerChanged();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -140,19 +158,50 @@ class MatrixServerChooserState extends State<MatrixServerChooser> {
           title: const Text("Homeserver"),
           subtitle: Text(widget.controller.textController.text),
           onTap: () async {
-            List<String>? results = await showTextInputDialog(
-              context: context,
-              textFields: [
-                DialogTextField(
-                    hintText: "Homeserver url",
-                    initialText: widget.controller.textController.text)
-              ],
-              title: "Set homeserver url",
-            );
-            if (results?.isNotEmpty == true) {
-              widget.controller.textController.text = results![0];
-              onServerChanged();
+            final servers = await joinMatrixParser.fetchHomeservers();
+            if (mounted) {
+              await showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return ListView(children: [
+                      ListTile(
+                        leading: const Icon(Icons.cloud),
+                        title: const Text("Custom homeserver"),
+                        subtitle: const Text("Enter a custom URL"),
+                        trailing: const Icon(Icons.edit),
+                        onTap: () async {
+                          await enterCustomServerURL();
+                          if (mounted) Navigator.of(context).pop();
+                        },
+                      ),
+                      for (final server in servers)
+                        ListTile(
+                          title: Text(server.baseUrl.toString()),
+                          subtitle: server.description != null
+                              ? Text(server.description!)
+                              : null,
+                          trailing: server.aboutUrl != null
+                              ? IconButton(
+                                  icon: const Icon(Icons.info),
+                                  onPressed: () async {
+                                    final url = server.aboutUrl!;
+
+                                    if (await canLaunchUrl(url)) {
+                                      launchUrl(url);
+                                    }
+                                  })
+                              : null,
+                          onTap: () {
+                            controller.textController.text =
+                                server.baseUrl.toString();
+                            onServerChanged();
+                            Navigator.of(context).pop();
+                          },
+                        )
+                    ]);
+                  });
             }
+            return;
           },
         ),
         if (_isLoading) const CircularProgressIndicator(),
