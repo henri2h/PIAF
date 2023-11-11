@@ -35,7 +35,8 @@ class ChatPageState with ChangeNotifier {
   void onRoomSync(SyncUpdate update) {
     if (selectedRoomID != null) {
       if (update.rooms?.leave?.containsKey(selectedRoomID) == true) {
-        selectRoom(null);
+        print("You left the room $selectedRoomID");
+        //  selectRoom(null);
       }
     }
   }

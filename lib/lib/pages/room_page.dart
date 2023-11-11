@@ -1,11 +1,11 @@
 library minestrix_chat;
 
-import 'package:matrix/src/models/timeline_chunk.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/chat/room/room_timeline.dart';
 import 'package:minestrix_chat/partials/chat/room/room_title.dart';
+import 'package:minestrix_chat/utils/extensions/matrix/peeking_extension.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
 import '../partials/chat/settings/conv_settings.dart';
@@ -64,13 +64,22 @@ class RoomPageState extends State<RoomPage> {
 
     room = widget.client.getRoomById(widget.roomId);
 
-    if (widget.roomId.startsWith("!")) {
-      room = Room(id: widget.roomId, client: widget.client);
-    }
-
     if (room != null) {
       futureTimeline = getTimeline(room!);
+    } else if (widget.roomId.startsWith("!")) {
+      // create room and timeline
+      futureTimeline = peekRoom();
     }
+  }
+
+  Future<Timeline> peekRoom() async {
+    final timeline = await widget.client.peekRoom(widget.roomId);
+    
+    // update local variables
+    room = timeline.room;
+    this.timeline = timeline;
+    
+    return timeline;
   }
 
   Future getImage() async {
@@ -85,37 +94,6 @@ class RoomPageState extends State<RoomPage> {
   }
 
   Future<Timeline> getTimeline(Room room) async {
-    if (room.prev_batch == null) {
-      final res = await room.client.getRoomEvents(room.id, Direction.b);
-
-      final timeline = Timeline(
-          room: room,
-          chunk: TimelineChunk(
-              events: res.chunk.reversed
-                  .toList() // we display the event in the other sence
-                  .map((e) => Event.fromMatrixEvent(e, room))
-                  .toList()));
-
-      room.prev_batch = res.end;
-
-      // Apply states
-      res.state?.forEach((event) {
-        room.setState(Event.fromMatrixEvent(
-          event,
-          room,
-        ));
-      });
-
-      for (var event in res.chunk) {
-        room.setState(Event.fromMatrixEvent(
-          event,
-          room,
-        ));
-      }
-
-      return timeline;
-    }
-
     return await room.getTimeline(onInsert: (i) {
       if (mounted) {
         setState(() {
@@ -132,11 +110,16 @@ class RoomPageState extends State<RoomPage> {
     final chatView = FutureBuilder<Timeline?>(
       future: futureTimeline,
       builder: (BuildContext context, AsyncSnapshot<Timeline?> snapshot) {
-        timeline = snapshot.data;
+        if (snapshot.hasData == false) {
+          return Scaffold(
+              appBar: AppBar(),
+              body: const Center(child: CircularProgressIndicator()));
+        }
 
         return StreamBuilder(
             stream: room?.onUpdate.stream,
             builder: (context, snap) {
+              timeline = snapshot.data;
               return buildChatView(room);
             });
       },
@@ -145,18 +128,9 @@ class RoomPageState extends State<RoomPage> {
     if (room != null || widget.roomId.isValidMatrixId) {
       return chatView;
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-            icon: const Icon(Icons.navigate_before),
-            onPressed: widget.onBack ??
-                () {
-                  Navigator.of(context).pop();
-                }),
-        const SizedBox(width: 8),
-        const Text("Room not found"),
-      ],
+    return Scaffold(
+      appBar: AppBar(),
+      body: const Text("Room not found"),
     );
   }
 
