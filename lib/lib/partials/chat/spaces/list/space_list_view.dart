@@ -41,6 +41,10 @@ class SpacesListView extends StatelessWidget {
           leading: const Icon(Icons.people),
           onTap: () => controller.onSpaceSelected(CustomSpacesTypes.dm)),
       ListTile(
+          title: const Text('Explore'),
+          leading: const Icon(Icons.explore),
+          onTap: () => controller.onSpaceSelected(CustomSpacesTypes.explore)),
+      ListTile(
           title: const Text('Low priority'),
           leading: const Icon(Icons.notifications_off),
           onTap: () =>

@@ -1,15 +1,13 @@
 library minestrix_chat;
 
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/chat/room/room_title.dart';
 import 'package:minestrix_chat/partials/chat/room/room_timeline.dart';
+import 'package:minestrix_chat/partials/chat/room/room_title.dart';
+import 'package:minestrix_chat/utils/extensions/matrix/peeking_extension.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
-import '../partials/chat/room/room_search.dart';
 import '../partials/chat/settings/conv_settings.dart';
 import 'room_settings_page.dart';
 
@@ -65,9 +63,23 @@ class RoomPageState extends State<RoomPage> {
     timeline = null;
 
     room = widget.client.getRoomById(widget.roomId);
+
     if (room != null) {
       futureTimeline = getTimeline(room!);
+    } else if (widget.roomId.startsWith("!")) {
+      // create room and timeline
+      futureTimeline = peekRoom();
     }
+  }
+
+  Future<Timeline> peekRoom() async {
+    final timeline = await widget.client.peekRoom(widget.roomId);
+    
+    // update local variables
+    room = timeline.room;
+    this.timeline = timeline;
+    
+    return timeline;
   }
 
   Future getImage() async {
@@ -98,11 +110,16 @@ class RoomPageState extends State<RoomPage> {
     final chatView = FutureBuilder<Timeline?>(
       future: futureTimeline,
       builder: (BuildContext context, AsyncSnapshot<Timeline?> snapshot) {
-        timeline = snapshot.data;
+        if (snapshot.hasData == false) {
+          return Scaffold(
+              appBar: AppBar(),
+              body: const Center(child: CircularProgressIndicator()));
+        }
 
         return StreamBuilder(
             stream: room?.onUpdate.stream,
             builder: (context, snap) {
+              timeline = snapshot.data;
               return buildChatView(room);
             });
       },
@@ -111,18 +128,9 @@ class RoomPageState extends State<RoomPage> {
     if (room != null || widget.roomId.isValidMatrixId) {
       return chatView;
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-            icon: const Icon(Icons.navigate_before),
-            onPressed: widget.onBack ??
-                () {
-                  Navigator.of(context).pop();
-                }),
-        const SizedBox(width: 8),
-        const Text("Room not found"),
-      ],
+    return Scaffold(
+      appBar: AppBar(),
+      body: const Text("Room not found"),
     );
   }
 

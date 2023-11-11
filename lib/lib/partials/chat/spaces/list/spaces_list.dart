@@ -11,6 +11,7 @@ class CustomSpacesTypes {
   static const String unread = "Unreads";
   static const String active = "Active";
   static const String dm = "Direct message";
+  static const String explore = "Explore";
 }
 
 class MatrixSpacesList extends StatelessWidget {

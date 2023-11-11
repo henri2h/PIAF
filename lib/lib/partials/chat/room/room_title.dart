@@ -70,7 +70,7 @@ class MatrixRoomTitle extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (room == null && userId?.isValidMatrixId == true)
+          if (room == null && userId?.startsWith("@") == true)
             Expanded(
               child: FutureBuilder<Profile>(
                   future: client.getProfileFromUserId(userId!),

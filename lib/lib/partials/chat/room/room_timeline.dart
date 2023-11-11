@@ -48,8 +48,7 @@ class RoomTimelineState extends State<RoomTimeline> {
   StreamController<String> onRelpySelected = StreamController.broadcast();
   Event? composerReplyToEvent;
   Room? room;
-
-  List<Event> events = [];
+  List<Event> filteredEvents = [];
 
   Future<void>? request;
 
@@ -69,7 +68,7 @@ class RoomTimelineState extends State<RoomTimeline> {
 
     _scrollController.addListener(scrollListener);
     controller = InfiniteListController(
-        items: events, scrollController: _scrollController);
+        items: filteredEvents, scrollController: _scrollController);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (room != null) {
@@ -140,85 +139,56 @@ class RoomTimelineState extends State<RoomTimeline> {
       });
     }
 
-    final filteredEvents = widget.timeline?.events
-        .where((e) =>
-            !{RelationshipTypes.edit, RelationshipTypes.reaction}
-                .contains(e.relationshipType) &&
-            !{
-              EventTypes.Reaction,
-              EventTypes.Redaction,
-              EventTypes.CallCandidates,
-              EventTypes.CallHangup,
-              EventTypes.CallReject,
-              EventTypes.CallNegotiate,
-              EventTypes.CallAnswer,
-              "m.call.select_answer",
-              "org.matrix.call.sdp_stream_metadata_changed"
-            }.contains(e.type))
-        .toList();
-
-    events.clear();
-    if (filteredEvents != null) {
-      events.addAll(filteredEvents);
-    }
+    filteredEvents.clear();
+    filteredEvents.addAll(filter(widget.timeline?.events) ?? []);
 
     return Stack(children: [
       room != null
-          ? widget.timeline != null
-              ? Padding(
-                  padding: EdgeInsets.only(
-                      bottom: widget.isMobile ? 0 : bottomPadding),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: InfiniteCustomListViewWithEmoji(
-                        controller: controller!,
-                        reverse: true,
-                        itemCount: filteredEvents!.length,
-                        padding: EdgeInsets.only(
-                            top: widget.disableTimelinePadding ? 0 : 52,
-                            bottom: !widget.isMobile ? 0 : bottomPadding),
-                        itemBuilder: (BuildContext context, int index,
-                                ItemPositions position, onReact) =>
-                            ItemBuilder(
-                              key: index < filteredEvents.length
-                                  ? Key("item_${filteredEvents[index].eventId}")
-                                  : null,
-                              room: room!,
-                              filteredEvents: filteredEvents,
-                              t: widget.timeline!,
-                              i: index,
-                              onReact: onReact,
-                              position: position,
-                              onReplyEventPressed: (event) async {
-                                final index = widget.timeline!.events.indexOf(
-                                    event.getDisplayEvent(widget.timeline!));
-                                if (index != -1) {
-                                  await controller?.scrollController
-                                      .scrollToIndex(index);
-                                  onRelpySelected.add(event.eventId);
-                                } else {
-                                  print(
-                                      "Could not scroll to index, item not found");
-                                }
-                              },
-                              onSelected: onRelpySelected.stream,
-                              onReply: (Event oldEvent) => setState(() {
-                                composerReplyToEvent = oldEvent;
-                              }),
-                              fullyReadEventId: initialFullyReadEventId,
-                            )),
-                  ),
-                )
-              : const Center(
-                  child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(width: 16),
-                    Text("Loading chat...")
-                  ],
-                ))
-          : widget.userId?.isValidMatrixId == true
+          ? Padding(
+              padding:
+                  EdgeInsets.only(bottom: widget.isMobile ? 0 : bottomPadding),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: InfiniteCustomListViewWithEmoji(
+                    controller: controller!,
+                    reverse: true,
+                    itemCount: filteredEvents.length,
+                    padding: EdgeInsets.only(
+                        top: widget.disableTimelinePadding ? 0 : 52,
+                        bottom: !widget.isMobile ? 0 : bottomPadding),
+                    itemBuilder: (BuildContext context, int index,
+                            ItemPositions position, onReact) =>
+                        ItemBuilder(
+                          key: index < filteredEvents.length
+                              ? Key("item_${filteredEvents[index].eventId}")
+                              : null,
+                          room: room!,
+                          filteredEvents: filteredEvents,
+                          t: widget.timeline,
+                          i: index,
+                          onReact: onReact,
+                          position: position,
+                          onReplyEventPressed: (event) async {
+                            final index = widget.timeline!.events.indexOf(
+                                event.getDisplayEvent(widget.timeline!));
+                            if (index != -1) {
+                              await controller?.scrollController
+                                  .scrollToIndex(index);
+                              onRelpySelected.add(event.eventId);
+                            } else {
+                              print(
+                                  "Could not scroll to index, item not found");
+                            }
+                          },
+                          onSelected: onRelpySelected.stream,
+                          onReply: (Event oldEvent) => setState(() {
+                            composerReplyToEvent = oldEvent;
+                          }),
+                          fullyReadEventId: initialFullyReadEventId,
+                        )),
+              ),
+            )
+          : widget.userId?.startsWith("@") == true // Is a user
               ? FutureBuilder<Profile>(
                   future: widget.client.getProfileFromUserId(widget.userId!),
                   builder: (context, snap) {
@@ -253,7 +223,7 @@ class RoomTimelineState extends State<RoomTimeline> {
                       ),
                     );
                   })
-              : const Center(child: Text("Send a message to create the room")),
+              : const Center(child: Text("An error happened")),
       Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -276,8 +246,29 @@ class RoomTimelineState extends State<RoomTimeline> {
     ]);
   }
 
+  List<Event>? filter(List<Event>? events) => events
+      ?.where((e) =>
+          !{RelationshipTypes.edit, RelationshipTypes.reaction}
+              .contains(e.relationshipType) &&
+          !{
+            EventTypes.Reaction,
+            EventTypes.Redaction,
+            EventTypes.CallCandidates,
+            EventTypes.CallHangup,
+            EventTypes.CallReject,
+            EventTypes.CallNegotiate,
+            EventTypes.CallAnswer,
+            "m.call.select_answer",
+            "org.matrix.call.sdp_stream_metadata_changed"
+          }.contains(e.type))
+      .toList();
+
   /// send a read event if we have read the last event
   Future<bool> markLastRead({required Room room}) async {
+    // Only update the read marker if the user is in the room.
+    // Room marker can't be updated if we are peeking the room
+    if (room.membership != Membership.invite) return false;
+
     if (widget.timeline?.events.isNotEmpty != true) return false;
 
     Event? lastEvent;
