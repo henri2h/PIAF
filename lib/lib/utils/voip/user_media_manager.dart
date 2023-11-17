@@ -6,6 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import '../platform_infos.dart';
 
 class UserMediaManager {
+  final player = FlutterRingtonePlayer();
   factory UserMediaManager() {
     return _instance;
   }
@@ -18,7 +19,7 @@ class UserMediaManager {
 
   Future<void> startRingingTone() async {
     if (PlatformInfos.isMobile) {
-      await FlutterRingtonePlayer.playRingtone(volume: 80);
+      await player.playRingtone(volume: 80);
     } else if ((kIsWeb || PlatformInfos.isMacOS) &&
         _assetsAudioPlayer != null) {
       const path = 'assets/sounds/phone.ogg';
@@ -31,7 +32,7 @@ class UserMediaManager {
 
   Future<void> stopRingingTone() async {
     if (PlatformInfos.isMobile) {
-      await FlutterRingtonePlayer.stop();
+      await player.stop();
     }
     await _assetsAudioPlayer?.stop();
     _assetsAudioPlayer = null;

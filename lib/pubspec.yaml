@@ -19,7 +19,7 @@ dependencies:
   image: ^4.0.17
   blurhash_dart: ^1.1.0
   image_picker: ^1.0.0
-  file_picker: ^5.2.5
+  file_picker: ^6.1.1
   
   # Post formating
   flutter_markdown: ^0.6.8
@@ -52,8 +52,8 @@ dependencies:
   json_annotation: ^4.4.0
 
   # dialogs
-  future_loading_dialog: ^0.2.3
-  adaptive_dialog: ^1.9.0-0
+  future_loading_dialog: ^0.3.0
+  adaptive_dialog: ^2.0.0
 
   # database
   hive_flutter: ^1.1.0
@@ -63,9 +63,9 @@ dependencies:
   universal_html: ^2.0.8
   provider: ^6.0.2
   desktop_notifications: ^0.6.3
-  connectivity_plus: ^4.0.1
+  connectivity_plus: ^5.0.1
   desktop_lifecycle: ^0.1.0
-  flutter_ringtone_player: ^3.2.0
+  flutter_ringtone_player: ^4.0.0
   just_audio: ^0.9.21
   callkeep: ^0.3.2
   unifiedpush: ^5.0.0
@@ -79,7 +79,7 @@ dependencies:
   pedantic: ^1.11.1
   webrtc_interface: ^1.0.4
   collection: ^1.16.0
-  uuid: ^3.0.6
+  uuid: ^4.2.1
   flutter_blurhash: ^0.7.0
   intl: ^0.18.0
   desktop_webview_window: ^0.2.0
@@ -113,7 +113,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
+  flutter_lints: ^3.0.1
   build_runner: ^2.1.2
   import_sorter:
   

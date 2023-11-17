@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../providers/item_manager.dart';
 
-
 class SearchSystem<T> extends StatefulWidget {
   const SearchSystem({super.key, required this.manager});
   final ItemManager<T> manager;
