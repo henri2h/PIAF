@@ -18,10 +18,8 @@ import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/account_selection_button.dart';
-import '../../partials/components/buttons/custom_text_future_button.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/components/minestrix/minestrix_title.dart';
-import '../../partials/feed/minestrix_profile_not_created.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
 import '../../partials/post/post.dart';
@@ -176,7 +174,7 @@ class FeedPageState extends State<FeedPage> {
             icon: const Icon(Icons.explore)),
         IconButton(
             onPressed: () async {
-              await context.navigateTo(ResearchRoute());
+              await context.navigateTo(SearchRoute());
             },
             icon: const Icon(Icons.search)),
         const AccountSelectionButton()
@@ -209,140 +207,216 @@ class FeedPageState extends State<FeedPage> {
                           ],
                         ),
                         rightBar: const RightBar(),
-                        mainBuilder:
-                            (
-                                    {required bool displaySideBar,
-                                    required bool displayLeftBar}) =>
-                                events?.isNotEmpty != true
-                                    ? Column(
-                                        children: [
-                                          const H1Title("Welcome in MinesTRIX"),
-                                          FutureBuilder(
-                                              future: roomsLoadingTest(context),
-                                              builder: (context, snap) {
-                                                if (!snap.hasData) {
-                                                  return const CircularProgressIndicator();
-                                                }
-                                                return Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
+                        mainBuilder: (
+                                {required bool displaySideBar,
+                                required bool displayLeftBar}) =>
+                            events?.isNotEmpty != true
+                                ? Column(
+                                    children: [
+                                      FutureBuilder(
+                                          future: roomsLoadingTest(context),
+                                          builder: (context, snap) {
+                                            if (!snap.hasData) {
+                                              return const CircularProgressIndicator();
+                                            }
+                                            return Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                ListView(
+                                                  shrinkWrap: true,
+                                                  physics:
+                                                      const NeverScrollableScrollPhysics(),
                                                   children: [
-                                                    ListView(
-                                                      shrinkWrap: true,
-                                                      physics:
-                                                          const NeverScrollableScrollPhysics(),
-                                                      children: [
-                                                        client.prevBatch == null
-                                                            ? Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  const MinestrixTitle(),
-                                                                  SyncStatusCard(
-                                                                      client:
-                                                                          client),
-                                                                ],
-                                                              )
-                                                            : Column(
-                                                                children: [
-                                                                  H2Title(events ==
-                                                                          null
-                                                                      ? "First time here ?"
-                                                                      : "Your timeline is empty"),
-                                                                  if (events !=
-                                                                      null)
-                                                                    const Padding(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                              8.0),
-                                                                      child:
-                                                                          MinestrixProfileNotCreated(),
-                                                                    ),
-                                                                  if (client
-                                                                          .userRoomCreated ==
-                                                                      true)
-                                                                    Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .all(
-                                                                          8.0),
-                                                                      child: CustomTextFutureButton(
-                                                                          icon: Icons.post_add,
-                                                                          text: "Write your first post",
-                                                                          onPressed: () async {
-                                                                            await PostEditorPage.show(
-                                                                                context: context,
-                                                                                rooms: client.minestrixUserRoom);
-                                                                          }),
-                                                                    ),
-                                                                  Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            8.0),
-                                                                    child: CustomTextFutureButton(
-                                                                        icon: Icons.group_add,
-                                                                        text: "Create a group",
-                                                                        onPressed: () async {
-                                                                          AdaptativeDialogs.show(
-                                                                              context: context,
-                                                                              builder: (context) => const CreateGroupPage());
-                                                                        }),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                      ],
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                        bottom: 50,
-                                                        left: 8.0,
-                                                        right: 8,
-                                                      ),
-                                                      child:
-                                                          CustomTextFutureButton(
-                                                              icon:
-                                                                  Icons.refresh,
-                                                              text:
-                                                                  "Refresh rooms",
-                                                              onPressed:
-                                                                  () async {
-                                                                getEvents();
-                                                              }),
-                                                    ),
+                                                    client.prevBatch == null
+                                                        ? Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              const MinestrixTitle(),
+                                                              SyncStatusCard(
+                                                                  client:
+                                                                      client),
+                                                            ],
+                                                          )
+                                                        : Card(
+                                                            child:
+                                                                OnboardingWidget(
+                                                                    client:
+                                                                        client),
+                                                          ),
                                                   ],
-                                                );
-                                              }),
-                                        ],
-                                      )
-                                    : Column(
-                                        children: [
-                                          CustomListViewWithEmoji(
-                                              itemCount: events!.length,
-                                              controller: controller,
-                                              physics:
-                                                  const NeverScrollableScrollPhysics(),
-                                              itemBuilder: (BuildContext c,
-                                                  int i,
-                                                  void Function(Offset, Event)
-                                                      onReact) {
-                                                return Post(
-                                                    event: events![i],
-                                                    key: Key(
-                                                        events![i].eventId +
-                                                            events![i]
-                                                                .status
-                                                                .toString()),
-                                                    onReact: (Offset e) =>
-                                                        onReact(e, events![i]));
-                                              }),
-                                        ],
-                                      )),
+                                                ),
+                                              ],
+                                            );
+                                          }),
+                                    ],
+                                  )
+                                : Column(
+                                    children: [
+                                      CustomListViewWithEmoji(
+                                          itemCount: events!.length,
+                                          controller: controller,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          itemBuilder: (BuildContext c,
+                                              int i,
+                                              void Function(Offset, Event)
+                                                  onReact) {
+                                            return Post(
+                                                event: events![i],
+                                                key: Key(events![i].eventId +
+                                                    events![i]
+                                                        .status
+                                                        .toString()),
+                                                onReact: (Offset e) =>
+                                                    onReact(e, events![i]));
+                                          }),
+                                    ],
+                                  )),
                   );
                 });
           }),
+    );
+  }
+}
+
+class OnboardingWidget extends StatelessWidget {
+  const OnboardingWidget({
+    super.key,
+    required this.client,
+  });
+  final Client client;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(28.0),
+          child: Center(
+            child: Text(
+              "Welcome in MinesTRIX",
+              style: Theme.of(context).textTheme.headlineLarge,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+          child: Text(
+            "Onboarding",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        WelcomeActionsButton(
+            icon: Icons.people,
+            text: 'Create your page',
+            subtitle: 'That\'s where you can post',
+            onPressed: () async {
+              if (client.userRoomCreated) {
+                await context.navigateTo(
+                    UserViewRoute(userID: Matrix.of(context).client.userID));
+              } else {
+                await client.createPrivateMinestrixProfile();
+              }
+            },
+            done: client.userRoomCreated),
+        if (client.userRoomCreated == true)
+          WelcomeActionsButton(
+              icon: Icons.post_add,
+              text: 'Post',
+              subtitle: "Write a post on your page",
+              onPressed: () async {
+                await PostEditorPage.show(
+                    context: context, rooms: client.minestrixUserRoom);
+              },
+              done: false),
+        WelcomeActionsButton(
+            icon: Icons.public,
+            text: 'Publish your page',
+            subtitle:
+                'To help your find your page you can add it to your user space',
+            onPressed: () async {
+              context.pushRoute(const AccountsDetailsRoute());
+            },
+            done: false),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+          child: Text(
+            "Go further",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        WelcomeActionsButton(
+            text: 'Story',
+            subtitle: 'Create and manage your story page',
+            icon: Icons.web_stories,
+            onPressed: () async {
+              context.pushRoute(const SettingsStorysRoute());
+            },
+            done: false),
+        WelcomeActionsButton(
+            icon: Icons.group_work,
+            text: 'Create your group page',
+            subtitle: 'A place to share posts',
+            onPressed: () async {
+              AdaptativeDialogs.show(
+                  context: context,
+                  builder: (context) => const CreateGroupPage());
+            },
+            done: false),
+        WelcomeActionsButton(
+            text: 'Explore',
+            subtitle: 'Discover public pages',
+            icon: Icons.explore,
+            onPressed: () async {
+              context.pushRoute(const RoomsExploreRoute());
+            },
+            done: false),
+      ],
+    );
+  }
+}
+
+class WelcomeActionsButton extends StatelessWidget {
+  const WelcomeActionsButton(
+      {super.key,
+      required this.text,
+      required this.icon,
+      required this.onPressed,
+      required this.subtitle,
+      required this.done});
+
+  final String text;
+  final String subtitle;
+  final IconData icon;
+  final Future<void> Function() onPressed;
+  final bool done;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        elevation: 4,
+        child: ListTile(
+          leading: Icon(icon),
+          title: Text(text),
+          subtitle: Text(subtitle),
+          onTap: done ? null : onPressed,
+          trailing: done
+              ? CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: Icon(
+                    Icons.done,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ))
+              : null,
+        ),
+      ),
     );
   }
 }

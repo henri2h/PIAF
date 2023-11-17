@@ -61,6 +61,7 @@ class _RoomsExplorePageState extends State<RoomsExplorePage> {
 
   @override
   Widget build(BuildContext context) {
+    final textController = TextEditingController();
     return Scaffold(
         appBar: AppBar(title: const Text("Explore")),
         body: RefreshIndicator(
@@ -79,6 +80,9 @@ class _RoomsExplorePageState extends State<RoomsExplorePage> {
                 return ListView(
                   controller: controller,
                   children: [
+                    TextField(
+                      controller: textController,
+                    ),
                     if (snapshot.hasData && rooms.isEmpty)
                       ListTile(
                         leading:
@@ -101,7 +105,15 @@ class _RoomsExplorePageState extends State<RoomsExplorePage> {
                             width: MinestrixAvatarSizeConstants.avatar,
                           ),
                           title: Text("${room.name}"),
-                          subtitle: Text(room.roomType ?? ""),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (room.roomType?.isNotEmpty == true)
+                                Text(room.roomType!),
+                              if (room.guestCanJoin)
+                                const Badge(label: Text("Guest can join"))
+                            ],
+                          ),
                           trailing: Text("${room.numJoinedMembers}")),
                     if (futureRooms != null)
                       const Center(child: CircularProgressIndicator())

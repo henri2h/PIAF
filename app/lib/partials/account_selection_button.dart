@@ -175,7 +175,7 @@ class _AccountSelectionRouteContent extends StatefulWidget {
 class _AccountSelectionRouteContentState
     extends State<_AccountSelectionRouteContent> {
   Future<void> launchCreateGroupModal(BuildContext context) async {
-    AdaptativeDialogs.show(
+   await AdaptativeDialogs.show(
         context: context, builder: (context) => const CreateGroupPage());
   }
 

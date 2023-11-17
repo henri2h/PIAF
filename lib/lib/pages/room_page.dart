@@ -73,13 +73,20 @@ class RoomPageState extends State<RoomPage> {
   }
 
   Future<Timeline> peekRoom() async {
-    final timeline = await widget.client.peekRoom(widget.roomId);
-    
-    // update local variables
-    room = timeline.room;
-    this.timeline = timeline;
-    
-    return timeline;
+    try {
+      final timeline = await widget.client.peekRoom(widget.roomId);
+      // update local variables
+      room = timeline.room;
+      this.timeline = timeline;
+
+      return timeline;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+      rethrow;
+    }
   }
 
   Future getImage() async {
@@ -113,7 +120,12 @@ class RoomPageState extends State<RoomPage> {
         if (snapshot.hasData == false) {
           return Scaffold(
               appBar: AppBar(),
-              body: const Center(child: CircularProgressIndicator()));
+              body: Center(
+                  child: snapshot.hasError
+                      ? ListTile(
+                          title: const Text("Could not load the room."),
+                          subtitle: Text(snapshot.error.toString()))
+                      : const CircularProgressIndicator()));
         }
 
         return StreamBuilder(

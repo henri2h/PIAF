@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/feed/minestrix_profile_not_created.dart';
 import 'package:minestrix/partials/minestrix_room_tile.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -30,6 +29,9 @@ class RightBar extends StatelessWidget {
                         builder: (context, _) {
                           List<Room> sgroups = client.sgroups.toList();
 
+                          // If there is no list, better not display anything
+                          if (sgroups.isEmpty) return Container();
+
                           return ListView(
                             children: [
                               Card(
@@ -47,9 +49,6 @@ class RightBar extends StatelessWidget {
                                 ),
                               ),
                               const CardPanelList(),
-                              if (client.userRoomCreated != true &&
-                                  client.prevBatch != null)
-                                const MinestrixProfileNotCreated(),
                             ],
                           );
                         });

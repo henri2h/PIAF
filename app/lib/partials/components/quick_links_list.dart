@@ -51,7 +51,7 @@ class QuickLinksBarState extends State<QuickLinksBar>
                         icon: Icons.search,
                         onPressed: () async {
                           await context.navigateTo(const AppWrapperRoute());
-                          await context.navigateTo(ResearchRoute());
+                          await context.navigateTo(SearchRoute());
                         }),
                   ],
                 ),

@@ -36,6 +36,16 @@ class PostEditorPage extends StatefulWidget {
     required List<Room> rooms,
     Event? shareEvent,
   }) async {
+    if (rooms.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          content: const ListTile(
+            leading: Icon(Icons.error),
+            title: Text("No room available to write a post."),
+            subtitle: Text("First create a profile room."),
+          )));
+      return;
+    }
     await AdaptativeDialogs.show(
         context: context,
         builder: (context) =>
