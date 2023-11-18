@@ -10,7 +10,7 @@ import '../../partials/components/minestrix/minestrix_title.dart';
 
 @RoutePage()
 class CalendarEventListPage extends StatefulWidget {
-  const CalendarEventListPage({Key? key}) : super(key: key);
+  const CalendarEventListPage({super.key});
 
   @override
   State<CalendarEventListPage> createState() => _CalendarEventListPageState();

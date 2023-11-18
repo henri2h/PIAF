@@ -7,8 +7,7 @@ import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 import '../../../partials/components/buttons/custom_future_button.dart';
 
 class FollowingIndicator extends StatelessWidget {
-  const FollowingIndicator({Key? key, required this.room, this.onUnfollow})
-      : super(key: key);
+  const FollowingIndicator({super.key, required this.room, this.onUnfollow});
 
   final RoomWithSpace room;
   final VoidCallback? onUnfollow;

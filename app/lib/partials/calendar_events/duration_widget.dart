@@ -3,9 +3,9 @@ import 'package:minestrix_chat/utils/extensions/minestrix/model/calendar_event_m
 
 class DurationWidget extends StatelessWidget {
   const DurationWidget({
-    Key? key,
+    super.key,
     required this.calendarEvent,
-  }) : super(key: key);
+  });
 
   final CalendarEvent calendarEvent;
 

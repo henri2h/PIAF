@@ -6,7 +6,7 @@ import 'package:matrix/matrix.dart';
 import '../../event/matrix_image.dart';
 
 class ConvSettingsRoomMedia extends StatefulWidget {
-  const ConvSettingsRoomMedia({Key? key, required this.room}) : super(key: key);
+  const ConvSettingsRoomMedia({super.key, required this.room});
 
   final Room room;
 

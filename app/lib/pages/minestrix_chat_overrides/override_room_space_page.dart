@@ -6,8 +6,7 @@ import 'package:minestrix_chat/pages/space_page.dart';
 @RoutePage()
 class OverrideRoomSpacePage extends StatelessWidget {
   const OverrideRoomSpacePage(
-      {Key? key, required this.spaceId, required this.client, this.onBack})
-      : super(key: key);
+      {super.key, required this.spaceId, required this.client, this.onBack});
 
   final String spaceId;
   final Client client;

@@ -20,9 +20,9 @@ class MinestrixNavigationRailItem {
 
 class MinestrixNavigationRail extends StatefulWidget {
   const MinestrixNavigationRail({
-    Key? key,
+    super.key,
     required this.path,
-  }) : super(key: key);
+  });
 
   final String path;
   @override
@@ -104,7 +104,7 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
         ...items
             .map((e) => NavigationRailDestination(
                 icon: e.icon, label: e.label, padding: const EdgeInsets.all(6)))
-            .toList()
+            
       ],
 
       selectedIndex: selectedIndex,

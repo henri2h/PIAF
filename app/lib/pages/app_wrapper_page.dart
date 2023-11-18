@@ -16,7 +16,7 @@ import '../router.gr.dart';
 
 @RoutePage()
 class AppWrapperPage extends StatefulWidget {
-  const AppWrapperPage({Key? key}) : super(key: key);
+  const AppWrapperPage({super.key});
 
   @override
   State<AppWrapperPage> createState() => _AppWrapperPageState();
@@ -189,7 +189,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
 }
 
 class AvatarBottomBar extends StatefulWidget {
-  const AvatarBottomBar({Key? key}) : super(key: key);
+  const AvatarBottomBar({super.key});
 
   @override
   State<AvatarBottomBar> createState() => _AvatarBottomBarState();

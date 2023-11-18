@@ -14,15 +14,14 @@ class MatrixRoomTitle extends StatelessWidget {
   final double height;
 
   const MatrixRoomTitle(
-      {Key? key,
+      {super.key,
       required this.room,
       required this.client,
       required this.height,
       this.userId,
       this.updating = false,
       this.onBack,
-      this.onToggleSettings})
-      : super(key: key);
+      this.onToggleSettings});
 
   @override
   Widget build(BuildContext context) {

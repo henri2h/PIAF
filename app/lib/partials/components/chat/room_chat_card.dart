@@ -6,9 +6,9 @@ import '../minestrix/minestrix_title.dart';
 
 class RoomChatCard extends StatelessWidget {
   const RoomChatCard({
-    Key? key,
+    super.key,
     required this.room,
-  }) : super(key: key);
+  });
 
   final Room room;
 

@@ -10,8 +10,7 @@ class Post extends StatefulWidget {
   final void Function(Offset) onReact;
   final Timeline? timeline;
   const Post(
-      {Key? key, required this.event, required this.onReact, this.timeline})
-      : super(key: key);
+      {super.key, required this.event, required this.onReact, this.timeline});
 
   @override
   State<Post> createState() => _PostState();

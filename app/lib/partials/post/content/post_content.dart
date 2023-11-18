@@ -15,11 +15,10 @@ class PostContent extends StatelessWidget {
   final double? imageMaxWidth;
   final bool disablePadding;
   const PostContent(this.event,
-      {Key? key,
+      {super.key,
       this.imageMaxHeight,
       this.imageMaxWidth,
-      this.disablePadding = false})
-      : super(key: key);
+      this.disablePadding = false});
 
   @override
   Widget build(BuildContext context) {

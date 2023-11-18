@@ -6,8 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../matrix/matrix_image_avatar.dart';
 
 class ReadReceiptsItem extends StatelessWidget {
-  const ReadReceiptsItem({Key? key, required this.r, required this.room})
-      : super(key: key);
+  const ReadReceiptsItem({super.key, required this.r, required this.room});
 
   final Receipt r;
   final Room room;

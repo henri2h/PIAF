@@ -8,7 +8,7 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 
 class UserFriendsCard extends StatelessWidget {
-  const UserFriendsCard({Key? key, required this.room}) : super(key: key);
+  const UserFriendsCard({super.key, required this.room});
 
   final Room room;
   Future<List<User>> getUsers() async {

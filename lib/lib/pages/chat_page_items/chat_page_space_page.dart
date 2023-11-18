@@ -5,7 +5,7 @@ import 'provider/chat_page_state.dart';
 import '../space_page.dart';
 
 class ChatPageSpacePage extends StatelessWidget {
-  const ChatPageSpacePage({Key? key}) : super(key: key);
+  const ChatPageSpacePage({super.key});
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatPageState>(

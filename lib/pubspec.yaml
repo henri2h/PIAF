@@ -19,7 +19,7 @@ dependencies:
   image: ^4.0.17
   blurhash_dart: ^1.1.0
   image_picker: ^1.0.0
-  file_picker: ^5.2.5
+  file_picker: ^6.1.1
   
   # Post formating
   flutter_markdown: ^0.6.8
@@ -52,8 +52,8 @@ dependencies:
   json_annotation: ^4.4.0
 
   # dialogs
-  future_loading_dialog: ^0.2.3
-  adaptive_dialog: ^1.9.0-0
+  future_loading_dialog: ^0.3.0
+  adaptive_dialog: ^2.0.0
 
   # database
   hive_flutter: ^1.1.0
@@ -63,24 +63,25 @@ dependencies:
   universal_html: ^2.0.8
   provider: ^6.0.2
   desktop_notifications: ^0.6.3
-  connectivity_plus: ^4.0.1
+  connectivity_plus: ^5.0.1
   desktop_lifecycle: ^0.1.0
-  flutter_ringtone_player: ^3.2.0
+  flutter_ringtone_player: ^4.0.0
   just_audio: ^0.9.21
   callkeep: ^0.3.2
   unifiedpush: ^5.0.0
-  native_imaging:
-    path: ../../native_imaging
+  native_imaging: ^0.1.1
   wakelock_plus: ^1.1.1
   logging: ^1.0.2
   shared_preferences: ^2.0.15
   http: ^0.13.4
   path_provider: ^2.0.10
-  pedantic: ^1.11.1
   webrtc_interface: ^1.0.4
   collection: ^1.16.0
-  uuid: ^3.0.6
-  flutter_blurhash: ^0.7.0
+  uuid: ^4.2.1
+  flutter_blurhash:
+    # Waiting for: https://github.com/fluttercommunity/flutter_blurhash/pull/59
+    git: https://github.com/MominRaza/flutter_blurhash.git
+
   intl: ^0.18.0
   desktop_webview_window: ^0.2.0
   swipe_to: ^1.0.2
@@ -105,15 +106,15 @@ dependencies:
   flutter_highlighter: ^0.1.1
   linkify: ^5.0.0
   flutter_html_table: ^3.0.0-beta.2
-  photo_manager: ^2.7.2
+  photo_manager: 3.0.0-dev.2
   video_compress: ^3.1.2
   matrix_homeserver_recommendations: ^0.3.0
-  
+  photo_manager_image_provider: ^2.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
+  flutter_lints: ^3.0.1
   build_runner: ^2.1.2
   import_sorter:
   

@@ -15,7 +15,7 @@ import '../../partials/components/minestrix/minestrix_title.dart';
 
 @RoutePage()
 class SettingsSecurityPage extends StatefulWidget {
-  const SettingsSecurityPage({Key? key}) : super(key: key);
+  const SettingsSecurityPage({super.key});
 
   @override
   SettingsSecurityPageState createState() => SettingsSecurityPageState();
@@ -279,9 +279,9 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
 
 class DeviceWidget extends StatelessWidget {
   const DeviceWidget({
-    Key? key,
+    super.key,
     required this.device,
-  }) : super(key: key);
+  });
 
   static Future<void> show(BuildContext context, DeviceKeys device) async {
     await AdaptativeDialogs.show(

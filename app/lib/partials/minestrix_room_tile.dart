@@ -7,8 +7,7 @@ import 'package:minestrix_chat/partials/feed/minestrix_room_tile.dart';
 
 class MinestrixRoomTileNavigator extends StatelessWidget {
   const MinestrixRoomTileNavigator(
-      {Key? key, required this.room, this.shouldPop = false})
-      : super(key: key);
+      {super.key, required this.room, this.shouldPop = false});
   final Room room;
   final bool shouldPop;
 

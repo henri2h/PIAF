@@ -11,7 +11,7 @@ import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 
 class MatrixVideoMessage extends StatefulWidget {
-  const MatrixVideoMessage(this.event, {Key? key}) : super(key: key);
+  const MatrixVideoMessage(this.event, {super.key});
 
   final Event event;
 
@@ -179,8 +179,7 @@ class _MatrixVideoMessageState extends State<MatrixVideoMessage> {
 }
 
 class LinuxMatrixVideoMessage extends StatefulWidget {
-  const LinuxMatrixVideoMessage({Key? key, required this.media})
-      : super(key: key);
+  const LinuxMatrixVideoMessage({super.key, required this.media});
 
   final String media;
 

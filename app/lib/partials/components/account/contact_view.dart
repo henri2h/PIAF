@@ -7,9 +7,9 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class ContactView extends StatelessWidget {
   const ContactView({
-    Key? key,
+    super.key,
     required this.user,
-  }) : super(key: key);
+  });
   final User user;
   @override
   Widget build(BuildContext context) {

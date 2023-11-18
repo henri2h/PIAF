@@ -3,8 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 
 class ConvSettingsPermissions extends StatefulWidget {
-  const ConvSettingsPermissions({Key? key, required this.room})
-      : super(key: key);
+  const ConvSettingsPermissions({super.key, required this.room});
 
   final Room room;
 
@@ -216,14 +215,13 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
 
 class PermissionTile extends StatelessWidget {
   const PermissionTile(
-      {Key? key,
+      {super.key,
       required this.room,
       required this.icon,
       required this.permissionName,
       this.permissionComment,
       required this.eventType,
-      this.isEvent = true})
-      : super(key: key);
+      this.isEvent = true});
 
   final Room room;
   final Icon icon;

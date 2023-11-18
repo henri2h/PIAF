@@ -4,8 +4,8 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class CustomEmojiPickerGrid extends StatelessWidget {
   const CustomEmojiPickerGrid({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -7,13 +7,13 @@ import 'room_list_item.dart';
 
 class RoomListItemSlidable extends StatefulWidget {
   const RoomListItemSlidable({
-    Key? key,
+    super.key,
     required this.r,
     required this.selectedRoomId,
     required this.client,
     required this.onSelection,
     required this.onLongPress,
-  }) : super(key: key);
+  });
 
   final Room r;
   final String? selectedRoomId;

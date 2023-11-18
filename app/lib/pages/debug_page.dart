@@ -14,7 +14,7 @@ import 'settings/settings_story_detail_page.dart';
 
 @RoutePage()
 class DebugPage extends StatefulWidget {
-  const DebugPage({Key? key}) : super(key: key);
+  const DebugPage({super.key});
 
   @override
   DebugPageState createState() => DebugPageState();
@@ -167,8 +167,7 @@ class DebugPageState extends State<DebugPage> {
 }
 
 class MainNavButton extends StatelessWidget {
-  const MainNavButton({Key? key, required this.text, required this.builder})
-      : super(key: key);
+  const MainNavButton({super.key, required this.text, required this.builder});
 
   final String text;
   final Widget Function(BuildContext) builder;

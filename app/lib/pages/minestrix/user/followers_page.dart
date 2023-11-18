@@ -16,7 +16,7 @@ import '../../../partials/components/layouts/custom_header.dart';
 
 @RoutePage()
 class FollowersPage extends StatefulWidget {
-  const FollowersPage({Key? key, required this.room}) : super(key: key);
+  const FollowersPage({super.key, required this.room});
 
   final Room room;
 

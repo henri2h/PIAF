@@ -7,7 +7,7 @@ import '../../markdown_content.dart';
 
 class TextMessageBubble extends StatelessWidget {
   const TextMessageBubble(
-      {Key? key,
+      {super.key,
       this.displayEdit = false,
       this.backgroundColor,
       this.color,
@@ -18,8 +18,7 @@ class TextMessageBubble extends StatelessWidget {
       required this.redacted,
       this.displaySentIndicator = false,
       this.isReply = false,
-      this.edited = false})
-      : super(key: key);
+      this.edited = false});
 
   final Event e;
   final Color? backgroundColor;

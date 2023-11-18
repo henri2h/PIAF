@@ -11,13 +11,12 @@ class MatrixPostContent extends StatelessWidget {
   final bool disablePadding;
   final Function(Event, {Event? imageEvent, String? ref}) onImagePressed;
   const MatrixPostContent(
-      {Key? key,
+      {super.key,
       required this.event,
       this.imageMaxHeight,
       this.imageMaxWidth,
       this.disablePadding = false,
-      required this.onImagePressed})
-      : super(key: key);
+      required this.onImagePressed});
 
   final Event event;
 
@@ -112,12 +111,11 @@ class ImagePreview extends StatelessWidget {
   final Function(Event, {Event? imageEvent, String? ref}) onImagePressed;
 
   const ImagePreview(
-      {Key? key,
+      {super.key,
       required this.post,
       required this.imageMaxHeight,
       required this.imageMaxWidth,
-      required this.onImagePressed})
-      : super(key: key);
+      required this.onImagePressed});
 
   String? getRef(int pos) {
     if (post.imagesRefEventId.length > pos) return post.imagesRefEventId[pos];

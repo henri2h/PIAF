@@ -100,15 +100,14 @@ class AdaptativeDialogs {
 
 class AdaptativeDialogsWidget extends StatelessWidget {
   const AdaptativeDialogsWidget(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.child,
       this.subtitle,
       this.enableClose = false,
       this.onPressed,
       this.maxHeight = 800,
-      this.maxWidth = 800})
-      : super(key: key);
+      this.maxWidth = 800});
   final String? title;
   final Widget child;
   final bool enableClose;

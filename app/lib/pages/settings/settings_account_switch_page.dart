@@ -10,8 +10,7 @@ import '../welcome/desktop_login_page.dart';
 
 @RoutePage()
 class SettingsAccountSwitchPage extends StatefulWidget {
-  const SettingsAccountSwitchPage({Key? key, this.popOnUserSelected = false})
-      : super(key: key);
+  const SettingsAccountSwitchPage({super.key, this.popOnUserSelected = false});
   final bool popOnUserSelected;
   @override
   SettingsAccountSwitchPageState createState() =>

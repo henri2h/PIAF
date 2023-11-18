@@ -10,7 +10,7 @@ import '../../dialogs/adaptative_dialogs.dart';
 import 'matrix_chats_search_item.dart';
 
 class MatrixChatsSearch extends StatefulWidget {
-  const MatrixChatsSearch({Key? key, required this.client}) : super(key: key);
+  const MatrixChatsSearch({super.key, required this.client});
 
   final Client client;
 

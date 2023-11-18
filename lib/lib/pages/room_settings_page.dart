@@ -22,8 +22,7 @@ import '../partials/matrix/matrix_image_avatar.dart';
 
 class RoomSettingsPage extends StatefulWidget {
   final VoidCallback onLeave;
-  const RoomSettingsPage({Key? key, required this.room, required this.onLeave})
-      : super(key: key);
+  const RoomSettingsPage({super.key, required this.room, required this.onLeave});
 
   final Room room;
 
@@ -264,9 +263,9 @@ class RoomBridgeInfo extends StatelessWidget {
 
 class DirectChatWidget extends StatelessWidget {
   const DirectChatWidget({
-    Key? key,
+    super.key,
     required this.room,
-  }) : super(key: key);
+  });
 
   final Room room;
 

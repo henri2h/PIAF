@@ -37,7 +37,7 @@ extension MatrixFileExtension on MatrixFile {
     return;
   }
 
-   MatrixFile get detectFileType {
+  MatrixFile get detectFileType {
     if (msgType == MessageTypes.Image) {
       return MatrixImageFile(bytes: bytes, name: name);
     }

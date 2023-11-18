@@ -15,15 +15,14 @@ class MinestrixEmojiPicker extends StatefulWidget {
   final bool enableDelete;
 
   const MinestrixEmojiPicker(
-      {Key? key,
+      {super.key,
       required this.height,
       required this.width,
       required this.selectedEmoji,
       required this.selectedEdge,
       this.enableReply = false,
       this.enableEdit = false,
-      this.enableDelete = false})
-      : super(key: key);
+      this.enableDelete = false});
 
   @override
   MinestrixEmojiPickerState createState() => MinestrixEmojiPickerState();
@@ -121,8 +120,7 @@ class EmjoiPickerRenderObject extends SingleChildRenderObjectWidget {
   final String index;
 
   const EmjoiPickerRenderObject(
-      {required Widget child, required this.index, Key? key})
-      : super(child: child, key: key);
+      {required Widget super.child, required this.index, super.key});
 
   @override
   EmojiPickerRenderProxy createRenderObject(BuildContext context) {
@@ -145,8 +143,7 @@ class MinestrixEmojiPickerItemEmoji extends StatelessWidget {
   final String emoji;
   final String? selected;
 
-  const MinestrixEmojiPickerItemEmoji(this.emoji, {Key? key, this.selected})
-      : super(key: key);
+  const MinestrixEmojiPickerItemEmoji(this.emoji, {super.key, this.selected});
 
   @override
   Widget build(BuildContext context) {
@@ -167,8 +164,7 @@ class MinestrixEmojiPickerItemIcon extends StatelessWidget {
   final Color? color;
 
   const MinestrixEmojiPickerItemIcon(this.icon,
-      {Key? key, required this.index, this.selected, this.color})
-      : super(key: key);
+      {super.key, required this.index, this.selected, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -187,8 +183,7 @@ class MinestrixHoverPickerItem extends StatefulWidget {
   final String index;
 
   const MinestrixHoverPickerItem(
-      {Key? key, required this.builder, required this.index, this.selected})
-      : super(key: key);
+      {super.key, required this.builder, required this.index, this.selected});
 
   @override
   MinestrixHoverPickerItemState createState() =>

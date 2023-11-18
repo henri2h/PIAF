@@ -9,7 +9,7 @@ import '../../router.gr.dart';
 
 @RoutePage()
 class RoomListPage extends StatefulWidget {
-  const RoomListPage({Key? key, this.isMobile = false}) : super(key: key);
+  const RoomListPage({super.key, this.isMobile = false});
   final bool isMobile;
   @override
   State<RoomListPage> createState() => _RoomListPageState();

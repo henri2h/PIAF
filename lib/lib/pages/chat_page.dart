@@ -15,11 +15,10 @@ class ChatPage extends StatefulWidget {
   /// [onSelection] allows overriding that happens when the user click on a chat. Mobile view only.
   /// [allowPop] allow the page to call Navigation.pop()
   const ChatPage(
-      {Key? key,
+      {super.key,
       required this.client,
       this.enableStories = false,
-      this.onSelection})
-      : super(key: key);
+      this.onSelection});
 
   final Client client;
   final bool enableStories;

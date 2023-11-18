@@ -5,7 +5,7 @@ import 'matrix_image_avatar.dart';
 
 class MatrixUserAvatar extends StatelessWidget {
   const MatrixUserAvatar({
-    Key? key,
+    super.key,
     required this.avatarUrl,
     required this.client,
     required this.name,
@@ -13,14 +13,13 @@ class MatrixUserAvatar extends StatelessWidget {
     this.height,
     this.width,
     Uri? url,
-  }) : super(key: key);
+  });
 
   MatrixUserAvatar.fromUser(User user,
-      {Key? key, required this.client, this.height, this.width})
+      {super.key, required this.client, this.height, this.width})
       : avatarUrl = user.avatarUrl,
         name = user.displayName,
-        userId = user.id,
-        super(key: key);
+        userId = user.id;
 
   final Uri? avatarUrl;
   final Client? client;

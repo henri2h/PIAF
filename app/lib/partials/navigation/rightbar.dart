@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/feed/minestrix_profile_not_created.dart';
 import 'package:minestrix/partials/minestrix_room_tile.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -12,7 +11,7 @@ import '../calendar_events/calendar_event_card.dart';
 import '../components/minestrix/minestrix_title.dart';
 
 class RightBar extends StatelessWidget {
-  const RightBar({Key? key}) : super(key: key);
+  const RightBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +28,9 @@ class RightBar extends StatelessWidget {
                         stream: client.onSync.stream,
                         builder: (context, _) {
                           List<Room> sgroups = client.sgroups.toList();
+
+                          // If there is no list, better not display anything
+                          if (sgroups.isEmpty) return Container();
 
                           return ListView(
                             children: [
@@ -47,9 +49,6 @@ class RightBar extends StatelessWidget {
                                 ),
                               ),
                               const CardPanelList(),
-                              if (client.userRoomCreated != true &&
-                                  client.prevBatch != null)
-                                const MinestrixProfileNotCreated(),
                             ],
                           );
                         });
@@ -63,11 +62,10 @@ class RightbarHeader extends StatelessWidget {
   final String noItemText;
   final bool hasItems;
   const RightbarHeader(
-      {Key? key,
+      {super.key,
       required this.header,
       required this.noItemText,
-      required this.hasItems})
-      : super(key: key);
+      required this.hasItems});
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +94,7 @@ class RightbarHeader extends StatelessWidget {
 }
 
 class CardPanelList extends StatelessWidget {
-  const CardPanelList({Key? key}) : super(key: key);
+  const CardPanelList({super.key});
 
   Future<void> postLoad(List<Room> rooms) async {
     for (Room room in rooms) {

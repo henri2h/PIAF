@@ -14,7 +14,7 @@ import '../../utils/settings.dart';
 
 @RoutePage()
 class AccountsDetailsPage extends StatefulWidget {
-  const AccountsDetailsPage({Key? key}) : super(key: key);
+  const AccountsDetailsPage({super.key});
 
   @override
   AccountsDetailsPageState createState() => AccountsDetailsPageState();
@@ -108,9 +108,9 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
 
 class ProfileSpaceCard extends StatefulWidget {
   const ProfileSpaceCard({
-    Key? key,
+    super.key,
     required this.profile,
-  }) : super(key: key);
+  });
 
   final Room profile;
 
@@ -301,9 +301,9 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
 
 class NoProfileSpaceFound extends StatelessWidget {
   const NoProfileSpaceFound({
-    Key? key,
+    super.key,
     required this.client,
-  }) : super(key: key);
+  });
 
   final Client client;
 
@@ -371,8 +371,7 @@ class NoProfileSpaceFound extends StatelessWidget {
 
 class RoomProfileListTile extends StatelessWidget {
   const RoomProfileListTile(this.r,
-      {Key? key, required this.onLeave, this.onRemoveFromProfile})
-      : super(key: key);
+      {super.key, required this.onLeave, this.onRemoveFromProfile});
   final Room r;
   final VoidCallback onLeave;
   final VoidCallback? onRemoveFromProfile;
@@ -449,9 +448,9 @@ class RoomProfileListTile extends StatelessWidget {
 
 class RoomInfo extends StatelessWidget {
   const RoomInfo({
-    Key? key,
+    super.key,
     required this.r,
-  }) : super(key: key);
+  });
 
   final Room r;
 

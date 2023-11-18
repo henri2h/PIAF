@@ -4,8 +4,7 @@ import 'package:intl/intl.dart';
 import 'calendar_section.dart';
 
 class DateTimeCard extends StatelessWidget {
-  const DateTimeCard({Key? key, required this.date, required this.setTime})
-      : super(key: key);
+  const DateTimeCard({super.key, required this.date, required this.setTime});
 
   final DateTime date;
   final void Function(DateTime) setTime;

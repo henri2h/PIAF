@@ -9,7 +9,7 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
 @RoutePage()
 class CreateGroupPage extends StatefulWidget {
-  const CreateGroupPage({Key? key}) : super(key: key);
+  const CreateGroupPage({super.key});
 
   @override
   CreateGroupPageState createState() => CreateGroupPageState();

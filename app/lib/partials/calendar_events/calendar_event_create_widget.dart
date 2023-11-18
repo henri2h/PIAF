@@ -11,7 +11,7 @@ import 'calendar_text_field.dart';
 import 'datetime_card.dart';
 
 class CalendarEventCreateWidget extends StatelessWidget {
-  const CalendarEventCreateWidget({Key? key}) : super(key: key);
+  const CalendarEventCreateWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class CalendarEventCreateWidget extends StatelessWidget {
 }
 
 class EditCalendarRoom extends StatefulWidget {
-  const EditCalendarRoom({Key? key, required this.room}) : super(key: key);
+  const EditCalendarRoom({super.key, required this.room});
   final Room? room;
 
   @override

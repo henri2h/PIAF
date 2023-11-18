@@ -7,11 +7,10 @@ class PostGalleryNavButton extends StatefulWidget {
   final Alignment alignment;
   final IconData icon;
   const PostGalleryNavButton(
-      {Key? key,
+      {super.key,
       required this.onPressed,
       required this.alignment,
-      required this.icon})
-      : super(key: key);
+      required this.icon});
 
   @override
   State<PostGalleryNavButton> createState() => _PostGalleryNavButtonState();

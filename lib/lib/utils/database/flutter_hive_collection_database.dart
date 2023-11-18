@@ -11,14 +11,10 @@ import 'package:path_provider/path_provider.dart';
 
 class FlutterHiveCollectionsDatabase extends HiveCollectionsDatabase {
   FlutterHiveCollectionsDatabase(
-    String name,
-    String path, {
-    HiveCipher? key,
-  }) : super(
-          name,
-          path,
-          key: key,
-        );
+    super.name,
+    String super.path, {
+    super.key,
+  });
 
   static const String _cipherStorageKey = 'hive_encryption_key';
 

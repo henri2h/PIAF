@@ -7,8 +7,8 @@ import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 
 class MinestrixProfileNotCreated extends StatelessWidget {
   const MinestrixProfileNotCreated({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   Future<bool> getRoomStatus(Client client) async {
     await client.roomsLoading;

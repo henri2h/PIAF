@@ -18,7 +18,7 @@ class MatrixAdvancedMessageComposer extends StatefulWidget {
   final bool isMobile;
 
   const MatrixAdvancedMessageComposer({
-    Key? key,
+    super.key,
     required this.room,
     required this.client,
     required this.reply,
@@ -26,7 +26,7 @@ class MatrixAdvancedMessageComposer extends StatefulWidget {
     required this.isMobile,
     this.userId,
     required this.onRoomCreate,
-  }) : super(key: key);
+  });
 
   @override
   MatrixAdvancedMessageComposerState createState() =>

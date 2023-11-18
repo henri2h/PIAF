@@ -19,14 +19,13 @@ class CustomListViewWithEmoji extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
   final ScrollPhysics? physics;
   const CustomListViewWithEmoji(
-      {Key? key,
+      {super.key,
       required this.itemBuilder,
       required this.itemCount,
       this.physics,
       this.padding,
       this.reverse = false,
-      this.controller})
-      : super(key: key);
+      this.controller});
 
   @override
   CustomListViewWithEmojiState createState() => CustomListViewWithEmojiState();

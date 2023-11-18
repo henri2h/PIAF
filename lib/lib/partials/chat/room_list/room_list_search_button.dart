@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
@@ -13,11 +12,11 @@ import 'room_list_items/room_list_item.dart';
 
 class RoomListSearchButton extends StatelessWidget {
   const RoomListSearchButton({
-    Key? key,
+    super.key,
     required this.client,
     required this.onSelection,
     required this.onUserTap,
-  }) : super(key: key);
+  });
 
   final Client client;
   final Function(String p1) onSelection;
@@ -74,7 +73,7 @@ class MobileSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lastOpened = client.lastContacted();
-
+  
     return SearchAnchor.bar(
       barHintText: "Search",
       barLeading: IconButton(

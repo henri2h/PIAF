@@ -5,13 +5,12 @@ import 'calendar_section.dart';
 
 class CreateCalendarTextField extends StatelessWidget {
   const CreateCalendarTextField(
-      {Key? key,
+      {super.key,
       required this.text,
       this.controller,
       required this.icon,
       this.maxLines = 1,
-      this.minLines})
-      : super(key: key);
+      this.minLines});
   final TextEditingController? controller;
   final String text;
   final Icon icon;

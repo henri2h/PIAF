@@ -12,8 +12,7 @@ import 'package:shimmer/shimmer.dart';
 import '../components/shimmer_widget.dart';
 
 class MImageViewer extends StatelessWidget {
-  const MImageViewer({Key? key, required this.event, this.fit = BoxFit.contain})
-      : super(key: key);
+  const MImageViewer({super.key, required this.event, this.fit = BoxFit.contain});
 
   final BoxFit fit;
   final Event event;
@@ -69,12 +68,11 @@ class MatrixEventImage extends StatelessWidget {
   final bool getThumbnail;
   final BorderRadius? borderRadius;
   const MatrixEventImage(
-      {Key? key,
+      {super.key,
       required this.event,
       this.getThumbnail = true,
       this.borderRadius,
-      this.fit = BoxFit.contain})
-      : super(key: key);
+      this.fit = BoxFit.contain});
 
   @override
   Widget build(BuildContext context) {
@@ -97,14 +95,13 @@ class MatrixImage extends StatefulWidget {
   final BoxFit fit;
   final BorderRadius? borderRadius;
   const MatrixImage(
-      {Key? key,
+      {super.key,
       required this.event,
       required this.room,
       this.fit = BoxFit.contain,
       this.borderRadius,
       this.highRes = false,
-      this.getThumbnail = true})
-      : super(key: key);
+      this.getThumbnail = true});
 
   @override
   State<MatrixImage> createState() => _MatrixImageState();

@@ -11,7 +11,7 @@ import 'fully_read_indicator.dart';
 
 class ItemBuilder extends StatelessWidget {
   const ItemBuilder(
-      {Key? key,
+      {super.key,
       this.displayAvatar = false,
       this.displayName = false,
       this.displayTime = false,
@@ -25,8 +25,7 @@ class ItemBuilder extends StatelessWidget {
       required this.onReplyEventPressed,
       required this.onReply,
       this.onSelected,
-      this.fullyReadEventId})
-      : super(key: key);
+      this.fullyReadEventId});
 
   final Room room;
   final Timeline? t;

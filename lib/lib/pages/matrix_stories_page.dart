@@ -10,7 +10,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import '../utils/platform_infos.dart';
 
 class MatrixStoriesPage extends StatefulWidget {
-  const MatrixStoriesPage(this.room, {Key? key}) : super(key: key);
+  const MatrixStoriesPage(this.room, {super.key});
   final Room room;
 
   static Future<void> show(BuildContext context, Room room) async {

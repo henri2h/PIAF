@@ -9,7 +9,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 @RoutePage()
 class AddUserPage extends StatefulWidget {
-  const AddUserPage(BuildContext context, {Key? key}) : super(key: key);
+  const AddUserPage(BuildContext context, {super.key});
   @override
   AddUserPageState createState() => AddUserPageState();
 }

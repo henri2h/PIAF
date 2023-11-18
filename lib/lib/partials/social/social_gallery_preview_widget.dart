@@ -7,8 +7,7 @@ class SocialGalleryPreviewWigdet extends StatelessWidget {
   final Room room;
   final Timeline timeline;
   const SocialGalleryPreviewWigdet(
-      {Key? key, required this.room, required this.timeline})
-      : super(key: key);
+      {super.key, required this.room, required this.timeline});
 
   @override
   Widget build(BuildContext context) {

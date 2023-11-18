@@ -8,8 +8,7 @@ import 'create_group_page.dart';
 
 class CreateChatPage extends StatefulWidget {
   const CreateChatPage(
-      {Key? key, required this.onRoomSelected, required this.client})
-      : super(key: key);
+      {super.key, required this.onRoomSelected, required this.client});
 
   final Client client;
   final Function(String?) onRoomSelected;

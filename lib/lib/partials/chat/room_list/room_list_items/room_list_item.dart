@@ -10,14 +10,14 @@ import '../../matrix_notification_count_dot.dart';
 
 class RoomListItem extends StatelessWidget {
   const RoomListItem({
-    Key? key,
+    super.key,
     required this.room,
     required this.client,
     required this.onSelection,
     required this.open,
     required this.onLongPress,
     this.selected = false,
-  }) : super(key: key);
+  });
 
   final Room room;
   final bool open;
@@ -134,8 +134,8 @@ class RoomListItem extends StatelessWidget {
 
 class MatrixRoomsListTileShimmer extends StatelessWidget {
   const MatrixRoomsListTileShimmer({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

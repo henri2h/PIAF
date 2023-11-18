@@ -13,7 +13,7 @@ import '../../router.gr.dart';
 
 @RoutePage()
 class TabChatPage extends StatefulWidget {
-  const TabChatPage({Key? key}) : super(key: key);
+  const TabChatPage({super.key});
 
   @override
   State<TabChatPage> createState() => TabChatPageState();

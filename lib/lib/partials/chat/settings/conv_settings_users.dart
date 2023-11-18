@@ -8,7 +8,7 @@ import '../user/user_powerlevel_info_card.dart';
 
 class ConvSettingsUsers extends StatefulWidget {
   final Room room;
-  const ConvSettingsUsers({Key? key, required this.room}) : super(key: key);
+  const ConvSettingsUsers({super.key, required this.room});
 
   @override
   ConvSettingsUsersState createState() => ConvSettingsUsersState();

@@ -25,15 +25,14 @@ class InfiniteCustomListViewWithEmoji extends StatefulWidget {
   final double cacheExtent;
 
   const InfiniteCustomListViewWithEmoji(
-      {Key? key,
+      {super.key,
       required this.itemBuilder,
       required this.itemCount,
       this.physics,
       required this.padding,
       this.reverse = false,
       required this.controller,
-      this.cacheExtent = 1000})
-      : super(key: key);
+      this.cacheExtent = 1000});
 
   @override
   InfiniteCustomListViewWithEmojiState createState() =>

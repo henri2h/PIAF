@@ -4,8 +4,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MarkdownContent extends StatelessWidget {
-  const MarkdownContent({Key? key, required this.text, required this.color})
-      : super(key: key);
+  const MarkdownContent({super.key, required this.text, required this.color});
   final Color color;
 
   final String text;

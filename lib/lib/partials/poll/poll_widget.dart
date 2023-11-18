@@ -8,8 +8,7 @@ import 'package:minestrix_chat/utils/poll/poll.dart';
 class PollWidget extends StatefulWidget {
   final Event event;
   final Timeline timeline;
-  const PollWidget({Key? key, required this.event, required this.timeline})
-      : super(key: key);
+  const PollWidget({super.key, required this.event, required this.timeline});
 
   @override
   PollWidgetState createState() => PollWidgetState();

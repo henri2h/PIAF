@@ -7,11 +7,11 @@ import '../../../matrix/matrix_user_item.dart';
 
 class RoomListItemPresence extends StatelessWidget {
   const RoomListItemPresence({
-    Key? key,
+    super.key,
     required this.client,
     required this.presence,
     this.onTap,
-  }) : super(key: key);
+  });
 
   final Client client;
   final CachedPresence presence;

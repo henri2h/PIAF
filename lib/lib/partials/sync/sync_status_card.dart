@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 
 class SyncStatusCard extends StatelessWidget {
   final Client client;
-  const SyncStatusCard({Key? key, required this.client}) : super(key: key);
+  const SyncStatusCard({super.key, required this.client});
 
   @override
   Widget build(BuildContext context) {

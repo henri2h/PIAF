@@ -13,7 +13,7 @@ import 'layout_main_feed.dart';
 class CommunityDetailPage extends StatefulWidget {
   final Room room;
 
-  const CommunityDetailPage({Key? key, required this.room}) : super(key: key);
+  const CommunityDetailPage({super.key, required this.room});
 
   @override
   State<CommunityDetailPage> createState() => _CommunityDetailPageState();

@@ -11,7 +11,7 @@ import 'package:settings_ui/settings_ui.dart';
 
 @RoutePage()
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   static SettingsPageState of(BuildContext context) =>
       Provider.of<SettingsPageState>(context, listen: false);
@@ -44,7 +44,7 @@ class SettingsPageState extends State<SettingsPage> {
 
 @RoutePage()
 class SettingsPanelInnerPage extends StatelessWidget {
-  const SettingsPanelInnerPage({Key? key}) : super(key: key);
+  const SettingsPanelInnerPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +57,8 @@ class SettingsPanelInnerPage extends StatelessWidget {
 
 class SettingsPanel extends StatelessWidget {
   const SettingsPanel({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

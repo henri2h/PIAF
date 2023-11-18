@@ -11,9 +11,8 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class AccountCard extends StatelessWidget {
   const AccountCard(
-      {Key? key, this.user, this.profile, this.displaySend = false})
-      : assert(user != null || profile != null),
-        super(key: key);
+      {super.key, this.user, this.profile, this.displaySend = false})
+      : assert(user != null || profile != null);
 
   final User? user;
   final Profile? profile;

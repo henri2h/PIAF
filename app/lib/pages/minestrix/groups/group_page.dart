@@ -23,8 +23,7 @@ import '../../../partials/post/post_shimmer.dart';
 
 @RoutePage()
 class GroupPage extends StatefulWidget {
-  const GroupPage({Key? key, @pathParam required this.roomId})
-      : super(key: key);
+  const GroupPage({super.key, @pathParam required this.roomId});
   final String roomId;
 
   @override

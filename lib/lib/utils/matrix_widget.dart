@@ -42,8 +42,8 @@ class Matrix extends StatefulWidget {
     required this.clients,
     required this.applicationName,
     this.queryParameters,
-    Key? key,
-  }) : super(key: key) {
+    super.key,
+  }) {
     AppConfig.applicationName = applicationName;
   }
 
@@ -432,16 +432,11 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
 
 class FixedThreepidCreds extends ThreepidCreds {
   FixedThreepidCreds({
-    required String sid,
-    required String clientSecret,
-    String? idServer,
-    String? idAccessToken,
-  }) : super(
-          sid: sid,
-          clientSecret: clientSecret,
-          idServer: idServer,
-          idAccessToken: idAccessToken,
-        );
+    required super.sid,
+    required super.clientSecret,
+    super.idServer,
+    super.idAccessToken,
+  });
 
   @override
   Map<String, dynamic> toJson() {

@@ -6,6 +6,14 @@ class AppRouter extends $AppRouter {
   @override
   RouteType get defaultRouteType => const RouteType.adaptive();
 
+  static List<AutoRoute> welcomeRoutes = [
+    AutoRoute(path: '', page: MobileWelcomeRoute.page),
+    AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page),
+    AutoRoute(
+        path: 'mobile_create_account', page: MobileCreateAccountRoute.page),
+    AutoRoute(path: 'mobile_explore', page: MobileExploreRoute.page),
+  ];
+
   @override
   final List<AutoRoute> routes = [
     AutoRoute(path: '/loading', page: MatrixLoadingRoute.page),
@@ -18,7 +26,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: '', page: FeedRoute.page),
         AutoRoute(path: 'feeds', page: FeedListRoute.page),
         AutoRoute(path: 'post', page: PostRoute.page),
-        AutoRoute(path: 'research', page: ResearchRoute.page),
+        AutoRoute(path: 'research', page: SearchRoute.page),
         AutoRoute(path: 'explore', page: RoomsExploreRoute.page),
         AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
         AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
@@ -49,7 +57,7 @@ class AppRouter extends $AppRouter {
         ]),
       ]),
 
-      AutoRoute(path: 'search', page: ResearchRoute.page),
+      AutoRoute(path: 'search', page: SearchRoute.page),
       AutoRoute(path: 'stories', page: TabStoriesRoute.page),
       AutoRoute(path: 'explore', page: RoomsExploreRoute.page),
 
@@ -79,14 +87,10 @@ class AppRouter extends $AppRouter {
       RedirectRoute(path: '*', redirectTo: 'feed')
     ]),
 
-    AutoRoute(path: '/desktop_login', page: DesktopLoginRoute.page),
-
-    AutoRoute(page: MobileWelcomeRouter.page, children: [
-      AutoRoute(path: '', page: MobileWelcomeRoute.page),
-      AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page),
-      AutoRoute(
-          path: 'mobile_create_account', page: MobileCreateAccountRoute.page),
-      AutoRoute(path: 'mobile_explore', page: MobileExploreRoute.page),
-    ]),
+    AutoRoute(
+        path: '/desktop_login',
+        page: DesktopLoginRoute.page,
+        children: welcomeRoutes),
+    AutoRoute(page: MobileWelcomeRouter.page, children: welcomeRoutes),
   ];
 }

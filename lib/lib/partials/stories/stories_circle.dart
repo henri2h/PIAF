@@ -6,8 +6,7 @@ import 'package:minestrix_chat/pages/matrix_stories_page.dart';
 
 class StorieCircle extends StatefulWidget {
   const StorieCircle(
-      {Key? key, required this.room, this.dot = false, required this.hasPosts})
-      : super(key: key);
+      {super.key, required this.room, this.dot = false, required this.hasPosts});
   final Room room;
   final bool dot;
   final bool hasPosts;

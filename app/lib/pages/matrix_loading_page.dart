@@ -10,7 +10,7 @@ import '../partials/feed/minestrix_profile_not_created.dart';
 
 @RoutePage()
 class MatrixLoadingPage extends StatefulWidget {
-  const MatrixLoadingPage({Key? key}) : super(key: key);
+  const MatrixLoadingPage({super.key});
 
   @override
   _MatrixLoadingPageState createState() => _MatrixLoadingPageState();

@@ -6,10 +6,10 @@ class MatrixPostImageListEditor extends StatefulWidget {
   final VoidCallback onClose;
   final ImageListController imageController;
   const MatrixPostImageListEditor({
-    Key? key,
+    super.key,
     required this.imageController,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<MatrixPostImageListEditor> createState() =>

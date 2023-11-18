@@ -8,7 +8,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class PostWriterModal extends StatelessWidget {
-  const PostWriterModal({Key? key, this.room}) : super(key: key);
+  const PostWriterModal({super.key, this.room});
   final Room? room;
   @override
   Widget build(BuildContext context) {

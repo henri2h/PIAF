@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class H1Title extends StatelessWidget {
-  const H1Title(this.title, {Key? key}) : super(key: key);
+  const H1Title(this.title, {super.key});
   final String? title;
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class H1Title extends StatelessWidget {
 }
 
 class H2Title extends StatelessWidget {
-  const H2Title(this.title, {Key? key}) : super(key: key);
+  const H2Title(this.title, {super.key});
   final String title;
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class H2Title extends StatelessWidget {
 }
 
 class H3Title extends StatelessWidget {
-  const H3Title(this.title, {Key? key}) : super(key: key);
+  const H3Title(this.title, {super.key});
   final String title;
   @override
   Widget build(BuildContext context) {

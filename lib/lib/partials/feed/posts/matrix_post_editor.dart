@@ -17,14 +17,13 @@ class PostEditorPage extends StatefulWidget {
   /// Allow creating or editing a post. In case of edition, don't forgot to set also the eventToEdit parameter
   /// so we know which event to edit and give the latest event to post so we can display the latests edits.
   const PostEditorPage(
-      {Key? key,
+      {super.key,
       this.room,
       this.post,
       this.eventToEditId,
       this.shareEvent,
       this.sendImage = false})
-      : assert(room != null || post != null),
-        super(key: key);
+      : assert(room != null || post != null);
   final List<Room>? room;
   final Event? post;
   final String? eventToEditId;
@@ -36,6 +35,16 @@ class PostEditorPage extends StatefulWidget {
     required List<Room> rooms,
     Event? shareEvent,
   }) async {
+    if (rooms.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          content: const ListTile(
+            leading: Icon(Icons.error),
+            title: Text("No room available to write a post."),
+            subtitle: Text("First create a profile room."),
+          )));
+      return;
+    }
     await AdaptativeDialogs.show(
         context: context,
         builder: (context) =>

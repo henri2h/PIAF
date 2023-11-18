@@ -6,7 +6,7 @@ import '../../utils/managers/theme_manager.dart';
 
 @RoutePage()
 class SettingsThemePage extends StatefulWidget {
-  const SettingsThemePage({Key? key}) : super(key: key);
+  const SettingsThemePage({super.key});
 
   @override
   SettingsThemePageState createState() => SettingsThemePageState();

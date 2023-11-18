@@ -8,12 +8,11 @@ class LoginButton extends StatefulWidget {
   final bool filled;
 
   const LoginButton(
-      {Key? key,
+      {super.key,
       required this.icon,
       required this.onPressed,
       required this.text,
-      this.filled = false})
-      : super(key: key);
+      this.filled = false});
 
   @override
   State<LoginButton> createState() => _LoginButtonState();

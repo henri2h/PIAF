@@ -9,11 +9,11 @@ import 'post_button.dart';
 
 class ReactionBar extends StatelessWidget {
   const ReactionBar({
-    Key? key,
+    super.key,
     required this.controller,
     required this.reactions,
     required this.isMobile,
-  }) : super(key: key);
+  });
 
   final PostItemState controller;
   final Set<Event>? reactions;

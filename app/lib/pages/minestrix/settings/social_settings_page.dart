@@ -16,7 +16,7 @@ import '../../account/accounts_details_page.dart';
 
 @RoutePage()
 class SocialSettingsPage extends StatefulWidget {
-  const SocialSettingsPage({Key? key, required this.room}) : super(key: key);
+  const SocialSettingsPage({super.key, required this.room});
 
   final Room room;
 
@@ -176,10 +176,10 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
 
 class SectionCard extends StatelessWidget {
   const SectionCard({
-    Key? key,
+    super.key,
     required this.children,
     required this.text,
-  }) : super(key: key);
+  });
 
   final String text;
   final List<Widget> children;
@@ -204,12 +204,12 @@ class SectionCard extends StatelessWidget {
 
 class JoinRulesTile extends StatelessWidget {
   const JoinRulesTile({
-    Key? key,
+    super.key,
     required this.room,
     required this.icon,
     required this.permissionName,
     this.permissionComment,
-  }) : super(key: key);
+  });
 
   final Room room;
   final Icon icon;

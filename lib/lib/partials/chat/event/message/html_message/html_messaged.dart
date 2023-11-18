@@ -18,11 +18,11 @@ class HtmlMessage extends StatelessWidget {
   final Color textColor;
 
   const HtmlMessage({
-    Key? key,
+    super.key,
     required this.html,
     required this.room,
     this.textColor = Colors.black,
-  }) : super(key: key);
+  });
 
   Future<void> _launchURL(String? url) async {
     if (url == null) return;

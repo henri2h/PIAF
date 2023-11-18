@@ -12,8 +12,7 @@ import '../../../matrix/matrix_image_avatar.dart';
 class RoomSettings extends StatefulWidget {
   final Room room;
   final VoidCallback onLeave;
-  const RoomSettings({Key? key, required this.room, required this.onLeave})
-      : super(key: key);
+  const RoomSettings({super.key, required this.room, required this.onLeave});
 
   @override
   State<RoomSettings> createState() => _RoomSettingsState();

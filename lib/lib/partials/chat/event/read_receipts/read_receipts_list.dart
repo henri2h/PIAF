@@ -7,9 +7,9 @@ import '../../../matrix/matrix_user_item.dart';
 
 class ReadReceiptsList extends StatelessWidget {
   const ReadReceiptsList({
-    Key? key,
+    super.key,
     required this.event,
-  }) : super(key: key);
+  });
 
   final Event event;
 

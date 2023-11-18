@@ -10,8 +10,7 @@ import '../event/message/matrix_message.dart';
 enum Selection { room, all }
 
 class RoomSearch extends StatefulWidget {
-  const RoomSearch({Key? key, required this.room, this.onClosePressed})
-      : super(key: key);
+  const RoomSearch({super.key, required this.room, this.onClosePressed});
   final Room room;
   final VoidCallback? onClosePressed;
 

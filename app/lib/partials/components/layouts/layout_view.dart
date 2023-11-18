@@ -6,7 +6,7 @@ import '../chat/room_chat_card.dart';
 
 class LayoutView extends StatelessWidget {
   const LayoutView(
-      {Key? key,
+      {super.key,
       this.controller,
       this.customHeaderText,
       this.customHeaderActionsButtons,
@@ -23,8 +23,7 @@ class LayoutView extends StatelessWidget {
       this.displayChat = true,
       this.maxHeaderWidth = 1200,
       this.room,
-      this.rightBar})
-      : super(key: key);
+      this.rightBar});
 
   final Widget? leftBar;
   final Widget? rightBar;

@@ -7,10 +7,10 @@ import '../components/buttons/custom_future_button.dart';
 
 class UserRoomKnockItem extends StatelessWidget {
   const UserRoomKnockItem({
-    Key? key,
+    super.key,
     required this.user,
     required this.room,
-  }) : super(key: key);
+  });
 
   final User user;
   final Room room;

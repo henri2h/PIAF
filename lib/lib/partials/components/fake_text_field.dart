@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 class FakeTextField extends StatelessWidget {
   const FakeTextField(
-      {Key? key,
+      {super.key,
       required this.onPressed,
       required this.icon,
       required this.text,
-      this.trailing})
-      : super(key: key);
+      this.trailing});
 
   final void Function()? onPressed;
   final IconData icon;

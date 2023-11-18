@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import '../../matrix/matrix_image_avatar.dart';
 
 class SpaceRoomSelection extends StatefulWidget {
-  const SpaceRoomSelection({Key? key, required this.client}) : super(key: key);
+  const SpaceRoomSelection({super.key, required this.client});
 
   final Client client;
 

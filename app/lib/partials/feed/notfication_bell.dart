@@ -5,7 +5,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 
 class NotificationBell extends StatelessWidget {
-  const NotificationBell({Key? key}) : super(key: key);
+  const NotificationBell({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,16 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/partials/login/login_card.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
 class DesktopLoginPage extends StatefulWidget {
   const DesktopLoginPage(
-      {Key? key, this.title, this.onLogin, this.popOnLogin = false})
-      : super(key: key);
+      {super.key, this.title, this.onLogin, this.popOnLogin = false});
   final String? title;
   final Function(bool isLoggedIn)? onLogin;
 
@@ -33,8 +32,6 @@ class DesktopLoginPageState extends State<DesktopLoginPage> {
   }
 
   Widget buildDesktop() {
-    Client client = Matrix.of(context).getLoginClient();
-
     const radius = Radius.circular(8);
 
     return Scaffold(
@@ -101,19 +98,10 @@ class DesktopLoginPageState extends State<DesktopLoginPage> {
                                 borderRadius: BorderRadius.only(
                                     topRight: radius, bottomRight: radius)),
                             margin: EdgeInsets.zero,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 15.0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                      maxWidth: 450, minHeight: 200),
-                                  child: LoginMatrixCard(
-                                      client: client,
-                                      popOnLogin: widget.popOnLogin),
-                                ),
-                              ),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                  maxWidth: 450, minHeight: 500),
+                              child: const AutoRouter(),
                             ),
                           ),
                         ],

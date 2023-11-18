@@ -6,8 +6,7 @@ import '../../../pages/room_settings_page.dart';
 class ConvSettings extends StatefulWidget {
   final Room room;
   final VoidCallback? onClose;
-  const ConvSettings({Key? key, required this.room, required this.onClose})
-      : super(key: key);
+  const ConvSettings({super.key, required this.room, required this.onClose});
 
   @override
   State<ConvSettings> createState() => _ConvSettingsState();
