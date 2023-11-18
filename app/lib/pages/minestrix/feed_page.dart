@@ -12,7 +12,6 @@ import 'package:minestrix/utils/minestrix/minestrix_community_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
-import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
@@ -20,11 +19,11 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 import '../../partials/account_selection_button.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/components/minestrix/minestrix_title.dart';
+import '../../partials/home/onboarding_widget.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
 import '../../partials/post/post.dart';
 import '../../utils/settings.dart';
-import 'groups/create_group_page.dart';
 
 @RoutePage()
 class FeedPage extends StatefulWidget {
@@ -279,144 +278,6 @@ class FeedPageState extends State<FeedPage> {
                   );
                 });
           }),
-    );
-  }
-}
-
-class OnboardingWidget extends StatelessWidget {
-  const OnboardingWidget({
-    super.key,
-    required this.client,
-  });
-  final Client client;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(28.0),
-          child: Center(
-            child: Text(
-              "Welcome in MinesTRIX",
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-          child: Text(
-            "Onboarding",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
-        WelcomeActionsButton(
-            icon: Icons.people,
-            text: 'Create your page',
-            subtitle: 'That\'s where you can post',
-            onPressed: () async {
-              if (client.userRoomCreated) {
-                await context.navigateTo(
-                    UserViewRoute(userID: Matrix.of(context).client.userID));
-              } else {
-                await client.createPrivateMinestrixProfile();
-              }
-            },
-            done: client.userRoomCreated),
-        if (client.userRoomCreated == true)
-          WelcomeActionsButton(
-              icon: Icons.post_add,
-              text: 'Post',
-              subtitle: "Write a post on your page",
-              onPressed: () async {
-                await PostEditorPage.show(
-                    context: context, rooms: client.minestrixUserRoom);
-              },
-              done: false),
-        WelcomeActionsButton(
-            icon: Icons.public,
-            text: 'Publish your page',
-            subtitle:
-                'To help your find your page you can add it to your user space',
-            onPressed: () async {
-              context.pushRoute(const AccountsDetailsRoute());
-            },
-            done: false),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-          child: Text(
-            "Go further",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
-        WelcomeActionsButton(
-            text: 'Story',
-            subtitle: 'Create and manage your story page',
-            icon: Icons.web_stories,
-            onPressed: () async {
-              context.pushRoute(const SettingsStorysRoute());
-            },
-            done: false),
-        WelcomeActionsButton(
-            icon: Icons.group_work,
-            text: 'Create your group page',
-            subtitle: 'A place to share posts',
-            onPressed: () async {
-              AdaptativeDialogs.show(
-                  context: context,
-                  builder: (context) => const CreateGroupPage());
-            },
-            done: false),
-        WelcomeActionsButton(
-            text: 'Explore',
-            subtitle: 'Discover public pages',
-            icon: Icons.explore,
-            onPressed: () async {
-              context.pushRoute(const RoomsExploreRoute());
-            },
-            done: false),
-      ],
-    );
-  }
-}
-
-class WelcomeActionsButton extends StatelessWidget {
-  const WelcomeActionsButton(
-      {super.key,
-      required this.text,
-      required this.icon,
-      required this.onPressed,
-      required this.subtitle,
-      required this.done});
-
-  final String text;
-  final String subtitle;
-  final IconData icon;
-  final Future<void> Function() onPressed;
-  final bool done;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        elevation: 4,
-        child: ListTile(
-          leading: Icon(icon),
-          title: Text(text),
-          subtitle: Text(subtitle),
-          onTap: done ? null : onPressed,
-          trailing: done
-              ? CircleAvatar(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: Icon(
-                    Icons.done,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ))
-              : null,
-        ),
-      ),
     );
   }
 }
