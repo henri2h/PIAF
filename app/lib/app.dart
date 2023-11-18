@@ -59,11 +59,11 @@ class AppState extends State<App> {
                 stream: Matrix.of(context).client.onLoginStateChanged.stream,
                 builder: (context, AsyncSnapshot<LoginState?> state) {
                   Client client = Matrix.of(context).client;
-    
+
                   if (kIsWeb && client.shouldSSOLogin) {
                     webLogin ??= client.ssoLogin();
                   }
-    
+
                   return FutureBuilder<bool>(
                       future: webLogin,
                       builder: (context, snapshot) {
@@ -85,20 +85,19 @@ class AppState extends State<App> {
                             ),
                           );
                         }
-    
+
                         return FutureBuilder(
                             future: initMatrix(client),
                             builder: (context, snap) {
                               return MaterialApp.router(
-                                routerDelegate:
-                                    AutoRouterDelegate.declarative(
+                                routerDelegate: AutoRouterDelegate.declarative(
                                   _appRouter,
                                   routes: (_) {
                                     final isLogged = client.isLogged();
                                     return [
                                       if (isLogged)
                                         const AppWrapperRoute()
-    
+
                                       // if they are not logged in, bring them to the Login page
                                       else if (Platform.isAndroid)
                                         const MobileWelcomeRouter()
@@ -111,8 +110,8 @@ class AppState extends State<App> {
                                     _appRouter.defaultRouteParser(),
                                 debugShowCheckedModeBanner: false,
                                 theme: ThemeData(
-                                  colorScheme: lightDynamic ??
-                                      _defaultLightColorScheme,
+                                  colorScheme:
+                                      lightDynamic ?? _defaultLightColorScheme,
                                   textTheme: theme.whiteTextTheme,
                                   useMaterial3: true,
                                 ),

@@ -67,7 +67,7 @@ class ReactionBar extends StatelessWidget {
             ),
             onTapDown: (TapDownDetails detail) async {
               controller.onReact(detail.globalPosition);
-  },
+            },
           ),
           const SizedBox(width: 9),
           if (controller.canComment)

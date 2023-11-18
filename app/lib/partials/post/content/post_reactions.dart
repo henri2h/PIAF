@@ -5,7 +5,8 @@ import 'package:matrix/matrix.dart';
 class PostReactions extends StatelessWidget {
   final Event event;
   final Set<Event> reactions;
-  const PostReactions({super.key, required this.event, required this.reactions});
+  const PostReactions(
+      {super.key, required this.event, required this.reactions});
   @override
   Widget build(BuildContext context) {
     Map<String?, int> keys = <String?, int>{};

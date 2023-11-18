@@ -5,7 +5,8 @@ import 'package:matrix/matrix.dart';
 import 'matrix_image_avatar.dart';
 
 class UserDisplay extends StatelessWidget {
-  const UserDisplay({super.key, required this.client, this.showUserName = true});
+  const UserDisplay(
+      {super.key, required this.client, this.showUserName = true});
 
   final Client client;
   final bool showUserName;

@@ -9,7 +9,8 @@ import '../../../dialogs/key_verification_dialogs.dart';
 class RoomUserDeviceKey extends StatefulWidget {
   final Room room;
   final String userId;
-  const RoomUserDeviceKey({super.key, required this.room, required this.userId});
+  const RoomUserDeviceKey(
+      {super.key, required this.room, required this.userId});
 
   @override
   State<RoomUserDeviceKey> createState() => _RoomUserDeviceKeyState();

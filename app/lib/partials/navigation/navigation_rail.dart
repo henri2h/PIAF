@@ -101,10 +101,8 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       labelType: NavigationRailLabelType.all,
       onDestinationSelected: (pos) => items[pos].onDestinationSelected(context),
       destinations: [
-        ...items
-            .map((e) => NavigationRailDestination(
-                icon: e.icon, label: e.label, padding: const EdgeInsets.all(6)))
-            
+        ...items.map((e) => NavigationRailDestination(
+            icon: e.icon, label: e.label, padding: const EdgeInsets.all(6)))
       ],
 
       selectedIndex: selectedIndex,

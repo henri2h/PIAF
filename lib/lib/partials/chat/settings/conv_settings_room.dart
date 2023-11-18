@@ -6,7 +6,8 @@ import 'room/room_settings.dart';
 class ConvSettingsRoom extends StatelessWidget {
   final Room room;
   final VoidCallback onLeave;
-  const ConvSettingsRoom({super.key, required this.room, required this.onLeave});
+  const ConvSettingsRoom(
+      {super.key, required this.room, required this.onLeave});
 
   @override
   Widget build(BuildContext context) {

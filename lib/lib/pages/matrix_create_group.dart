@@ -9,7 +9,8 @@ class MatrixCreateGroup extends StatefulWidget {
   final Client client;
   final void Function(String)? onGroupCreated;
 
-  const MatrixCreateGroup({super.key, required this.client, this.onGroupCreated});
+  const MatrixCreateGroup(
+      {super.key, required this.client, this.onGroupCreated});
 
   @override
   MatrixCreateGroupState createState() => MatrixCreateGroupState();

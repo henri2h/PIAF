@@ -100,7 +100,8 @@ class UserInfoDialog extends StatelessWidget {
 }
 
 class PresenceIndicator extends StatelessWidget {
-  const PresenceIndicator({super.key, required this.room, required this.userID});
+  const PresenceIndicator(
+      {super.key, required this.room, required this.userID});
 
   final Room room;
   final String userID;

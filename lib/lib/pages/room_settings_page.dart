@@ -22,7 +22,8 @@ import '../partials/matrix/matrix_image_avatar.dart';
 
 class RoomSettingsPage extends StatefulWidget {
   final VoidCallback onLeave;
-  const RoomSettingsPage({super.key, required this.room, required this.onLeave});
+  const RoomSettingsPage(
+      {super.key, required this.room, required this.onLeave});
 
   final Room room;
 
