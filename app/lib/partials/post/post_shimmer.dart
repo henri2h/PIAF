@@ -4,8 +4,8 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 
 class PostShimmer extends StatelessWidget {
   const PostShimmer({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -7,8 +7,7 @@ import 'user_selector.dart';
 
 class MinesTrixUserSelection extends StatefulWidget {
   const MinesTrixUserSelection(
-      {Key? key, this.participants, required this.room})
-      : super(key: key);
+      {super.key, this.participants, required this.room});
   final List<User>?
       participants; // list of the users who won't appear in the searchbox
   final Room room;

@@ -6,8 +6,7 @@ import 'package:minestrix_chat/pages/chat_page_items/chat_page_room.dart';
 @RoutePage()
 class OverrideRoomListRoomPage extends StatelessWidget {
   const OverrideRoomListRoomPage(
-      {Key? key, this.displaySettingsOnDesktop = false})
-      : super(key: key);
+      {super.key, this.displaySettingsOnDesktop = false});
 
   final bool displaySettingsOnDesktop;
   @override

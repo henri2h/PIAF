@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 
 class LoginInput extends StatelessWidget {
   const LoginInput(
-      {Key? key,
+      {super.key,
       this.name,
       this.icon,
       this.tController,
       this.errorText,
       this.obscureText = false,
       this.onChanged,
-      this.hintText})
-      : super(key: key);
+      this.hintText});
 
   final String? name;
   final IconData? icon;

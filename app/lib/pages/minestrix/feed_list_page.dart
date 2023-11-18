@@ -12,7 +12,7 @@ import 'groups/create_group_page.dart';
 
 @RoutePage()
 class FeedListPage extends StatefulWidget {
-  const FeedListPage({Key? key}) : super(key: key);
+  const FeedListPage({super.key});
 
   @override
   State<FeedListPage> createState() => _FeedListPageState();

@@ -5,9 +5,9 @@ import '../../utils/extensions/minestrix/model/calendar_event_model.dart';
 
 class DateCard extends StatelessWidget {
   const DateCard({
-    Key? key,
+    super.key,
     required this.calendarEvent,
-  }) : super(key: key);
+  });
 
   final CalendarEvent calendarEvent;
 

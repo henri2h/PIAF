@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 
 class CustomHeader extends StatelessWidget {
   const CustomHeader(
-      {Key? key,
+      {super.key,
       this.actionButton,
       this.onBack,
       this.drawerEnabled = false,
       this.overrideCanPop = false,
       this.child,
-      this.title})
-      : super(key: key);
+      this.title});
 
   final String? title;
   final Widget? child;

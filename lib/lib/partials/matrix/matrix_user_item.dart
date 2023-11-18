@@ -6,26 +6,24 @@ import 'matrix_user_avatar.dart';
 
 class MatrixUserItem extends StatelessWidget {
   const MatrixUserItem(
-      {Key? key,
+      {super.key,
       required this.avatarUrl,
       required this.client,
       required this.name,
       required this.userId,
       this.avatarHeight,
       this.avatarWidth,
-      this.subtitle})
-      : super(key: key);
+      this.subtitle});
 
   MatrixUserItem.fromUser(User user,
-      {Key? key,
+      {super.key,
       required this.client,
       this.subtitle,
       this.avatarHeight,
       this.avatarWidth})
       : avatarUrl = user.avatarUrl,
         name = user.displayName,
-        userId = user.id,
-        super(key: key);
+        userId = user.id;
 
   final Uri? avatarUrl;
   final Client? client;
@@ -63,7 +61,7 @@ class MatrixUserItem extends StatelessWidget {
 }
 
 class MatrixUserItemShimmer extends StatelessWidget {
-  const MatrixUserItemShimmer({Key? key}) : super(key: key);
+  const MatrixUserItemShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {

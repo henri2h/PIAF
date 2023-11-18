@@ -8,7 +8,7 @@ import 'matrix_image_avatar.dart';
 
 class RoomAvatar extends StatelessWidget {
   const RoomAvatar({
-    Key? key,
+    super.key,
     required this.room,
     required this.client,
     this.unconstraigned,
@@ -16,7 +16,7 @@ class RoomAvatar extends StatelessWidget {
     this.shape,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
 
   final Room room;
   final Client client;
@@ -110,14 +110,13 @@ class RoomAvatar extends StatelessWidget {
 
 class RoomAvatarUserItem extends StatelessWidget {
   const RoomAvatarUserItem(
-      {Key? key,
+      {super.key,
       required this.user,
       required this.client,
       required this.height,
       required this.width,
       this.frac = 0.7,
-      this.pad = 1})
-      : super(key: key);
+      this.pad = 1});
 
   final User user;
   final Client client;

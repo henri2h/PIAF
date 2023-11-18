@@ -13,11 +13,10 @@ class PostReplies extends StatelessWidget {
   final Set<Event> replies;
 
   const PostReplies(
-      {Key? key,
+      {super.key,
       required this.event,
       required this.replies,
-      required this.timeline})
-      : super(key: key);
+      required this.timeline});
 
   @override
   Widget build(BuildContext context) {

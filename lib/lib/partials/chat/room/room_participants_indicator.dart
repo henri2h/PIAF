@@ -7,9 +7,9 @@ import '../settings/conv_settings_users.dart';
 
 class RoomParticipantsIndicator extends StatelessWidget {
   const RoomParticipantsIndicator({
-    Key? key,
+    super.key,
     required this.room,
-  }) : super(key: key);
+  });
 
   final Room room;
 

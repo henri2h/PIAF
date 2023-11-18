@@ -4,8 +4,7 @@ import 'package:minestrix/pages/chat/room_list_page.dart';
 
 @RoutePage()
 class OverrideRoomListPage extends StatelessWidget {
-  const OverrideRoomListPage({Key? key, this.isMobile = false})
-      : super(key: key);
+  const OverrideRoomListPage({super.key, this.isMobile = false});
 
   final bool isMobile;
   @override

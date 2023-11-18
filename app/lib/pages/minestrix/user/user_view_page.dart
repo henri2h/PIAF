@@ -34,10 +34,9 @@ import 'message_button.dart';
 class UserViewPage extends StatefulWidget {
   final String? userID;
   final Room? mroom;
-  const UserViewPage({Key? key, this.userID, this.mroom})
+  const UserViewPage({super.key, this.userID, this.mroom})
       : assert(userID == null || mroom == null),
-        assert(!(userID == null && mroom == null)),
-        super(key: key);
+        assert(!(userID == null && mroom == null));
 
   @override
   UserViewPageState createState() => UserViewPageState();
@@ -594,10 +593,10 @@ class UserViewPageState extends State<UserViewPage>
 
 class ImagesTab extends StatelessWidget {
   const ImagesTab({
-    Key? key,
+    super.key,
     required this.mroom,
     required this.timeline,
-  }) : super(key: key);
+  });
 
   final RoomWithSpace? mroom;
   final Timeline timeline;

@@ -19,7 +19,7 @@ class MinestrixAvatarSizeConstants {
 
 class MatrixImageAvatar extends StatelessWidget {
   const MatrixImageAvatar(
-      {Key? key,
+      {super.key,
       required this.url,
       this.width,
       this.height,
@@ -37,8 +37,7 @@ class MatrixImageAvatar extends StatelessWidget {
       this.textPadding = 5,
       required this.client})
       : assert(
-            !(borderRadius != null && shape == MatrixImageAvatarShape.rounded)),
-        super(key: key);
+            !(borderRadius != null && shape == MatrixImageAvatarShape.rounded));
   final Uri? url;
   final double? width;
   final double? height;

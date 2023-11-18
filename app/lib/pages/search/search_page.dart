@@ -2,14 +2,10 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:matrix/matrix.dart';
 import 'package:minestrix/pages/search/providers/explore_search.dart';
 import 'package:minestrix/pages/search/providers/user_search.dart';
 import 'package:minestrix/pages/search/ui/lib.dart';
-import 'package:minestrix/router.gr.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/style/constants.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/components/search/suggestion_list.dart';
 import '../../utils/platforms_info.dart';
@@ -17,7 +13,7 @@ import 'search_mode.dart';
 
 @RoutePage()
 class SearchPage extends StatefulWidget {
-  const SearchPage({Key? key, this.isPopup = false}) : super(key: key);
+  const SearchPage({super.key, this.isPopup = false});
 
   final bool isPopup;
   @override

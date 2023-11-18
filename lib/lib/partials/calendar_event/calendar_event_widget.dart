@@ -8,7 +8,7 @@ import 'calendar_attendance_button.dart';
 
 class CalendarEventWidget extends StatefulWidget {
   final Poll p;
-  const CalendarEventWidget({Key? key, required this.p}) : super(key: key);
+  const CalendarEventWidget({super.key, required this.p});
 
   @override
   CalendarEventWidgetState createState() => CalendarEventWidgetState();

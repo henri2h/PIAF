@@ -10,7 +10,7 @@ import '../../partials/components/layouts/custom_header.dart';
 
 @RoutePage()
 class SettingsSyncPage extends StatefulWidget {
-  const SettingsSyncPage({Key? key}) : super(key: key);
+  const SettingsSyncPage({super.key});
 
   @override
   State<SettingsSyncPage> createState() => _SettingsSyncPageState();

@@ -7,7 +7,7 @@ import '../../minestrix_room_tile.dart';
 import '../minestrix/minestrix_title.dart';
 
 class SuggestionList extends StatelessWidget {
-  const SuggestionList({Key? key, required this.shouldPop}) : super(key: key);
+  const SuggestionList({super.key, required this.shouldPop});
 
   final bool shouldPop;
 

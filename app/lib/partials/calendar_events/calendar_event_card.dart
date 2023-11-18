@@ -9,9 +9,9 @@ import '../../router.gr.dart';
 
 class CalendarEventCard extends StatelessWidget {
   const CalendarEventCard({
-    Key? key,
+    super.key,
     required this.room,
-  }) : super(key: key);
+  });
 
   final Room room;
 
@@ -144,9 +144,9 @@ class CalendarEventCard extends StatelessWidget {
 
 class EventCreator extends StatelessWidget {
   const EventCreator({
-    Key? key,
+    super.key,
     required this.room,
-  }) : super(key: key);
+  });
 
   final Room room;
 

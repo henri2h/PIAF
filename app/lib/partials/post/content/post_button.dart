@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class PostButton extends StatelessWidget {
   const PostButton({
-    Key? key,
+    super.key,
     required this.icon,
     required this.text,
     required this.onPressed,
     this.iconOnly = false,
-  }) : super(key: key);
+  });
 
   final IconData icon;
   final String text;

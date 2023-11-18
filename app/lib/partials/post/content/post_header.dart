@@ -13,11 +13,10 @@ class PostHeader extends StatelessWidget {
   final Event? eventToEdit;
   final bool allowContext; // allow context menu
   const PostHeader(
-      {Key? key,
+      {super.key,
       required this.event,
       this.eventToEdit,
-      this.allowContext = true})
-      : super(key: key);
+      this.allowContext = true});
 
   @override
   Widget build(BuildContext context) {

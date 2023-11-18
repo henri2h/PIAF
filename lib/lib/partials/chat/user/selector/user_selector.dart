@@ -14,14 +14,13 @@ class UserSelectorController {
 
 class UserSelector extends StatefulWidget {
   const UserSelector(
-      {Key? key,
+      {super.key,
       required this.client,
       required this.multipleUserSelectionEnabled,
       required this.onUserSelected,
       required this.appBarBuilder,
       this.ignoreUsers = const [],
-      required this.state})
-      : super(key: key);
+      required this.state});
 
   final Client client;
   final bool multipleUserSelectionEnabled;

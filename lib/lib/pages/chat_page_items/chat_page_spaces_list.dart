@@ -7,8 +7,7 @@ import '../../partials/chat/spaces/list/spaces_list.dart';
 
 class ChatPageSpaceList extends StatelessWidget {
   const ChatPageSpaceList(
-      {Key? key, required this.mobile, required this.scrollController})
-      : super(key: key);
+      {super.key, required this.mobile, required this.scrollController});
   final bool mobile;
   final ScrollController scrollController;
   @override

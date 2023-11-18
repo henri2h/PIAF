@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ConvSettingsBackButton extends StatefulWidget {
-  const ConvSettingsBackButton({Key? key}) : super(key: key);
+  const ConvSettingsBackButton({super.key});
 
   @override
   ConvSettingsBackButtonState createState() => ConvSettingsBackButtonState();

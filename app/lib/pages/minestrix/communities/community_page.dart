@@ -13,7 +13,7 @@ import '../../../router.gr.dart';
 
 @RoutePage()
 class CommunityPage extends StatefulWidget {
-  const CommunityPage({Key? key}) : super(key: key);
+  const CommunityPage({super.key});
 
   @override
   State<CommunityPage> createState() => CommunityPageState();

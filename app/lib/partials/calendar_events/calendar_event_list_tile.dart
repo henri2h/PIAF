@@ -9,7 +9,7 @@ import 'package:minestrix/router.gr.dart';
 
 class CalendarEventListTile extends StatefulWidget {
   final Room room;
-  const CalendarEventListTile({Key? key, required this.room}) : super(key: key);
+  const CalendarEventListTile({super.key, required this.room});
 
   @override
   State<CalendarEventListTile> createState() => _CalendarEventListTileState();

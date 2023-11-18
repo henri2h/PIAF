@@ -10,14 +10,13 @@ class CustomFutureButton extends StatefulWidget {
   final EdgeInsets? padding;
 
   const CustomFutureButton(
-      {Key? key,
+      {super.key,
       required this.onPressed,
       required this.children,
       this.icon,
       this.expanded = true,
       this.padding,
-      this.color})
-      : super(key: key);
+      this.color});
 
   @override
   CustomFutureButtonState createState() => CustomFutureButtonState();

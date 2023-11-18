@@ -6,7 +6,7 @@ import '../../utils/settings.dart';
 
 @RoutePage()
 class SettingsLabsPage extends StatefulWidget {
-  const SettingsLabsPage({Key? key}) : super(key: key);
+  const SettingsLabsPage({super.key});
 
   @override
   State<SettingsLabsPage> createState() => _SettingsLabsPageState();
@@ -64,8 +64,7 @@ class _SettingsLabsPageState extends State<SettingsLabsPage> {
 }
 
 class InfoBadge extends StatelessWidget {
-  const InfoBadge({Key? key, required this.text, this.color = Colors.red})
-      : super(key: key);
+  const InfoBadge({super.key, required this.text, this.color = Colors.red});
 
   final String text;
   final Color color;

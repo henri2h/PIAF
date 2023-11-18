@@ -11,9 +11,8 @@ class PostGalleryPage extends StatefulWidget {
   final Event? image;
   final String? selectedImageEventId;
   const PostGalleryPage(
-      {Key? key, required this.post, this.image, this.selectedImageEventId})
-      : assert(image == null || selectedImageEventId == null),
-        super(key: key);
+      {super.key, required this.post, this.image, this.selectedImageEventId})
+      : assert(image == null || selectedImageEventId == null);
 
   @override
   State<PostGalleryPage> createState() => _PostGalleryPageState();

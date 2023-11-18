@@ -9,8 +9,7 @@ import 'package:minestrix_chat/utils/extensions/matrix/stories_extension.dart';
 
 class UserSelection extends StatefulWidget {
   const UserSelection(
-      {Key? key, required this.client, required this.controller})
-      : super(key: key);
+      {super.key, required this.client, required this.controller});
 
   final Client client;
   final UserSelectionController controller;

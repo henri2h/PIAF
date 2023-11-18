@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
 class ConvSettingsSecurity extends StatefulWidget {
-  const ConvSettingsSecurity({Key? key, required this.room}) : super(key: key);
+  const ConvSettingsSecurity({super.key, required this.room});
 
   final Room room;
 

@@ -4,8 +4,7 @@ import 'package:intl/intl.dart';
 import '../components/minestrix/minestrix_title.dart';
 
 class DateTimeTile extends StatelessWidget {
-  const DateTimeTile({Key? key, required this.date, required this.text})
-      : super(key: key);
+  const DateTimeTile({super.key, required this.date, required this.text});
   final DateTime date;
   final String text;
   @override

@@ -15,12 +15,11 @@ import '../minestrix_room_tile.dart';
 
 class UserProfileSelection extends StatefulWidget {
   const UserProfileSelection(
-      {Key? key,
+      {super.key,
       required this.userId,
       required this.onRoomSelected,
       required this.roomSelectedId,
-      this.dense = false})
-      : super(key: key);
+      this.dense = false});
   final String userId;
   final bool dense;
   final String? roomSelectedId;

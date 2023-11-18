@@ -16,7 +16,7 @@ class CustomSpacesTypes {
 
 class MatrixSpacesList extends StatelessWidget {
   const MatrixSpacesList(
-      {Key? key,
+      {super.key,
       required this.client,
       required this.onExpandClick,
       required this.spaceListExpanded,
@@ -24,8 +24,7 @@ class MatrixSpacesList extends StatelessWidget {
       required this.onSpaceSelected,
       required this.onSpaceLongPressed,
       required this.controller,
-      this.mobile = false})
-      : super(key: key);
+      this.mobile = false});
 
   final Client client;
   final void Function() onExpandClick;

@@ -8,8 +8,7 @@ import 'matrix_chats_search.dart';
 
 class MatrixChatsRoomSearchItem extends StatelessWidget {
   const MatrixChatsRoomSearchItem(
-      {Key? key, required this.search, required this.client})
-      : super(key: key);
+      {super.key, required this.search, required this.client});
 
   final SearchItem search;
   final Client client;

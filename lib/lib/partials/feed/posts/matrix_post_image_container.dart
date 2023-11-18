@@ -7,14 +7,13 @@ import '../../event/matrix_image.dart';
 
 class MatrixPostImageContainer extends StatefulWidget {
   const MatrixPostImageContainer(
-      {Key? key,
+      {super.key,
       required this.imageMaxHeight,
       required this.post,
       this.imageEvent,
       this.imageRef,
       required this.onPressed,
-      this.text})
-      : super(key: key);
+      this.text});
   final Function(Event, {Event? imageEvent, String? ref}) onPressed;
   final String? text;
   final double? imageMaxHeight;

@@ -5,14 +5,13 @@ import 'package:minestrix/partials/components/buttons/custom_future_button.dart'
 
 class CustomTextFutureButton extends StatelessWidget {
   const CustomTextFutureButton(
-      {Key? key,
+      {super.key,
       required this.onPressed,
       required this.text,
       required this.icon,
       this.color,
       this.foregroundColor,
-      this.expanded = true})
-      : super(key: key);
+      this.expanded = true});
   final AsyncCallback onPressed;
   final IconData icon;
   final String text;

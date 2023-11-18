@@ -6,7 +6,7 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 class UserAvatar extends StatelessWidget {
   final Profile p;
 
-  const UserAvatar({Key? key, required this.p}) : super(key: key);
+  const UserAvatar({super.key, required this.p});
 
   @override
   Widget build(BuildContext context) {

@@ -6,14 +6,13 @@ import 'package:provider/provider.dart';
 
 class ChatPageProvider extends StatelessWidget {
   const ChatPageProvider(
-      {Key? key,
+      {super.key,
       required this.child,
       required this.client,
       required this.onRoomSelection,
       required this.onLongPressedSpace,
       required this.onSpaceSelection,
-      this.selectedSpace = CustomSpacesTypes.explore})
-      : super(key: key);
+      this.selectedSpace = CustomSpacesTypes.explore});
 
   final Widget child;
   final Client client;

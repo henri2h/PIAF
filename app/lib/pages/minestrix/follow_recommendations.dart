@@ -9,7 +9,7 @@ import '../../partials/components/layouts/custom_header.dart';
 
 @RoutePage()
 class FollowRecommendationsPage extends StatefulWidget {
-  const FollowRecommendationsPage({Key? key}) : super(key: key);
+  const FollowRecommendationsPage({super.key});
 
   @override
   State<FollowRecommendationsPage> createState() =>

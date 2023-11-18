@@ -4,8 +4,7 @@ import 'package:matrix/matrix.dart';
 
 class NotificationCountDot extends StatelessWidget {
   const NotificationCountDot(
-      {Key? key, required this.room, this.unreadMessage = false})
-      : super(key: key);
+      {super.key, required this.room, this.unreadMessage = false});
 
   final Room room;
   final bool unreadMessage;

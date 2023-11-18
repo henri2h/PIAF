@@ -19,7 +19,7 @@ class UserInfoDialog extends StatelessWidget {
   }
 
   final User user;
-  const UserInfoDialog({Key? key, required this.user}) : super(key: key);
+  const UserInfoDialog({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -100,8 +100,7 @@ class UserInfoDialog extends StatelessWidget {
 }
 
 class PresenceIndicator extends StatelessWidget {
-  const PresenceIndicator({Key? key, required this.room, required this.userID})
-      : super(key: key);
+  const PresenceIndicator({super.key, required this.room, required this.userID});
 
   final Room room;
   final String userID;

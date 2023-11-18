@@ -5,7 +5,7 @@ import '../event/matrix_image.dart';
 
 class SocialImagePreviewWidget extends StatelessWidget {
   final Event e;
-  const SocialImagePreviewWidget({Key? key, required this.e}) : super(key: key);
+  const SocialImagePreviewWidget({super.key, required this.e});
 
   @override
   Widget build(BuildContext context) {

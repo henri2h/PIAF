@@ -5,8 +5,7 @@ import 'package:minestrix_chat/partials/mobile_stepper/mobile_stepper_button.dar
 class MobileStepper extends StatefulWidget {
   final List<MStep> steps;
 
-  const MobileStepper({Key? key, required this.steps, required this.onSend})
-      : super(key: key);
+  const MobileStepper({super.key, required this.steps, required this.onSend});
 
   final void Function()? onSend;
 

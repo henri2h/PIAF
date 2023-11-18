@@ -13,13 +13,12 @@ import 'room_settings_page.dart';
 
 class RoomPage extends StatefulWidget {
   const RoomPage(
-      {Key? key,
+      {super.key,
       required this.roomId,
       required this.client,
       this.onBack,
       this.allowPop = false,
-      this.displaySettingsOnDesktop = false})
-      : super(key: key);
+      this.displaySettingsOnDesktop = false});
 
   final String roomId;
   final Client client;

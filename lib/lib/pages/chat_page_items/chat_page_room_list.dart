@@ -8,11 +8,10 @@ import '../../partials/chat/room_list/room_list.dart';
 class ChatPageRoomList extends StatelessWidget {
   final bool mobile;
   const ChatPageRoomList(
-      {Key? key,
+      {super.key,
       this.mobile = false,
       required this.scrollController,
-      this.onAppBarClicked})
-      : super(key: key);
+      this.onAppBarClicked});
 
   final ScrollController scrollController;
   final VoidCallback? onAppBarClicked;

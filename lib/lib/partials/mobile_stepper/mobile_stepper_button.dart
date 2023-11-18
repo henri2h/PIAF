@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 
 class MobileStepperButton extends StatelessWidget {
   const MobileStepperButton(
-      {Key? key,
+      {super.key,
       required this.onPressed,
       required this.children,
-      required this.enabled})
-      : super(key: key);
+      required this.enabled});
 
   final void Function()? onPressed;
   final bool enabled;

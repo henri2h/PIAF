@@ -5,8 +5,7 @@ import 'provider/chat_page_state.dart';
 import '../room_page.dart';
 
 class ChatPageRoom extends StatelessWidget {
-  const ChatPageRoom({Key? key, this.displaySettingsOnDesktop = false})
-      : super(key: key);
+  const ChatPageRoom({super.key, this.displaySettingsOnDesktop = false});
   final bool displaySettingsOnDesktop;
   @override
   Widget build(BuildContext context) {

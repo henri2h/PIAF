@@ -8,7 +8,7 @@ import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
 import '../components/minestrix/minestrix_title.dart';
 
 class NotificationView extends StatelessWidget {
-  const NotificationView({Key? key}) : super(key: key);
+  const NotificationView({super.key});
 
   @override
   Widget build(BuildContext context) {

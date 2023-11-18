@@ -4,9 +4,9 @@ import 'package:minestrix_chat/utils/matrix/user_extension.dart';
 
 class UserPowerLevelInfoCard extends StatelessWidget {
   const UserPowerLevelInfoCard({
-    Key? key,
+    super.key,
     required this.user,
-  }) : super(key: key);
+  });
 
   final User user;
 

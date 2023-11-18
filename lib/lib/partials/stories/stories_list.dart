@@ -6,13 +6,12 @@ import 'package:minestrix_chat/partials/stories/stories_circle.dart';
 
 class StoriesList extends StatefulWidget {
   const StoriesList(
-      {Key? key,
+      {super.key,
       required this.client,
       this.restrictUserID,
       this.restrictRoom,
       this.allowCreatingStory = true})
-      : assert(restrictRoom == null || restrictUserID == null),
-        super(key: key);
+      : assert(restrictRoom == null || restrictUserID == null);
 
   final Client client;
   final String? restrictUserID;

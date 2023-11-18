@@ -8,9 +8,9 @@ import '../utils/minestrix/minestrix_room.dart';
 
 class ContactView extends StatelessWidget {
   const ContactView({
-    Key? key,
+    super.key,
     required this.sroom,
-  }) : super(key: key);
+  });
   final MinestrixRoom sroom;
   @override
   Widget build(BuildContext context) {

@@ -6,8 +6,7 @@ import '../room_list/room_list_items/room_list_item.dart';
 
 class ConvSettingsMutualRooms extends StatefulWidget {
   final Room room;
-  const ConvSettingsMutualRooms({Key? key, required this.room})
-      : super(key: key);
+  const ConvSettingsMutualRooms({super.key, required this.room});
 
   @override
   State<ConvSettingsMutualRooms> createState() =>

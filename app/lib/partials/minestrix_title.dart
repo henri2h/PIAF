@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MinestrixTitle extends StatelessWidget {
-  const MinestrixTitle({Key? key}) : super(key: key);
+  const MinestrixTitle({super.key});
 
   @override
   Widget build(BuildContext context) {

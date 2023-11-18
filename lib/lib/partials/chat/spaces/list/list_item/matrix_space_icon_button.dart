@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 
 class MatrixSpaceIconButton extends StatelessWidget {
   const MatrixSpaceIconButton(
-      {Key? key,
+      {super.key,
       required this.name,
       required this.id,
       required this.selectedSpace,
@@ -16,8 +16,7 @@ class MatrixSpaceIconButton extends StatelessWidget {
       required this.onPressed,
       required this.onLongPressed,
       this.expanded = false,
-      this.room})
-      : super(key: key);
+      this.room});
 
   final String? id;
   final Room? room;

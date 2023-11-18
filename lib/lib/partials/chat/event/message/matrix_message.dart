@@ -42,7 +42,7 @@ class MessageDisplay extends StatefulWidget {
 
   final Stream<String>? onEventSelectedStream;
   const MessageDisplay(
-      {Key? key,
+      {super.key,
       required this.event,
       required this.client,
       this.reactions,
@@ -55,8 +55,7 @@ class MessageDisplay extends StatefulWidget {
       this.displayName = false,
       this.addPaddingTop = false,
       this.edited = false,
-      this.onReplyEventPressed})
-      : super(key: key);
+      this.onReplyEventPressed});
 
   @override
   MessageDisplayState createState() => MessageDisplayState();

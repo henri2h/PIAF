@@ -13,13 +13,12 @@ class TreeSpaceItem extends StatefulWidget {
   final void Function(String? id)? onLongPressed;
   final String? selectedSpace;
   const TreeSpaceItem(
-      {Key? key,
+      {super.key,
       required this.room,
       required this.spaceListExpanded,
       required this.onSpaceSelected,
       required this.onLongPressed,
-      required this.selectedSpace})
-      : super(key: key);
+      required this.selectedSpace});
 
   @override
   State<TreeSpaceItem> createState() => _TreeSpaceItem();

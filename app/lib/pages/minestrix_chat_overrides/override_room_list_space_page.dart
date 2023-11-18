@@ -5,8 +5,8 @@ import 'package:minestrix_chat/pages/chat_page_items/chat_page_room.dart';
 @RoutePage()
 class OverrideRoomListSpacePage extends StatelessWidget {
   const OverrideRoomListSpacePage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -30,12 +30,11 @@ class FeedController {
 
 class LayoutMainFeed extends StatefulWidget {
   const LayoutMainFeed(
-      {Key? key,
+      {super.key,
       required this.space,
       required this.children,
       required this.controller,
-      this.displayPostModal = true})
-      : super(key: key);
+      this.displayPostModal = true});
 
   final Room space;
   final List<Room> children;

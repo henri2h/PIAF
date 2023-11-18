@@ -8,7 +8,7 @@ import '../../../partials/components/buttons/custom_future_button.dart';
 
 class MessageButton extends StatelessWidget {
   final String userId;
-  const MessageButton({Key? key, required this.userId}) : super(key: key);
+  const MessageButton({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {

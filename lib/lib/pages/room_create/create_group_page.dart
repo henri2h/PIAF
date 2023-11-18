@@ -7,8 +7,7 @@ import '../matrix_create_group.dart';
 
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage(
-      {Key? key, required this.onRoomSelected, required this.client})
-      : super(key: key);
+      {super.key, required this.onRoomSelected, required this.client});
 
   final Client client;
   final Function(String?) onRoomSelected;

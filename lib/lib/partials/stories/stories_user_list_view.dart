@@ -8,7 +8,7 @@ import 'package:minestrix_chat/partials/stories/stories_user_selection.dart';
 
 class UserStorieUserListView extends StatefulWidget {
   const UserStorieUserListView(
-      {Key? key,
+      {super.key,
       required this.client,
       required this.users,
       this.iconButtons,
@@ -17,8 +17,7 @@ class UserStorieUserListView extends StatefulWidget {
       this.dismissible = false,
       this.onDismissed,
       this.title})
-      : assert(!dismissible || onDismissed != null),
-        super(key: key);
+      : assert(!dismissible || onDismissed != null);
   final Client client;
   final List<MapEntry<String, UserState>> users;
   final List<Widget> Function(String userID)? iconButtons;
@@ -92,14 +91,13 @@ class UserStorieUserListViewState extends State<UserStorieUserListView> {
 
 class UserListViewTile extends StatelessWidget {
   const UserListViewTile(
-      {Key? key,
+      {super.key,
       required this.userID,
       required this.client,
       required this.userState,
       required this.newState,
       required this.newStateColor,
-      required this.iconButtons})
-      : super(key: key);
+      required this.iconButtons});
 
   final String userID;
   final UserState userState;

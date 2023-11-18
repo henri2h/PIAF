@@ -18,11 +18,10 @@ class LoginMatrixCard extends StatefulWidget {
   final bool popOnLogin;
   final String defaultServer;
   const LoginMatrixCard(
-      {Key? key,
+      {super.key,
       required this.client,
       this.popOnLogin = false,
-      this.defaultServer = "matrix.org"})
-      : super(key: key);
+      this.defaultServer = "matrix.org"});
 
   @override
   LoginMatrixCardState createState() => LoginMatrixCardState();
@@ -229,10 +228,10 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
 
 class MobileSSOLogin extends StatelessWidget {
   const MobileSSOLogin({
-    Key? key,
+    super.key,
     required this.url,
     required this.domain,
-  }) : super(key: key);
+  });
 
   final String url;
   final String domain;

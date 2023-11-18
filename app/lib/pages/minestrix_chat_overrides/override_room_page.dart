@@ -6,13 +6,12 @@ import 'package:auto_route/auto_route.dart';
 @RoutePage()
 class OverrideRoomPage extends StatelessWidget {
   const OverrideRoomPage(
-      {Key? key,
+      {super.key,
       required this.roomId,
       required this.client,
       this.onBack,
       this.allowPop = false,
-      this.displaySettingsOnDesktop = false})
-      : super(key: key);
+      this.displaySettingsOnDesktop = false});
 
   final String roomId;
   final Client client;

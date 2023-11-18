@@ -10,7 +10,7 @@ import 'package:settings_ui/settings_ui.dart';
 
 @RoutePage()
 class SettingsAccountPage extends StatefulWidget {
-  const SettingsAccountPage({Key? key}) : super(key: key);
+  const SettingsAccountPage({super.key});
 
   @override
   SettingsAccountPageState createState() => SettingsAccountPageState();

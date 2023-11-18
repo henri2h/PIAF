@@ -7,10 +7,10 @@ import '../matrix/matrix_image_avatar.dart';
 
 class TypingIndicator extends StatelessWidget {
   const TypingIndicator({
-    Key? key,
+    super.key,
     required this.room,
     required this.user,
-  }) : super(key: key);
+  });
 
   final Room room;
   final User user;

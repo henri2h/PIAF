@@ -9,8 +9,7 @@ import 'device_media_gallery.dart';
 
 class MatrixCreateStoriePage extends StatefulWidget {
   const MatrixCreateStoriePage(
-      {Key? key, required this.client, required this.r})
-      : super(key: key);
+      {super.key, required this.client, required this.r});
 
   final Client client;
   final Room r;
@@ -70,11 +69,10 @@ class StorieContentCreator extends StatefulWidget {
   final void Function(PlatformFile? file) onImgChanged;
   final TextEditingController textController;
   const StorieContentCreator(
-      {Key? key,
+      {super.key,
       required this.onImgChanged,
       required this.textController,
-      required this.img})
-      : super(key: key);
+      required this.img});
 
   @override
   StorieContentCreatorState createState() => StorieContentCreatorState();

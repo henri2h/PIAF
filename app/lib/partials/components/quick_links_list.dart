@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class QuickLinksBar extends StatefulWidget {
-  const QuickLinksBar({Key? key}) : super(key: key);
+  const QuickLinksBar({super.key});
 
   @override
   QuickLinksBarState createState() => QuickLinksBarState();
@@ -70,8 +70,7 @@ class QuickLinksBarState extends State<QuickLinksBar>
 
 class QuickLinkButton extends StatelessWidget {
   const QuickLinkButton(
-      {Key? key, this.name, this.icon, required this.onPressed})
-      : super(key: key);
+      {super.key, this.name, this.icon, required this.onPressed});
   final String? name;
   final IconData? icon;
   final Function onPressed;

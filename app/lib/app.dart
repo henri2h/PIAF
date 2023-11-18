@@ -14,7 +14,7 @@ import 'router.gr.dart';
 import 'utils/managers/theme_manager.dart';
 
 class Minestrix extends StatefulWidget {
-  const Minestrix({Key? key, required this.clients}) : super(key: key);
+  const Minestrix({super.key, required this.clients});
 
   final List<Client> clients;
   @override

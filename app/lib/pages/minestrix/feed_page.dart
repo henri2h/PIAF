@@ -28,7 +28,7 @@ import 'groups/create_group_page.dart';
 
 @RoutePage()
 class FeedPage extends StatefulWidget {
-  const FeedPage({Key? key}) : super(key: key);
+  const FeedPage({super.key});
 
   @override
   FeedPageState createState() => FeedPageState();

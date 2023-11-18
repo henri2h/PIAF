@@ -9,8 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 @RoutePage()
 class DesktopLoginPage extends StatefulWidget {
   const DesktopLoginPage(
-      {Key? key, this.title, this.onLogin, this.popOnLogin = false})
-      : super(key: key);
+      {super.key, this.title, this.onLogin, this.popOnLogin = false});
   final String? title;
   final Function(bool isLoggedIn)? onLogin;
 

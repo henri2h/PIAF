@@ -5,9 +5,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class TopicListTile extends StatelessWidget {
   const TopicListTile({
-    Key? key,
+    super.key,
     required this.room,
-  }) : super(key: key);
+  });
 
   final Room room;
 
@@ -22,9 +22,9 @@ class TopicListTile extends StatelessWidget {
 
 class TopicBody extends StatelessWidget {
   const TopicBody({
-    Key? key,
+    super.key,
     required this.room,
-  }) : super(key: key);
+  });
 
   final Room room;
 

@@ -10,8 +10,7 @@ import '../../partials/feed/topic_list_tile.dart';
 
 @RoutePage()
 class SettingsStorysDetailPage extends StatefulWidget {
-  const SettingsStorysDetailPage({Key? key, required this.room})
-      : super(key: key);
+  const SettingsStorysDetailPage({super.key, required this.room});
   final Room room;
 
   @override

@@ -22,13 +22,12 @@ class PostItem extends StatefulWidget {
   final bool enableComment;
 
   const PostItem(
-      {Key? key,
+      {super.key,
       required this.event,
       required this.onReact,
       required this.timeline,
       required this.isMobile,
-      this.enableComment = true})
-      : super(key: key);
+      this.enableComment = true});
 
   @override
   PostItemState createState() => PostItemState();

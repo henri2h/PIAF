@@ -25,7 +25,7 @@ import '../../router.gr.dart';
 @RoutePage()
 class CalendarEventPage extends StatefulWidget {
   final Room room;
-  const CalendarEventPage({Key? key, required this.room}) : super(key: key);
+  const CalendarEventPage({super.key, required this.room});
 
   @override
   CalendarEventPageState createState() => CalendarEventPageState();
@@ -273,11 +273,10 @@ class CalendarEventPageState extends State<CalendarEventPage> {
 
 class AttendancePollCard extends StatelessWidget {
   const AttendancePollCard(
-      {Key? key,
+      {super.key,
       required this.calendarEvent,
       required this.room,
-      required this.snapT})
-      : super(key: key);
+      required this.snapT});
 
   final CalendarEvent? calendarEvent;
   final Room room;
@@ -325,11 +324,10 @@ class AttendancePollCard extends StatelessWidget {
 
 class CalendarEventInfo extends StatelessWidget {
   const CalendarEventInfo(
-      {Key? key,
+      {super.key,
       required this.room,
       required this.calendarEvent,
-      required this.timeline})
-      : super(key: key);
+      required this.timeline});
 
   final Room room;
   final Timeline timeline;

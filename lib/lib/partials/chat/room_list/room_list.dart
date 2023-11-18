@@ -5,7 +5,6 @@ import 'package:minestrix_chat/pages/chat_page_items/provider/chat_page_state.da
 import 'package:minestrix_chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
 import '../../../pages/room_create/create_chat_page.dart';
-import '../../dialogs/adaptative_dialogs.dart';
 import '../search/matrix_chats_search.dart';
 import '../spaces/list/spaces_list.dart';
 import 'room_list_explore.dart';
@@ -14,14 +13,13 @@ import 'room_list_items/room_list_item_presence.dart';
 class RoomList extends StatefulWidget {
   ///  [allowPop]
   const RoomList(
-      {Key? key,
+      {super.key,
       required this.client,
       required this.scrollController,
       required this.sortedRooms,
       required this.isMobile,
       this.onAppBarClicked,
-      required this.controller})
-      : super(key: key);
+      required this.controller});
 
   final ChatPageState controller;
 

@@ -8,9 +8,9 @@ import 'matrix_user_item.dart';
 
 class EventReactionList extends StatelessWidget {
   const EventReactionList({
-    Key? key,
+    super.key,
     required this.reactions,
-  }) : super(key: key);
+  });
 
   final Set<Event> reactions;
 

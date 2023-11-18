@@ -1270,9 +1270,10 @@ packages:
   native_imaging:
     dependency: "direct main"
     description:
-      path: "../../native_imaging"
-      relative: true
-    source: path
+      name: native_imaging
+      sha256: "182ccd8e0815a8a2158500ef66c828c030f6b9e05783e41e22f33bbcfd46a3d5"
+      url: "https://pub.dev"
+    source: hosted
     version: "0.1.1"
   nested:
     dependency: transitive
@@ -1402,14 +1403,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
-  pedantic:
-    dependency: "direct main"
-    description:
-      name: pedantic
-      sha256: "67fc27ed9639506c856c840ccce7594d0bdcd91bc8d53d6e52359449a1d50602"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.11.1"
   permission_handler:
     dependency: "direct main"
     description:

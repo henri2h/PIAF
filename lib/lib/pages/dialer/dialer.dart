@@ -25,7 +25,6 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../utils/platform_infos.dart';
@@ -33,8 +32,7 @@ import 'pip/pip_view.dart';
 
 class _StreamView extends StatelessWidget {
   const _StreamView(this.wrappedStream,
-      {Key? key, this.mainView = false, required this.matrixClient})
-      : super(key: key);
+      {this.mainView = false, required this.matrixClient});
 
   final WrappedMediaStream wrappedStream;
   final Client matrixClient;
@@ -117,8 +115,7 @@ class Calling extends StatefulWidget {
       required this.client,
       required this.callId,
       this.onClear,
-      Key? key})
-      : super(key: key);
+      super.key});
 
   @override
   MyCallingPage createState() => MyCallingPage();

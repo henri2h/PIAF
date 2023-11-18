@@ -11,15 +11,14 @@ class MinestrixRoomTile extends StatelessWidget {
   /// You can else give the [room] or the [roomWithSpace]. If you give the
   /// [roomWithSpace] make sure to give also the [client].
   const MinestrixRoomTile(
-      {Key? key,
+      {super.key,
       this.client,
       this.room,
       this.selected = false,
       this.onTap,
       this.roomWithSpace})
       : assert(room != null || (client != null && roomWithSpace != null)),
-        assert(!(room == null && roomWithSpace == null)),
-        super(key: key);
+        assert(!(room == null && roomWithSpace == null));
 
   final Client? client;
   final Room? room;

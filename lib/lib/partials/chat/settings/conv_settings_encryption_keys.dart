@@ -6,8 +6,7 @@ import 'room/room_encryption_settings.dart';
 class ConvSettingsEncryptionKeys extends StatefulWidget {
   final Room room;
 
-  const ConvSettingsEncryptionKeys({required this.room, Key? key})
-      : super(key: key);
+  const ConvSettingsEncryptionKeys({required this.room, super.key});
 
   @override
   State<ConvSettingsEncryptionKeys> createState() =>

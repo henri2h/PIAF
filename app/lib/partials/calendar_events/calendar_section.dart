@@ -4,10 +4,10 @@ import '../components/minestrix/minestrix_title.dart';
 
 class CreateCalendarSection extends StatelessWidget {
   const CreateCalendarSection({
-    Key? key,
+    super.key,
     required this.text,
     required this.child,
-  }) : super(key: key);
+  });
 
   final String text;
   final Widget child;

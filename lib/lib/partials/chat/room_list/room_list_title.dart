@@ -5,14 +5,13 @@ import 'package:matrix/matrix.dart';
 
 class RoomListTitle extends StatelessWidget {
   const RoomListTitle(
-      {Key? key,
+      {super.key,
       required this.client,
       required this.onRoomSelected,
       required this.allowPop,
       this.selectedSpace,
       this.onTap,
-      this.mobile = false})
-      : super(key: key);
+      this.mobile = false});
 
   final Client client;
   final Function(String?) onRoomSelected;

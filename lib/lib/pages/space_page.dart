@@ -10,8 +10,7 @@ import '../partials/chat/spaces/space_room_selection.dart';
 
 class SpacePage extends StatefulWidget {
   const SpacePage(
-      {Key? key, required this.spaceId, required this.client, this.onBack})
-      : super(key: key);
+      {super.key, required this.spaceId, required this.client, this.onBack});
 
   final String spaceId;
   final Client client;

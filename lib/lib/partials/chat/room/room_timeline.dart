@@ -24,7 +24,7 @@ class RoomTimeline extends StatefulWidget {
 
   final bool updating;
   const RoomTimeline(
-      {Key? key,
+      {super.key,
       required this.room,
       required this.client,
       required this.isMobile,
@@ -33,8 +33,7 @@ class RoomTimeline extends StatefulWidget {
       this.onRoomCreate,
       required this.timeline,
       required this.updating,
-      required this.setUpdating})
-      : super(key: key);
+      required this.setUpdating});
 
   @override
   RoomTimelineState createState() => RoomTimelineState();

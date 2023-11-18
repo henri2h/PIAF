@@ -9,14 +9,13 @@ class CalendarAttendanceCardButton extends StatelessWidget {
   final Future<void> Function(String? value) check;
 
   const CalendarAttendanceCardButton(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.icon,
       required this.userResponse,
       required this.resp,
       required this.value,
-      required this.check})
-      : super(key: key);
+      required this.check});
 
   @override
   Widget build(BuildContext context) {

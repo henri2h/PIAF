@@ -6,8 +6,7 @@ import 'package:minestrix_chat/utils/extensions/datetime.dart';
 import '../../../matrix/matrix_user_avatar.dart';
 
 class CallMessageDisplay extends StatelessWidget {
-  const CallMessageDisplay(this.event, {Key? key, required this.timeline})
-      : super(key: key);
+  const CallMessageDisplay(this.event, {super.key, required this.timeline});
 
   final Event event;
   final Timeline timeline;

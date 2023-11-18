@@ -10,7 +10,7 @@ import '../../router.gr.dart';
 
 @RoutePage()
 class SettingsStorysPage extends StatefulWidget {
-  const SettingsStorysPage({Key? key}) : super(key: key);
+  const SettingsStorysPage({super.key});
 
   @override
   State<SettingsStorysPage> createState() => _SettingsStorysPageState();

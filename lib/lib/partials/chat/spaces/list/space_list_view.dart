@@ -9,8 +9,7 @@ class SpacesListView extends StatelessWidget {
   final MatrixSpacesList controller;
   final List<String> rootSpaces;
   const SpacesListView(
-      {Key? key, required this.controller, required this.rootSpaces})
-      : super(key: key);
+      {super.key, required this.controller, required this.rootSpaces});
 
   @override
   Widget build(BuildContext context) {

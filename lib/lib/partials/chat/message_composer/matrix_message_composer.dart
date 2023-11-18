@@ -32,7 +32,7 @@ class MatrixMessageComposer extends StatefulWidget {
   final bool loadSavedText;
 
   const MatrixMessageComposer(
-      {Key? key,
+      {super.key,
       required this.client,
       this.userId,
       required this.room,
@@ -44,8 +44,7 @@ class MatrixMessageComposer extends StatefulWidget {
       this.overrideSending,
       this.onRoomCreate,
       this.onEdit,
-      this.loadSavedText = true})
-      : super(key: key);
+      this.loadSavedText = true});
 
   @override
   MatrixMessageComposerState createState() => MatrixMessageComposerState();

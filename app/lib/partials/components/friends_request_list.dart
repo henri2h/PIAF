@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 class FriendRequestList extends StatelessWidget {
-  const FriendRequestList({Key? key}) : super(key: key);
+  const FriendRequestList({super.key});
 
   @override
   Widget build(BuildContext context) {
