@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/router.dart';
 import 'package:minestrix_chat/utils/login/login_extension.dart';
@@ -13,15 +14,15 @@ import 'package:provider/provider.dart';
 import 'router.gr.dart';
 import 'utils/managers/theme_manager.dart';
 
-class Minestrix extends StatefulWidget {
-  const Minestrix({super.key, required this.clients});
+class App extends StatefulWidget {
+  const App({super.key, required this.clients});
 
   final List<Client> clients;
   @override
-  MinestrixState createState() => MinestrixState();
+  AppState createState() => AppState();
 }
 
-class MinestrixState extends State<Minestrix> {
+class AppState extends State<App> {
   static final _defaultLightColorScheme =
       ColorScheme.fromSwatch(primarySwatch: Colors.blue);
 
@@ -58,11 +59,11 @@ class MinestrixState extends State<Minestrix> {
                 stream: Matrix.of(context).client.onLoginStateChanged.stream,
                 builder: (context, AsyncSnapshot<LoginState?> state) {
                   Client client = Matrix.of(context).client;
-
+    
                   if (kIsWeb && client.shouldSSOLogin) {
                     webLogin ??= client.ssoLogin();
                   }
-
+    
                   return FutureBuilder<bool>(
                       future: webLogin,
                       builder: (context, snapshot) {
@@ -84,19 +85,20 @@ class MinestrixState extends State<Minestrix> {
                             ),
                           );
                         }
-
+    
                         return FutureBuilder(
                             future: initMatrix(client),
                             builder: (context, snap) {
                               return MaterialApp.router(
-                                routerDelegate: AutoRouterDelegate.declarative(
+                                routerDelegate:
+                                    AutoRouterDelegate.declarative(
                                   _appRouter,
                                   routes: (_) {
                                     final isLogged = client.isLogged();
                                     return [
                                       if (isLogged)
                                         const AppWrapperRoute()
-
+    
                                       // if they are not logged in, bring them to the Login page
                                       else if (Platform.isAndroid)
                                         const MobileWelcomeRouter()
@@ -109,8 +111,8 @@ class MinestrixState extends State<Minestrix> {
                                     _appRouter.defaultRouteParser(),
                                 debugShowCheckedModeBanner: false,
                                 theme: ThemeData(
-                                  colorScheme:
-                                      lightDynamic ?? _defaultLightColorScheme,
+                                  colorScheme: lightDynamic ??
+                                      _defaultLightColorScheme,
                                   textTheme: theme.whiteTextTheme,
                                   useMaterial3: true,
                                 ),

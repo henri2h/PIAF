@@ -34,5 +34,5 @@ void main(List<String> args) async {
 
 void runMinestrix(List<Client> clients) {
   runApp(ChangeNotifierProvider<ThemeNotifier>(
-      create: (_) => ThemeNotifier(), child: Minestrix(clients: clients)));
+      create: (_) => ThemeNotifier(), child: App(clients: clients)));
 }
