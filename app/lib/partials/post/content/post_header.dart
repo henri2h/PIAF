@@ -255,10 +255,19 @@ class PostHeader extends StatelessWidget {
                           onSelected: (String action) async {
                             switch (action) {
                               case "delete":
-                                if (event.status != EventStatus.sent) {
-                                  event.remove();
-                                } else {
-                                  await event.redactEvent();
+                                try {
+                                  if (event.status == EventStatus.sending) {
+                                    await event.remove();
+                                  } else {
+                                    await event.redactEvent();
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: Text("Could not delete post $e"),
+                                    ));
+                                  }
                                 }
                                 break;
 
@@ -267,9 +276,10 @@ class PostHeader extends StatelessWidget {
                                     context: context,
                                     eventToEdit: eventToEdit,
                                     event: event);
-
                                 break;
+
                               default:
+                                Logs().e("Unknow action $action");
                             }
                           })
                     ],
