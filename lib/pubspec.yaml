@@ -80,7 +80,10 @@ dependencies:
   webrtc_interface: ^1.0.4
   collection: ^1.16.0
   uuid: ^4.2.1
-  flutter_blurhash: ^0.7.0
+  flutter_blurhash:
+    # Waiting for: https://github.com/fluttercommunity/flutter_blurhash/pull/59
+    git: https://github.com/MominRaza/flutter_blurhash.git
+
   intl: ^0.18.0
   desktop_webview_window: ^0.2.0
   swipe_to: ^1.0.2
@@ -105,10 +108,10 @@ dependencies:
   flutter_highlighter: ^0.1.1
   linkify: ^5.0.0
   flutter_html_table: ^3.0.0-beta.2
-  photo_manager: ^2.7.2
+  photo_manager: 3.0.0-dev.2
   video_compress: ^3.1.2
   matrix_homeserver_recommendations: ^0.3.0
-  
+  photo_manager_image_provider: ^2.1.0
 
 dev_dependencies:
   flutter_test:

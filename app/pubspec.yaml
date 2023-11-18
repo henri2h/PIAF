@@ -1,20 +1,8 @@
 name: minestrix
 description: A privacy focused social media based on matrix
 
-# The following line prevents the package from being accidentally published to
-# pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
+publish_to: "none"
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 version: 1.6.5+13
 
 environment:
@@ -51,7 +39,7 @@ dependencies:
 
   # Post formating
   flutter_markdown:
-  emoji_picker_flutter: ^1.2.1
+  emoji_picker_flutter: ^1.6.3
 
   # images
   image_picker:
@@ -115,14 +103,22 @@ dependencies:
   dynamic_color: ^1.6.6
   media_kit: ^1.1.7
   video_compress: ^3.1.2
+  photo_manager_image_provider: ^2.1.0
 
 # Override due to https://github.com/mogol/flutter_secure_storage/issues/616
 dependency_overrides:
   flutter_secure_storage_linux:
     git:
-      url: https://github.com/tomekit/flutter_secure_storage.git
+      url: https://github.com/mogol/flutter_secure_storage
       ref: develop
       path: flutter_secure_storage_linux
+
+  flutter_math_fork:
+  # FIXME: we need this fix https://github.com/simpleclub-extended/flutter_math_fork/pull/87
+    git:
+      url: https://github.com/The-Redhat/flutter_math_fork/
+      ref: 3442b36a436880ce1c023e25c868d6f4004c4c24
+
 
 dev_dependencies:
   flutter_test:
