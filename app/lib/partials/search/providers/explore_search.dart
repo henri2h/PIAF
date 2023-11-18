@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/search/providers/lib.dart';
+import 'package:minestrix/partials/search/providers/lib.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';

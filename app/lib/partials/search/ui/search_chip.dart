@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../search_mode.dart';
+import '../../../models/search/search_mode.dart';
 
 class SearchChip extends StatelessWidget {
   const SearchChip({
