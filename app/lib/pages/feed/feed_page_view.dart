@@ -52,6 +52,8 @@ class FeedPageView extends StatelessWidget {
                   return RefreshIndicator(
                     onRefresh: controller.onRefresh,
                     child: LayoutView(
+                        /*
+                        Disable communities for now as long as it's not stable
                         leftBar: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -59,7 +61,7 @@ class FeedPageView extends StatelessWidget {
                             for (final community in client.getCommunities())
                               MinestrixRoomTileNavigator(room: community.space),
                           ],
-                        ),
+                        ),*/
                         rightBar: const RightBar(),
                         mainBuilder: (
                                 {required bool displaySideBar,
