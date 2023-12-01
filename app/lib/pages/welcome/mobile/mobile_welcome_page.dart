@@ -11,6 +11,7 @@ class MobileWelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        forceMaterialTransparency: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.explore),
@@ -24,29 +25,25 @@ class MobileWelcomePage extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 80.0, horizontal: 30),
-                child: ListView(
-                  children: [
-                    Text(
-                      "MinesTRIX",
-                      style: Theme.of(context)
-                          .textTheme
-                          .displayLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      "A privacy focused social media based on MATRIX",
-                      style: Theme.of(context).textTheme.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+              child: ListView(
+                children: [
+                  Text(
+                    "MinesTRIX",
+                    style: Theme.of(context)
+                        .textTheme
+                        .displayLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    "A privacy focused social media based on MATRIX",
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
             Padding(

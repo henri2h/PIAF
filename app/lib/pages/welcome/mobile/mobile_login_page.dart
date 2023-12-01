@@ -18,7 +18,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
   Widget build(BuildContext context) {
     final client = Matrix.of(context).getLoginClient();
     return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(forceMaterialTransparency: true),
         body: ListView(children: [
           LoginMatrixCard(client: client, popOnLogin: widget.popOnLogin)
         ]));

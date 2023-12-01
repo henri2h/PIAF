@@ -42,7 +42,7 @@ class _MobileExplorePageState extends State<MobileExplorePage> {
     final client = Matrix.of(context).getLoginClient();
 
     return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(forceMaterialTransparency: true),
         body: Column(
           children: [
             MatrixServerChooser(

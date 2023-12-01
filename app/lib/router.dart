@@ -7,7 +7,6 @@ class AppRouter extends $AppRouter {
   RouteType get defaultRouteType => const RouteType.adaptive();
 
   static List<AutoRoute> welcomeRoutes = [
-    AutoRoute(path: '', page: MobileWelcomeRoute.page),
     AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page),
     AutoRoute(
         path: 'mobile_create_account', page: MobileCreateAccountRoute.page),
@@ -90,7 +89,15 @@ class AppRouter extends $AppRouter {
     AutoRoute(
         path: '/desktop_login',
         page: DesktopLoginRoute.page,
-        children: welcomeRoutes),
-    AutoRoute(page: MobileWelcomeRouter.page, children: welcomeRoutes),
+        children: welcomeRoutes
+          ..add(
+            AutoRoute(path: '', page: DesktopWelcomeRoute.page),
+          )),
+    AutoRoute(
+        page: MobileWelcomeRouter.page,
+        children: welcomeRoutes
+          ..add(
+            AutoRoute(path: '', page: MobileWelcomeRoute.page),
+          )),
   ];
 }

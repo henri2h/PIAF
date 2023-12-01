@@ -137,6 +137,9 @@ flutter:
     - assets/sas-emoji.json
     - assets/icon_512.png
     - assets/bg_paris.jpg
+    - assets/login_background.jpg
+    - assets/piaf.jpg
+
 
   fonts:
     - family: Roboto
