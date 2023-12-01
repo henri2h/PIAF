@@ -111,7 +111,7 @@ class _RoomsExplorePageState extends State<RoomsExplorePage> {
                               if (room.roomType?.isNotEmpty == true)
                                 Text(room.roomType!),
                               if (room.guestCanJoin)
-                                const Badge(label: Text("Guest can join"))
+                                const Badge(label: Text("Guests can join"))
                             ],
                           ),
                           trailing: Text("${room.numJoinedMembers}")),

@@ -25,7 +25,7 @@ class ExploreSearch implements ItemManager<PublicRoomsChunk> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (room.roomType?.isNotEmpty == true) Text(room.roomType!),
-            if (room.guestCanJoin) const Badge(label: Text("Guest can join"))
+            if (room.guestCanJoin) const Badge(label: Text("Guests can join"))
           ],
         ),
         trailing: Text("${room.numJoinedMembers}"));
