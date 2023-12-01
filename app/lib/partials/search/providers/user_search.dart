@@ -5,7 +5,8 @@ import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import 'item_manager.dart';
+import 'lib.dart';
+
 
 class UserSearch implements ItemManager<Profile> {
   String? nextBatch;

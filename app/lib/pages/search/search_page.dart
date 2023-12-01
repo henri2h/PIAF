@@ -13,9 +13,11 @@ import '../../models/search/search_mode.dart';
 
 @RoutePage()
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key, this.isPopup = false});
+  const SearchPage({super.key, this.isPopup = false, this.initialSearchMode});
 
   final bool isPopup;
+  final SearchMode? initialSearchMode;
+
   @override
   SearchPageState createState() => SearchPageState();
 }
@@ -31,6 +33,7 @@ class SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
+    searchMode = widget.initialSearchMode;
     exploreSearch.init(context);
     userSearch.init(context);
   }
@@ -49,6 +52,7 @@ class SearchPageState extends State<SearchPage> {
     setState(() {});
     _debounce = Timer(const Duration(milliseconds: 300), () async {
       await _callSearch(query);
+      setState(() {});
     });
   }
 
@@ -83,13 +87,14 @@ class SearchPageState extends State<SearchPage> {
                         )
                       : null)),
         ),
-        SearchBadges(
-          onSearchModeSelected: (mode) {
-            setState(() {
-              searchMode = mode;
-            });
-          },
-        ),
+        if (searchMode == null)
+          SearchBadges(
+            onSearchModeSelected: (mode) {
+              setState(() {
+                searchMode = mode;
+              });
+            },
+          ),
         Expanded(
           child: Builder(builder: (context) {
             if (searchMode == SearchMode.publicRoom) {

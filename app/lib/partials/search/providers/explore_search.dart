@@ -9,6 +9,9 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 class ExploreSearch implements ItemManager<PublicRoomsChunk> {
   String? nextBatch;
   late Client client;
+
+  String? searchText;
+
   @override
   Widget itemBuilder(BuildContext context, PublicRoomsChunk room) {
     return ListTile(
@@ -41,11 +44,13 @@ class ExploreSearch implements ItemManager<PublicRoomsChunk> {
     print("Getting public rooms");
     final response = await client.queryPublicRooms(
         since: nextBatch,
-        filter: PublicRoomQueryFilter(roomTypes: [
-          MatrixTypes.account,
-          MatrixTypes.group,
-          MatrixTypes.calendarEvent
-        ]));
+        filter: PublicRoomQueryFilter(
+            genericSearchTerm: searchText,
+            roomTypes: [
+              MatrixTypes.account,
+              MatrixTypes.group,
+              MatrixTypes.calendarEvent
+            ]));
 
     items.addAll(response.chunk);
 
@@ -58,9 +63,13 @@ class ExploreSearch implements ItemManager<PublicRoomsChunk> {
   List<PublicRoomsChunk> items = [];
 
   @override
-  Future<void> setNewTerm(String text) {
-    // TODO: implement setNewTerm
-    throw UnimplementedError();
+  Future<void> setNewTerm(String text) async {
+    searchText = text;
+    nextBatch = null;
+    items.clear();
+
+    await requestMore();
+    
   }
 
   @override

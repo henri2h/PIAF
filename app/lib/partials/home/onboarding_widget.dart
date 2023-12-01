@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/models/search/search_mode.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
@@ -100,7 +101,7 @@ class OnboardingWidget extends StatelessWidget {
             subtitle: 'Discover public pages',
             icon: Icons.explore,
             onPressed: () async {
-              context.pushRoute(const RoomsExploreRoute());
+              context.pushRoute(SearchRoute(initialSearchMode: SearchMode.publicRoom));
             },
             done: false),
       ],

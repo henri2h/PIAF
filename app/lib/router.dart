@@ -26,7 +26,6 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: 'feeds', page: FeedListRoute.page),
         AutoRoute(path: 'post', page: PostRoute.page),
         AutoRoute(path: 'research', page: SearchRoute.page),
-        AutoRoute(path: 'explore', page: RoomsExploreRoute.page),
         AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
         AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
         AutoRoute(path: 'user_feed', page: UserViewRoute.page),
@@ -58,7 +57,6 @@ class AppRouter extends $AppRouter {
 
       AutoRoute(path: 'search', page: SearchRoute.page),
       AutoRoute(path: 'stories', page: TabStoriesRoute.page),
-      AutoRoute(path: 'explore', page: RoomsExploreRoute.page),
 
       AutoRoute(path: 'events', page: TabCalendarRoute.page, children: [
         AutoRoute(path: '', page: CalendarEventListRoute.page),
