@@ -7,7 +7,7 @@ import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../pages/minestrix/groups/create_group_page.dart';
+import '../../pages/groups/create_group_page.dart';
 import '../../router.gr.dart';
 import 'welcome_actions_button.dart';
 

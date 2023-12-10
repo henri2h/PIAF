@@ -8,11 +8,11 @@ import 'package:minestrix_chat/pages/room_settings_page.dart';
 import 'package:minestrix_chat/partials/chat/settings/conv_settings_permissions.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';
 
-import '../../../partials/calendar_events/calendar_event_create_widget.dart';
-import '../../../partials/components/layouts/custom_header.dart';
-import '../../../partials/components/minestrix/minestrix_title.dart';
-import '../../../partials/feed/topic_list_tile.dart';
-import '../../account/accounts_details_page.dart';
+import '../partials/calendar_events/calendar_event_create_widget.dart';
+import '../partials/components/layouts/custom_header.dart';
+import '../partials/components/minestrix/minestrix_title.dart';
+import '../partials/feed/topic_list_tile.dart';
+import 'account/accounts_details_page.dart';
 
 @RoutePage()
 class SocialSettingsPage extends StatefulWidget {

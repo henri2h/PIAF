@@ -5,9 +5,9 @@ import 'package:minestrix/partials/components/layouts/layout_view.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/pages/room_settings_page.dart';
-import '../../../partials/minestrix_room_tile.dart';
-import '../../../utils/minestrix/minestrix_community_extension.dart';
-import 'layout_main_feed.dart';
+import '../../partials/minestrix_room_tile.dart';
+import '../../utils/minestrix/minestrix_community_extension.dart';
+import 'community_feed.dart';
 
 @RoutePage()
 class CommunityDetailPage extends StatefulWidget {
@@ -72,7 +72,7 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
             mainBuilder: (
                     {required bool displaySideBar,
                     required bool displayLeftBar}) =>
-                LayoutMainFeed(
+                Community_feed(
               key: Key("community_${space.id}"),
               space: space,
               children: children,

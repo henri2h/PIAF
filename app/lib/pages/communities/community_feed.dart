@@ -11,11 +11,11 @@ import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../../partials/calendar_events/calendar_event_card.dart';
-import '../../../partials/feed/topic_list_tile.dart';
-import '../../../partials/post/post.dart';
-import '../../../partials/post/post_shimmer.dart';
-import '../../../partials/post/post_writer_modal.dart';
+import '../../partials/calendar_events/calendar_event_card.dart';
+import '../../partials/feed/topic_list_tile.dart';
+import '../../partials/post/post.dart';
+import '../../partials/post/post_shimmer.dart';
+import '../../partials/post/post_writer_modal.dart';
 
 class FeedController {
   final stream = CachedStreamController<String>();
@@ -28,8 +28,8 @@ class FeedController {
   }
 }
 
-class LayoutMainFeed extends StatefulWidget {
-  const LayoutMainFeed(
+class Community_feed extends StatefulWidget {
+  const Community_feed(
       {super.key,
       required this.space,
       required this.children,
@@ -42,10 +42,10 @@ class LayoutMainFeed extends StatefulWidget {
   final bool displayPostModal;
 
   @override
-  State<LayoutMainFeed> createState() => _LayoutMainFeedState();
+  State<Community_feed> createState() => _Community_feedState();
 }
 
-class _LayoutMainFeedState extends State<LayoutMainFeed> {
+class _Community_feedState extends State<Community_feed> {
   bool updating = false;
 
   late Room space;

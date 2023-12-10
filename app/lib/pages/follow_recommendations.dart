@@ -4,8 +4,8 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/minestrix/minestrix_friends_suggestions.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../partials/components/account/account_card.dart';
-import '../../partials/components/layouts/custom_header.dart';
+import '../partials/components/account/account_card.dart';
+import '../partials/components/layouts/custom_header.dart';
 
 @RoutePage()
 class FollowRecommendationsPage extends StatefulWidget {

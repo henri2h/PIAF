@@ -29,7 +29,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
         AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
         AutoRoute(path: 'user_feed', page: UserViewRoute.page),
-        AutoRoute(path: 'followers', page: FollowersRoute.page),
+        AutoRoute(path: 'followers', page: UserFollowersRoute.page),
         AutoRoute(path: 'post/image_gallery', page: PostGalleryRoute.page),
         AutoRoute(path: 'accounts', page: AccountsDetailsRoute.page),
         AutoRoute(

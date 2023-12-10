@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
-import '../../../partials/components/buttons/custom_future_button.dart';
+import '../components/buttons/custom_future_button.dart';
 
 class FollowingIndicator extends StatelessWidget {
   const FollowingIndicator({super.key, required this.room, this.onUnfollow});

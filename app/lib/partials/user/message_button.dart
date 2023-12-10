@@ -4,7 +4,7 @@ import 'package:minestrix_chat/pages/room_page.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../../partials/components/buttons/custom_future_button.dart';
+import '../components/buttons/custom_future_button.dart';
 
 class MessageButton extends StatelessWidget {
   final String userId;

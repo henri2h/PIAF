@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/layout_view.dart';
 import 'package:minestrix/partials/post/post_writer_modal.dart';
-import 'package:minestrix/partials/users/user_friends_card.dart';
-import 'package:minestrix/partials/users/user_profile_selection.dart';
+import 'package:minestrix/partials/user/user_friends_card.dart';
+import 'package:minestrix/partials/user/user_profile_selection.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
@@ -16,15 +16,15 @@ import 'package:minestrix_chat/partials/stories/stories_list.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:minestrix_chat/utils/spaces/space_extension.dart';
 
-import '../../../partials/components/minestrix/minestrix_title.dart';
-import '../../../partials/feed/topic_list_tile.dart';
-import '../../../partials/minestrix_title.dart';
-import '../../../partials/post/post.dart';
-import '../../../partials/post/post_shimmer.dart';
-import '../../../partials/users/user_avatar.dart';
-import '../../../router.gr.dart';
-import 'follow_button.dart';
-import 'message_button.dart';
+import '../../partials/components/minestrix/minestrix_title.dart';
+import '../../partials/feed/topic_list_tile.dart';
+import '../../partials/minestrix_title.dart';
+import '../../partials/post/post.dart';
+import '../../partials/post/post_shimmer.dart';
+import '../../partials/user/user_avatar.dart';
+import '../../router.gr.dart';
+import '../../partials/user/follow_button.dart';
+import '../../partials/user/message_button.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display

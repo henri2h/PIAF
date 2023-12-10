@@ -6,10 +6,10 @@ import 'package:minestrix/utils/minestrix/minestrix_community_extension.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
-import '../../../partials/calendar_events/calendar_event_create_widget.dart';
-import '../../../partials/minestrix_room_tile.dart';
-import '../../../partials/navigation/rightbar.dart';
-import '../../../router.gr.dart';
+import '../../partials/calendar_events/calendar_event_create_widget.dart';
+import '../../partials/minestrix_room_tile.dart';
+import '../../partials/navigation/rightbar.dart';
+import '../../router.gr.dart';
 
 @RoutePage()
 class CommunityPage extends StatefulWidget {

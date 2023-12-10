@@ -12,19 +12,19 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'package:minestrix_chat/minestrix_chat.dart';
 
-import '../../../partials/components/layouts/custom_header.dart';
+import '../../partials/components/layouts/custom_header.dart';
 
 @RoutePage()
-class FollowersPage extends StatefulWidget {
-  const FollowersPage({super.key, required this.room});
+class UserFollowersPage extends StatefulWidget {
+  const UserFollowersPage({super.key, required this.room});
 
   final Room room;
 
   @override
-  FollowersPageState createState() => FollowersPageState();
+  UserFollowersPageState createState() => UserFollowersPageState();
 }
 
-class FollowersPageState extends State<FollowersPage> {
+class UserFollowersPageState extends State<UserFollowersPage> {
   @override
   Widget build(BuildContext context) {
     final Client sclient = Matrix.of(context).client;

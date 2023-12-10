@@ -5,7 +5,7 @@ import 'package:minestrix/partials/post/post_item.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/message_composer/matrix_message_composer.dart';
 
-import '../../partials/post/content/post_replies.dart';
+import '../partials/post/content/post_replies.dart';
 
 @RoutePage()
 class PostPage extends StatefulWidget {

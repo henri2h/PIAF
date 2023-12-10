@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/account/account_card.dart';
 import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
-import 'package:minestrix/partials/users/user_room_knock_item.dart';
+import 'package:minestrix/partials/user/user_room_knock_item.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 
@@ -42,7 +42,7 @@ class UserFriendsCard extends StatelessWidget {
                       onTap: room.creatorId != room.client.userID
                           ? null
                           : () {
-                              context.pushRoute(FollowersRoute(room: room));
+                              context.pushRoute(UserFollowersRoute(room: room));
                             },
                       title: const Text("Followers"),
                       leading: const Icon(Icons.people)),

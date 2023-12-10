@@ -8,7 +8,7 @@ import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/minestrix_room_tile.dart';
-import 'groups/create_group_page.dart';
+import '../groups/create_group_page.dart';
 
 @RoutePage()
 class FeedListPage extends StatefulWidget {
@@ -18,7 +18,7 @@ class FeedListPage extends StatefulWidget {
   State<FeedListPage> createState() => _FeedListPageState();
 }
 
-enum Selection { all, feed, group, public_feed }
+enum Selection { all, feed, group, publicFeed }
 
 class _FeedListPageState extends State<FeedListPage> {
   Set<String> selected = {"all"};
@@ -37,7 +37,7 @@ class _FeedListPageState extends State<FeedListPage> {
                     case Selection.feed:
                       await client.createPrivateMinestrixProfile();
                       break;
-                    case Selection.public_feed:
+                    case Selection.publicFeed:
                       await client.createPublicMinestrixProfile();
                       break;
                     case Selection.all:
@@ -56,7 +56,7 @@ class _FeedListPageState extends State<FeedListPage> {
                               leading: Icon(Icons.person),
                               title: Text('Create personal feed'))),
                       const PopupMenuItem(
-                          value: Selection.public_feed,
+                          value: Selection.publicFeed,
                           child: ListTile(
                               leading: Icon(Icons.public),
                               title: Text('Create public feed'))),
