@@ -5,10 +5,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/home/notification_view.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../partials/navigation/navigation_rail.dart';
@@ -67,7 +65,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           final path = AutoRouterDelegate.of(context).urlState;
           controller?.add(path);
 
-          final shouldDisplayAppBar = true;
+          const shouldDisplayAppBar = true;
           // displayAppBarList.contains(path);
           final shouldDisplayNavigationRail =
               path.uri.toString().startsWith("/rooms");
