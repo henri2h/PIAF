@@ -2,13 +2,16 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/models/search/search_mode.dart';
+import 'package:minestrix/utils/minestrix/minestrix_community_extension.dart';
 import 'package:minestrix_chat/partials/custom_list_view.dart';
 import 'package:minestrix_chat/partials/sync/sync_status_card.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/account_selection_button.dart';
 import '../../partials/components/layouts/layout_view.dart';
+import '../../partials/components/minestrix/minestrix_title.dart';
 import '../../partials/home/onboarding_widget.dart';
+import '../../partials/minestrix_room_tile.dart';
 import '../../partials/minestrix_title.dart';
 import '../../partials/navigation/rightbar.dart';
 import '../../partials/post/post.dart';
@@ -50,8 +53,6 @@ class FeedPageView extends StatelessWidget {
                   return RefreshIndicator(
                     onRefresh: controller.onRefresh,
                     child: LayoutView(
-                        /*
-                        Disable communities for now as long as it's not stable
                         leftBar: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -59,7 +60,7 @@ class FeedPageView extends StatelessWidget {
                             for (final community in client.getCommunities())
                               MinestrixRoomTileNavigator(room: community.space),
                           ],
-                        ),*/
+                        ),
                         rightBar: const RightBar(),
                         mainBuilder: (
                                 {required bool displaySideBar,
