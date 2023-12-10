@@ -28,10 +28,32 @@ class ExploreSearch implements ItemManager<PublicRoomsChunk> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (room.roomType?.isNotEmpty == true) Text(room.roomType!),
-            if (room.guestCanJoin) const Badge(label: Text("Guests can join"))
+            Row(
+              children: [
+                Badge(label: Text("${room.numJoinedMembers} members")),
+                const SizedBox(
+                  width: 8,
+                ),
+                if (room.guestCanJoin)
+                  const Badge(label: Text("Guests can join")),
+              ],
+            )
           ],
         ),
-        trailing: Text("${room.numJoinedMembers}"));
+        trailing: client.getRoomById(room.roomId) != null
+            ? const Text("Joined")
+            : OutlinedButton(
+                onPressed: () async {
+                  try {
+                    await client.joinRoomById(room.roomId);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text("Error: $e")));
+                    }
+                  }
+                },
+                child: const Text("Join")));
   }
 
   @override
@@ -69,7 +91,6 @@ class ExploreSearch implements ItemManager<PublicRoomsChunk> {
     items.clear();
 
     await requestMore();
-    
   }
 
   @override
