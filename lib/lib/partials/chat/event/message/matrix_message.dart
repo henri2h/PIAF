@@ -30,7 +30,7 @@ class MessageDisplay extends StatefulWidget {
 
   final Client? client;
 
-  final void Function()? onReply;
+  final GestureDragUpdateCallback? onReply;
   final void Function(Event reply)? onReplyEventPressed;
   final void Function(Offset)? onReact;
 

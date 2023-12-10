@@ -21,13 +21,15 @@ class _RoomUserDeviceKeyState extends State<RoomUserDeviceKey> {
       BuildContext context, String action, DeviceKeys key) async {
     switch (action) {
       case 'verify':
-        final req = key.startVerification();
+        final req = await key.startVerification();
         req.onUpdate = () {
           if (req.state == KeyVerificationState.done) {
             setState(() {});
           }
         };
-        await KeyVerificationDialog(request: req).show(context);
+        if (mounted) {
+          await KeyVerificationDialog(request: req).show(context);
+        }
         break;
       case 'verify_user':
         await verifyUser(key);
