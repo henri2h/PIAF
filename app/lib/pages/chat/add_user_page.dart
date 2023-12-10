@@ -36,7 +36,9 @@ class AddUserPageState extends State<AddUserPage> {
             padding: const EdgeInsets.all(8.0),
             child: TypeAheadField(
               hideOnEmpty: true,
-              textFieldConfiguration: const TextFieldConfiguration(
+              builder: (context, controller, focusNode) => TextField(
+                  controller: controller,
+                  focusNode: focusNode,
                   autofocus: false,
                   decoration: InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
@@ -65,7 +67,7 @@ class AddUserPageState extends State<AddUserPage> {
                   subtitle: Text(profile.userId),
                 );
               },
-              onSuggestionSelected: (dynamic suggestion) async {
+              onSelected: (dynamic suggestion) async {
                 Profile p = suggestion;
                 setState(() {
                   profiles.add(p);

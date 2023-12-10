@@ -48,9 +48,12 @@ class FollowersPageState extends State<FollowersPage> {
           padding: const EdgeInsets.all(8.0),
           child: TypeAheadField(
             hideOnEmpty: true,
-            textFieldConfiguration: const TextFieldConfiguration(
-                autofocus: false,
-                decoration: InputDecoration(border: OutlineInputBorder())),
+            builder: (context, controller, focusNode) => TextField(
+              controller: controller,
+              focusNode: focusNode,
+              autofocus: false,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
             suggestionsCallback: (pattern) async {
               var ur = await sclient.searchUserDirectory(pattern);
 
@@ -78,7 +81,7 @@ class FollowersPageState extends State<FollowersPage> {
                 subtitle: Text(profile.userId),
               );
             },
-            onSuggestionSelected: (dynamic suggestion) async {
+            onSelected: (dynamic suggestion) async {
               Profile p = suggestion;
               await sclient.inviteFriend(p.userId);
               setState(() {}); // update ui

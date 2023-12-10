@@ -82,7 +82,7 @@ dependencies:
     # Waiting for: https://github.com/fluttercommunity/flutter_blurhash/pull/59
     git: https://github.com/MominRaza/flutter_blurhash.git
 
-  intl: ^0.18.0
+  intl: ^0.19.0
   desktop_webview_window: ^0.2.0
   swipe_to: ^1.0.2
   settings_ui: ^2.0.2

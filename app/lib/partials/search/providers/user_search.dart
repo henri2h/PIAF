@@ -7,7 +7,6 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import 'lib.dart';
 
-
 class UserSearch implements ItemManager<Profile> {
   String? nextBatch;
   late Client client;

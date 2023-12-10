@@ -120,7 +120,6 @@ class DesktopLoginPageState extends State<DesktopLoginPage> {
                                       scaffoldBackgroundColor:
                                           Colors.transparent),
                                   child: Card(
-                                    
                                     color: Colors.white,
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(radius)),

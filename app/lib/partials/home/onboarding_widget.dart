@@ -101,7 +101,8 @@ class OnboardingWidget extends StatelessWidget {
             subtitle: 'Discover public pages',
             icon: Icons.explore,
             onPressed: () async {
-              context.pushRoute(SearchRoute(initialSearchMode: SearchMode.publicRoom));
+              context.pushRoute(
+                  SearchRoute(initialSearchMode: SearchMode.publicRoom));
             },
             done: false),
       ],
