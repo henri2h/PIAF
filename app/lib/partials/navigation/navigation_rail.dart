@@ -85,6 +85,14 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       extended: expanded,
       labelType: NavigationRailLabelType.all,
       onDestinationSelected: (pos) => context.navigateTo(items[pos].route),
+      leading: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: const Image(
+            image: AssetImage('assets/piaf.jpg'),
+            width: 50,
+            height: 50,
+          )),
+
       destinations: [
         ...items.map((e) => NavigationRailDestination(
             icon: e.icon, label: e.label, padding: const EdgeInsets.all(6)))
