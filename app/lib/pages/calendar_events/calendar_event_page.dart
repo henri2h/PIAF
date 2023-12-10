@@ -92,8 +92,18 @@ class CalendarEventPageState extends State<CalendarEventPage> {
   @override
   Widget build(BuildContext context) {
     Room room = widget.room;
-    return SafeArea(
-      child: FutureBuilder<Timeline>(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(room.name),
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                context.navigateTo(SocialSettingsRoute(room: room));
+              }),
+        ],
+      ),
+      body: FutureBuilder<Timeline>(
           future: timeline,
           builder: (context, snapT) {
             final calendarEvent = room.getEventAttendanceEvent();
@@ -102,15 +112,6 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                 builder: (context, snapshot) {
                   return LayoutView(
                       controller: controller,
-                      customHeaderText: "Event",
-                      customHeaderActionsButtons: [
-                        IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              context
-                                  .pushRoute(SocialSettingsRoute(room: room));
-                            }),
-                      ],
                       room: room,
                       headerHeight: 280,
                       mainWidth: double.infinity,

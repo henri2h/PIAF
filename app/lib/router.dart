@@ -61,11 +61,13 @@ class AppRouter extends $AppRouter {
       AutoRoute(path: 'events', page: TabCalendarRoute.page, children: [
         AutoRoute(path: '', page: CalendarEventListRoute.page),
         AutoRoute(path: 'events/calendar', page: CalendarEventRoute.page),
+        AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
       ]),
 
       AutoRoute(path: 'community', page: TabCommunityRoute.page, children: [
         AutoRoute(path: '', page: CommunityRoute.page),
         AutoRoute(path: 'community', page: CommunityDetailRoute.page),
+        AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
       ]),
 
       AutoRoute(path: 'camera', page: TabCameraRoute.page),
