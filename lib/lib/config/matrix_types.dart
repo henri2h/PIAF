@@ -1,5 +1,7 @@
 abstract class MatrixTypes {
+  // should the account profile page type be org.matrix.msc3639.social.timeline ?
   static const String account = "org.matrix.msc3639.social.profile";
+
   static const String group = "org.matrix.msc3639.social.group";
 
   static const String post = "org.matrix.msc3639.social.post";

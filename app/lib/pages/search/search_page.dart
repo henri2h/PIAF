@@ -2,20 +2,23 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/pages/search/providers/explore_search.dart';
-import 'package:minestrix/pages/search/providers/user_search.dart';
-import 'package:minestrix/pages/search/ui/lib.dart';
+import 'package:minestrix/partials/search/providers/explore_search.dart';
+import 'package:minestrix/partials/search/providers/user_search.dart';
+import 'package:minestrix/partials/search/ui/lib.dart';
 import 'package:minestrix_chat/style/constants.dart';
+import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/components/search/suggestion_list.dart';
 import '../../utils/platforms_info.dart';
-import 'search_mode.dart';
+import '../../models/search/search_mode.dart';
 
 @RoutePage()
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key, this.isPopup = false});
+  const SearchPage({super.key, this.isPopup = false, this.initialSearchMode});
 
   final bool isPopup;
+  final SearchMode? initialSearchMode;
+
   @override
   SearchPageState createState() => SearchPageState();
 }
@@ -31,6 +34,7 @@ class SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
+    searchMode = widget.initialSearchMode;
     exploreSearch.init(context);
     userSearch.init(context);
   }
@@ -49,6 +53,7 @@ class SearchPageState extends State<SearchPage> {
     setState(() {});
     _debounce = Timer(const Duration(milliseconds: 300), () async {
       await _callSearch(query);
+      setState(() {});
     });
   }
 
@@ -61,59 +66,68 @@ class SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
     return Scaffold(
       appBar: AppBar(title: const Text("Search")),
-      body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-              controller: c,
-              autofocus: !PlatformInfos.isMobile,
-              onChanged: _onSearchChanged,
-              decoration: Constants.kTextFieldInputDecoration.copyWith(
-                  prefix: searchMode != null
-                      ? InputChip(
-                          avatar: Icon(searchMode!.icon),
-                          label: Text(searchMode!.text),
-                          onDeleted: () {
-                            setState(() {
-                              searchMode = null;
-                            });
-                          },
-                        )
-                      : null)),
-        ),
-        SearchBadges(
-          onSearchModeSelected: (mode) {
-            setState(() {
-              searchMode = mode;
-            });
-          },
-        ),
-        Expanded(
-          child: Builder(builder: (context) {
-            if (searchMode == SearchMode.publicRoom) {
-              return SearchSystem(
-                manager: exploreSearch,
-              );
-            }
-
-            if (c.text == "") {
-              return ListView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
+      body: StreamBuilder(
+          stream: client.onSync.stream,
+          builder: (context, snapshot) {
+            return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SuggestionList(shouldPop: widget.isPopup),
-                ],
-              );
-            }
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                        controller: c,
+                        autofocus: !PlatformInfos.isMobile,
+                        onChanged: _onSearchChanged,
+                        decoration:
+                            Constants.kTextFieldInputDecoration.copyWith(
+                                prefix: searchMode != null
+                                    ? InputChip(
+                                        avatar: Icon(searchMode!.icon),
+                                        label: Text(searchMode!.text),
+                                        onDeleted: () {
+                                          setState(() {
+                                            searchMode = null;
+                                          });
+                                        },
+                                      )
+                                    : null)),
+                  ),
+                  if (searchMode == null)
+                    SearchBadges(
+                      onSearchModeSelected: (mode) {
+                        setState(() {
+                          searchMode = mode;
+                        });
+                      },
+                    ),
+                  Expanded(
+                    child: Builder(builder: (context) {
+                      if (searchMode == SearchMode.publicRoom) {
+                        return SearchSystem(
+                          manager: exploreSearch,
+                        );
+                      }
 
-            return SearchSystem(
-              manager: userSearch,
-            );
+                      if (c.text == "") {
+                        return ListView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          children: [
+                            SuggestionList(shouldPop: widget.isPopup),
+                          ],
+                        );
+                      }
+
+                      return SearchSystem(
+                        manager: userSearch,
+                      );
+                    }),
+                  )
+                ]);
           }),
-        )
-      ]),
     );
   }
 }

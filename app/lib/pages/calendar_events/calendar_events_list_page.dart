@@ -61,10 +61,11 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
             appBar: AppBar(
               title: const Text("Events"),
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: createCalendarEvent,
-                )
+                FilledButton.icon(
+                    onPressed: createCalendarEvent,
+                    icon: const Icon(Icons.add),
+                    label: const Text("Add")),
+               
               ],
             ),
             body: ListView(children: [

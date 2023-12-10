@@ -61,7 +61,7 @@ class MatrixUserAvatar extends StatelessWidget {
                   fit: true,
                   defaultIcon: const Icon(Icons.person, size: 40),
                   defaultText: name ?? userId,
-                  backgroundColor: accentColor,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),

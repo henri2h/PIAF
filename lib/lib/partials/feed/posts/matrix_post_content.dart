@@ -22,23 +22,24 @@ class MatrixPostContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (event.redacted) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.delete_forever, color: Colors.red),
+          SizedBox(width: 10),
+          Flexible(
+              child: Text("Post redacted", style: TextStyle(color: Colors.red)))
+        ]),
+      );
+    }
+
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (event.redacted)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.delete_forever, color: Colors.red),
-                    SizedBox(width: 10),
-                    Flexible(
-                        child: Text("Post redacted",
-                            style: TextStyle(color: Colors.red)))
-                  ]),
-                ),
               if (event.messageType == MessageTypes.BadEncrypted)
                 Padding(
                   padding: const EdgeInsets.all(8.0),

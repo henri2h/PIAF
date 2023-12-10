@@ -5,10 +5,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/home/notification_view.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../partials/navigation/navigation_rail.dart';
@@ -51,7 +49,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
 
   bool displayAppBar = false;
   bool displayNavigationRail = true;
-  StreamController<String>? controller;
+  StreamController<UrlState>? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +62,13 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
       bool isWideScreen = constraints.maxWidth > 850;
       return AutoTabsRouter(
         builder: (context, widget) {
-          final path = AutoRouterDelegate.of(context).urlState.uri.toString();
+          final path = AutoRouterDelegate.of(context).urlState;
           controller?.add(path);
 
-          final shouldDisplayAppBar = displayAppBarList.contains(path);
-          final shouldDisplayNavigationRail = path.startsWith("/rooms");
+          const shouldDisplayAppBar = true;
+          // displayAppBarList.contains(path);
+          final shouldDisplayNavigationRail =
+              path.uri.toString().startsWith("/rooms");
 
           if (displayAppBar != shouldDisplayAppBar ||
               shouldDisplayNavigationRail != displayNavigationRail) {
@@ -89,11 +89,10 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
             body: Row(
               children: [
                 if (isWideScreen)
-                  StreamBuilder<String>(
+                  StreamBuilder<UrlState>(
                       stream: controller?.stream,
                       builder: (context, snapshot) {
-                        return MinestrixNavigationRail(
-                            path: snapshot.data ?? '');
+                        return MinestrixNavigationRail(path: snapshot.data);
                       }),
                 Expanded(
                     child: Column(
@@ -145,6 +144,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                       const NavigationDestination(
                           icon: Icon(Icons.web_stories), label: "Stories"),
                       const NavigationDestination(
+                          icon: Icon(Icons.group), label: "Communities"),
+                      const NavigationDestination(
                           icon: Icon(Icons.camera_alt), label: "Camera")
                     ],
                   ),
@@ -156,6 +157,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
           TabHomeRoute(),
           TabCalendarRoute(),
           TabStoriesRoute(),
+          TabCommunityRoute(),
           TabCameraRoute(),
         ],
       );
@@ -185,35 +187,5 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
             systemNavigationBarIconBrightness: theme.brightness));
       });
     }
-  }
-}
-
-class AvatarBottomBar extends StatefulWidget {
-  const AvatarBottomBar({super.key});
-
-  @override
-  State<AvatarBottomBar> createState() => _AvatarBottomBarState();
-}
-
-class _AvatarBottomBarState extends State<AvatarBottomBar> {
-  Profile? lastProfile;
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: Matrix.of(context).client.onSync.stream,
-        builder: (context, snap) {
-          return FutureBuilder(
-              future: Matrix.of(context).client.fetchOwnProfile(),
-              builder: (BuildContext context, AsyncSnapshot<Profile> p) {
-                if (p.data != null) lastProfile = p.data;
-                return MatrixImageAvatar(
-                    client: Matrix.of(context).client,
-                    url: lastProfile?.avatarUrl,
-                    defaultText: lastProfile?.displayName ??
-                        Matrix.of(context).client.userID,
-                    fit: true);
-              });
-        });
   }
 }

@@ -139,7 +139,7 @@ class ItemBuilder extends StatelessWidget {
                 onSelected?.where((eventId) => eventId == event.eventId),
             onReact: (e) => onReact(e, event),
             onReplyEventPressed: onReplyEventPressed,
-            onReply: () => onReply(oldEvent)),
+            onReply: (_) => onReply(oldEvent)),
         if (event.receipts.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 4, left: 2, right: 2),

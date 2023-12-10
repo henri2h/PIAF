@@ -321,10 +321,12 @@ class DeviceWidget extends StatelessWidget {
                             child: MaterialButton(
                               color: Colors.green,
                               onPressed: () async {
-                                final req = device.startVerification();
+                                final req = await device.startVerification();
 
-                                await KeyVerificationDialog(request: req)
-                                    .show(context);
+                                if (context.mounted) {
+                                  await KeyVerificationDialog(request: req)
+                                      .show(context);
+                                }
                               },
                               child: const SizedBox(
                                   width: 140,

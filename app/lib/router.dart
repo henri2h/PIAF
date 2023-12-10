@@ -7,7 +7,6 @@ class AppRouter extends $AppRouter {
   RouteType get defaultRouteType => const RouteType.adaptive();
 
   static List<AutoRoute> welcomeRoutes = [
-    AutoRoute(path: '', page: MobileWelcomeRoute.page),
     AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page),
     AutoRoute(
         path: 'mobile_create_account', page: MobileCreateAccountRoute.page),
@@ -27,11 +26,10 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: 'feeds', page: FeedListRoute.page),
         AutoRoute(path: 'post', page: PostRoute.page),
         AutoRoute(path: 'research', page: SearchRoute.page),
-        AutoRoute(path: 'explore', page: RoomsExploreRoute.page),
         AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
         AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
         AutoRoute(path: 'user_feed', page: UserViewRoute.page),
-        AutoRoute(path: 'followers', page: FollowersRoute.page),
+        AutoRoute(path: 'followers', page: UserFollowersRoute.page),
         AutoRoute(path: 'post/image_gallery', page: PostGalleryRoute.page),
         AutoRoute(path: 'accounts', page: AccountsDetailsRoute.page),
         AutoRoute(
@@ -59,16 +57,17 @@ class AppRouter extends $AppRouter {
 
       AutoRoute(path: 'search', page: SearchRoute.page),
       AutoRoute(path: 'stories', page: TabStoriesRoute.page),
-      AutoRoute(path: 'explore', page: RoomsExploreRoute.page),
 
       AutoRoute(path: 'events', page: TabCalendarRoute.page, children: [
         AutoRoute(path: '', page: CalendarEventListRoute.page),
         AutoRoute(path: 'events/calendar', page: CalendarEventRoute.page),
+        AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
       ]),
 
       AutoRoute(path: 'community', page: TabCommunityRoute.page, children: [
         AutoRoute(path: '', page: CommunityRoute.page),
         AutoRoute(path: 'community', page: CommunityDetailRoute.page),
+        AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
       ]),
 
       AutoRoute(path: 'camera', page: TabCameraRoute.page),
@@ -90,7 +89,15 @@ class AppRouter extends $AppRouter {
     AutoRoute(
         path: '/desktop_login',
         page: DesktopLoginRoute.page,
-        children: welcomeRoutes),
-    AutoRoute(page: MobileWelcomeRouter.page, children: welcomeRoutes),
+        children: welcomeRoutes
+          ..add(
+            AutoRoute(path: '', page: DesktopWelcomeRoute.page),
+          )),
+    AutoRoute(
+        page: MobileWelcomeRouter.page,
+        children: welcomeRoutes
+          ..add(
+            AutoRoute(path: '', page: MobileWelcomeRoute.page),
+          )),
   ];
 }

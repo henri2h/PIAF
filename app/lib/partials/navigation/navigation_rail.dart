@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
@@ -8,14 +9,10 @@ import '../../router.gr.dart';
 class MinestrixNavigationRailItem {
   final Widget icon;
   final Widget label;
-  final String path;
-  final void Function(BuildContext) onDestinationSelected;
+  final PageRouteInfo route;
 
   MinestrixNavigationRailItem(
-      {required this.icon,
-      required this.label,
-      required this.path,
-      required this.onDestinationSelected});
+      {required this.icon, required this.label, required this.route});
 }
 
 class MinestrixNavigationRail extends StatefulWidget {
@@ -24,7 +21,7 @@ class MinestrixNavigationRail extends StatefulWidget {
     required this.path,
   });
 
-  final String path;
+  final UrlState? path;
   @override
   State<MinestrixNavigationRail> createState() =>
       _MinestrixNavigationRailState();
@@ -41,31 +38,24 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.home),
           label: const Text("Feed"),
-          path: "",
-          onDestinationSelected: (BuildContext context) {
-            context.navigateTo(const FeedRoute());
-          }),
+          route: const FeedRoute()),
       MinestrixNavigationRailItem(
-          icon: const Icon(Icons.event),
-          label: const Text("Events"),
-          path: "events",
-          onDestinationSelected: (BuildContext context) async {
-            context.navigateTo(const CalendarEventListRoute());
-          }),
+        icon: const Icon(Icons.event),
+        label: const Text("Events"),
+        route: const CalendarEventListRoute(),
+      ),
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.web_stories),
           label: const Text("Stories"),
-          path: "Stories",
-          onDestinationSelected: (BuildContext context) async {
-            context.navigateTo(const TabStoriesRoute());
-          }),
+          route: const TabStoriesRoute()),
       MinestrixNavigationRailItem(
-          icon: const Icon(Icons.people),
+          icon: const Icon(Icons.groups),
+          label: const Text("Communities"),
+          route: const TabCommunityRoute()),
+      MinestrixNavigationRailItem(
+          icon: const Icon(Icons.rss_feed),
           label: const Text("Feeds"),
-          path: "feeds",
-          onDestinationSelected: (BuildContext context) async {
-            context.navigateTo(const FeedListRoute());
-          }),
+          route: const FeedListRoute()),
       MinestrixNavigationRailItem(
           icon: StreamBuilder(
               stream: client.onSync.stream,
@@ -79,18 +69,13 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
                 }
               }),
           label: const Text("Chat"),
-          path: "chat",
-          onDestinationSelected: (BuildContext context) async {
-            context.navigateTo(const TabChatRoute());
-          }),
+          route: const TabChatRoute()),
     ];
 
     var selectedIndex = items.indexWhere((element) {
-      final list = widget.path.split("/");
-      if (list.length > 1) {
-        if (list[1] == element.path) return true;
-      }
-      return false;
+      final list = widget.path?.segments.firstWhereOrNull(
+          (segment) => element.route.routeName == segment.name);
+      return list != null;
     });
 
     if (selectedIndex < 0 || selectedIndex >= items.length) selectedIndex = 0;
@@ -99,12 +84,18 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       // https://m3.material.io/components/navigation-rail/specs
       extended: expanded,
       labelType: NavigationRailLabelType.all,
-      onDestinationSelected: (pos) => items[pos].onDestinationSelected(context),
+      onDestinationSelected: (pos) => context.navigateTo(items[pos].route),
+      leading: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: const Image(
+            image: AssetImage('assets/piaf.jpg'),
+            width: 50,
+            height: 50,
+          )),
+
       destinations: [
-        ...items
-            .map((e) => NavigationRailDestination(
-                icon: e.icon, label: e.label, padding: const EdgeInsets.all(6)))
-            
+        ...items.map((e) => NavigationRailDestination(
+            icon: e.icon, label: e.label, padding: const EdgeInsets.all(6)))
       ],
 
       selectedIndex: selectedIndex,

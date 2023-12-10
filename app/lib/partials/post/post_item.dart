@@ -76,86 +76,80 @@ class PostItemState extends State<PostItem>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         // post content
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.isMobile) const Divider(),
-            PostHeader(eventToEdit: post, event: displayEvent),
-            if (!widget.isMobile)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
-                child: Divider(),
-              ),
-            if ([EventStatus.sent, EventStatus.synced].contains(post.status) ==
-                false)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ListTile(
-                    trailing: const Icon(Icons.message),
-                    leading: const CircularProgressIndicator(),
-                    title: const Text("Sending"),
-                    subtitle: Text(
-                        post.status.toString().replaceAll("EventStatus.", ""))),
-              ),
-            PostContent(
-              displayEvent,
-              imageMaxHeight: 300,
-            ),
-            if (shareEvent != null)
-              FutureBuilder<Event?>(
-                  future: shareEvent,
-                  builder: (context, snap) {
-                    if (snap.hasError) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
+        if (widget.isMobile) const Divider(),
+        PostHeader(eventToEdit: post, event: displayEvent),
+        if (!widget.isMobile)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+            child: Divider(),
+          ),
+        if ([EventStatus.sent, EventStatus.synced].contains(post.status) ==
+            false)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListTile(
+                trailing: const Icon(Icons.message),
+                leading: const CircularProgressIndicator(),
+                title: const Text("Sending"),
+                subtitle: Text(
+                    post.status.toString().replaceAll("EventStatus.", ""))),
+          ),
+        PostContent(
+          displayEvent,
+          imageMaxHeight: 300,
+        ),
+        if (shareEvent != null)
+          FutureBuilder<Event?>(
+              future: shareEvent,
+              builder: (context, snap) {
+                if (snap.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error),
+                        const SizedBox(width: 4),
+                        Text(snap.error.toString()),
+                      ],
+                    ),
+                  );
+                }
+                if (!snap.hasData) {
+                  return const CircularProgressIndicator();
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text("Sharing"),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Container(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.error),
-                            const SizedBox(width: 4),
-                            Text(snap.error.toString()),
+                            PostHeader(event: snap.data!, allowContext: false),
+                            PostContent(
+                              snap.data!,
+                              imageMaxHeight: 300,
+                            ),
                           ],
                         ),
-                      );
-                    }
-                    if (!snap.hasData) {
-                      return const CircularProgressIndicator();
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text("Sharing"),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Container(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                PostHeader(
-                                    event: snap.data!, allowContext: false),
-                                PostContent(
-                                  snap.data!,
-                                  imageMaxHeight: 300,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: ReactionBar(
-                controller: this,
-                isMobile: widget.isMobile,
-                reactions: reactions,
-              ),
-            ),
-          ],
+                      ),
+                    ),
+                  ],
+                );
+              }),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+          child: ReactionBar(
+            controller: this,
+            isMobile: widget.isMobile,
+            reactions: reactions,
+          ),
         ),
       ],
     );

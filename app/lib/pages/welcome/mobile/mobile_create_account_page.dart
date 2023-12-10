@@ -9,6 +9,8 @@ class MobileCreateAccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(), body: const CreateAccountCard());
+    return Scaffold(
+        appBar: AppBar(forceMaterialTransparency: true),
+        body: const CreateAccountCard());
   }
 }

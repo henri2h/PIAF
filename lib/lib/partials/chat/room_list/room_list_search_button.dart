@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/utils/client_information.dart';
@@ -73,7 +72,7 @@ class MobileSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lastOpened = client.lastContacted();
-  
+
     return SearchAnchor.bar(
       barHintText: "Search",
       barLeading: IconButton(

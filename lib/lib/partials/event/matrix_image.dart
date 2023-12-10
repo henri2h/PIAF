@@ -12,7 +12,8 @@ import 'package:shimmer/shimmer.dart';
 import '../components/shimmer_widget.dart';
 
 class MImageViewer extends StatelessWidget {
-  const MImageViewer({super.key, required this.event, this.fit = BoxFit.contain});
+  const MImageViewer(
+      {super.key, required this.event, this.fit = BoxFit.contain});
 
   final BoxFit fit;
   final Event event;

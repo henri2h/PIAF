@@ -13,15 +13,15 @@ import 'package:provider/provider.dart';
 import 'router.gr.dart';
 import 'utils/managers/theme_manager.dart';
 
-class Minestrix extends StatefulWidget {
-  const Minestrix({super.key, required this.clients});
+class App extends StatefulWidget {
+  const App({super.key, required this.clients});
 
   final List<Client> clients;
   @override
-  MinestrixState createState() => MinestrixState();
+  AppState createState() => AppState();
 }
 
-class MinestrixState extends State<Minestrix> {
+class AppState extends State<App> {
   static final _defaultLightColorScheme =
       ColorScheme.fromSwatch(primarySwatch: Colors.blue);
 

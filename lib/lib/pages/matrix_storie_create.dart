@@ -20,65 +20,52 @@ class MatrixCreateStoriePage extends StatefulWidget {
 
 class MatrixCreateStoriePageState extends State<MatrixCreateStoriePage> {
   PlatformFile? _img;
-  final TextEditingController _t = TextEditingController();
+  final TextEditingController textController = TextEditingController();
   UserSelectionController? controller;
 
-  Future<void> send() async {
+  Future<void> sendStory() async {
     if (_img?.bytes != null) {
       MatrixImageFile mF =
           MatrixImageFile(bytes: _img!.bytes!, name: _img?.path ?? 'null');
       await widget.r.sendFileEvent(
         mF,
-        extraContent: {'body': _t.text},
+        extraContent: {'body': textController.text},
       );
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    textController.addListener(() {
+      if ([0, 1].contains(textController.text.length)) {
+        setState(() {});
+      }
+    });
+  }
+
   void publish() async {
-    await controller!.performUserAdditions();
-    await send();
-
-    if (mounted) Navigator.of(context).pop();
+    try {
+      await controller!.performUserAdditions();
+      await sendStory();
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Could not publish story: $e"),
+        ));
+      }
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    controller ??= UserSelectionController(
-        client: widget.client,
-        room: widget.r,
-        candidateUsers: widget.client.directChats.keys.toList());
-    return StorieContentCreator(
-        img: _img,
-        textController: _t,
-        onImgChanged: (file) => setState(() {
-              _img = file;
-            }));
+  bool get canPublish => _img != null || textController.text.isNotEmpty;
 
-    FutureBuilder<bool>(
-        future: controller!.loadRoomParticipants(),
-        builder: (context, snap) {
-          if (!snap.hasData) return const CircularProgressIndicator();
-
-          return UserSelection(client: widget.client, controller: controller!);
-        });
+  void onImgChanged(PlatformFile? file) {
+    setState(() {
+      _img = file;
+    });
   }
-}
 
-class StorieContentCreator extends StatefulWidget {
-  final PlatformFile? img;
-  final void Function(PlatformFile? file) onImgChanged;
-  final TextEditingController textController;
-  const StorieContentCreator(
-      {super.key,
-      required this.onImgChanged,
-      required this.textController,
-      required this.img});
-
-  @override
-  StorieContentCreatorState createState() => StorieContentCreatorState();
-}
-
-class StorieContentCreatorState extends State<StorieContentCreator> {
   void addImage() async {
     if (PlatformInfos.isAndroid) {
       final result = await Navigator.of(context).push(
@@ -87,7 +74,7 @@ class StorieContentCreatorState extends State<StorieContentCreator> {
         final returnedFile = await result.first.file;
         final data = await returnedFile?.readAsBytes();
         if (data != null) {
-          widget.onImgChanged(PlatformFile(
+          onImgChanged(PlatformFile(
               name: result.first.title ?? '', size: data.length, bytes: data));
         }
       }
@@ -96,13 +83,28 @@ class StorieContentCreatorState extends State<StorieContentCreator> {
           .pickFiles(type: FileType.image, withData: true);
 
       if (result != null) {
-        widget.onImgChanged(result.files.first);
+        onImgChanged(result.files.first);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    /*
+        controller ??= UserSelectionController(
+        client: widget.client,
+        room: widget.r,
+        candidateUsers: widget.client.directChats.keys.toList());
+        
+         FutureBuilder<bool>(
+        future: controller!.loadRoomParticipants(),
+        builder: (context, snap) {
+          if (!snap.hasData) return const CircularProgressIndicator();
+
+          return UserSelection(client: widget.client, controller: controller!);
+        });
+        */
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("New story"),
@@ -111,19 +113,21 @@ class StorieContentCreatorState extends State<StorieContentCreator> {
       bottomNavigationBar: BottomAppBar(
         child: Row(
           children: [
-            widget.img == null
+            _img == null
                 ? IconButton(
                     onPressed: addImage, icon: const Icon(Icons.add_a_photo))
                 : IconButton(
                     icon: const Icon(Icons.hide_image),
                     onPressed: () {
-                      widget.onImgChanged(null);
+                      onImgChanged(null);
                     })
           ],
         ),
       ),
-      floatingActionButton:
-          FloatingActionButton(onPressed: () {}, child: const Icon(Icons.send)),
+      floatingActionButton: FloatingActionButton(
+          backgroundColor: canPublish ? Colors.green : null,
+          onPressed: canPublish ? publish : null,
+          child: const Icon(Icons.send)),
       body: Row(
         children: [
           Flexible(
@@ -131,16 +135,15 @@ class StorieContentCreatorState extends State<StorieContentCreator> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                  image: widget.img?.bytes == null
+                  image: _img?.bytes == null
                       ? null
                       : DecorationImage(
-                          fit: BoxFit.cover,
-                          image: MemoryImage(widget.img!.bytes!))),
+                          fit: BoxFit.cover, image: MemoryImage(_img!.bytes!))),
               child: Stack(
                 children: [
                   Positioned.fill(
                     child: Align(
-                      alignment: widget.img == null
+                      alignment: _img == null
                           ? Alignment.center
                           : Alignment.bottomCenter,
                       child: Padding(
@@ -150,7 +153,7 @@ class StorieContentCreatorState extends State<StorieContentCreator> {
                           child: TextField(
                               maxLines: 5,
                               minLines: 3,
-                              controller: widget.textController,
+                              controller: textController,
                               keyboardType: TextInputType.multiline,
                               textAlignVertical: TextAlignVertical.center,
                               decoration: InputDecoration(

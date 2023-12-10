@@ -1,4 +1,4 @@
-# MinesTRIX
+# PIAF
 
 **A privacy focused social media based on MATRIX**
 
@@ -11,8 +11,6 @@
 [Chat with us !](https://matrix.to/#/#minestrix:carnot.cc)
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
-![](https://img.shields.io/badge/Version-ALPHA_0.1.5-teal)
-![](https://img.shields.io/gitlab/pipeline/minestrix/minestrix-flutter/master)
 
 
 <a href='https://flathub.org/apps/details/fr.henri2h.minestrix'><img width='240' alt='Get it on Flathub' src='https://flathub.org/assets/badges/flathub-badge-i-en.png'/></a>
@@ -20,8 +18,8 @@
 
 ## 🤔 Why
 
-The goal of MinesTrix is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your posts or edit them.
-That's why MinesTrix supports E2EE (not by default yet) to protect your posts and is decentralized to be able to choose where your data is stored.
+The goal of PIAF is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your posts or edit them.
+That's why PIAF supports E2EE (not by default yet) to protect your posts and is decentralized to be able to choose where your data is stored.
 
 
 We chose MATRIX because it's the best protocol for supporting decentralized, E2EE communication and because it's Open Source !!
@@ -84,9 +82,9 @@ Make sure to run
 
 ## 🧐 How it works ?
 
-## [Specifications](https://gitlab.com/minestrix/minestrix-doc)
+## Specifications
 
-Find our documentation in our [separate repo](https://gitlab.com/minestrix/minestrix-doc)
+Find our documentation in our [doc](/doc)
 
 ## 🏗 Building
 
