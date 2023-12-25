@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:matrix/src/client.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -30,42 +31,7 @@ class _FeedListPageState extends State<FeedListPage> {
         CustomHeader(
           title: "Feeds",
           actionButton: [
-            PopupMenuButton<Selection>(
-                icon: const Icon(Icons.add),
-                onSelected: (Selection selection) async {
-                  switch (selection) {
-                    case Selection.feed:
-                      await client.createPrivateMinestrixProfile();
-                      break;
-                    case Selection.publicFeed:
-                      await client.createPublicMinestrixProfile();
-                      break;
-                    case Selection.all:
-                      break;
-                    case Selection.group:
-                      await AdaptativeDialogs.show(
-                          context: context,
-                          builder: (context) => const CreateGroupPage());
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                      const PopupMenuItem(
-                          value: Selection.feed,
-                          child: ListTile(
-                              leading: Icon(Icons.person),
-                              title: Text('Create personal feed'))),
-                      const PopupMenuItem(
-                          value: Selection.publicFeed,
-                          child: ListTile(
-                              leading: Icon(Icons.public),
-                              title: Text('Create public feed'))),
-                      const PopupMenuItem(
-                          value: Selection.group,
-                          child: ListTile(
-                              leading: Icon(Icons.people),
-                              title: Text('Create group'))),
-                    ])
+            FeedsAddMenuButton(client: client)
           ],
         ),
         Center(
@@ -141,5 +107,54 @@ class _FeedListPageState extends State<FeedListPage> {
         ),
       ],
     );
+  }
+}
+
+class FeedsAddMenuButton extends StatelessWidget {
+  const FeedsAddMenuButton({
+    super.key,
+    required this.client,
+  });
+
+  final Client client;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<Selection>(
+        icon: const Icon(Icons.add),
+        onSelected: (Selection selection) async {
+          switch (selection) {
+            case Selection.feed:
+              await client.createPrivateMinestrixProfile();
+              break;
+            case Selection.publicFeed:
+              await client.createPublicMinestrixProfile();
+              break;
+            case Selection.all:
+              break;
+            case Selection.group:
+              await AdaptativeDialogs.show(
+                  context: context,
+                  builder: (context) => const CreateGroupPage());
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+              const PopupMenuItem(
+                  value: Selection.feed,
+                  child: ListTile(
+                      leading: Icon(Icons.person),
+                      title: Text('Create personal feed'))),
+              const PopupMenuItem(
+                  value: Selection.publicFeed,
+                  child: ListTile(
+                      leading: Icon(Icons.public),
+                      title: Text('Create public feed'))),
+              const PopupMenuItem(
+                  value: Selection.group,
+                  child: ListTile(
+                      leading: Icon(Icons.people),
+                      title: Text('Create group'))),
+            ]);
   }
 }

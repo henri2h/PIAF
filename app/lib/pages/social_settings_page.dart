@@ -6,7 +6,7 @@ import 'package:minestrix_chat/minestrix_chat.dart';
 import '../partials/calendar_events/calendar_event_create_widget.dart';
 import '../partials/components/layouts/custom_header.dart';
 import '../partials/editors/sections.dart';
-import 'account/accounts_details_page.dart';
+import 'settings/settings_feeds_page.dart';
 
 @RoutePage()
 class SocialSettingsPage extends StatefulWidget {

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/pages/room_settings_page.dart';
@@ -9,24 +10,25 @@ import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../partials/components/buttons/custom_future_button.dart';
 import '../../partials/components/buttons/custom_text_future_button.dart';
+import '../../partials/editors/sections.dart';
 import '../../router.gr.dart';
-import '../../utils/settings.dart';
+import '../feed/feed_list_page.dart';
 
 @RoutePage()
-class AccountsDetailsPage extends StatefulWidget {
-  const AccountsDetailsPage({super.key});
+class SettingsFeedsPage extends StatefulWidget {
+  const SettingsFeedsPage({super.key});
 
   @override
-  AccountsDetailsPageState createState() => AccountsDetailsPageState();
+  SettingsFeedsPageState createState() => SettingsFeedsPageState();
 }
 
-class AccountsDetailsPageState extends State<AccountsDetailsPage> {
+class SettingsFeedsPageState extends State<SettingsFeedsPage> {
   @override
   Widget build(BuildContext context) {
     Client client = Matrix.of(context).client;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Your profiles space")),
+      appBar: AppBar(title: const Text("Your profile space")),
       body: StreamBuilder(
           stream: client.onSync.stream.where((event) => event.hasRoomUpdate),
           builder: (context, _) {
@@ -54,6 +56,11 @@ class AccountsDetailsPageState extends State<AccountsDetailsPage> {
                           ],
                         ),
                       ),
+                if (roomsNotInOurSpace.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: H3Title("Rooms not in our profile space"),
+                  ),
                 for (Room room in roomsNotInOurSpace)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -161,6 +168,8 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
                             ],
                           ),
                         ),
+                      Text(room.canonicalAlias,
+                          style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
                 ),
@@ -175,62 +184,19 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
         LayoutBuilder(builder: (context, constraints) {
           final leftBar = Column(
             children: [
-              Card(
-                  color: Theme.of(context).colorScheme.primary,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text(room.canonicalAlias,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        )),
-                  )),
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 26),
                 child: RoomInfo(r: room),
-              ),
-              Column(
-                children: [
-                  CustomTextFutureButton(
-                      onPressed: () async {
-                        await widget.profile.createAndAddStoriesRoomToSpace();
-                        setState(() {});
-                      },
-                      text: "Create stories room",
-                      color: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      icon: Icons.add_a_photo),
-                  if (Settings().multipleFeedSupport)
-                    CustomTextFutureButton(
-                        onPressed: () async {
-                          final roomId =
-                              await client.createPrivateMinestrixProfile();
-                          await room.setSpaceChild(roomId);
-                        },
-                        text: "Create a private MinesTRIX room",
-                        color: Theme.of(context).colorScheme.primary,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
-                        icon: Icons.person_add),
-                  if (Settings().multipleFeedSupport)
-                    CustomTextFutureButton(
-                        onPressed: () async {
-                          final roomId =
-                              await client.createPublicMinestrixProfile();
-                          await room.setSpaceChild(roomId);
-                        },
-                        text: "Create a public MinesTRIX room",
-                        color: Theme.of(context).colorScheme.primary,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
-                        icon: Icons.public)
-                ],
               ),
             ],
           );
 
           final rightBar = Column(
             children: [
+              ListTile(
+                  title: const Text("Rooms"),
+                  trailing: FeedsAddMenuButton(client: client)),
               for (final s in room.spaceChildren
                   .where((element) => element.roomId != null))
                 Builder(builder: (context) {
@@ -280,18 +246,21 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
             );
           }
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(width: 200, child: leftBar),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Expanded(child: rightBar),
-            ],
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(width: 200, child: leftBar),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Expanded(child: rightBar),
+              ],
+            ),
           );
         })
       ],
@@ -393,7 +362,7 @@ class RoomProfileListTile extends StatelessWidget {
                 maxLines: 2,
               )
             ]),
-        subtitle: RoomInfo(r: r),
+        subtitle: RoomRowInfo(r: r),
         trailing: PopupMenuButton<String>(
             itemBuilder: (_) => [
                   const PopupMenuItem(
@@ -456,8 +425,8 @@ class RoomInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return SectionCard(
+      text: 'Info',
       children: [
         if (r.topic != "")
           Padding(
@@ -514,6 +483,51 @@ class RoomInfo extends StatelessWidget {
               Text("Not encrypted")
             ],
           ),
+      ],
+    );
+  }
+}
+
+class RoomRowInfo extends StatelessWidget {
+  const RoomRowInfo({
+    super.key,
+    required this.r,
+  });
+
+  final Room r;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (r.topic != "")
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Text(r.topic,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Row(
+            children: [
+              const Icon(Icons.people),
+              const SizedBox(width: 10),
+              Text("${r.summary.mJoinedMemberCount}"),
+            ],
+          ),
+        ),
+        Card(
+          child: Row(
+            children: [
+              if (r.joinRules == JoinRules.public) const Icon(Icons.public),
+              r.encrypted
+                  ? const Icon(Icons.verified_user)
+                  : const Icon(Icons.no_encryption),
+            ],
+          ),
+        ),
       ],
     );
   }

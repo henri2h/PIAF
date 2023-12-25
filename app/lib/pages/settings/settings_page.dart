@@ -138,7 +138,7 @@ class SettingsPanel extends StatelessWidget {
                               const Text("Organize your different feeds"),
                           title: const Text('Feeds'),
                           onPressed: (context) =>
-                              context.navigateTo(const AccountsDetailsRoute()),
+                              context.navigateTo(const SettingsFeedsRoute()),
                         ),
                         SettingsTile.navigation(
                           leading: const Icon(Icons.lock),

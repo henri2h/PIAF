@@ -68,7 +68,7 @@ class OnboardingWidget extends StatelessWidget {
             subtitle:
                 'To help your find your page you can add it to your user space',
             onPressed: () async {
-              context.pushRoute(const AccountsDetailsRoute());
+              context.pushRoute(const SettingsFeedsRoute());
             },
             done: false),
         Padding(

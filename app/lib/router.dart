@@ -31,7 +31,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: 'user_feed', page: UserViewRoute.page),
         AutoRoute(path: 'followers', page: UserFollowersRoute.page),
         AutoRoute(path: 'post/image_gallery', page: PostGalleryRoute.page),
-        AutoRoute(path: 'accounts', page: AccountsDetailsRoute.page),
+        AutoRoute(path: 'accounts', page: SettingsFeedsRoute.page),
         AutoRoute(
             path: 'recommandations', page: FollowRecommendationsRoute.page),
         AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
@@ -49,7 +49,7 @@ class AppRouter extends $AppRouter {
           AutoRoute(path: 'sync', page: SettingsSyncRoute.page),
           AutoRoute(path: 'storys', page: SettingsStorysRoute.page),
           AutoRoute(path: 'story', page: SettingsStorysDetailRoute.page),
-          AutoRoute(path: 'accounts', page: AccountsDetailsRoute.page),
+          AutoRoute(path: 'accounts', page: SettingsFeedsRoute.page),
           AutoRoute(path: 'debug', page: DebugRoute.page),
           AutoRoute(path: 'chat/:roomId', page: OverrideRoomRoute.page),
         ]),

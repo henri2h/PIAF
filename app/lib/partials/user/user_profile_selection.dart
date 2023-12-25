@@ -84,7 +84,7 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
                               leading: const Icon(Icons.list),
                               onTap: isOurProfile
                                   ? () => context
-                                      .pushRoute(const AccountsDetailsRoute())
+                                      .pushRoute(const SettingsFeedsRoute())
                                   : null,
                             ),
                           ),
@@ -95,7 +95,7 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
                               subtitle:
                                   const Text("Go to settings to create one"),
                               onTap: () => context
-                                  .pushRoute(const AccountsDetailsRoute())),
+                                  .pushRoute(const SettingsFeedsRoute())),
                         if (results.isEmpty && !isOurProfile)
                           const Padding(
                             padding: EdgeInsets.all(8.0),
