@@ -6,7 +6,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_user_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import '../../partials/feed/topic_list_tile.dart';
+import '../../partials/editors/sections.dart';
 
 @RoutePage()
 class SettingsStorysDetailPage extends StatefulWidget {
@@ -43,83 +43,15 @@ class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
                   darkTheme: const SettingsThemeData(
                       settingsListBackground: Colors.transparent),
                   sections: [
-                    SettingsSection(
-                      title: const Text("Info"),
-                      tiles: <SettingsTile>[
-                        SettingsTile(
-                            title: const Text("Story name"),
-                            value: Text(room.name),
-                            leading: const Icon(Icons.title),
-                            trailing: room.canSendDefaultStates
-                                ? const Icon(Icons.edit)
-                                : null,
-                            onPressed: !room.canSendDefaultStates
-                                ? null
-                                : (context) async {
-                                    List<String>? results =
-                                        await showTextInputDialog(
-                                      context: context,
-                                      textFields: [
-                                        DialogTextField(
-                                            hintText: "Set room name",
-                                            initialText: room.name)
-                                      ],
-                                      title: "Set room name",
-                                    );
-                                    if (results?.isNotEmpty == true) {
-                                      await room.setName(results![0]);
-                                    }
-                                  }),
-                        SettingsTile(
-                            title: const Text("Story topic"),
-                            value: TopicBody(room: room),
-                            leading: const Icon(Icons.topic),
-                            trailing: room.canSendDefaultStates
-                                ? const Icon(Icons.edit)
-                                : null,
-                            onPressed: !room.canSendDefaultStates
-                                ? null
-                                : (context) async {
-                                    List<String>? results =
-                                        await showTextInputDialog(
-                                      context: context,
-                                      textFields: [
-                                        DialogTextField(
-                                            hintText: "Set event topic",
-                                            initialText: room.topic)
-                                      ],
-                                      title: "Set room topic",
-                                    );
-                                    if (results?.isNotEmpty == true) {
-                                      await room.setDescription(results![0]);
-                                    }
-                                  }),
-                      ],
-                    ),
-                    SettingsSection(
-                        title: const Text("Who can join this story"),
-                        tiles: [
-                          SettingsTileRadio.radio(
-                              groupValue: room.joinRulesString,
-                              value: JoinRules.invite.name,
-                              onPressed: changeJoinPermissions,
-                              title: const Text("Invite")),
-                          SettingsTileRadio.radio(
-                              groupValue: room.joinRulesString,
-                              value: JoinRules.public.name,
-                              onPressed: changeJoinPermissions,
-                              title: const Text("Public")),
-                          SettingsTileRadio.radio(
-                              groupValue: room.joinRulesString,
-                              value: JoinRules.knock.name,
-                              onPressed: changeJoinPermissions,
-                              title: const Text("Knock")),
-                          SettingsTileRadio.radio(
-                              groupValue: room.joinRulesString,
-                              value: JoinRules.private.name,
-                              onPressed: changeJoinPermissions,
-                              title: const Text("Private")),
-                        ]),
+                    CustomSettingsSection(
+                        child: EditorSectionInfo(
+                      room: room,
+                    )),
+                    CustomSettingsSection(
+                        child: EditorSectionJoinRules(
+                      room: room,
+                      description: "Who can join this story",
+                    )),
                     SettingsSection(
                       title: Row(
                         children: [
@@ -149,6 +81,9 @@ class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
                               onPressed: (context) {}),
                       ],
                     ),
+                    CustomSettingsSection(
+                      child: EditorSectionOtherSettings(room: room),
+                    ),
                     SettingsSection(
                         title: const Text(
                           "Danger",
@@ -173,7 +108,9 @@ class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
                                   return;
                                 }
                                 await room.leave();
-                                if (mounted) Navigator.of(context).pop();
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
                               }),
                         ])
                   ]),
@@ -181,31 +118,4 @@ class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
           }),
     );
   }
-}
-
-extension SettingsTileRadio on SettingsTile {
-  static SettingsTile radio<T>(
-      {void Function(T value)? onPressed,
-      required Widget title,
-      required T value,
-      required T groupValue}) {
-    return SettingsTile(
-      leading: Radio<T>(
-        onChanged: (val) {
-          if (val != null) {
-            onPressed?.call(val);
-          }
-        },
-        value: value,
-        groupValue: groupValue,
-      ),
-      title: title,
-      onPressed: (_) => onPressed?.call(value),
-    );
-  }
-}
-
-extension JoinRulesExtension on Room {
-  String? get joinRulesString =>
-      getState(EventTypes.RoomJoinRules)?.content.tryGet<String>('join_rule');
 }

@@ -148,7 +148,7 @@ class SettingsPanel extends StatelessWidget {
                         ),
                         SettingsTile.navigation(
                           leading: const Icon(Icons.photo),
-                          title: const Text('Storys'),
+                          title: const Text('Story rooms'),
                           onPressed: (context) =>
                               context.navigateTo(const SettingsStorysRoute()),
                         ),

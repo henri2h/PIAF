@@ -17,14 +17,23 @@ extension StoriesExtension on Client {
   /// [waitForCreation] Indicate if the funtion must return only if the room has been added
   /// And setup encryption in that room
   Future<String> createStoryRoom(
-      {bool waitForCreation = true, List<String>? invite}) async {
+      {bool waitForCreation = true,
+      List<String>? invite,
+      String? name,
+      String? topic}) async {
+    name = name?.trim();
+    topic = topic?.trim();
+
+    if (name?.isEmpty == true) name = null;
+    if (topic?.isEmpty == true) topic = null;
+
     final p = await getProfileFromUserId(userID!);
     final id = await createRoom(
       creationContent: {"type": storiesRoomType},
       preset: CreateRoomPreset.privateChat,
       powerLevelContentOverride: {"events_default": 100},
-      name: 'Stories from ${p.displayName}',
-      topic:
+      name: name ?? 'Stories from ${p.displayName}',
+      topic: topic ??
           'This is a room for stories sharing, not unlike the similarly named features in other messaging networks. For best experience please use FluffyChat or MinesTRIX. Feature development can be followed on: https://github.com/matrix-org/matrix-doc/pull/3588',
       initialState: [
         if (encryptionEnabled)

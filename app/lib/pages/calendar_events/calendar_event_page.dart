@@ -96,11 +96,14 @@ class CalendarEventPageState extends State<CalendarEventPage> {
       appBar: AppBar(
         title: Text(room.name),
         actions: [
-          IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                context.navigateTo(SocialSettingsRoute(room: room));
-              }),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  context.navigateTo(SocialSettingsRoute(room: room));
+                }),
+          ),
         ],
       ),
       body: FutureBuilder<Timeline>(

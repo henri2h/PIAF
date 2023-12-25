@@ -10,7 +10,7 @@ import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import 'settings/settings_story_detail_page.dart';
+import '../partials/settings/tile_radio.dart';
 
 @RoutePage()
 class DebugPage extends StatefulWidget {
