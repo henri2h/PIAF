@@ -131,8 +131,9 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
                                               withData: true);
 
                                       if (result?.files.isNotEmpty == true &&
-                                          result?.files.first.bytes == null)
+                                          result?.files.first.bytes == null) {
                                         return;
+                                      }
 
                                       setState(() {
                                         uploadingFile = true;
