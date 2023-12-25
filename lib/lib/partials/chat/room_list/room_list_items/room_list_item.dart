@@ -65,14 +65,14 @@ class RoomListItem extends StatelessWidget {
                     : MatrixUserAvatar(
                         avatarUrl: room.avatar,
                         userId: directChatMatrixID,
-                        name: room.displayname,
+                        name: room.getLocalizedDisplayname(),
                         client: client,
                         height: MinestrixAvatarSizeConstants.avatar,
                         width: MinestrixAvatarSizeConstants.avatar,
                       ),
           ),
           title: Text(
-            room.displayname,
+            room.getLocalizedDisplayname(),
             maxLines: 1,
             style: Theme.of(context)
                 .textTheme

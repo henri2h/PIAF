@@ -25,7 +25,9 @@ class MImageViewer extends StatelessWidget {
         return await file.readAsBytes();
       },
     );
-    file.save(context);
+    if (context.mounted) {
+      file.save(context);
+    }
   }
 
   @override

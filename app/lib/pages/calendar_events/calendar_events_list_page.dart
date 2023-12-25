@@ -65,7 +65,6 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
                     onPressed: createCalendarEvent,
                     icon: const Icon(Icons.add),
                     label: const Text("Add")),
-               
               ],
             ),
             body: ListView(children: [

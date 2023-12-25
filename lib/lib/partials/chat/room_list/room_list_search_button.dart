@@ -102,7 +102,8 @@ class MobileSearchBar extends StatelessWidget {
         List<Room> rooms = client.rooms
             .where((r) =>
                 !r.isExtinct &&
-                (r.displayname
+                (r
+                        .getLocalizedDisplayname()
                         .toLowerCase()
                         .removeDiacritics()
                         .removeSpecialCharacters()

@@ -65,7 +65,10 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
           }
         }
       } catch (ex, stack) {
-        Logs().e("Could not fetch history for ${room.displayname}", ex, stack);
+        Logs().e(
+            "Could not fetch history for ${room.getLocalizedDisplayname()}",
+            ex,
+            stack);
       }
       pos++;
     }
@@ -80,7 +83,8 @@ class _SettingsSyncPageState extends State<SettingsSyncPage> {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (actualRoom != null) Text(actualRoom!.displayname),
+              if (actualRoom != null)
+                Text(actualRoom!.getLocalizedDisplayname()),
               Text("$counter request for this rooms"),
             ],
           ),

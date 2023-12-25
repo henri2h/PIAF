@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:matrix/src/client.dart';
+import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/components/layouts/custom_header.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
@@ -30,9 +30,7 @@ class _FeedListPageState extends State<FeedListPage> {
       children: [
         CustomHeader(
           title: "Feeds",
-          actionButton: [
-            FeedsAddMenuButton(client: client)
-          ],
+          actionButton: [FeedsAddMenuButton(client: client)],
         ),
         Center(
           child: Padding(

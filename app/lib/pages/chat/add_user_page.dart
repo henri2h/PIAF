@@ -40,7 +40,8 @@ class AddUserPageState extends State<AddUserPage> {
                   controller: controller,
                   focusNode: focusNode,
                   autofocus: false,
-                  decoration: const InputDecoration(border: OutlineInputBorder())),
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder())),
               suggestionsCallback: (pattern) async {
                 var ur = await client.searchUserDirectory(pattern);
                 List<User?> following = List<User?>.empty();

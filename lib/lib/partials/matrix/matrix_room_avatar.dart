@@ -59,7 +59,7 @@ class RoomAvatar extends StatelessWidget {
     final roomAvatarWidget = MatrixImageAvatar(
       url: room.avatar,
       fit: true,
-      defaultText: room.displayname,
+      defaultText: room.getLocalizedDisplayname(),
       thumnailOnly: thumnailOnly,
       shape: shape ??
           (room.isSpace || room.feedType != null

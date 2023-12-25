@@ -163,7 +163,7 @@ class CreateGroupPageState extends State<CreateGroupPage> {
                               await r.enableEncryption();
                             }
                           }
-                          if (mounted) {
+                          if (context.mounted) {
                             Navigator.of(context).pop();
                           }
 

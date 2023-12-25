@@ -1,4 +1,3 @@
-
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';

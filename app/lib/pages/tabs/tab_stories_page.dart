@@ -83,7 +83,7 @@ class TabStoriesPageState extends State<TabStoriesPage> {
                             if (room.membership == Membership.invite) {
                               await room.join();
                             }
-                            if (mounted) {
+                            if (context.mounted) {
                               await MatrixStoriesPage.show(context, room);
                             }
                           },

@@ -55,7 +55,7 @@ class NotificationView extends StatelessWidget {
                     ListTile(
                         title: MatrixUserItem(
                           client: client,
-                          name: room.displayname,
+                          name: room.getLocalizedDisplayname(),
                           userId: room.directChatMatrixID ?? room.id,
                           avatarUrl: room.avatar,
                         ),

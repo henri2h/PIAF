@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_room_avatar.dart';

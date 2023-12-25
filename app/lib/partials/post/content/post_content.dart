@@ -81,7 +81,7 @@ class PostContent extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Text(
-                        "✨ ${sender.calcDisplayname()} created ${event.room.displayname} ✨",
+                        "✨ ${sender.calcDisplayname()} created ${event.room.getLocalizedDisplayname()} ✨",
                         style: const TextStyle(
                             fontSize: 24, fontWeight: FontWeight.w400)),
                   ),

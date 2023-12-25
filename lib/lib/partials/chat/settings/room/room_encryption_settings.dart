@@ -27,7 +27,7 @@ class _RoomUserDeviceKeyState extends State<RoomUserDeviceKey> {
             setState(() {});
           }
         };
-        if (mounted) {
+        if (context.mounted) {
           await KeyVerificationDialog(request: req).show(context);
         }
         break;
@@ -108,7 +108,8 @@ class _RoomUserDeviceKeyState extends State<RoomUserDeviceKey> {
                       ListTile(
                           title: Text(
                             widget.room
-                                .getUserByMXIDSync(deviceKeys[i].userId)
+                                .unsafeGetUserFromMemoryOrFallback(
+                                    deviceKeys[i].userId)
                                 .calcDisplayname(),
                           ),
                           subtitle: Text(

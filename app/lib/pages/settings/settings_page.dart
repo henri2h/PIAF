@@ -213,7 +213,8 @@ class SettingsPanel extends StatelessWidget {
                               }
 
                               await client.logout();
-                              if (Navigator.of(context).canPop()) {
+                              if (context.mounted &&
+                                  Navigator.of(context).canPop()) {
                                 Navigator.of(context).pop();
                               }
                             }),

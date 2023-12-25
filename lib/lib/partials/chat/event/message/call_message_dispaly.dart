@@ -94,9 +94,10 @@ class CallMessageDisplay extends StatelessWidget {
           child: Column(
             children: [
               ListTile(
-                leading: MatrixUserAvatar.fromUser(event.sender,
+                leading: MatrixUserAvatar.fromUser(
+                    event.senderFromMemoryOrFallback,
                     client: event.room.client),
-                title: Text(event.sender.calcDisplayname()),
+                title: Text(event.senderFromMemoryOrFallback.calcDisplayname()),
                 subtitle: Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [

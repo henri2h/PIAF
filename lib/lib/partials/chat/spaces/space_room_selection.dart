@@ -25,8 +25,8 @@ class _SpaceRoomSelectionState extends State<SpaceRoomSelection> {
             secondary: MatrixImageAvatar(
                 client: room.client,
                 url: room.avatar,
-                defaultText: room.displayname),
-            title: Text(room.displayname),
+                defaultText: room.getLocalizedDisplayname()),
+            title: Text(room.getLocalizedDisplayname()),
             onChanged: (bool? value) {
               if (!selectedRooms.add(room.id)) {
                 selectedRooms.remove(room.id);

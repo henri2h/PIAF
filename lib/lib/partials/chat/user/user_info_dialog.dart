@@ -60,7 +60,7 @@ class UserInfoDialog extends StatelessWidget {
                 subtitle: Text(user.id,
                     style: Theme.of(context).textTheme.bodySmall)),
           ListTile(
-              title: Text("Role in ${user.room.displayname}"),
+              title: Text("Role in ${user.room.getLocalizedDisplayname()}"),
               subtitle: Text(user.powerLevelText)),
           if (user.room.client.userID != user.id)
             FutureBuilder<List<String>?>(
@@ -107,15 +107,19 @@ class PresenceIndicator extends StatelessWidget {
   final String userID;
   @override
   Widget build(BuildContext context) {
-    final presence = room.client.presences[userID];
-    if (presence == null) return Container();
-    return ListTile(
-      title: const Text("Last seen"),
-      subtitle: Text(presence.currentlyActive == true
-          ? "Currently active"
-          : presence.lastActiveTimestamp != null
-              ? timeago.format(presence.lastActiveTimestamp!)
-              : "a long time ago"),
-    );
+    return FutureBuilder<CachedPresence>(
+        future: room.client.fetchCurrentPresence(userID),
+        builder: (context, snapshot) {
+          final presence = snapshot.data;
+          if (presence == null) return Container();
+          return ListTile(
+            title: const Text("Last seen"),
+            subtitle: Text(presence.currentlyActive == true
+                ? "Currently active"
+                : presence.lastActiveTimestamp != null
+                    ? timeago.format(presence.lastActiveTimestamp!)
+                    : "a long time ago"),
+          );
+        });
   }
 }

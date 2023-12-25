@@ -54,7 +54,9 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
       DialogTextField(hintText: "New name", initialText: deviceName),
     ]);
 
-    if (result?.isNotEmpty == true && result?.first.isNotEmpty == true) {
+    if (context.mounted &&
+        result?.isNotEmpty == true &&
+        result?.first.isNotEmpty == true) {
       await context.showFutureInTryCatch(
           () => client.updateDevice(deviceId, displayName: result!.first));
     }
@@ -94,11 +96,11 @@ class SettingsSecurityPageState extends State<SettingsSecurityPage> {
     if (result != OkCancelResult.ok) {
       return;
     }
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     final auth = await client.getAuthData(context);
     if (auth != null) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       await context.showFutureInTryCatch(
           () async => client.deleteDevices(devicesList, auth: auth));
     }
@@ -385,16 +387,19 @@ class DeviceWidget extends StatelessWidget {
                           device.deviceId == null) {
                         return;
                       }
+                      if (!context.mounted) return;
 
                       final auth = await client.getAuthData(context);
-                      if (auth != null) {
+                      if (context.mounted && auth != null) {
                         final result =
                             await context.showFutureInTryCatch(() async {
                           await client.deleteDevice(device.deviceId!,
                               auth: auth);
                           return true;
                         });
-                        if (result == true) Navigator.of(context).pop();
+                        if (context.mounted && result == true) {
+                          Navigator.of(context).pop();
+                        }
                       }
                     },
                     title: const Text("Delete device"),
@@ -414,7 +419,9 @@ extension DialogAuth on Client {
           hintText: "New password", initialText: "", obscureText: true),
     ]);
 
-    if (result?.isNotEmpty == true && result?.first.isNotEmpty == true) {
+    if (context.mounted &&
+        result?.isNotEmpty == true &&
+        result?.first.isNotEmpty == true) {
       final identifier =
           AuthenticationUserIdentifier(user: Matrix.of(context).client.userID!);
       return AuthenticationPassword(
@@ -485,8 +492,6 @@ extension on BuildContext {
             context: this,
             title: "Something unexpected happened",
             message: ex.toString());
-      } else {
-        print(ex);
       }
     }
     return null;

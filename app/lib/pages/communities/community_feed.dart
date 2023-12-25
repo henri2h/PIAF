@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:matrix/src/utils/cached_stream_controller.dart';
+// ignore: implementation_imports
+import 'package:matrix/src/utils/cached_stream_controller.dart'; // TODO: Find a solution
 import 'package:minestrix_chat/config/matrix_types.dart';
 import 'package:minestrix_chat/minestrix_chat.dart';
 import 'package:minestrix_chat/partials/chat/room/room_participants_indicator.dart';
@@ -28,8 +29,8 @@ class FeedController {
   }
 }
 
-class Community_feed extends StatefulWidget {
-  const Community_feed(
+class CommunityFeed extends StatefulWidget {
+  const CommunityFeed(
       {super.key,
       required this.space,
       required this.children,
@@ -42,10 +43,10 @@ class Community_feed extends StatefulWidget {
   final bool displayPostModal;
 
   @override
-  State<Community_feed> createState() => _Community_feedState();
+  State<CommunityFeed> createState() => _CommunityFeedState();
 }
 
-class _Community_feedState extends State<Community_feed> {
+class _CommunityFeedState extends State<CommunityFeed> {
   bool updating = false;
 
   late Room space;

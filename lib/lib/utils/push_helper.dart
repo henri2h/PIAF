@@ -84,14 +84,14 @@ Future<void> pushHelper(
     channelDescription: AppConfig.pushNotificationsChannelDescription,
     styleInformation: MessagingStyleInformation(
       Person(name: event.room.client.userID),
-      conversationTitle: event.room.displayname,
+      conversationTitle: event.room.getLocalizedDisplayname(),
       groupConversation: !event.room.isDirectChat,
       messages: [
         Message(
           body,
           event.originServerTs,
           Person(
-            name: event.room.displayname,
+            name: event.room.getLocalizedDisplayname(),
             icon: avatarFile == null
                 ? null
                 : BitmapFilePathAndroidIcon(avatarFile.path),
@@ -111,7 +111,7 @@ Future<void> pushHelper(
   );
   await flutterLocalNotificationsPlugin.show(
     await mapRoomIdToInt(event.room.id),
-    event.room.displayname,
+    event.room.getLocalizedDisplayname(),
     body,
     platformChannelSpecifics,
     payload: event.roomId,

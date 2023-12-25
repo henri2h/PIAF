@@ -47,8 +47,7 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
           return LayoutView(
             controller: controller,
             displayChat: false,
-            customHeaderText: space
-                .getLocalizedDisplayname(const MatrixDefaultLocalizations()),
+            customHeaderText: space.getLocalizedDisplayname(),
             customHeaderActionsButtons: [
               IconButton(
                   icon: const Icon(Icons.settings),
@@ -72,7 +71,7 @@ class _CommunityDetailPageState extends State<CommunityDetailPage> {
             mainBuilder: (
                     {required bool displaySideBar,
                     required bool displayLeftBar}) =>
-                Community_feed(
+                CommunityFeed(
               key: Key("community_${space.id}"),
               space: space,
               children: children,

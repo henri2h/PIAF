@@ -24,7 +24,9 @@ class CalendarEventCard extends StatelessWidget {
           return MaterialButton(
               onPressed: () async {
                 if (room.membership == Membership.invite) await room.join();
-                await context.navigateTo(CalendarEventRoute(room: room));
+                if (context.mounted) {
+                  await context.navigateTo(CalendarEventRoute(room: room));
+                }
               },
               color: Theme.of(context).cardColor,
               padding: EdgeInsets.zero,
@@ -43,7 +45,7 @@ class CalendarEventCard extends StatelessWidget {
                           topRight: Radius.circular(8),
                           topLeft: Radius.circular(8)),
                       height: 180,
-                      defaultText: room.displayname,
+                      defaultText: room.getLocalizedDisplayname(),
                       thumnailOnly:
                           false, // we don't use thumnail as this picture is from weird dimmension and preview generation don't work well
                       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -111,7 +113,7 @@ class CalendarEventCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Text(room.displayname,
+                                Text(room.getLocalizedDisplayname(),
                                     maxLines: 1,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,

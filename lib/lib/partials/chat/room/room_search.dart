@@ -117,9 +117,9 @@ class _RoomSearchState extends State<RoomSearch> {
           child: Row(
             children: [
               Expanded(
-                child: RawKeyboardListener(
+                child: KeyboardListener(
                   focusNode: focusNode,
-                  onKey: (RawKeyEvent key) {
+                  onKeyEvent: (KeyEvent key) {
                     if (key.logicalKey == LogicalKeyboardKey.enter) {
                       launchSearch();
                     }

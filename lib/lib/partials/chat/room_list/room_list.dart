@@ -102,8 +102,7 @@ class _RoomListState extends State<RoomList> {
     String title = selectedSpace;
 
     if (spaceRoom != null) {
-      title =
-          spaceRoom.getLocalizedDisplayname(const MatrixDefaultLocalizations());
+      title = spaceRoom.getLocalizedDisplayname();
     }
 
     return Scaffold(

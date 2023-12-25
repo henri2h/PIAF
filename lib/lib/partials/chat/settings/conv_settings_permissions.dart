@@ -192,7 +192,7 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
                           title: const Text("Room creator"),
                           subtitle: Text(room
                                   .getState(EventTypes.RoomCreate)
-                                  ?.sender
+                                  ?.senderFromMemoryOrFallback
                                   .calcDisplayname() ??
                               '')),
                       if (room

@@ -13,10 +13,10 @@ class MatrixLoadingPage extends StatefulWidget {
   const MatrixLoadingPage({super.key});
 
   @override
-  _MatrixLoadingPageState createState() => _MatrixLoadingPageState();
+  MatrixLoadingPageState createState() => MatrixLoadingPageState();
 }
 
-class _MatrixLoadingPageState extends State<MatrixLoadingPage> {
+class MatrixLoadingPageState extends State<MatrixLoadingPage> {
   bool running = false;
   Future<bool> waitForRoomsLoading(Client sclient) async {
     if (sclient.roomsLoading != null) {

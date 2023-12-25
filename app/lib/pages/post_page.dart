@@ -37,7 +37,7 @@ class _PostPageState extends State<PostPage> {
                   PostItem(
                       event: widget.event,
                       timeline: widget.timeline,
-                      onReact: (Offset) {},
+                      onReact: (_) {},
                       isMobile: false,
                       enableComment: false),
                   const Divider(),

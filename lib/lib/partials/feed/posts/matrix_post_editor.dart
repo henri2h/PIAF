@@ -129,7 +129,7 @@ class PostEditorPageState extends State<PostEditorPage>
           .detectFileType;
       MatrixImageFile? thumbnail;
 
-      if (file is MatrixVideoFile && file.bytes.length > 20 * 1024) {
+      if (mounted && file is MatrixVideoFile && file.bytes.length > 20 * 1024) {
         // don't compress video of less than 1024 kb
         await showFutureLoadingDialog(
           context: context,

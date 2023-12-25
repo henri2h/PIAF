@@ -149,17 +149,6 @@ class MessageDisplayState extends State<MessageDisplay>
       );
     }
 
-    Future<void> sendReaction(String key) async {
-      final userEvent = getUserReactionEvent(key);
-
-      if (userEvent == null) {
-        // prevent the user from sending the reaction twice. (Won't be accepted by the server)
-        await e.room.sendReaction(e.eventId, key);
-      } else {
-        await userEvent.redactEvent();
-      }
-    }
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -172,14 +161,16 @@ class MessageDisplayState extends State<MessageDisplay>
                   ? MaterialButton(
                       onPressed: () async {
                         await UserInfoDialog.show(
-                            user: e.sender, context: context);
+                            user: e.senderFromMemoryOrFallback,
+                            context: context);
                       },
                       minWidth: 0,
                       padding: EdgeInsets.zero,
                       shape: const CircleBorder(),
                       child: MatrixImageAvatar(
-                          url: e.sender.avatarUrl,
-                          defaultText: e.sender.calcDisplayname(),
+                          url: e.senderFromMemoryOrFallback.avatarUrl,
+                          defaultText:
+                              e.senderFromMemoryOrFallback.calcDisplayname(),
                           width: MinestrixAvatarSizeConstants.small,
                           height: MinestrixAvatarSizeConstants.small,
                           fit: true,
@@ -228,7 +219,8 @@ class MessageDisplayState extends State<MessageDisplay>
                                   ],
                                 ),
                               )
-                            : Text(e.sender.calcDisplayname(),
+                            : Text(
+                                e.senderFromMemoryOrFallback.calcDisplayname(),
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                     color: Theme.of(context)

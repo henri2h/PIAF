@@ -17,8 +17,6 @@ class CommunityCreateWidget extends StatelessWidget {
     // when room == null, EditCalendarRoom create a room
     return const EditCalendarRoom(room: null);
   }
-
-
 }
 
 class EditCalendarRoom extends StatefulWidget {
@@ -30,6 +28,7 @@ class EditCalendarRoom extends StatefulWidget {
         context: context,
         builder: (context) => const EditCalendarRoom(room: null));
   }
+
   @override
   State<EditCalendarRoom> createState() => _EditCalendarRoomState();
 }
@@ -113,7 +112,7 @@ class _EditCalendarRoomState extends State<EditCalendarRoom> {
                   room.sendCalendarEventState(calendarEvent!);
                 }
               }
-              if (mounted) Navigator.of(context).pop();
+              if (context.mounted) Navigator.of(context).pop();
             },
             children: [
               Center(

@@ -188,7 +188,6 @@ class LoginMatrixCardState extends State<LoginMatrixCard> {
 
     // web login
     if (kIsWeb) {
-      print("Domain: $domain");
       StorageManager.saveData("homeserver", domain);
       WebLoginInterface.launchSame(url);
       return;

@@ -351,7 +351,7 @@ class RoomProfileListTile extends StatelessWidget {
         leading: MatrixImageAvatar(
           url: r.avatar,
           client: r.client,
-          defaultText: r.displayname,
+          defaultText: r.getLocalizedDisplayname(),
         ),
         title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

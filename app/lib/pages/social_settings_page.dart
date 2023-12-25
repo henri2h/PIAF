@@ -26,9 +26,7 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
         stream: room.onUpdate.stream,
         builder: (context, snapshot) {
           return ListView(children: [
-            CustomHeader(
-                title:
-                    "${room.getLocalizedDisplayname(const MatrixDefaultLocalizations())} settings"),
+            CustomHeader(title: "${room.getLocalizedDisplayname()} settings"),
             Wrap(
               alignment: WrapAlignment.start,
               children: [

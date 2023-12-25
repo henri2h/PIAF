@@ -31,10 +31,11 @@ class EventReactionList extends StatelessWidget {
                         children: [
                           Expanded(
                             child: MatrixUserItem(
-                                name: e.sender.displayName,
+                                name: e.senderFromMemoryOrFallback.displayName,
                                 userId: e.senderId,
                                 client: e.room.client,
-                                avatarUrl: e.sender.avatarUrl),
+                                avatarUrl:
+                                    e.senderFromMemoryOrFallback.avatarUrl),
                           ),
                         ],
                       ),

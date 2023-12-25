@@ -129,7 +129,10 @@ class _TabCameraPageState extends State<TabCameraPage>
       XFile file = await cameraController.takePicture();
       return file;
     } on CameraException catch (e) {
-      print('Error occured while taking picture: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error occured while taking picture: $e")));
+      }
       return null;
     }
   }

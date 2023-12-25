@@ -55,7 +55,7 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text(room.displayname),
+        title: Text(room.getLocalizedDisplayname()),
         backgroundColor: backgroundColor,
         forceMaterialTransparency: true,
       ),
@@ -69,7 +69,7 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
                   child: MatrixImageAvatar(
                       url: room.avatar,
                       client: widget.room.client,
-                      defaultText: room.displayname,
+                      defaultText: room.getLocalizedDisplayname(),
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       thumnailOnly: false,
                       unconstraigned: true,

@@ -83,7 +83,7 @@ extension StoriesExtension on Client {
       }
     }
 
-    if (userStorieRooms.isNotEmpty) {
+    if (context.mounted && userStorieRooms.isNotEmpty) {
       await AdaptativeDialogs.show(
           context: context,
           builder: (context) =>

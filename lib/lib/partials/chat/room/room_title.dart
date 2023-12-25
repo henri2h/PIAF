@@ -37,7 +37,7 @@ class MatrixRoomTitle extends StatelessWidget {
             children: [
               MatrixImageAvatar(
                   url: room!.avatar,
-                  defaultText: room!.displayname,
+                  defaultText: room!.getLocalizedDisplayname(),
                   fit: true,
                   client: room!.client),
               const SizedBox(
@@ -45,7 +45,7 @@ class MatrixRoomTitle extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  room!.displayname,
+                  room!.getLocalizedDisplayname(),
                   style: Constants.kTextTitleStyle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

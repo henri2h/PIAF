@@ -55,7 +55,7 @@ class _SpacePageState extends State<SpacePage> {
                 return Scaffold(
                   appBar: AppBar(
                     title: Text(
-                      "${room?.getLocalizedDisplayname(const MatrixDefaultLocalizations())}",
+                      "${room?.getLocalizedDisplayname()}",
                     ),
                   ),
                   body: ListView(
@@ -76,7 +76,8 @@ class _SpacePageState extends State<SpacePage> {
                                       width: MinestrixAvatarSizeConstants.large,
                                       client: widget.client,
                                       url: room.avatar,
-                                      defaultText: room.displayname),
+                                      defaultText:
+                                          room.getLocalizedDisplayname()),
                                 ),
                               Expanded(
                                   child: ListTile(

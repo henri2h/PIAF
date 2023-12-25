@@ -20,11 +20,11 @@ ExtensibleEventContent _$ExtensibleEventContentFromJson(
           ? null
           : ExtensibleEventImage.fromJson(
               json['org.matrix.msc1767.image'] as Map<String, dynamic>)
-      ..thumbnail_file = json['org.matrix.msc1767.thumbnail_file'] == null
+      ..thumbnailFile = json['org.matrix.msc1767.thumbnail_file'] == null
           ? null
           : ExtensibleEventFile.fromJson(
               json['org.matrix.msc1767.thumbnail_file'] as Map<String, dynamic>)
-      ..thumbnail_info = json['org.matrix.msc1767.thumbnail_info'] == null
+      ..thumbnailInfo = json['org.matrix.msc1767.thumbnail_info'] == null
           ? null
           : ExtensibleEventImage.fromJson(
               json['org.matrix.msc1767.thumbnail_info'] as Map<String, dynamic>)
@@ -50,9 +50,9 @@ Map<String, dynamic> _$ExtensibleEventContentToJson(
   writeNotNull('org.matrix.msc1767.file', instance.file?.toJson());
   writeNotNull('org.matrix.msc1767.image', instance.image?.toJson());
   writeNotNull(
-      'org.matrix.msc1767.thumbnail_file', instance.thumbnail_file?.toJson());
+      'org.matrix.msc1767.thumbnail_file', instance.thumbnailFile?.toJson());
   writeNotNull(
-      'org.matrix.msc1767.thumbnail_info', instance.thumbnail_info?.toJson());
+      'org.matrix.msc1767.thumbnail_info', instance.thumbnailInfo?.toJson());
   writeNotNull('org.matrix.msc1767.caption',
       instance.caption?.map((e) => e.toJson()).toList());
   return val;

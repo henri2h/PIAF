@@ -159,7 +159,7 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
         // use fallback flutter call pages for outgoing and video calls.
         addCallingOverlay(call.callId, call);
         try {
-          if (!hasCallingAccount) {
+          if (context.mounted && !hasCallingAccount) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text(
               'No calling accounts found (used for native calls UI)',

@@ -30,6 +30,7 @@ class QuickLinksBarState extends State<QuickLinksBar>
                         icon: Icons.home,
                         onPressed: () async {
                           await context.navigateTo(const AppWrapperRoute());
+                          if (!context.mounted) return;
                           await context.navigateTo(const FeedRoute());
                         }),
                     QuickLinkButton(
@@ -37,6 +38,7 @@ class QuickLinksBarState extends State<QuickLinksBar>
                         icon: Icons.person,
                         onPressed: () async {
                           await context.navigateTo(const AppWrapperRoute());
+                          if (!context.mounted) return;
                           await context.navigateTo(UserViewRoute(
                               userID: Matrix.of(context).client.userID));
                         }),
@@ -51,6 +53,7 @@ class QuickLinksBarState extends State<QuickLinksBar>
                         icon: Icons.search,
                         onPressed: () async {
                           await context.navigateTo(const AppWrapperRoute());
+                          if (!context.mounted) return;
                           await context.navigateTo(SearchRoute());
                         }),
                   ],
@@ -59,6 +62,7 @@ class QuickLinksBarState extends State<QuickLinksBar>
                 QuickLinkButton(
                     onPressed: () async {
                       await context.navigateTo(const AppWrapperRoute());
+                      if (!context.mounted) return;
                       await context.navigateTo(const SettingsRoute());
                     },
                     name: "Settings",

@@ -26,10 +26,10 @@ class ExtensibleEventContent {
   ExtensibleEventImage? image;
 
   @JsonKey(name: ExtensibleTypes.thumbnail_file)
-  ExtensibleEventFile? thumbnail_file;
+  ExtensibleEventFile? thumbnailFile;
 
   @JsonKey(name: ExtensibleTypes.thumbnail_info)
-  ExtensibleEventImage? thumbnail_info;
+  ExtensibleEventImage? thumbnailInfo;
 
   @JsonKey(name: ExtensibleTypes.caption)
   List<ExtensibleEventContent>? caption;
@@ -54,14 +54,14 @@ class ExtensibleEventContent {
     image!.blurhash = matrixFile.blurhash;
 
     if (matrixThumbnail != null) {
-      thumbnail_file = ExtensibleEventFile();
-      thumbnail_file!.uploadFile(room, matrixThumbnail);
+      thumbnailFile = ExtensibleEventFile();
+      thumbnailFile!.uploadFile(room, matrixThumbnail);
 
-      thumbnail_info = ExtensibleEventImage();
+      thumbnailInfo = ExtensibleEventImage();
 
-      thumbnail_info!.width = matrixThumbnail.width;
-      thumbnail_info!.height = matrixThumbnail.height;
-      thumbnail_info!.blurhash = matrixThumbnail.blurhash;
+      thumbnailInfo!.width = matrixThumbnail.width;
+      thumbnailInfo!.height = matrixThumbnail.height;
+      thumbnailInfo!.blurhash = matrixThumbnail.blurhash;
     }
   }
 

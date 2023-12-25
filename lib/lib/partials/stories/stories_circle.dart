@@ -69,7 +69,7 @@ class StorieCircleState extends State<StorieCircle> {
                                 if (room.membership == Membership.invite) {
                                   await room.join();
                                 }
-                                if (mounted) {
+                                if (context.mounted) {
                                   await MatrixStoriesPage.show(context, room);
                                 }
                               },

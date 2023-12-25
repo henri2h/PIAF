@@ -12,9 +12,7 @@ class RoomWithSpace {
 
   String get id => room?.id ?? space!.roomId;
   String get displayname =>
-      room?.getLocalizedDisplayname(const MatrixDefaultLocalizations()) ??
-      space?.name ??
-      '';
+      room?.getLocalizedDisplayname() ?? space?.name ?? '';
   String get topic => room?.topic ?? space?.topic ?? '';
   String? get creatorId => room?.creatorId ?? _creator;
 

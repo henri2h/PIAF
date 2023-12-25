@@ -159,7 +159,7 @@ class MatrixServerChooserState extends State<MatrixServerChooser> {
           subtitle: Text(widget.controller.textController.text),
           onTap: () async {
             final servers = await joinMatrixParser.fetchHomeservers();
-            if (mounted) {
+            if (context.mounted) {
               await showModalBottomSheet(
                   context: context,
                   builder: (context) {
@@ -171,7 +171,7 @@ class MatrixServerChooserState extends State<MatrixServerChooser> {
                         trailing: const Icon(Icons.edit),
                         onTap: () async {
                           await enterCustomServerURL();
-                          if (mounted) Navigator.of(context).pop();
+                          if (context.mounted) Navigator.of(context).pop();
                         },
                       ),
                       for (final server in servers)

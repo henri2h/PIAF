@@ -85,8 +85,8 @@ class CommunityPageState extends State<CommunityPage> {
                                                   MatrixImageAvatar(
                                                     client: client,
                                                     url: space.avatar,
-                                                    defaultText:
-                                                        space.displayname,
+                                                    defaultText: space
+                                                        .getLocalizedDisplayname(),
                                                     shape:
                                                         MatrixImageAvatarShape
                                                             .rounded,

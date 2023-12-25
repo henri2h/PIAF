@@ -110,7 +110,7 @@ class KeyVerificationPageState extends State<KeyVerificationDialog> {
     if (directChatId != null) {
       user = widget.request.client
           .getRoomById(directChatId)!
-          .getUserByMXIDSync(widget.request.userId);
+          .unsafeGetUserFromMemoryOrFallback(widget.request.userId);
     }
     final displayName =
         user?.calcDisplayname() ?? widget.request.userId.localpart!;
@@ -247,6 +247,7 @@ class KeyVerificationPageState extends State<KeyVerificationDialog> {
                 await key.setVerified(true);
               }
               await widget.request.cancel();
+              if (!context.mounted) return;
               Navigator.of(context, rootNavigator: false).pop();
             },
           ));

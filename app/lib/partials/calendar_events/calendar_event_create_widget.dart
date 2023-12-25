@@ -144,7 +144,7 @@ class _EditCalendarRoomState extends State<EditCalendarRoom> {
                   room.sendCalendarEventState(calendarEvent!);
                 }
               }
-              if (mounted) Navigator.of(context).pop();
+              if (context.mounted) Navigator.of(context).pop();
             },
             children: [
               Center(

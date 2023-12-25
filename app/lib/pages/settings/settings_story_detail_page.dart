@@ -20,8 +20,7 @@ class SettingsStorysDetailPage extends StatefulWidget {
 
 class _SettingsStorysDetailPageState extends State<SettingsStorysDetailPage> {
   void changeJoinPermissions(String? context) {}
-  String get roomName =>
-      widget.room.getLocalizedDisplayname(const MatrixDefaultLocalizations());
+  String get roomName => widget.room.getLocalizedDisplayname();
 
   @override
   Widget build(BuildContext context) {

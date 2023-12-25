@@ -175,8 +175,12 @@ class RoomTimelineState extends State<RoomTimeline> {
                                   .scrollToIndex(index);
                               onRelpySelected.add(event.eventId);
                             } else {
-                              print(
-                                  "Could not scroll to index, item not found");
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            "Could not scroll to index, item not found")));
+                              }
                             }
                           },
                           onSelected: onRelpySelected.stream,

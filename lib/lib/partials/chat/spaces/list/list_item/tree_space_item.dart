@@ -43,7 +43,7 @@ class _TreeSpaceItem extends State<TreeSpaceItem> {
     return TreeViewChild(
       parent: MatrixSpaceIconButton(
           room: r,
-          name: r.displayname,
+          name: r.getLocalizedDisplayname(),
           avatarUrl: r.avatar,
           client: r.client,
           id: r.id,

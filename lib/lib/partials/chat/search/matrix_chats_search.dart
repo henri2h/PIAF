@@ -37,7 +37,10 @@ class SearchItem {
   bool get isSpace => room?.isSpace ?? false;
 
   String get displayname =>
-      room?.displayname ?? profile?.displayName ?? profile?.userId ?? '';
+      room?.getLocalizedDisplayname() ??
+      profile?.displayName ??
+      profile?.userId ??
+      '';
   Uri? get avatar => room?.avatar ?? profile?.avatarUrl;
   String get canonicalAlias => room?.canonicalAlias ?? '';
   String get topic => room?.topic ?? '';
@@ -127,7 +130,8 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
         .where((r) =>
             !r.isExtinct &&
             (!peopleSearch || r.isDirectChat) &&
-            (r.displayname
+            (r
+                    .getLocalizedDisplayname()
                     .toLowerCase()
                     .removeDiacritics()
                     .removeSpecialCharacters()
