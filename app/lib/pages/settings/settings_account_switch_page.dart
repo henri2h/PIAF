@@ -1,12 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:minestrix/pages/welcome/mobile/mobile_create_account_page.dart';
 import 'package:minestrix_chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix_chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix_chat/utils/matrix_widget.dart';
 
 import '../../router.gr.dart';
-import '../welcome/desktop_login_page.dart';
+import '../welcome/mobile/mobile_login_page.dart';
 
 @RoutePage()
 class SettingsAccountSwitchPage extends StatefulWidget {
@@ -17,16 +18,30 @@ class SettingsAccountSwitchPage extends StatefulWidget {
       SettingsAccountSwitchPageState();
 }
 
+enum Selection {
+  login,
+  register,
+}
+
 class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
   TextEditingController? displayNameController;
   bool savingDisplayName = false;
 
-  void addAccount() async {
+  Future<void> login() async {
     await AdaptativeDialogs.show(
         context: context,
-        title: "Add an account",
-        builder: (context) => const DesktopLoginPage(
-            popOnLogin: true, title: "Add a new account"));
+        title: "Login",
+        builder: (context) => const MobileLoginPage());
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> register() async {
+    await AdaptativeDialogs.show(
+        context: context,
+        title: "Register",
+        builder: (context) => const MobileCreateAccountPage());
     if (mounted) {
       setState(() {});
     }
@@ -40,7 +55,30 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
       appBar: AppBar(
         title: const Text("Switch account"),
         actions: [
-          IconButton(onPressed: addAccount, icon: const Icon(Icons.add))
+          PopupMenuButton<Selection>(
+              icon: const Icon(Icons.add),
+              onSelected: (Selection selection) async {
+                switch (selection) {
+                  case Selection.register:
+                    await register();
+                    break;
+                  case Selection.login:
+                    await login();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                    const PopupMenuItem(
+                        value: Selection.login,
+                        child: ListTile(
+                            leading: Icon(Icons.login),
+                            title: Text('Login with an other account'))),
+                    const PopupMenuItem(
+                        value: Selection.register,
+                        child: ListTile(
+                            leading: Icon(Icons.add),
+                            title: Text('Register a new account'))),
+                  ]),
         ],
       ),
       body: ListView(

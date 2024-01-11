@@ -14,9 +14,8 @@ dependencies:
   # Matrix
   matrix:
     git:
-      url: https://gitlab.com/minestrix/famedlysdk.git
+      url: https://github.com/MinesTRIX/matrix-dart-sdk.git
       ref: henri2h/index-events-by-event-type
-    #path: ../../famedlysdk
 
   minestrix_chat:
     path: ..
@@ -27,7 +26,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
 
 flutter:
   uses-material-design: true

@@ -46,7 +46,7 @@ class MatrixCreateStoriePageState extends State<MatrixCreateStoriePage> {
 
   void publish() async {
     try {
-      await controller!.performUserAdditions();
+      await controller?.performUserAdditions();
       await sendStory();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
@@ -110,20 +110,23 @@ class MatrixCreateStoriePageState extends State<MatrixCreateStoriePage> {
         title: const Text("New story"),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          children: [
-            _img == null
-                ? IconButton(
-                    onPressed: addImage, icon: const Icon(Icons.add_a_photo))
-                : IconButton(
-                    icon: const Icon(Icons.hide_image),
-                    onPressed: () {
-                      onImgChanged(null);
-                    })
-          ],
-        ),
-      ),
+      bottomNavigationBar: true
+          ? BottomAppBar(
+              child: Row(
+                children: [
+                  _img == null
+                      ? IconButton(
+                          onPressed: addImage,
+                          icon: const Icon(Icons.add_a_photo))
+                      : IconButton(
+                          icon: const Icon(Icons.hide_image),
+                          onPressed: () {
+                            onImgChanged(null);
+                          })
+                ],
+              ),
+            )
+          : null,
       floatingActionButton: FloatingActionButton(
           backgroundColor: canPublish ? Colors.green : null,
           onPressed: canPublish ? publish : null,

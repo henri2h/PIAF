@@ -23,7 +23,7 @@ dependencies:
   
   # Post formating
   flutter_markdown: ^0.6.8
-  emoji_picker_flutter: ^1.0.8
+  emoji_picker_flutter: ^2.0.0-dev.2
   auto_size_text: ^3.0.0
 
   # time formating
@@ -69,7 +69,10 @@ dependencies:
   just_audio: ^0.9.21
   callkeep: ^0.3.2
   unifiedpush: ^5.0.0
-  native_imaging: ^0.1.1
+  native_imaging:
+    git: 
+      url: https://github.com/famedly/dart_native_imaging.git
+      ref: nico/update-dependencies
   wakelock_plus: ^1.1.1
   logging: ^1.0.2
   shared_preferences: ^2.0.15

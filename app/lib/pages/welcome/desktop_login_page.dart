@@ -1,8 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:matrix/matrix.dart';
-import 'package:minestrix_chat/partials/login/login_card.dart';
-import 'package:minestrix_chat/utils/matrix_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,16 +19,6 @@ class DesktopLoginPage extends StatefulWidget {
 class DesktopLoginPageState extends State<DesktopLoginPage> {
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth > 1100) {
-        return buildDesktop();
-      } else {
-        return buildMobile();
-      }
-    });
-  }
-
-  Widget buildDesktop() {
     const radius = Radius.circular(8);
 
     return Scaffold(
@@ -144,64 +131,6 @@ class DesktopLoginPageState extends State<DesktopLoginPage> {
                 ],
               ),
             ]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  bool advancedView = false;
-
-  Widget buildMobile() {
-    Client client = Matrix.of(context).getLoginClient();
-
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset("assets/bg_paris.jpg", fit: BoxFit.cover),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(50),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Row(
-                    children: [
-                      Image.asset("assets/icon_512.png",
-                          width: 72, height: 72, cacheWidth: 140),
-                      const SizedBox(width: 28),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("MinesTRIX",
-                                style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white)),
-                            Text(
-                                "A privacy focused social media based on MATRIX",
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.white))
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ]),
-              ),
-              Flexible(
-                child: Container(
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(30))),
-                    child: ListView(shrinkWrap: true, children: <Widget>[
-                      LoginMatrixCard(client: client),
-                    ])),
-              ),
-            ],
           ),
         ],
       ),

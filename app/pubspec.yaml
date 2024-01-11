@@ -40,14 +40,16 @@ dependencies:
 
   # Post formating
   flutter_markdown:
-  emoji_picker_flutter: ^1.6.3
+  emoji_picker_flutter: ^2.0.0-dev.2
 
   # images
   image_picker:
   file_picker: ^6.1.1
   path_provider: ^2.0.5
-  native_imaging: ^0.1.1
-  
+  native_imaging:
+    git: 
+      url: https://github.com/famedly/dart_native_imaging.git
+      ref: nico/update-dependencies
 
   # time formating
   timeago: ^3.0.2
@@ -107,13 +109,7 @@ dependencies:
   photo_manager_image_provider: ^2.1.0
 # Override due to https://github.com/mogol/flutter_secure_storage/issues/616
   audio_session: any
-  flutter_keyboard_visibility_web: any
-  flutter_secure_storage_web: any
-  image_picker_for_web: any
-  just_audio_web: any
-  shared_preferences_web: any
-  url_launcher_web: any
-  flutter_web_plugins: any
+
 dependency_overrides:
   flutter_secure_storage_linux:
     git:

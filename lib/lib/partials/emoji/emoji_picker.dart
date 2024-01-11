@@ -104,9 +104,6 @@ class MinestrixEmojiPickerState extends State<MinestrixEmojiPicker> {
                   onEmojiSelected: (Category? category, Emoji? emoji) {
                     Navigator.of(context).pop<Emoji>(emoji);
                   },
-                  config: const Config(
-                    columns: 10,
-                  ),
                 ),
               ),
             )
