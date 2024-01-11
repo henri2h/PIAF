@@ -109,6 +109,8 @@ dependencies:
   photo_manager_image_provider: ^2.1.0
 # Override due to https://github.com/mogol/flutter_secure_storage/issues/616
   audio_session: any
+  sqflite_common_ffi: ^2.3.1
+  sqflite_sqlcipher: ^2.2.1
 
 dependency_overrides:
   flutter_secure_storage_linux:

@@ -1047,7 +1047,7 @@ packages:
     description:
       path: "."
       ref: "henri2h/index-events-by-event-type"
-      resolved-ref: "391ef72fa3638a967fab6f49c348df22a0f90b22"
+      resolved-ref: "085d9c932d80005108a460acc0b13c9f610e3837"
       url: "https://github.com/MinesTRIX/matrix-dart-sdk.git"
     source: git
     version: "0.25.4"
@@ -1676,10 +1676,34 @@ packages:
     dependency: transitive
     description:
       name: sqflite_common
-      sha256: bb4738f15b23352822f4c42a531677e5c6f522e079461fd240ead29d8d8a54a6
+      sha256: "76db4d324c8cbb16ca5b60ad2f3d25cec953107c93ae65aafa480d3e6fb69f14"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0+2"
+    version: "2.5.2-1"
+  sqflite_common_ffi:
+    dependency: transitive
+    description:
+      name: sqflite_common_ffi
+      sha256: d0e3f0d04fdf668e57db8db1df758f56c4193cb429092c708e7bfcc6ab04b27e
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.2"
+  sqflite_sqlcipher:
+    dependency: transitive
+    description:
+      name: sqflite_sqlcipher
+      sha256: e1dfb55bf21ee5a18c43f28faa4291272a801da4ab34a6ba9973b6c0e1ed77da
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
+  sqlite3:
+    dependency: transitive
+    description:
+      name: sqlite3
+      sha256: c4a4c5a4b2a32e2d0f6837b33d7c91a67903891a5b7dbe706cf4b1f6b0c798c5
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
   stack_trace:
     dependency: transitive
     description:

@@ -57,6 +57,9 @@ dependencies:
 
   # database
   hive_flutter: ^1.1.0
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0+4
+  sqflite_sqlcipher: ^2.2.1
   
   package_info_plus: ^5.0.1
   flutter_local_notifications: ^16.1.0
@@ -113,6 +116,8 @@ dependencies:
   video_compress: ^3.1.2
   matrix_homeserver_recommendations: ^0.3.0
   photo_manager_image_provider: ^2.1.0
+  
+
 
 dev_dependencies:
   flutter_test:

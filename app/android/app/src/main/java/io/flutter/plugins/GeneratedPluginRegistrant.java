@@ -161,6 +161,11 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin sqflite, com.tekartik.sqflite.SqflitePlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.davidmartos96.sqflite_sqlcipher.SqfliteSqlCipherPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin sqflite_sqlcipher, com.davidmartos96.sqflite_sqlcipher.SqfliteSqlCipherPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new org.unifiedpush.flutter.connector.Plugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin unifiedpush_android, org.unifiedpush.flutter.connector.Plugin", e);
