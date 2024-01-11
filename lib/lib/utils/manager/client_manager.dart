@@ -9,6 +9,7 @@ import 'package:minestrix_chat/utils/database/flutter_hive_collection_database.d
 import 'package:path_provider/path_provider.dart';
 
 import '../custom_image_resizer.dart';
+import '../database/flutter_matrix_sdk_database_builder.dart';
 import '../famedlysdk_store.dart';
 import '../platform_infos.dart';
 
@@ -98,7 +99,7 @@ abstract class ClientManager {
           // To check which story room we can post in
           EventTypes.RoomPowerLevels,
         }..addAll(importantStateEventsOverrides),
-        databaseBuilder: FlutterHiveCollectionsDatabase.databaseBuilder,
+        databaseBuilder: flutterMatrixSdkDatabaseBuilder,
         supportedLoginTypes: {
           AuthenticationTypes.password,
           if (PlatformInfos.isMobile ||

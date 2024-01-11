@@ -261,20 +261,11 @@ class _AccountSelectionRouteContentState
                                           Navigator.of(context).pop();
                                         }),
                                   ListTile(
-                                      title: const Text("Add an account"),
+                                      title: const Text("Manage accounts"),
                                       trailing: const Icon(Icons.add),
                                       onTap: () async {
-                                        await AdaptativeDialogs.show(
-                                            context: context,
-                                            bottomSheet: true,
-                                            builder: (context) =>
-                                                const DesktopLoginPage(
-                                                    popOnLogin: true,
-                                                    title:
-                                                        "Add a new account"));
-                                        if (mounted) {
-                                          setState(() {});
-                                        }
+                                        await context.pushRoute(
+                                            SettingsAccountSwitchRoute());
                                       }),
                                 ],
                               ),
