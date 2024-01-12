@@ -10,7 +10,7 @@ import 'package:minestrix/chat/utils/extensions/matrix/peeking_extension.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
 import '../../chat/partials/chat/settings/conv_settings.dart';
-import 'room_settings_page.dart';
+import '../chat_lib/room_settings_page.dart';
 
 @RoutePage()
 class RoomPage extends StatefulWidget {

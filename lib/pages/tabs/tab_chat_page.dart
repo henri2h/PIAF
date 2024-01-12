@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_room_list.dart';
-import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart';
+import 'package:minestrix/chat/partials/chat/room_list/simple_room_list.dart';
 
 import 'package:minestrix/pages/chat_lib/chat_page_items/provider/chat_page_provider.dart';
 import 'package:minestrix/chat/partials/chat/spaces/list/spaces_list.dart';
@@ -30,7 +29,7 @@ class TabChatPageState extends State<TabChatPage> {
       await context.navigateTo(
           OverrideRoomListRoomRoute(displaySettingsOnDesktop: true));
     } else {
-      await context.navigateTo(OverrideRoomListRoute());
+      await context.navigateTo(const RoomListOrPlaceHolderRoute());
     }
   }
 
@@ -51,7 +50,7 @@ class TabChatPageState extends State<TabChatPage> {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
             await context.navigateTo(const OverrideRoomListSpaceRoute());
           } else {
-            await context.navigateTo(RoomListRoute());
+            await context.navigateTo(const RoomListOrPlaceHolderRoute());
           }
         },
         onLongPressedSpace: (String? id) async {
@@ -60,34 +59,29 @@ class TabChatPageState extends State<TabChatPage> {
                 spaceId: id, client: Matrix.of(context).client));
           }
         },
+
         child: SafeArea(
           child: Scaffold(
-              body: LayoutBuilder(builder: (context, constraints) {
-                mobile = constraints.maxWidth < 800;
-                return Row(
-                  children: [
-                    if (!mobile)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 400),
-                            child: Card(
-                              child: ChatPageRoomList(
-                                  scrollController: scrollControllerRoomList,
-                                  onAppBarClicked: () => context
-                                      .navigateTo(const SettingsRoute())),
-                            )),
-                      ),
-                    const Expanded(child: AutoRouter()),
-                  ],
-                );
-              }),
-              drawer: Drawer(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  child: SafeArea(
-                    child: ChatPageSpaceList(
-                        mobile: true, scrollController: scrollControllerDrawer),
-                  ))),
+            body: LayoutBuilder(builder: (context, constraints) {
+              mobile = constraints.maxWidth < 800;
+              return Row(
+                children: [
+                  if (!mobile)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 400),
+                          child: const Card(
+                            child: SimpleRoomList(
+                              mobile: false,
+                            ),
+                          )),
+                    ),
+                  const Expanded(child: AutoRouter()),
+                ],
+              );
+            }),
+          ),
         ),
       ),
     );

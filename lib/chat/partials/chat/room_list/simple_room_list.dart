@@ -1,27 +1,22 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:provider/provider.dart';
 
-import 'provider/chat_page_state.dart';
-import '../../../chat/partials/chat/room_list/room_list.dart';
+import 'room_list.dart';
+import '../../../../router.gr.dart';
+import '../../../../pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
 
-@RoutePage()
-class ChatPageRoomList extends StatelessWidget {
+class SimpleRoomList extends StatelessWidget {
   final bool mobile;
-  const ChatPageRoomList(
-      {super.key,
-      this.mobile = false,
-      required this.scrollController,
-      this.onAppBarClicked});
-
-  final ScrollController scrollController;
-  final VoidCallback? onAppBarClicked;
+  const SimpleRoomList({super.key, this.mobile = false});
 
   @override
   Widget build(BuildContext context) {
+    final scrollController = ScrollController();
     return Consumer<ChatPageState>(builder: (context, controller, _) {
       final client = controller.client;
+
       return StreamBuilder<Object>(
           stream: client.onSync.stream.where((up) => up.hasRoomUpdate),
           builder: (context, snapshot) {
@@ -32,8 +27,8 @@ class ChatPageRoomList extends StatelessWidget {
               scrollController: scrollController,
               client: client,
               sortedRooms: rooms,
-              isMobile: mobile,
-              onAppBarClicked: onAppBarClicked,
+              isMobile: true,
+              onAppBarClicked: () => context.navigateTo(const SettingsRoute()),
             );
           });
     });

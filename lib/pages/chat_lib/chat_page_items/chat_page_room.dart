@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/chat_page_state.dart';
-import '../room_page.dart';
+import '../../chat/room_page.dart';
 
 @RoutePage()
 class ChatPageRoom extends StatelessWidget {

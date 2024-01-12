@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/chat_lib/room_page.dart';
+import 'package:minestrix/pages/chat/room_page.dart';
 
 import '../minestrix/minestrix_title.dart';
 

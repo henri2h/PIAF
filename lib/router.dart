@@ -51,7 +51,7 @@ class AppRouter extends $AppRouter {
           AutoRoute(path: 'story', page: SettingsStorysDetailRoute.page),
           AutoRoute(path: 'accounts', page: SettingsFeedsRoute.page),
           AutoRoute(path: 'debug', page: DebugRoute.page),
-          AutoRoute(path: 'chat/:roomId', page: OverrideRoomRoute.page),
+          AutoRoute(path: 'chat/:roomId', page: RoomRoute.page),
         ]),
       ]),
 
@@ -74,7 +74,7 @@ class AppRouter extends $AppRouter {
 
       // chats
       AutoRoute(path: 'chat', page: TabChatRoute.page, children: [
-        AutoRoute(path: '', page: RoomListRoute.page),
+        AutoRoute(path: '', page: RoomListOrPlaceHolderRoute.page),
         AutoRoute(path: 'space', page: OverrideRoomListSpaceRoute.page),
         AutoRoute(path: 'space/:spaceId', page: OverrideRoomSpaceRoute.page),
         AutoRoute(path: ':roomId', page: OverrideRoomListRoomRoute.page),

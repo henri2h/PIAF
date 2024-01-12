@@ -8,7 +8,7 @@ import 'package:minestrix/partials/post/post_writer_modal.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix/chat/config/matrix_types.dart';
-import 'package:minestrix/pages/chat_lib/room_page.dart';
+import 'package:minestrix/pages/chat/room_page.dart';
 import 'package:minestrix/chat/partials/chat/user/selector/user_selector_dialog.dart';
 import 'package:minestrix/chat/partials/custom_list_view.dart';
 import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
