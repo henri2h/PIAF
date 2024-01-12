@@ -16,7 +16,8 @@ class MinestrixRoomTile extends StatelessWidget {
       this.room,
       this.selected = false,
       this.onTap,
-      this.roomWithSpace})
+      this.roomWithSpace,
+      this.enableTrailing = false})
       : assert(room != null || (client != null && roomWithSpace != null)),
         assert(!(room == null && roomWithSpace == null));
 
@@ -25,6 +26,7 @@ class MinestrixRoomTile extends StatelessWidget {
   final RoomWithSpace? roomWithSpace;
   final bool selected;
   final VoidCallback? onTap;
+  final bool enableTrailing;
 
   RoomWithSpace get r => roomWithSpace ?? RoomWithSpace(room: room);
 
@@ -73,14 +75,15 @@ class MinestrixRoomTile extends StatelessWidget {
                             fontWeight: FontWeight.w500)),
                 ],
               ),
-              trailing:
-                  (r.room != null && r.room?.joinRules == JoinRules.public)
+              trailing: enableTrailing
+                  ? (r.room != null && r.room?.joinRules == JoinRules.public)
                       ? const Icon(Icons.public)
                       : (r.room?.encrypted != true &&
                               r.room != null &&
                               r.room?.joinRules != JoinRules.public)
                           ? const Icon(Icons.no_encryption)
-                          : null);
+                          : null
+                  : null);
         });
   }
 }

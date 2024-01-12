@@ -27,7 +27,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:matrix/matrix.dart';
-import 'package:unifiedpush/unifiedpush.dart';
 
 import '../config/app_config.dart';
 import '../config/settings_key.dart';
@@ -78,12 +77,15 @@ class BackgroundPush {
       onNewToken: _newFcmToken,
     );
     if (Platform.isAndroid) {
+      // TODO: Restore unified push support
+      /*
       UnifiedPush.initialize(
         onNewEndpoint: _newUpEndpoint,
         onRegistrationFailed: _upUnregistered,
         onUnregistered: _upUnregistered,
         onMessage: _onUpMessage,
       );
+      */
     }
   }
 
@@ -215,8 +217,10 @@ class BackgroundPush {
     if (upAction) {
       return;
     }
-    if (!PlatformInfos.isIOS &&
-        (await UnifiedPush.getDistributors()).isNotEmpty) {
+    // TODO: restore unified push support
+    // await UnifiedPush.getDistributors()).isNotEmpty
+
+    if (!PlatformInfos.isIOS && false) {
       await setupUp();
     } else {
       await setupFirebase();
@@ -294,7 +298,8 @@ class BackgroundPush {
   }
 
   Future<void> setupUp() async {
-    await UnifiedPush.registerAppWithDialog(context!);
+    // TODO: Restore unified push support
+//    await UnifiedPush.registerAppWithDialog(context!);
   }
 
   Future<void> _newUpEndpoint(String newEndpoint, String i) async {

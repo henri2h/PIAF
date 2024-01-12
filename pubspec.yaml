@@ -45,7 +45,7 @@ dependencies:
 
   # Post formating
   flutter_markdown:
-  emoji_picker_flutter: ^2.0.0-dev.2
+  emoji_picker_flutter: ^2.0.0-dev.5
 
   # images
   image_picker:
@@ -71,7 +71,7 @@ dependencies:
 
   # Notifications
   flutter_local_notifications: ^16.1.0
-  unifiedpush: ^5.0.0
+  # unifiedpush: ^5.0.0
   desktop_notifications: ^0.6.3
 
   # Calls
