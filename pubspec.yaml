@@ -92,13 +92,17 @@ dependencies:
   # Media 
   camera: ^0.10.5+2
   chewie: ^1.7.4
-  media_kit: ^1.1.7
   photo_manager: ^3.0.0-dev.4
   photo_manager_image_provider: ^2.1.0
   video_player: ^2.5.3
   video_compress: ^3.1.2
-  media_kit_video: ^1.2.4
   just_audio: ^0.9.20
+  media_kit: ^1.1.10
+  media_kit_video: ^1.2.4
+  media_kit_libs_video: ^1.0.4 
+  # Select according to https://github.com/media-kit/media-kit/tree/main/video_player_media_kit
+  media_kit_libs_android_video: any
+  media_kit_libs_linux: any
 
   # Chat UI
   flutter_chat_bubble: ^2.0.2
