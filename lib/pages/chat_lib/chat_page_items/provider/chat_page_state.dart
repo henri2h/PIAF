@@ -5,7 +5,7 @@ import 'package:minestrix/chat/partials/chat/spaces/list/spaces_list.dart';
 import 'package:minestrix/chat/utils/client_information.dart';
 import 'package:minestrix/chat/utils/matrix_widget.dart';
 
-import '../../../config/matrix_types.dart';
+import '../../../../chat/config/matrix_types.dart';
 
 class ChatPageState with ChangeNotifier {
   final Client client;

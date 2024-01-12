@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:minestrix/pages/tabs/tab_chat_page.dart';
-import 'package:minestrix/chat/pages/chat_page_items/chat_page_room_list.dart';
+import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_room_list.dart';
 import 'package:provider/provider.dart';
 
 import '../../partials/minestrix_title.dart';

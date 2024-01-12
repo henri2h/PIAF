@@ -49,17 +49,8 @@ PollAnswer _$PollAnswerFromJson(Map<String, dynamic> json) => PollAnswer()
   ..id = json['id'] as String
   ..text = json['org.matrix.msc1767.text'] as String?;
 
-Map<String, dynamic> _$PollAnswerToJson(PollAnswer instance) {
-  final val = <String, dynamic>{
-    'id': instance.id,
-  };
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('org.matrix.msc1767.text', instance.text);
-  return val;
-}
+Map<String, dynamic> _$PollAnswerToJson(PollAnswer instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'org.matrix.msc1767.text': instance.text,
+    };

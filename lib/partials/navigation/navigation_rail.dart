@@ -40,6 +40,20 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
           label: const Text("Feed"),
           route: const FeedRoute()),
       MinestrixNavigationRailItem(
+          icon: StreamBuilder(
+              stream: client.onSync.stream,
+              builder: (context, _) {
+                int notif = client.chatNotificationsCount;
+                if (notif == 0) {
+                  return const Icon(Icons.message_outlined);
+                } else {
+                  return Badge.count(
+                      count: notif, child: const Icon(Icons.message));
+                }
+              }),
+          label: const Text("Chat"),
+          route: const TabChatRoute()),
+      MinestrixNavigationRailItem(
         icon: const Icon(Icons.event),
         label: const Text("Events"),
         route: const CalendarEventListRoute(),
@@ -56,20 +70,6 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
           icon: const Icon(Icons.rss_feed),
           label: const Text("Feeds"),
           route: const FeedListRoute()),
-      MinestrixNavigationRailItem(
-          icon: StreamBuilder(
-              stream: client.onSync.stream,
-              builder: (context, _) {
-                int notif = client.chatNotificationsCount;
-                if (notif == 0) {
-                  return const Icon(Icons.message_outlined);
-                } else {
-                  return Badge.count(
-                      count: notif, child: const Icon(Icons.message));
-                }
-              }),
-          label: const Text("Chat"),
-          route: const TabChatRoute()),
     ];
 
     var selectedIndex = items.indexWhere((element) {

@@ -1,9 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/chat_page_state.dart';
 import '../space_page.dart';
 
+@RoutePage()
 class ChatPageSpacePage extends StatelessWidget {
   const ChatPageSpacePage({super.key});
   @override

@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/chat/pages/chat_page_items/chat_page_room_list.dart';
-import 'package:minestrix/chat/pages/chat_page_items/chat_page_spaces_list.dart';
+import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_room_list.dart';
+import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart';
 
-import 'package:minestrix/chat/pages/chat_page_items/provider/chat_page_provider.dart';
+import 'package:minestrix/pages/chat_lib/chat_page_items/provider/chat_page_provider.dart';
 import 'package:minestrix/chat/partials/chat/spaces/list/spaces_list.dart';
 
 import 'package:minestrix/chat/utils/matrix_widget.dart';

@@ -11,15 +11,7 @@ EventPollResponse _$EventPollResponseFromJson(Map<String, dynamic> json) =>
       ..answers =
           (json['answers'] as List<dynamic>?)?.map((e) => e as String).toList();
 
-Map<String, dynamic> _$EventPollResponseToJson(EventPollResponse instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  writeNotNull('answers', instance.answers);
-  return val;
-}
+Map<String, dynamic> _$EventPollResponseToJson(EventPollResponse instance) =>
+    <String, dynamic>{
+      'answers': instance.answers,
+    };

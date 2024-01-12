@@ -1,9 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/pages/chat_page_items/provider/chat_page_state.dart';
-import 'package:minestrix/chat/partials/chat/spaces/list/spaces_list.dart';
+import 'package:minestrix/pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
 import 'package:provider/provider.dart';
 
+@RoutePage()
 class ChatPageProvider extends StatelessWidget {
   const ChatPageProvider(
       {super.key,
@@ -12,7 +13,8 @@ class ChatPageProvider extends StatelessWidget {
       required this.onRoomSelection,
       required this.onLongPressedSpace,
       required this.onSpaceSelection,
-      this.selectedSpace = CustomSpacesTypes.explore});
+      this.selectedSpace =
+          "Explore" /*TODO: restore CustomSpacesTypes.explore. This was removed as the build runner was not importing spaceg_list.dart*/});
 
   final Widget child;
   final Client client;

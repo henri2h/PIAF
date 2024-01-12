@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/pages/room_page.dart';
+import 'package:minestrix/pages/chat_lib/room_page.dart';
 import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
 

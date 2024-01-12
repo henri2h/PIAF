@@ -2,7 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../pages/device_media_gallery.dart';
+import '../../pages/chat_lib/device_media_gallery.dart';
 import 'platform_infos.dart';
 
 class FilesPicker {

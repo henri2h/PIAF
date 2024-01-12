@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/minestrix_chat.dart';
 import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/pages/matrix_stories_page.dart';
+import 'package:minestrix/pages/chat_lib/matrix_stories_page.dart';
 
 class StorieCircle extends StatefulWidget {
   const StorieCircle(

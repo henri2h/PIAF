@@ -27,7 +27,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-import '../../utils/platform_infos.dart';
+import '../../../chat/utils/platform_infos.dart';
 import 'pip/pip_view.dart';
 
 class _StreamView extends StatelessWidget {

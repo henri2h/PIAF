@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/pages/chat_page_items/chat_page_spaces_list.dart';
-import 'package:minestrix/chat/pages/chat_page_items/provider/chat_page_state.dart';
+import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart';
+import 'package:minestrix/pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
 import 'package:minestrix/chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
-import '../../../pages/room_create/create_chat_page.dart';
+import '../../../../pages/chat_lib/room_create/create_chat_page.dart';
 import '../search/matrix_chats_search.dart';
 import '../spaces/list/spaces_list.dart';
 import 'room_list_explore.dart';

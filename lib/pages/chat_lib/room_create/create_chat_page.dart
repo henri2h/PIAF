@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
 
-import '../../partials/chat/user/selector/user_selector.dart';
-import '../../partials/dialogs/adaptative_dialogs.dart';
+import '../../../chat/partials/chat/user/selector/user_selector.dart';
+import '../../../chat/partials/dialogs/adaptative_dialogs.dart';
 import '../matrix_create_group.dart';
 import 'create_group_page.dart';
 
+@RoutePage()
 class CreateChatPage extends StatefulWidget {
   const CreateChatPage(
       {super.key, required this.onRoomSelected, required this.client});

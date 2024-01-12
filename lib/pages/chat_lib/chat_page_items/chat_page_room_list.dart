@@ -1,10 +1,12 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:matrix/matrix.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/chat_page_state.dart';
-import '../../partials/chat/room_list/room_list.dart';
+import '../../../chat/partials/chat/room_list/room_list.dart';
 
+@RoutePage()
 class ChatPageRoomList extends StatelessWidget {
   final bool mobile;
   const ChatPageRoomList(
