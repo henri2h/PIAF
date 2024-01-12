@@ -1233,7 +1233,7 @@ packages:
     description:
       path: "."
       ref: "henri2h/index-events-by-event-type"
-      resolved-ref: "085d9c932d80005108a460acc0b13c9f610e3837"
+      resolved-ref: "18a672aed888b0a6c4266fd3ad6aba61932f2043"
       url: "https://github.com/MinesTRIX/matrix-dart-sdk.git"
     source: git
     version: "0.25.4"
