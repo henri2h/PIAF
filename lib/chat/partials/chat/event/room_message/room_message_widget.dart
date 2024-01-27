@@ -96,24 +96,21 @@ class RoomMessageWidget extends StatelessWidget {
                     child: Wrap(
                       children: [
                         snapReplyEvent.hasData
-                            ? Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.reply, size: 18),
-                                    const SizedBox(width: 2),
-                                    Flexible(
-                                      child: Text(
-                                          "${event.senderLocalisedDisplayName} relpied to ${snapReplyEvent.data!.senderLocalisedDisplayName}",
-                                          maxLines: 2,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelMedium,
-                                          overflow: TextOverflow.ellipsis),
-                                    ),
-                                  ],
-                                ),
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.reply, size: 18),
+                                  const SizedBox(width: 2),
+                                  Flexible(
+                                    child: Text(
+                                        "${event.senderLocalisedDisplayName} relpied to ${snapReplyEvent.data!.senderLocalisedDisplayName}",
+                                        maxLines: 2,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelMedium,
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
                               )
                             : Text(
                                 event.senderFromMemoryOrFallback

@@ -35,6 +35,7 @@ class TextMessageBubble extends StatelessWidget {
         : Colors.red;
 
     return Card(
+      margin: EdgeInsets.zero,
       color: backgroundColorComputed,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: InkWell(

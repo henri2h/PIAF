@@ -7,7 +7,7 @@ import '../../poll/poll_widget.dart';
 import 'room_message/call_message_dispaly.dart';
 import 'event_widget.dart';
 import 'room_message/room_message_widget.dart';
-import 'room_message/room_message.dart';
+import 'room_message/room_event_update_widget.dart';
 
 class PlainEventWidget extends StatelessWidget {
   const PlainEventWidget({
@@ -55,7 +55,7 @@ class PlainEventWidget extends StatelessWidget {
       case EventTypes.RoomCanonicalAlias:
       case EventTypes.GuestAccess:
       case EventTypes.RoomCreate:
-        return RoomEventUpdate(event);
+        return RoomEventUpdateWidget(event);
 
       case EventTypes.Encryption:
         return Card(
@@ -101,6 +101,6 @@ class PlainEventWidget extends StatelessWidget {
       default:
     }
     // unknown event
-    return RoomEventUpdate(event);
+    return RoomEventUpdateWidget(event);
   }
 }
