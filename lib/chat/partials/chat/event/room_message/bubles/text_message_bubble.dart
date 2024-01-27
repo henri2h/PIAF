@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/minestrix_chat.dart';
 import 'package:minestrix/chat/partials/chat/event/room_message/html_message/html_messaged.dart';
@@ -73,9 +74,7 @@ class TextMessageBubble extends StatelessWidget {
             }
 
             return Column(
-              crossAxisAlignment: event.sentByUser
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
                 !event.redacted && event.isRichMessage
@@ -89,16 +88,18 @@ class TextMessageBubble extends StatelessWidget {
                         text: event.getLocalizedBody(
                             const MatrixDefaultLocalizations(),
                             hideReply: true)),
-                if (edited)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.edit, color: colorPatch, size: 12),
-                      const SizedBox(width: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (edited) Icon(Icons.edit, color: colorPatch, size: 12),
+                    if (edited) const SizedBox(width: 2),
+                    if (edited)
                       Text("edited",
                           style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
+                    Text(DateFormat.Hm().format(event.originServerTs),
+                        style: Theme.of(context).textTheme.bodySmall)
+                  ],
+                ),
                 if (displaySentIndicator || event.status != EventStatus.synced)
                   Builder(builder: (context) {
                     IconData icon = Icons.error;

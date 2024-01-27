@@ -108,6 +108,7 @@ class _RoomListState extends State<RoomList> {
     }
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       floatingActionButton: isHome
           ? FloatingActionButton.extended(
               onPressed: () async {

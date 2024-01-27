@@ -99,7 +99,12 @@ class RoomMessageWidget extends StatelessWidget {
                             ? Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.reply, size: 18),
+                                  Icon(Icons.reply,
+                                      size: 18,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.color),
                                   const SizedBox(width: 2),
                                   Flexible(
                                     child: Text(
@@ -107,20 +112,21 @@ class RoomMessageWidget extends StatelessWidget {
                                         maxLines: 2,
                                         style: Theme.of(context)
                                             .textTheme
-                                            .labelMedium,
+                                            .bodySmall,
                                         overflow: TextOverflow.ellipsis),
                                   ),
                                 ],
                               )
-                            : Text(
-                                event.senderFromMemoryOrFallback
-                                    .calcDisplayname(),
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color)),
+                            : Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: Text(
+                                    event.senderFromMemoryOrFallback
+                                        .calcDisplayname(),
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall),
+                              ),
                       ],
                     ),
                   ),

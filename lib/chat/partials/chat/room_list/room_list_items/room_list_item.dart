@@ -79,33 +79,29 @@ class RoomListItem extends StatelessWidget {
                 .titleMedium
                 ?.copyWith(fontWeight: fontWeight, color: color),
           ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (room.membership == Membership.invite)
-                  const Text(
-                    "Invited",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                Text(
-                  lastEvent?.getLocalizedBody(
-                          const MatrixDefaultLocalizations(),
-                          hideReply: true,
-                          hideEdit: true,
-                          withSenderNamePrefix: !room.isDirectChat ||
-                              room.lastEvent?.senderId == room.client.userID) ??
-                      '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontWeight: fontWeight, color: color),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (room.membership == Membership.invite)
+                const Text(
+                  "Invited",
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-              ],
-            ),
+              Text(
+                lastEvent?.getLocalizedBody(const MatrixDefaultLocalizations(),
+                        hideReply: true,
+                        hideEdit: true,
+                        withSenderNamePrefix: !room.isDirectChat ||
+                            room.lastEvent?.senderId == room.client.userID) ??
+                    '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(fontWeight: fontWeight, color: color),
+              ),
+            ],
           ),
           trailing: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
