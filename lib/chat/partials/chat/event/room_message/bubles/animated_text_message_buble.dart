@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/minestrix_chat.dart';
 
-import '../matrix_message.dart';
+import '../../event_widget.dart';
 import 'text_message_bubble.dart';
 
 class AnimatedTextMessageBuble extends StatelessWidget {
@@ -18,7 +18,7 @@ class AnimatedTextMessageBuble extends StatelessWidget {
 
   final AnimationController _resizableController;
   final bool redacted;
-  final MessageDisplay widget;
+  final EventWidget widget;
   final Color noticeForegroundColor;
   final Color noticeBackgroundColor;
   final Event e;

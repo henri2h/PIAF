@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/utils/extensions/datetime.dart';
 
 import '../../dialogs/adaptative_dialogs.dart';
-import '../event/message/matrix_message.dart';
+import '../event/event_widget.dart';
 import '../event/read_receipts/read_receipt_item.dart';
 import '../event/read_receipts/read_receipts_list.dart';
 import 'fully_read_indicator.dart';
@@ -124,7 +124,7 @@ class ItemBuilder extends StatelessWidget {
             child: Text(event.originServerTs.timeSince,
                 style: const TextStyle(fontSize: 14, color: Colors.grey)),
           ),
-        MessageDisplay(
+        EventWidget(
             key: Key("ed_${event.eventId}"),
             event: event,
             timeline: t,

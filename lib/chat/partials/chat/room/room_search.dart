@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
 
 import '../../../style/constants.dart';
-import '../event/message/matrix_message.dart';
+import '../event/event_widget.dart';
 
 enum Selection { room, all }
 
@@ -230,7 +230,7 @@ class _RoomSearchState extends State<RoomSearch> {
                                           in item.context!.eventsBefore!)
                                         Opacity(
                                           opacity: 0.6,
-                                          child: MessageDisplay(
+                                          child: EventWidget(
                                               client: client,
                                               event: Event.fromMatrixEvent(
                                                   event, room),
@@ -238,7 +238,7 @@ class _RoomSearchState extends State<RoomSearch> {
                                               displayAvatar: true,
                                               displayName: true),
                                         ),
-                                    MessageDisplay(
+                                    EventWidget(
                                         client: client,
                                         event: event,
                                         addPaddingTop: true,
@@ -249,7 +249,7 @@ class _RoomSearchState extends State<RoomSearch> {
                                           in item.context!.eventsAfter!)
                                         Opacity(
                                           opacity: 0.6,
-                                          child: MessageDisplay(
+                                          child: EventWidget(
                                               client: client,
                                               event: Event.fromMatrixEvent(
                                                   event, room),

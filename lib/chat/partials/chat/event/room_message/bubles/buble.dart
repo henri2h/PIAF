@@ -6,7 +6,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/minestrix_chat.dart';
 import 'package:minestrix/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
 
-import '../matrix_message.dart';
+import '../../event_widget.dart';
 import 'animated_text_message_buble.dart';
 import 'audio_buble.dart';
 import 'file_buble.dart';
@@ -19,7 +19,7 @@ class Buble extends StatefulWidget {
       {super.key, required this.e, required this.state, this.replyEvent});
 
   final Event e;
-  final MessageDisplay state;
+  final EventWidget state;
   final Event? replyEvent;
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/chat/event/message/html_message/html_messaged.dart';
+import 'package:minestrix/chat/partials/chat/event/room_message/html_message/html_messaged.dart';
 
 import '../../../markdown_content.dart';
 

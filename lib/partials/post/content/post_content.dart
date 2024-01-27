@@ -5,7 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/partials/minestrix_title.dart';
 import 'package:minestrix/router.gr.dart';
 import 'package:minestrix/chat/config/matrix_types.dart';
-import 'package:minestrix/chat/partials/chat/event/message/matrix_video_message.dart';
+import 'package:minestrix/chat/partials/chat/event/room_message/matrix_video_message.dart';
 import 'package:minestrix/chat/partials/event/matrix_image.dart';
 import 'package:minestrix/chat/partials/feed/posts/matrix_post_content.dart';
 
