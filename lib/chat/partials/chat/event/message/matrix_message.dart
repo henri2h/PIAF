@@ -17,10 +17,16 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../dialogs/adaptative_dialogs.dart';
 import '../../../matrix/reactions_list.dart';
 import '../../user/user_info_dialog.dart';
+import 'bubles/animated_text_message_buble.dart';
+import 'bubles/audio_buble.dart';
+import 'bubles/buble.dart';
+import 'bubles/file_buble.dart';
+import 'bubles/image_buble.dart';
+import 'bubles/video_buble.dart';
 import 'call_message_dispaly.dart';
 import 'matrix_video_message.dart';
 import 'room_message.dart';
-import 'text_message_bubble.dart';
+import 'bubles/text_message_bubble.dart';
 
 class MessageDisplay extends StatefulWidget {
   final Event event;
@@ -61,24 +67,10 @@ class MessageDisplay extends StatefulWidget {
   MessageDisplayState createState() => MessageDisplayState();
 }
 
-class MessageDisplayState extends State<MessageDisplay>
-    with TickerProviderStateMixin {
-  late AnimationController _resizableController;
-  StreamSubscription? onEventSelectedListener;
+class MessageDisplayState extends State<MessageDisplay> {
   @override
   void initState() {
     super.initState();
-
-    _resizableController = AnimationController(
-      vsync: this,
-      duration: const Duration(
-        milliseconds: 3000,
-      ),
-    );
-    onEventSelectedListener = widget.onEventSelectedStream?.listen((event) {
-      _resizableController.reset();
-      _resizableController.forward();
-    });
   }
 
   // when using is pressing down, we disable the drag
@@ -90,18 +82,6 @@ class MessageDisplayState extends State<MessageDisplay>
       }
     }
     return null;
-  }
-
-  Future<void> dowloadAttachement() async {
-    final file = await widget.event.downloadAndDecryptAttachment(
-      downloadCallback: (Uri url) async {
-        final file = await DefaultCacheManager().getSingleFile(url.toString());
-        return await file.readAsBytes();
-      },
-    );
-    if (mounted) {
-      file.save(context);
-    }
   }
 
   Widget buildMessageWidget(context, Event e) {
@@ -116,29 +96,6 @@ class MessageDisplayState extends State<MessageDisplay>
         }
       }
     }
-    bool redacted = e.type == EventTypes.Redaction;
-
-    final foregroundColor = e.sentByUser
-        ? Theme.of(context).colorScheme.onPrimary
-        : Theme.of(context).colorScheme.onSurface;
-
-    final backgroundColor = e.sentByUser
-        ? Theme.of(context).colorScheme.primary
-        : ElevationOverlay.applySurfaceTint(
-            Theme.of(context).colorScheme.surface,
-            Theme.of(context).colorScheme.surfaceTint,
-            20);
-
-    final noticeBackgroundColor = e.messageType == MessageTypes.Notice
-        ? ElevationOverlay.applySurfaceTint(
-            Theme.of(context).colorScheme.surface,
-            Theme.of(context).colorScheme.surfaceTint,
-            10)
-        : backgroundColor;
-
-    final noticeForegroundColor = e.messageType == MessageTypes.Notice
-        ? Theme.of(context).colorScheme.onSurface
-        : foregroundColor;
 
     Future<void> displayReactionDialog() async {
       if (widget.reactions == null) return;
@@ -227,28 +184,6 @@ class MessageDisplayState extends State<MessageDisplay>
                                         .textTheme
                                         .bodySmall
                                         ?.color)),
-                        if (e.sentByUser == false && widget.displayName)
-                          Text(" - ",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(
-                                      color: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.color ??
-                                          Colors.grey)),
-                        if (e.sentByUser == false && widget.displayName)
-                          Text(timeago.format(e.originServerTs),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(
-                                      color: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.color ??
-                                          Colors.grey)),
                       ],
                     ),
                   ),
@@ -264,163 +199,15 @@ class MessageDisplayState extends State<MessageDisplay>
                   },
                   onLongPressUp: () {},
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: min<double>(
-                          MediaQuery.of(context).size.width * 0.7, 500),
-                    ),
-                    child: Builder(builder: (context) {
-                      switch (e.messageType) {
-                        case MessageTypes.Image:
-                        case MessageTypes.Sticker:
-                          return ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: min<double>(
-                                    MediaQuery.of(context).size.width * 0.6,
-                                    300),
-                                maxHeight: min<double>(
-                                    MediaQuery.of(context).size.height * 0.4,
-                                    400),
-                              ),
-                              child: MImageViewer(event: e));
-                        case MessageTypes.Video:
-                          return ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: min<double>(
-                                    MediaQuery.of(context).size.width * 0.6,
-                                    300),
-                                maxHeight: min<double>(
-                                    MediaQuery.of(context).size.height * 0.4,
-                                    400),
-                              ),
-                              child: MatrixVideoMessage(e,
-                                  key: Key("video_${e.eventId}")));
-
-                        case MessageTypes.Audio:
-                          return Card(
-                              color: backgroundColor,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ListTile(
-                                    onTap: dowloadAttachement,
-                                    leading: Icon(Icons.audio_file,
-                                        color: foregroundColor),
-                                    title: Text("Audio",
-                                        style:
-                                            TextStyle(color: foregroundColor)),
-                                    subtitle: Text(e.body,
-                                        style:
-                                            TextStyle(color: foregroundColor))),
-                              ));
-                        case MessageTypes.File:
-                          return Card(
-                              color: backgroundColor,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ListTile(
-                                    onTap: dowloadAttachement,
-                                    leading: Icon(Icons.file_present,
-                                        color: foregroundColor),
-                                    title: Text("File",
-                                        style:
-                                            TextStyle(color: foregroundColor)),
-                                    subtitle: Text(e.body,
-                                        style:
-                                            TextStyle(color: foregroundColor))),
-                              ));
-                        default:
-                          return Column(
-                            crossAxisAlignment: e.sentByUser
-                                ? CrossAxisAlignment.end
-                                : CrossAxisAlignment.start,
-                            children: [
-                              if (e.relationshipType == RelationshipTypes.reply)
-                                Transform.translate(
-                                  offset: const Offset(0, 4.0),
-                                  child: Builder(builder: (context) {
-                                    if (!snapReplyEvent.hasData) {
-                                      return Container();
-                                    }
-                                    final replyEvent = snapReplyEvent.data!;
-
-                                    return InkWell(
-                                      onTap: () => widget.onReplyEventPressed
-                                          ?.call(replyEvent),
-                                      child: Column(
-                                        crossAxisAlignment: e.sentByUser
-                                            ? CrossAxisAlignment.end
-                                            : CrossAxisAlignment.start,
-                                        children: [
-                                          Opacity(
-                                            opacity: 0.7,
-                                            child: ConstrainedBox(
-                                              constraints: const BoxConstraints(
-                                                  maxHeight: 100),
-                                              child: ListView(
-                                                shrinkWrap: true,
-                                                physics:
-                                                    const NeverScrollableScrollPhysics(), // In order to prevent scrolling the replies
-                                                children: [
-                                                  TextMessageBubble(
-                                                      redacted: redacted,
-                                                      e: replyEvent,
-                                                      alignRight: e.sentByUser,
-                                                      isReply: true,
-                                                      color:
-                                                          foregroundColor, // TODO: correct color
-                                                      backgroundColor:
-                                                          backgroundColor)
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              AnimatedBuilder(
-                                  animation: _resizableController,
-                                  builder: (BuildContext context,
-                                          Widget? child) =>
-                                      TextMessageBubble(
-                                        redacted: redacted,
-                                        e: e,
-                                        displaySentIndicator:
-                                            widget.isLastMessage &&
-                                                e.sentByUser,
-                                        edited: widget.edited,
-                                        color: noticeForegroundColor,
-                                        backgroundColor: noticeBackgroundColor,
-                                        borderPadding: const EdgeInsets.all(3),
-                                        borderColor: () {
-                                          // annimation when jumping to an event
-
-                                          var pos = _resizableController.value;
-                                          if (pos == 0 || pos == 1) {
-                                            return noticeBackgroundColor;
-                                          }
-
-                                          const duration = 0.15;
-                                          const end = 1 - duration;
-
-                                          if (pos < duration) {
-                                            pos = pos / duration;
-                                          } else if (pos > end) {
-                                            pos = 1 - (pos - end) / duration;
-                                          } else {
-                                            pos = 1;
-                                          }
-                                          return Color.lerp(
-                                              noticeBackgroundColor,
-                                              Colors.blue.shade800,
-                                              pos);
-                                        }(),
-                                      )),
-                            ],
-                          );
-                      }
-                    }),
-                  ),
+                      constraints: BoxConstraints(
+                        maxWidth: min<double>(
+                            MediaQuery.of(context).size.width * 0.7, 500),
+                      ),
+                      child: Buble(
+                        e: e,
+                        state: widget,
+                        replyEvent: snapReplyEvent.data
+                      )),
                 ),
                 if (keys.entries.isNotEmpty)
                   Padding(
