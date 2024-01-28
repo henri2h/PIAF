@@ -108,7 +108,11 @@ class TextMessageBubble extends StatelessWidget {
                     children: [
                       if (edited) Icon(Icons.edit, color: colorPatch, size: 12),
                       if (edited) const SizedBox(width: 2),
-                      if (edited) Text("edited", style: textTheme),
+                      if (edited)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 4.0),
+                          child: Text("edited", style: textTheme),
+                        ),
                       if (displayTime)
                         Text(DateFormat.Hm().format(event.originServerTs),
                             style: textTheme),
