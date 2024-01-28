@@ -68,12 +68,6 @@ class RoomTimelineState extends State<RoomTimeline> {
     _scrollController.addListener(scrollListener);
     controller = InfiniteListController(
         items: filteredEvents, scrollController: _scrollController);
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (room != null) {
-        markLastRead(room: room!);
-      }
-    });
   }
 
   @override
@@ -274,32 +268,45 @@ class RoomTimelineState extends State<RoomTimeline> {
   Future<bool> markLastRead({required Room room}) async {
     // Only update the read marker if the user is in the room.
     // Room marker can't be updated if we are peeking the room
-    if (room.membership != Membership.invite) return false;
+    if (room.membership != Membership.join) return false;
 
     if (widget.timeline?.events.isNotEmpty != true) return false;
 
-    Event? lastEvent;
+    Event? lastVisibleEvent;
 
     // get last read item
     if (hasScrollReachedBottom) {
-      lastEvent = widget.timeline?.events.first;
+      lastVisibleEvent = widget.timeline?.events.first;
+
+      // We need to set the last view marker at the last event
+      if (room.hasNewMessages) {
+        final lastEvent = room.lastEvent ?? lastVisibleEvent;
+        if (lastEvent != null) {
+          await room.setReadMarker(lastEvent.eventId, mRead: lastEvent.eventId);
+
+          if (lastVisibleEvent?.eventId != null) {
+            fullyReadEventId = lastVisibleEvent?.eventId;
+          }
+          return true;
+        }
+      }
     } else {
-      lastEvent = controller?.getClosestElementToAlignment();
+      lastVisibleEvent = controller?.getClosestElementToAlignment();
     }
 
-    if (lastEvent != null &&
-        fullyReadEventId != lastEvent.eventId &&
-        lastEvent.status.isSent) {
+    if (lastVisibleEvent != null &&
+        fullyReadEventId != lastVisibleEvent.eventId &&
+        lastVisibleEvent.status.isSent) {
       final lastReadPos = widget.timeline!.events
           .indexWhere((element) => element.eventId == fullyReadEventId);
-      final pos = widget.timeline!.events.indexOf(lastEvent);
+      final pos = widget.timeline!.events.indexOf(lastVisibleEvent);
 
       if (lastReadPos != -1 && pos >= lastReadPos) return false;
 
-      final evId = lastEvent.eventId;
-      fullyReadEventId = evId;
-
+      final evId = lastVisibleEvent.eventId;
       await room.setReadMarker(evId, mRead: evId);
+
+      fullyReadEventId = evId;
       return true;
     }
     return false;
