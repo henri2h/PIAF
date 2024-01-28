@@ -128,5 +128,5 @@ sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.1-dev li
 ## Desktop screenshot
 
 <div>
-<img src="./readmeassets/account_page.png" width="600">
+<img src="./readmeassets/chat_page_desktop.png" width="600">
 </div>
