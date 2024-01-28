@@ -18,10 +18,12 @@ class RoomListOrPlaceHolderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = Provider.of<TabChatPageState>(context, listen: false);
 
-    if (state.mobile) {
-      return const SimpleRoomList();
-    }
-
-    return const SafeArea(child: Card(child: Center(child: MinestrixTitle())));
+    return LayoutBuilder(builder: (context, snapshot) {
+      if (state.mobile) {
+        return const SimpleRoomList();
+      }
+      return const SafeArea(
+          child: Card(child: Center(child: MinestrixTitle())));
+    });
   }
 }

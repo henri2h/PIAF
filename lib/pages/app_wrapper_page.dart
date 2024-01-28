@@ -48,7 +48,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   }
 
   bool displayAppBar = false;
-  bool displayNavigationRail = true;
   StreamController<UrlState>? controller;
 
   @override
@@ -60,22 +59,19 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
 
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 850;
+
       return AutoTabsRouter(
         builder: (context, widget) {
           final path = AutoRouterDelegate.of(context).urlState;
           controller?.add(path);
 
-          const shouldDisplayAppBar = true;
-          // displayAppBarList.contains(path);
-          final shouldDisplayNavigationRail =
-              path.uri.toString().startsWith("/rooms");
+          bool shouldDisplayAppBar =
+              displayAppBarList.contains(path.uri.toString());
 
-          if (displayAppBar != shouldDisplayAppBar ||
-              shouldDisplayNavigationRail != displayNavigationRail) {
+          if (displayAppBar != shouldDisplayAppBar) {
             SchedulerBinding.instance.addPostFrameCallback((_) {
               setState(() {
                 displayAppBar = shouldDisplayAppBar;
-                displayNavigationRail = shouldDisplayNavigationRail;
               });
             });
           }
