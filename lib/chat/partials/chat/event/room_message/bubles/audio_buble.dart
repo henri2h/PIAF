@@ -24,7 +24,8 @@ class AudioBuble extends StatelessWidget {
               onTap: downloadAttachement,
               leading: Icon(Icons.audio_file, color: foregroundColor),
               title: Text("Audio", style: TextStyle(color: foregroundColor)),
-              subtitle: Text(event.body, style: TextStyle(color: foregroundColor))),
+              subtitle:
+                  Text(event.body, style: TextStyle(color: foregroundColor))),
         ));
   }
 }

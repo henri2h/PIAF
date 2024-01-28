@@ -24,7 +24,8 @@ class FileBuble extends StatelessWidget {
               onTap: downloadAttachement,
               leading: Icon(Icons.file_present, color: foregroundColor),
               title: Text("File", style: TextStyle(color: foregroundColor)),
-              subtitle: Text(event.body, style: TextStyle(color: foregroundColor))),
+              subtitle:
+                  Text(event.body, style: TextStyle(color: foregroundColor))),
         ));
   }
 }
