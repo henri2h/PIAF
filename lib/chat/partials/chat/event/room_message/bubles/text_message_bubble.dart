@@ -41,7 +41,7 @@ class TextMessageBubble extends StatelessWidget {
     final textTheme = Theme.of(context)
         .textTheme
         .bodySmall
-        ?.copyWith(color: colorPatch, fontSize: 10);
+        ?.copyWith(color: colorPatch.withOpacity(0.7), fontSize: 10);
 
     return Card(
       margin: EdgeInsets.zero,
