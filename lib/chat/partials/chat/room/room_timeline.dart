@@ -140,6 +140,7 @@ class RoomTimelineState extends State<RoomTimeline> {
 
     filteredEvents.clear();
     filteredEvents.addAll(filter(widget.timeline?.events) ?? []);
+    final isDirectChat = room?.isDirectChat ?? false;
 
     return Stack(children: [
       room != null
@@ -162,6 +163,9 @@ class RoomTimelineState extends State<RoomTimeline> {
                               ? Key("item_${filteredEvents[index].eventId}")
                               : null,
                           room: room!,
+                          // Calculating isDirectChat takes a lot of CPU time so
+                          // we need to optimize it's usage
+                          isDirectChat: isDirectChat,
                           filteredEvents: filteredEvents,
                           t: widget.timeline,
                           i: index,

@@ -13,7 +13,7 @@ class ItemBuilder extends StatelessWidget {
   const ItemBuilder(
       {super.key,
       this.displayAvatar = false,
-      this.displayName = false,
+      this.displayRoomName = false,
       this.displayTime = false,
       this.displayPadding = false,
       required this.room,
@@ -25,13 +25,14 @@ class ItemBuilder extends StatelessWidget {
       required this.onReplyEventPressed,
       required this.onReply,
       this.onSelected,
-      this.fullyReadEventId});
+      this.fullyReadEventId,
+      required this.isDirectChat});
 
   final Room room;
   final Timeline? t;
   final List<Event> filteredEvents;
   final bool displayAvatar;
-  final bool displayName;
+  final bool displayRoomName;
   final bool displayTime;
   final bool displayPadding;
   final void Function(Offset, Event) onReact;
@@ -41,11 +42,12 @@ class ItemBuilder extends StatelessWidget {
   final void Function(Event) onReply;
   final Stream<String>? onSelected;
   final String? fullyReadEventId;
+  final bool isDirectChat;
 
   @override
   Widget build(BuildContext context) {
     // local overrides
-    bool displayName = this.displayName;
+    bool displayRoomName = this.displayRoomName;
     bool displayTime = this.displayTime;
     bool displayPadding = this.displayPadding;
     bool displayAvatar = this.displayAvatar;
@@ -65,17 +67,11 @@ class ItemBuilder extends StatelessWidget {
       // TODO : check dates
       if (event.type == EventTypes.Message) {
         if (event.senderId != prevEvent.senderId) {
-          displayName = !room.isDirectChat;
+          displayRoomName = !isDirectChat;
           displayPadding = true;
         }
 
-        if (event.originServerTs
-                .difference(prevEvent.originServerTs)
-                .inHours
-                .abs() >
-            2) {
-          displayTime = true;
-        }
+        displayTime = displayTime || shouldDisplayTime(event, prevEvent);
       }
 
       if ((prevEvent.type == EventTypes.Message &&
@@ -132,7 +128,7 @@ class ItemBuilder extends StatelessWidget {
             client: room.client,
             isLastMessage: i == 0,
             displayAvatar: displayAvatar,
-            displayName: displayName,
+            displayName: displayRoomName,
             addPaddingTop: displayPadding,
             edited: edited,
             onEventSelectedStream:
@@ -165,5 +161,16 @@ class ItemBuilder extends StatelessWidget {
           const FullyReadIndicator(),
       ],
     );
+  }
+
+  bool shouldDisplayTime(Event event, Event prevEvent) {
+    if (event.originServerTs
+            .difference(prevEvent.originServerTs)
+            .inHours
+            .abs() >=
+        12) {
+      return true;
+    }
+    return false;
   }
 }

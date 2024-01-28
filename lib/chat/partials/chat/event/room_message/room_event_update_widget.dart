@@ -59,13 +59,15 @@ class RoomEventUpdateWidget extends StatelessWidget {
             padding: const EdgeInsets.only(left: 50.0, top: 8, bottom: 8),
             child: Row(
               children: [
-                Icon(icon),
+                Icon(icon,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                    size: Theme.of(context).textTheme.bodySmall?.fontSize),
                 const SizedBox(
                   width: 8,
                 ),
                 Expanded(
                   child: Text(snap.data ?? '',
-                      style: Theme.of(context).textTheme.labelMedium),
+                      style: Theme.of(context).textTheme.bodySmall),
                 ),
               ],
             ),

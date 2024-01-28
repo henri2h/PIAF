@@ -4,12 +4,14 @@ import 'package:timeago/timeago.dart' as timeago;
 extension DateTimeExtension on DateTime {
   String get timeSince {
     final dt = DateTime.now();
-    if (dt.difference(this).inDays.abs() > 7) {
+    if (dt.difference(this).inDays.abs() > 90) {
       return DateFormat.yMMMMEEEEd().format(this);
+    } else if (dt.difference(this).inDays.abs() > 7) {
+      return DateFormat.MMMEd().format(this);
     } else if (dt.difference(this).inDays.abs() > 0) {
-      return DateFormat.E().add_jm().format(this);
+      return DateFormat.E().format(this);
     } else {
-      return DateFormat.jm().format(this);
+      return DateFormat.E().format(this);
     }
   }
 

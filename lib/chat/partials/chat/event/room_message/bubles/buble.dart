@@ -137,6 +137,7 @@ class _BubleState extends State<Buble> with TickerProviderStateMixin {
                                   child: TextMessageBubble(
                                       redacted: redacted,
                                       event: widget.replyEvent!,
+                                      displayTime: false,
                                       onTap: () => widget
                                           .state.onReplyEventPressed
                                           ?.call(widget.replyEvent!),
