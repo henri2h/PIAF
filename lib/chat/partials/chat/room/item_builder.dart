@@ -136,7 +136,11 @@ class ItemBuilder extends StatelessWidget {
             onReact: (e) => onReact(e, event),
             onReplyEventPressed: onReplyEventPressed,
             onReply: (_) => onReply(oldEvent)),
-        if (event.receipts.isNotEmpty)
+
+        // Disable read receipts in large group as it's quit costly
+        // in terms of performance.
+        if ((room.summary.mJoinedMemberCount ?? 0) < 60 &&
+            event.receipts.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 4, left: 2, right: 2),
             child: GestureDetector(
