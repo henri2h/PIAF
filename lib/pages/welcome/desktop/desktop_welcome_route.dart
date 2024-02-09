@@ -14,12 +14,24 @@ class DesktopWelcomePage extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: Text("Welcome",
-                  style: Theme.of(context).textTheme.headlineLarge),
+              padding: const EdgeInsets.only(
+                  top: 80, left: 30.0, right: 30, bottom: 60),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset("assets/piaf.jpg",
+                            width: 60, height: 60)),
+                  ),
+                  Text("Welcome",
+                      style: Theme.of(context).textTheme.displayLarge),
+                ],
+              ),
             ),
             ListTile(
               leading: Card(
