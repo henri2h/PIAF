@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:infinite_list/infinite_list.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/utils/extensions/datetime.dart';
+import 'package:minestrix/utils/date_time_extension.dart';
 
 import '../../dialogs/adaptative_dialogs.dart';
 import '../event/event_widget.dart';
@@ -117,7 +117,7 @@ class ItemBuilder extends StatelessWidget {
         if (displayTime)
           Padding(
             padding: const EdgeInsets.only(top: 20.0, bottom: 14),
-            child: Text(event.originServerTs.timeSince,
+            child: Text(event.originServerTs.timeSinceInDays,
                 style: const TextStyle(fontSize: 14, color: Colors.grey)),
           ),
         EventWidget(

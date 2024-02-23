@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/utils/extensions/datetime.dart';
+import 'package:minestrix/utils/date_time_extension.dart';
 
 import '../../../components/shimmer_widget.dart';
 import '../../../matrix/matrix_image_avatar.dart';
@@ -31,8 +31,8 @@ class RoomListItem extends StatelessWidget {
     final bool isUnread = room.isUnreadOrInvited;
     final bool isUnreadOrNewMessage = isUnread || room.hasNewMessages;
     final color = isUnreadOrNewMessage
-        ? Theme.of(context).colorScheme.onSurface
-        : Colors.grey.withAlpha(180);
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.onSurface;
     final fontWeight = isUnreadOrNewMessage ? FontWeight.bold : null;
     final lastEvent = room.lastEvent;
     final directChatMatrixID = room.directChatMatrixID;
@@ -108,7 +108,7 @@ class RoomListItem extends StatelessWidget {
             children: [
               Text(
                   lastEvent?.originServerTs != null
-                      ? lastEvent!.originServerTs.timeSinceAWeekOrDuration
+                      ? lastEvent!.originServerTs.timeSinceInHours
                       : "Invalid time",
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: color,
@@ -119,7 +119,9 @@ class RoomListItem extends StatelessWidget {
                 NotificationCountDot(
                   room: room,
                   unreadMessage: true,
-                )
+                ),
+              if (room.pushRuleState == PushRuleState.dontNotify)
+                const Icon(Icons.volume_mute)
             ],
           ),
         ),
