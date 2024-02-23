@@ -47,27 +47,22 @@ class AdaptativeDialogs {
         ),
       );
     } else if (bottomSheet &&
-        [TargetPlatform.android].contains(Theme.of(context).platform)) {
-      return await showModalBottomSheet(
-        context: context,
-        useSafeArea: useSafeArea,
-        isScrollControlled: true,
-        builder: (context) => Column(
-          children: [
-            if (title != null || actions != null)
-              AppBar(
-                title: Text(title ?? ''),
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                actions: actions,
-              ),
-            if (subtitle != null) subtitle,
-            Expanded(child: builder(context)),
-          ],
-        ),
-      );
+        TargetPlatform.android == Theme.of(context).platform) {
+      return await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) {
+        return Scaffold(
+            appBar: title != null || actions != null
+                ? AppBar(
+                    title: Text(title ?? ''),
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    actions: actions,
+                  )
+                : null,
+            body: builder(context));
+      }));
     }
 
     return await showDialog<T>(
