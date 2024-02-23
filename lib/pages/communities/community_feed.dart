@@ -82,12 +82,15 @@ class _CommunityFeedState extends State<CommunityFeed> {
       Logs().w("Request history $start");
 
       await client.roomsLoading;
-      final events = await client.database?.getEventListForType(
-              MatrixTypes.post,
+      final events = <Event>[];
+
+      // TODO: Reimplement post loading
+
+      /*await client.database?.getEventListForType(MatrixTypes.post,
               widget.children.where((room) => room.isFeed).toList(),
               start: start) ??
           [];
-
+*/
       start += events.length;
 
       final fevents = events

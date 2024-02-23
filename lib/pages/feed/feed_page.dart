@@ -8,7 +8,6 @@ import 'package:matrix/src/utils/cached_stream_controller.dart';
 import 'package:minestrix/pages/feed/feed_page_view.dart';
 import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
 import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix/chat/config/matrix_types.dart';
 import 'package:minestrix/chat/partials/feed/posts/matrix_post_editor.dart';
 import 'package:minestrix/chat/utils/matrix_widget.dart';
 
@@ -84,8 +83,12 @@ class FeedPageController extends State<FeedPage> {
   bool isGettingEvents = false;
 
   Future<List<Event>> getEvents() async {
-    if (!Settings().optimizedFeed) {
+    if (!Settings().optimizedFeed && true) {
+      if (isGettingEvents) return events ?? [];
+
+      isGettingEvents = true;
       events = await Matrix.of(context).client.getMinestrixEvents();
+      isGettingEvents = false;
     } else {
       if (isGettingEvents) return events ?? [];
       events = await requestEvents();
@@ -94,6 +97,8 @@ class FeedPageController extends State<FeedPage> {
   }
 
   Future<List<Event>> requestEvents() async {
+    // TODO: Restore requesting events from
+    // an optimiezd datbase system
     if (isGettingEvents) return [];
     isGettingEvents = true;
 
@@ -109,10 +114,11 @@ class FeedPageController extends State<FeedPage> {
     */
 
       await client.roomsLoading;
-      final events = await client.database?.getEventListForType(
+      final events = <Event>[]; // TODO: fix me
+      /*await client.database?.getEventListForType(
               MatrixTypes.post, client.rooms,
               start: start) ??
-          [];
+          [];*/
 
       start += events.length;
 

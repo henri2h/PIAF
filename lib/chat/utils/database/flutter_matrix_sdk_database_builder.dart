@@ -17,7 +17,6 @@ import '../platform_infos.dart';
 
 Future<DatabaseApi> flutterMatrixSdkDatabaseBuilder(Client client) async {
   MatrixSdkDatabase? database;
-
   database = await _constructDatabase(client);
   await database.open();
   return database;

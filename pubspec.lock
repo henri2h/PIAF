@@ -1200,9 +1200,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "henri2h/index-events-by-event-type"
-      resolved-ref: "52299e0602a2a351d648a5fecf347e77ee649b4b"
-      url: "https://github.com/MinesTRIX/matrix-dart-sdk.git"
+      ref: HEAD
+      resolved-ref: "033fef7cd0e87a50da04b3990170c64de830fc4b"
+      url: "https://github.com/famedly/matrix-dart-sdk"
     source: git
     version: "0.25.10"
   matrix_api_lite:

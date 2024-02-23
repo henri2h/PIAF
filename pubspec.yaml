@@ -14,9 +14,7 @@ dependencies:
 
   # Matrix
   matrix:
-    git:
-      url: https://github.com/MinesTRIX/matrix-dart-sdk.git
-      ref: henri2h/index-events-by-event-type
+    git: https://github.com/famedly/matrix-dart-sdk
   matrix_homeserver_recommendations: ^0.3.0
 
 
