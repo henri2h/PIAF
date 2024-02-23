@@ -24,10 +24,16 @@ class SyncStatusCard extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(children: [
-                        Text(snap.data!.status.toString()),
-                        const Text("Syncing",
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text("Syncing",
+                            style: Theme.of(context).textTheme.titleLarge),
+                        if (snap.data?.status == SyncStatus.processing)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                                "Processing sync response, this can take some time",
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium),
+                          ),
                         const SizedBox(height: 20),
                         if (snap.data?.status == SyncStatus.processing)
                           LinearProgressIndicator(value: snap.data!.progress),
