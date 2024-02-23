@@ -22,7 +22,8 @@ class AppRouter extends $AppRouter {
 // as it's distracting when typing messages
     AutoRoute(path: '/', page: AppWrapperRoute.page, children: [
       AutoRoute(path: '', page: TabHomeRoute.page, children: [
-        AutoRoute(path: '', page: FeedRoute.page),
+        AutoRoute(path: '', page: HomeRoute.page),
+        AutoRoute(path: 'feed', page: FeedRoute.page),
         AutoRoute(path: 'feeds', page: FeedListRoute.page),
         AutoRoute(path: 'post', page: PostRoute.page),
         AutoRoute(path: 'research', page: SearchRoute.page),

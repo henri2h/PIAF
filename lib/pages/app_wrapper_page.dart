@@ -111,6 +111,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                       tabsRouter.setActiveIndex(index);
                     },
                     destinations: [
+                      const NavigationDestination(
+                          icon: Icon(Icons.home), label: "Home"),
                       NavigationDestination(
                           icon: StreamBuilder(
                               stream: Matrix.of(context).onClientChange.stream,
@@ -134,27 +136,16 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                               }),
                           label: "Chats"),
                       const NavigationDestination(
-                          icon: Icon(Icons.feed), label: "Feed"),
-                      const NavigationDestination(
-                          icon: Icon(Icons.event), label: "Events "),
-                      const NavigationDestination(
                           icon: Icon(Icons.web_stories), label: "Stories"),
-                      const NavigationDestination(
-                          icon: Icon(Icons.group), label: "Communities"),
-                      const NavigationDestination(
-                          icon: Icon(Icons.camera_alt), label: "Camera")
                     ],
                   ),
             endDrawer: const NotificationView(),
           );
         },
         routes: const [
-          TabChatRoute(),
           TabHomeRoute(),
-          TabCalendarRoute(),
+          TabChatRoute(),
           TabStoriesRoute(),
-          TabCommunityRoute(),
-          TabCameraRoute(),
         ],
       );
     });
