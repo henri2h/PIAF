@@ -24,14 +24,9 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   Future<void>? loadFuture;
 
   static const displayAppBarList = {
-    "/",
-    "/search",
-    "/feed",
+    "/home",
     "/stories",
-    "/chat",
-    "/events",
-    "/community",
-    "/camera"
+    "/", // chat page
   };
 
   /// bah dirty
