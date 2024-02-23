@@ -115,32 +115,38 @@ class RoomPageState extends State<RoomPage> {
   Widget build(BuildContext context) {
     reloadedCount++;
 
-    final chatView = FutureBuilder<Timeline?>(
-      future: futureTimeline,
-      builder: (BuildContext context, AsyncSnapshot<Timeline?> snapshot) {
-        if (snapshot.hasData == false) {
-          return Scaffold(
-              appBar: AppBar(),
-              body: Center(
-                  child: snapshot.hasError
-                      ? ListTile(
-                          title: const Text("Could not load the room."),
-                          subtitle: Text(snapshot.error.toString()))
-                      : const CircularProgressIndicator()));
-        }
+    if (room != null) {
+      return FutureBuilder<Timeline?>(
+        future: futureTimeline,
+        builder: (BuildContext context, AsyncSnapshot<Timeline?> snapshot) {
+          if (snapshot.hasData == false) {
+            return Scaffold(
+                appBar: AppBar(),
+                body: Center(
+                    child: snapshot.hasError
+                        ? ListTile(
+                            title: const Text("Could not load the room."),
+                            subtitle: Text(snapshot.error.toString()))
+                        : const CircularProgressIndicator()));
+          }
 
-        return StreamBuilder(
-            stream: room?.onUpdate.stream,
-            builder: (context, snap) {
-              timeline = snapshot.data;
-              return buildChatView(room);
-            });
-      },
-    );
-
-    if (room != null || widget.roomId.isValidMatrixId) {
-      return chatView;
+          return StreamBuilder(
+              stream: room?.onUpdate.stream,
+              builder: (context, snap) {
+                timeline = snapshot.data;
+                return buildChatView(room);
+              });
+        },
+      );
     }
+
+    // If the room id is a valid user matrix id
+    // then, we display the chat view in order to
+    // allow creating a message
+    if (widget.roomId.isValidMatrixId) {
+      return buildChatView(room);
+    }
+
     return Scaffold(
       appBar: AppBar(),
       body: const Text("Room not found"),
