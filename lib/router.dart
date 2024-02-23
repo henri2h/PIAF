@@ -21,7 +21,7 @@ class AppRouter extends $AppRouter {
 // we want to have the top navigation bar on the chat page when on desktop but not the bottom one on small screen
 // as it's distracting when typing messages
     AutoRoute(path: '/', page: AppWrapperRoute.page, children: [
-      AutoRoute(path: '', page: TabHomeRoute.page, children: [
+      AutoRoute(path: 'home', page: TabHomeRoute.page, children: [
         AutoRoute(path: '', page: HomeRoute.page),
         AutoRoute(path: 'feed', page: FeedRoute.page),
         AutoRoute(path: 'feeds', page: FeedListRoute.page),
@@ -73,8 +73,8 @@ class AppRouter extends $AppRouter {
 
       AutoRoute(path: 'camera', page: TabCameraRoute.page),
 
-      // chats
-      AutoRoute(path: 'chat', page: TabChatRoute.page, children: [
+      // chats, initial page
+      AutoRoute(path: '', page: TabChatRoute.page, children: [
         AutoRoute(path: '', page: RoomListOrPlaceHolderRoute.page),
         AutoRoute(path: 'space', page: OverrideRoomListSpaceRoute.page),
         AutoRoute(path: 'space/:spaceId', page: OverrideRoomSpaceRoute.page),
