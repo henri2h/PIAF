@@ -188,10 +188,9 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
         actions: [
           IconButton(
               onPressed: () {
-                textController.clear();
-                stream.add("");
+                Navigator.of(context).pop();
               },
-              icon: const Icon(Icons.clear))
+              icon: const Icon(Icons.close))
         ],
       ),
       body: Padding(
@@ -298,25 +297,19 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
                               borderRadius: BorderRadius.circular(12)),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                MatrixImageAvatar(
-                                    url: snap.data?.avatarUrl,
-                                    client: widget.client),
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                Flexible(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(snap.data?.displayName ??
-                                          textController.text),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            child: ListTile(
+                              leading: MatrixImageAvatar(
+                                  url: snap.data?.avatarUrl,
+                                  client: widget.client),
+                              title: const Text(
+                                  "Contact directly using a Matrix ID"),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(snap.data?.displayName ??
+                                      textController.text),
+                                ],
+                              ),
                             ),
                           ),
                           onPressed: () =>
