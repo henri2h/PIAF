@@ -20,6 +20,7 @@ class DesktopWelcomePage extends StatelessWidget {
               padding: const EdgeInsets.only(
                   top: 80, left: 30.0, right: 30, bottom: 60),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
