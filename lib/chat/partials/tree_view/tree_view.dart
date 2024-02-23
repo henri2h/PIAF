@@ -90,7 +90,7 @@ class TreeViewChildState extends State<TreeViewChild>
                   ? IconButton(
                       icon: Icon(isExpanded ?? false
                           ? Icons.keyboard_arrow_down
-                          : Icons.keyboard_arrow_up),
+                          : Icons.keyboard_arrow_left),
                       onPressed: () {
                         toggleExpanded();
                       })

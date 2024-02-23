@@ -185,13 +185,6 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
             focusNode: myfocus,
             autofocus: true,
             decoration: const InputDecoration(hintText: "Search")),
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              icon: const Icon(Icons.close))
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -226,9 +219,10 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text("Contacted recently"),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("Contacted recently",
+                              style: Theme.of(context).textTheme.titleMedium),
                         ),
                         FutureBuilder<List<String>>(
                             future: lastOpened,
@@ -317,9 +311,11 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
                     ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(snapshot.data?.searchText.isNotEmpty != true
-                        ? "Suggestions"
-                        : "Results"),
+                    child: Text(
+                        snapshot.data?.searchText.isNotEmpty != true
+                            ? "Suggestions"
+                            : "Results",
+                        style: Theme.of(context).textTheme.titleMedium),
                   ),
                   if (snapshot.hasData)
                     for (SearchItem s in snapshot.data!.items)

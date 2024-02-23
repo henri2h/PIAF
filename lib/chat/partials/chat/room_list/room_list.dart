@@ -130,7 +130,7 @@ class _RoomListState extends State<RoomList> {
       ),
       appBar: spaceSelectionMode
           ? AppBar(
-              title: const Text("Space list"),
+              title: const Text("Filter chats"),
               leading: IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () {

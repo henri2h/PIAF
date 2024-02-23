@@ -60,28 +60,26 @@ class TabChatPageState extends State<TabChatPage> {
           }
         },
 
-        child: SafeArea(
-          child: Scaffold(
-            body: LayoutBuilder(builder: (context, constraints) {
-              mobile = constraints.maxWidth < 800;
-              return Row(
-                children: [
-                  if (!mobile)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 400),
-                          child: const Card(
-                            child: SimpleRoomList(
-                              mobile: false,
-                            ),
-                          )),
-                    ),
-                  const Expanded(child: AutoRouter()),
-                ],
-              );
-            }),
-          ),
+        child: Scaffold(
+          body: LayoutBuilder(builder: (context, constraints) {
+            mobile = constraints.maxWidth < 800;
+            return Row(
+              children: [
+                if (!mobile)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: const Card(
+                          child: SimpleRoomList(
+                            mobile: false,
+                          ),
+                        )),
+                  ),
+                const Expanded(child: AutoRouter()),
+              ],
+            );
+          }),
         ),
       ),
     );
