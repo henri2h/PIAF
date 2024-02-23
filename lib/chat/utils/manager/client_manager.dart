@@ -2,10 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:matrix/encryption/utils/key_verification.dart';
 import 'package:matrix/matrix.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../custom_image_resizer.dart';
 import '../database/flutter_matrix_sdk_database_builder.dart';
@@ -16,11 +14,6 @@ abstract class ClientManager {
   static String clientNamespace =
       'fr.minestrix.store.clients${kDebugMode ? '.debug' : ''}';
   static Future<List<Client>> getClients({bool initialize = true}) async {
-    if (PlatformInfos.isLinux) {
-      Hive.init((await getApplicationSupportDirectory()).path);
-    } else {
-      await Hive.initFlutter();
-    }
     final clientNames = <String>{};
     try {
       final rawClientNames = await Store().getItem(clientNamespace);

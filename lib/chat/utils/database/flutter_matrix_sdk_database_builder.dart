@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/utils/database/flutter_hive_collection_database.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -18,32 +17,10 @@ import '../platform_infos.dart';
 
 Future<DatabaseApi> flutterMatrixSdkDatabaseBuilder(Client client) async {
   MatrixSdkDatabase? database;
-  try {
-    database = await _constructDatabase(client);
-    await database.open();
-    return database;
-  } catch (e) {
-    // Try to delete database so that it can created again on next init:
-    database?.delete().catchError(
-          (e, s) => Logs().w(
-            'Unable to delete database, after failed construction',
-            e,
-            s,
-          ),
-        );
 
-    // Send error notification:
-    /* final l10n = lookupL10n(PlatformDispatcher.instance.locale);
-    ClientManager.sendInitNotification(
-      l10n.initAppError,
-      l10n.databaseBuildErrorBody(
-        AppConfig.newIssueUrl.toString(),
-        e.toString(),
-      ),
-    );
-*/
-    return FlutterHiveCollectionsDatabase.databaseBuilder(client);
-  }
+  database = await _constructDatabase(client);
+  await database.open();
+  return database;
 }
 
 Future<MatrixSdkDatabase> _constructDatabase(Client client) async {
