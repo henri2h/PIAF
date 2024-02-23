@@ -115,6 +115,12 @@ class TabStoriesPageState extends State<TabStoriesPage> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Matrix.of(context).client.openStoryEditModalOrCreate(context);
+        },
+        child: const Icon(Icons.photo_camera),
+      ),
     );
   }
 }

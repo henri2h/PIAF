@@ -4,6 +4,7 @@ import 'package:minestrix/router.gr.dart';
 
 import '../../chat/partials/sync/sync_status_card.dart';
 import '../../chat/utils/matrix_widget.dart';
+import '../../partials/account_selection_button.dart';
 
 @RoutePage()
 class HomePage extends StatefulWidget {
@@ -20,7 +21,8 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Home"),
+          leading: const AccountSelectionButton(),
+          title: const Text("PIAF"),
           actions: [
             IconButton(onPressed: () {}, icon: const Icon(Icons.notifications))
           ],
@@ -49,29 +51,33 @@ class _HomePageState extends State<HomePage> {
             Card(
               child: ListTile(
                 title: const Text("Events"),
+                subtitle: const Text("Host and participate to events"),
                 leading: const CircleAvatar(child: Icon(Icons.event)),
                 onTap: () async {
                   await context.pushRoute(const CalendarEventListRoute());
                 },
               ),
             ),
-            ListTile(
-              title: const Text("Communities"),
-              leading: const CircleAvatar(child: Icon(Icons.group)),
-              onTap: () async {
-                await context.pushRoute(const CommunityRoute());
-              },
+            Card(
+              child: ListTile(
+                title: const Text("Communities"),
+                subtitle: const Text("Organize your communities"),
+                leading: const CircleAvatar(child: Icon(Icons.group)),
+                onTap: () async {
+                  await context.pushRoute(const CommunityRoute());
+                },
+              ),
             ),
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text("Experimental:"),
-            ),
-            ListTile(
-              title: const Text("Feeds"),
-              leading: const CircleAvatar(child: Icon(Icons.feed)),
-              onTap: () async {
-                await context.pushRoute(const FeedRoute());
-              },
+            Card(
+              child: ListTile(
+                title: const Text("Feeds"),
+                subtitle: const Text(
+                    "Experimental way of using Matrix for social media"),
+                leading: const CircleAvatar(child: Icon(Icons.feed)),
+                onTap: () async {
+                  await context.pushRoute(const FeedRoute());
+                },
+              ),
             ),
             SyncStatusCard(client: client),
           ],

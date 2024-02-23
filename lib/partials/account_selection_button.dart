@@ -216,14 +216,6 @@ class _AccountSelectionRouteContentState
                             },
                             leading: const Icon(Icons.group_add),
                             title: const Text("Create group")),
-                        ListTile(
-                            onTap: () async {
-                              await Matrix.of(context)
-                                  .client
-                                  .openStoryEditModalOrCreate(context);
-                            },
-                            leading: const Icon(Icons.camera),
-                            title: const Text("Create story")),
                         Expanded(
                           child: Card(
                             elevation: 0,
