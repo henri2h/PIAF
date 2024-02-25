@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/utils/matrix/mutual_rooms_extension.dart';
-import 'package:minestrix/chat/utils/matrix/user_extension.dart';
+import 'package:piaf/chat/utils/matrix/mutual_rooms_extension.dart';
+import 'package:piaf/chat/utils/matrix/user_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../dialogs/adaptative_dialogs.dart';

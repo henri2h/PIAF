@@ -1,9 +1,9 @@
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/config/matrix_types.dart';
-import 'package:minestrix/chat/utils/extensible_event/extensible_event_content.dart';
-import 'package:minestrix/chat/utils/extensions/matrix/client_extension.dart';
-import 'package:minestrix/chat/utils/poll/json/event_poll_start.dart';
-import 'package:minestrix/chat/utils/poll/poll.dart';
+import 'package:piaf/chat/config/matrix_types.dart';
+import 'package:piaf/chat/utils/extensible_event/extensible_event_content.dart';
+import 'package:piaf/chat/utils/extensions/matrix/client_extension.dart';
+import 'package:piaf/chat/utils/poll/json/event_poll_start.dart';
+import 'package:piaf/chat/utils/poll/poll.dart';
 
 import 'model/calendar_event_model.dart';
 

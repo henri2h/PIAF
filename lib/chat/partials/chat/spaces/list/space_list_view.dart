@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/chat/spaces/list/spaces_list.dart';
+import 'package:piaf/chat/partials/chat/spaces/list/spaces_list.dart';
 
 import 'list_item/matrix_space_icon_button.dart';
 import 'list_item/tree_space_item.dart';

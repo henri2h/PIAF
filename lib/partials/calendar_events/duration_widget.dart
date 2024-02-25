@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/chat/utils/extensions/minestrix/model/calendar_event_model.dart';
+import 'package:piaf/chat/utils/extensions/minestrix/model/calendar_event_model.dart';
 
 class DurationWidget extends StatelessWidget {
   const DurationWidget({

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
 import '../../event_widget.dart';
 import 'text_message/text_message_bubble.dart';

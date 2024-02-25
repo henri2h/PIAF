@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
 import '../../utils/spaces/space_extension.dart';
 import '../calendar_event/date_card.dart';

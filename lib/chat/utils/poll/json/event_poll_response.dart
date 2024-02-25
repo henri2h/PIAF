@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/config/matrix_types.dart';
+import 'package:piaf/chat/config/matrix_types.dart';
 
 part 'event_poll_response.g.dart';
 

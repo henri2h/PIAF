@@ -2,10 +2,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:future_loading_dialog/future_loading_dialog.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/feed/minestrix_room_tile.dart';
-import 'package:minestrix/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
-import 'package:minestrix/chat/utils/matrix_sdk_extension/matrix_video_file_extension.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/feed/minestrix_room_tile.dart';
+import 'package:piaf/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
+import 'package:piaf/chat/utils/matrix_sdk_extension/matrix_video_file_extension.dart';
 
 import '../../../utils/extensions/minestrix/model/social_item.dart';
 import '../../dialogs/adaptative_dialogs.dart';

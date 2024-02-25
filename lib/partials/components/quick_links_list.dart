@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/chat/partials/sync/sync_status_card.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/router.gr.dart';
+import 'package:piaf/chat/partials/sync/sync_status_card.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 class QuickLinksBar extends StatefulWidget {
   const QuickLinksBar({super.key});

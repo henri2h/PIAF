@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'package:minestrix/chat/utils/extensions/matrix/event_extension.dart';
+import 'package:piaf/chat/utils/extensions/matrix/event_extension.dart';
 import '../../../matrix/matrix_user_item.dart';
 
 class EventReactionsDialog extends StatelessWidget {

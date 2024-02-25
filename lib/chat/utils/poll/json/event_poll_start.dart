@@ -1,9 +1,9 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/config/extensible_types.dart';
-import 'package:minestrix/chat/config/matrix_types.dart';
-import 'package:minestrix/chat/utils/extensible_event/extensible_event_content.dart';
+import 'package:piaf/chat/config/extensible_types.dart';
+import 'package:piaf/chat/config/matrix_types.dart';
+import 'package:piaf/chat/utils/extensible_event/extensible_event_content.dart';
 
 part 'event_poll_start.g.dart';
 

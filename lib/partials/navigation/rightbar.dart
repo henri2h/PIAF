@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/minestrix_room_tile.dart';
-import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/minestrix_room_tile.dart';
+import 'package:piaf/router.gr.dart';
+import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 import '../calendar_events/calendar_event_card.dart';
 import '../components/minestrix/minestrix_title.dart';

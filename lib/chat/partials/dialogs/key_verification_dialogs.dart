@@ -10,7 +10,7 @@ import 'package:future_loading_dialog/future_loading_dialog.dart';
 import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
 import '../../utils/platform_infos.dart';
 import '../../utils/text.dart';
 import '../components/adaptive_flat_button.dart';

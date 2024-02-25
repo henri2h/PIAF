@@ -11,83 +11,74 @@
 import 'package:auto_route/auto_route.dart' as _i60;
 import 'package:flutter/material.dart' as _i61;
 import 'package:matrix/matrix.dart' as _i62;
-import 'package:minestrix/models/search/search_mode.dart' as _i63;
-import 'package:minestrix/pages/app_wrapper_page.dart' as _i2;
-import 'package:minestrix/pages/calendar_events/calendar_event_page.dart'
-    as _i4;
-import 'package:minestrix/pages/calendar_events/calendar_events_list_page.dart'
+import 'package:piaf/models/search/search_mode.dart' as _i63;
+import 'package:piaf/pages/app_wrapper_page.dart' as _i2;
+import 'package:piaf/pages/calendar_events/calendar_event_page.dart' as _i4;
+import 'package:piaf/pages/calendar_events/calendar_events_list_page.dart'
     as _i3;
-import 'package:minestrix/pages/chat/add_user_page.dart' as _i1;
-import 'package:minestrix/pages/chat/overrides/override_room_list_room_page.dart'
+import 'package:piaf/pages/chat/add_user_page.dart' as _i1;
+import 'package:piaf/pages/chat/overrides/override_room_list_room_page.dart'
     as _i31;
-import 'package:minestrix/pages/chat/overrides/override_room_list_space_page.dart'
+import 'package:piaf/pages/chat/overrides/override_room_list_space_page.dart'
     as _i32;
-import 'package:minestrix/pages/chat/overrides/override_room_space_page.dart'
+import 'package:piaf/pages/chat/overrides/override_room_space_page.dart'
     as _i33;
-import 'package:minestrix/pages/chat/room_list_or_placeholder.dart' as _i36;
-import 'package:minestrix/pages/chat/room_page.dart' as _i37;
-import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_room.dart'
-    as _i6;
-import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_space_page.dart'
+import 'package:piaf/pages/chat/room_list_or_placeholder.dart' as _i36;
+import 'package:piaf/pages/chat/room_page.dart' as _i37;
+import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_room.dart' as _i6;
+import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_space_page.dart'
     as _i8;
-import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart'
+import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart'
     as _i7;
-import 'package:minestrix/pages/chat_lib/chat_page_items/provider/chat_page_provider.dart'
+import 'package:piaf/pages/chat_lib/chat_page_items/provider/chat_page_provider.dart'
     as _i5;
-import 'package:minestrix/pages/chat_lib/device_media_gallery.dart' as _i16;
-import 'package:minestrix/pages/chat_lib/matrix_create_group.dart' as _i22;
-import 'package:minestrix/pages/chat_lib/matrix_storie_create.dart' as _i23;
-import 'package:minestrix/pages/chat_lib/matrix_stories_page.dart' as _i25;
-import 'package:minestrix/pages/chat_lib/room_create/create_chat_page.dart'
-    as _i11;
-import 'package:minestrix/pages/chat_lib/room_create/create_group_page.dart'
-    as _i12;
-import 'package:minestrix/pages/chat_lib/room_settings_page.dart' as _i38;
-import 'package:minestrix/pages/chat_lib/space_page.dart' as _i51;
-import 'package:minestrix/pages/communities/community_detail_page.dart' as _i9;
-import 'package:minestrix/pages/communities/community_page.dart' as _i10;
-import 'package:minestrix/pages/debug_page.dart' as _i13;
-import 'package:minestrix/pages/feed/feed_list_page.dart' as _i17;
-import 'package:minestrix/pages/feed/feed_page.dart' as _i18;
-import 'package:minestrix/pages/follow_recommendations.dart' as _i19;
-import 'package:minestrix/pages/groups/group_page.dart' as _i20;
-import 'package:minestrix/pages/home/home_page.dart' as _i21;
-import 'package:minestrix/pages/image/post_gallery_page.dart' as _i34;
-import 'package:minestrix/pages/matrix_loading_page.dart' as _i24;
-import 'package:minestrix/pages/post_page.dart' as _i35;
-import 'package:minestrix/pages/search/search_page.dart' as _i39;
-import 'package:minestrix/pages/settings/settings_account_page.dart' as _i40;
-import 'package:minestrix/pages/settings/settings_account_switch_page.dart'
-    as _i41;
-import 'package:minestrix/pages/settings/settings_feeds_page.dart' as _i42;
-import 'package:minestrix/pages/settings/settings_labs_page.dart' as _i43;
-import 'package:minestrix/pages/settings/settings_page.dart' as _i44;
-import 'package:minestrix/pages/settings/settings_security_page.dart' as _i45;
-import 'package:minestrix/pages/settings/settings_story_detail_page.dart'
-    as _i46;
-import 'package:minestrix/pages/settings/settings_storys_page.dart' as _i47;
-import 'package:minestrix/pages/settings/settings_sync_page.dart' as _i48;
-import 'package:minestrix/pages/settings/settings_theme_page.dart' as _i49;
-import 'package:minestrix/pages/social_settings_page.dart' as _i50;
-import 'package:minestrix/pages/tabs/tab_calendar_page.dart' as _i52;
-import 'package:minestrix/pages/tabs/tab_camera_page.dart' as _i53;
-import 'package:minestrix/pages/tabs/tab_chat_page.dart' as _i54;
-import 'package:minestrix/pages/tabs/tab_community_page.dart' as _i55;
-import 'package:minestrix/pages/tabs/tab_home_page.dart' as _i56;
-import 'package:minestrix/pages/tabs/tab_stories_page.dart' as _i57;
-import 'package:minestrix/pages/user/user_followers_page.dart' as _i58;
-import 'package:minestrix/pages/user/user_view_page.dart' as _i59;
-import 'package:minestrix/pages/welcome/desktop/desktop_welcome_route.dart'
-    as _i15;
-import 'package:minestrix/pages/welcome/desktop_login_page.dart' as _i14;
-import 'package:minestrix/pages/welcome/mobile/mobile_create_account_page.dart'
+import 'package:piaf/pages/chat_lib/device_media_gallery.dart' as _i16;
+import 'package:piaf/pages/chat_lib/matrix_create_group.dart' as _i22;
+import 'package:piaf/pages/chat_lib/matrix_storie_create.dart' as _i23;
+import 'package:piaf/pages/chat_lib/matrix_stories_page.dart' as _i25;
+import 'package:piaf/pages/chat_lib/room_create/create_chat_page.dart' as _i11;
+import 'package:piaf/pages/chat_lib/room_create/create_group_page.dart' as _i12;
+import 'package:piaf/pages/chat_lib/room_settings_page.dart' as _i38;
+import 'package:piaf/pages/chat_lib/space_page.dart' as _i51;
+import 'package:piaf/pages/communities/community_detail_page.dart' as _i9;
+import 'package:piaf/pages/communities/community_page.dart' as _i10;
+import 'package:piaf/pages/debug_page.dart' as _i13;
+import 'package:piaf/pages/feed/feed_list_page.dart' as _i17;
+import 'package:piaf/pages/feed/feed_page.dart' as _i18;
+import 'package:piaf/pages/follow_recommendations.dart' as _i19;
+import 'package:piaf/pages/groups/group_page.dart' as _i20;
+import 'package:piaf/pages/home/home_page.dart' as _i21;
+import 'package:piaf/pages/image/post_gallery_page.dart' as _i34;
+import 'package:piaf/pages/matrix_loading_page.dart' as _i24;
+import 'package:piaf/pages/post_page.dart' as _i35;
+import 'package:piaf/pages/search/search_page.dart' as _i39;
+import 'package:piaf/pages/settings/settings_account_page.dart' as _i40;
+import 'package:piaf/pages/settings/settings_account_switch_page.dart' as _i41;
+import 'package:piaf/pages/settings/settings_feeds_page.dart' as _i42;
+import 'package:piaf/pages/settings/settings_labs_page.dart' as _i43;
+import 'package:piaf/pages/settings/settings_page.dart' as _i44;
+import 'package:piaf/pages/settings/settings_security_page.dart' as _i45;
+import 'package:piaf/pages/settings/settings_story_detail_page.dart' as _i46;
+import 'package:piaf/pages/settings/settings_storys_page.dart' as _i47;
+import 'package:piaf/pages/settings/settings_sync_page.dart' as _i48;
+import 'package:piaf/pages/settings/settings_theme_page.dart' as _i49;
+import 'package:piaf/pages/social_settings_page.dart' as _i50;
+import 'package:piaf/pages/tabs/tab_calendar_page.dart' as _i52;
+import 'package:piaf/pages/tabs/tab_camera_page.dart' as _i53;
+import 'package:piaf/pages/tabs/tab_chat_page.dart' as _i54;
+import 'package:piaf/pages/tabs/tab_community_page.dart' as _i55;
+import 'package:piaf/pages/tabs/tab_home_page.dart' as _i56;
+import 'package:piaf/pages/tabs/tab_stories_page.dart' as _i57;
+import 'package:piaf/pages/user/user_followers_page.dart' as _i58;
+import 'package:piaf/pages/user/user_view_page.dart' as _i59;
+import 'package:piaf/pages/welcome/desktop/desktop_welcome_route.dart' as _i15;
+import 'package:piaf/pages/welcome/desktop_login_page.dart' as _i14;
+import 'package:piaf/pages/welcome/mobile/mobile_create_account_page.dart'
     as _i26;
-import 'package:minestrix/pages/welcome/mobile/mobile_explore_page.dart'
-    as _i27;
-import 'package:minestrix/pages/welcome/mobile/mobile_login_page.dart' as _i28;
-import 'package:minestrix/pages/welcome/mobile/mobile_welcome_page.dart'
-    as _i29;
-import 'package:minestrix/pages/welcome/mobile/mobile_welcome_router_page.dart'
+import 'package:piaf/pages/welcome/mobile/mobile_explore_page.dart' as _i27;
+import 'package:piaf/pages/welcome/mobile/mobile_login_page.dart' as _i28;
+import 'package:piaf/pages/welcome/mobile/mobile_welcome_page.dart' as _i29;
+import 'package:piaf/pages/welcome/mobile/mobile_welcome_router_page.dart'
     as _i30;
 
 abstract class $AppRouter extends _i60.RootStackRouter {

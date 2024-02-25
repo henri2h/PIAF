@@ -1,8 +1,8 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
 
 import '../../../../pages/chat_lib/matrix_storie_create.dart';
 

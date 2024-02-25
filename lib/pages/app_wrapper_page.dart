@@ -5,9 +5,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:minestrix/partials/home/notification_view.dart';
-import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/home/notification_view.dart';
+import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 import '../partials/navigation/navigation_rail.dart';
 import '../router.gr.dart';

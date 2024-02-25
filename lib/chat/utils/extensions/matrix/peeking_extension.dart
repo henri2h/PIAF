@@ -1,6 +1,6 @@
 import 'package:matrix/matrix.dart';
 import 'package:matrix/src/models/timeline_chunk.dart';
-import 'package:minestrix/chat/utils/extensions/matrix/room_initialsync_extension.dart';
+import 'package:piaf/chat/utils/extensions/matrix/room_initialsync_extension.dart';
 
 extension PeekingExtension on Client {
   Future<Timeline> peekRoom(String roomId) async {

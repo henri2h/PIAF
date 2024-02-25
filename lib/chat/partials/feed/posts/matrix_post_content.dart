@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/feed/posts/matrix_post_image_container.dart';
+import 'package:piaf/chat/partials/feed/posts/matrix_post_image_container.dart';
 
 import '../../../utils/extensions/minestrix/model/social_item.dart';
 

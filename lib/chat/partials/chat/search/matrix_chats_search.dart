@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/utils/client_information.dart';
-import 'package:minestrix/chat/utils/text.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/utils/client_information.dart';
+import 'package:piaf/chat/utils/text.dart';
 
 import '../../dialogs/adaptative_dialogs.dart';
 import 'matrix_chats_search_item.dart';

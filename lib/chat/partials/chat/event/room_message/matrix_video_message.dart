@@ -6,7 +6,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:matrix/matrix.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:minestrix/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
+import 'package:piaf/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 

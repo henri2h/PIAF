@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/stories/stories_user_selection.dart';
+import 'package:piaf/chat/partials/stories/stories_user_selection.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../chat/utils/platform_infos.dart';

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/partials/stories/stories_user_selection.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/partials/stories/stories_user_selection.dart';
 
 class UserStorieUserListView extends StatefulWidget {
   const UserStorieUserListView(

@@ -1,5 +1,5 @@
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
 import '../../../../pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
 

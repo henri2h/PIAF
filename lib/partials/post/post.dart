@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/post/post_item.dart';
+import 'package:piaf/partials/post/post_item.dart';
 
 import '../../../router.gr.dart';
 

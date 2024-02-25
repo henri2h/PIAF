@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/chat/message_composer/matrix_advanced_message_composer.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/partials/chat/message_composer/matrix_advanced_message_composer.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 import '../typing_indicator.dart';

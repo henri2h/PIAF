@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/chat/room_list/room_list_items/room_list_item.dart';
+import 'package:piaf/chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
 import '../../chat/style/constants.dart';
 import '../../chat/partials/dialogs/adaptative_dialogs.dart';

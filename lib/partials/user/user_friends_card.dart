@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/account/account_card.dart';
-import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
-import 'package:minestrix/partials/user/user_room_knock_item.dart';
-import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/partials/components/account/account_card.dart';
+import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
+import 'package:piaf/partials/user/user_room_knock_item.dart';
+import 'package:piaf/router.gr.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
 class UserFriendsCard extends StatelessWidget {
   const UserFriendsCard({super.key, required this.room});

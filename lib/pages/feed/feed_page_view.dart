@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/models/search/search_mode.dart';
-import 'package:minestrix/utils/minestrix/minestrix_community_extension.dart';
-import 'package:minestrix/chat/partials/custom_list_view.dart';
-import 'package:minestrix/chat/partials/sync/sync_status_card.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/models/search/search_mode.dart';
+import 'package:piaf/utils/minestrix/minestrix_community_extension.dart';
+import 'package:piaf/chat/partials/custom_list_view.dart';
+import 'package:piaf/chat/partials/sync/sync_status_card.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 import '../../partials/account_selection_button.dart';
 import '../../partials/components/layouts/layout_view.dart';

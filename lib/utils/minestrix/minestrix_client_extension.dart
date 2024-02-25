@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/config/matrix_types.dart';
-import 'package:minestrix/chat/utils/matrix/power_levels_extension.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/chat/config/matrix_types.dart';
+import 'package:piaf/chat/utils/matrix/power_levels_extension.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
 extension MinestrixClientExtension on Client {
   List<Room> get srooms => rooms.where((r) => r.isFeed).toList();

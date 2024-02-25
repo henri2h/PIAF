@@ -1,7 +1,7 @@
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/config/matrix_types.dart';
-import 'package:minestrix/chat/utils/extensions/matrix/event_extension.dart';
+import 'package:piaf/chat/config/matrix_types.dart';
+import 'package:piaf/chat/utils/extensions/matrix/event_extension.dart';
 
 extension PostsEventExtension on Event {
   /// Fetches the event to be rendered, taking into account all the edits and the like.

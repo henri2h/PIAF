@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/utils/text.dart';
-
+import 'package:piaf/chat/utils/text.dart';
 import '../../../../style/constants.dart';
 import '../../../matrix/matrix_image_avatar.dart';
 import '../../../matrix/matrix_user_item.dart';

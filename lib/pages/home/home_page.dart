@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:minestrix/router.gr.dart';
+import 'package:piaf/router.gr.dart';
 
 import '../../chat/partials/sync/sync_status_card.dart';
 import '../../chat/utils/matrix_widget.dart';

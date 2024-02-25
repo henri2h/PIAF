@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:minestrix/chat/helpers/storage_manager.dart';
+import 'package:piaf/chat/helpers/storage_manager.dart';
 
 class Settings {
   final _multipleFeed = "multiple_feed";

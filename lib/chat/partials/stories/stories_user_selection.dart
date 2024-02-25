@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/partials/stories/stories_user_list_view.dart';
-import 'package:minestrix/chat/utils/extensions/matrix/stories_extension.dart';
+import 'package:piaf/chat/partials/stories/stories_user_list_view.dart';
+import 'package:piaf/chat/utils/extensions/matrix/stories_extension.dart';
 
 class UserSelection extends StatefulWidget {
   const UserSelection(

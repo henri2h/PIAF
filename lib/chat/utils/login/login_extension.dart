@@ -1,7 +1,7 @@
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/helpers/storage_manager.dart';
-import 'package:minestrix/chat/utils/login/web_login_interface.dart';
+import 'package:piaf/chat/helpers/storage_manager.dart';
+import 'package:piaf/chat/utils/login/web_login_interface.dart';
 
 extension MatrixLoginExtension on Client {
   Future<bool> customLoginAction(LoginType loginType,

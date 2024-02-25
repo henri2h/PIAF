@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/config/matrix_types.dart';
+import 'package:piaf/chat/config/matrix_types.dart';
 
 class ConvSettingsPermissions extends StatefulWidget {
   const ConvSettingsPermissions({super.key, required this.room});

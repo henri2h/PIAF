@@ -1,9 +1,9 @@
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/config/matrix_types.dart';
-import 'package:minestrix/chat/config/relationship_types.dart' as rel;
-import 'package:minestrix/chat/utils/poll/json/event_poll_response.dart';
-import 'package:minestrix/chat/utils/poll/json/event_poll_start.dart';
+import 'package:piaf/chat/config/matrix_types.dart';
+import 'package:piaf/chat/config/relationship_types.dart' as rel;
+import 'package:piaf/chat/utils/poll/json/event_poll_response.dart';
+import 'package:piaf/chat/utils/poll/json/event_poll_start.dart';
 
 /// A class to provide the logic to interact with polls
 class Poll {

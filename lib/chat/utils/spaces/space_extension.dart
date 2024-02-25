@@ -1,5 +1,5 @@
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
 /// Small class to contain a room and/or the space result
 

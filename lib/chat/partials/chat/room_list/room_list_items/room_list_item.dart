@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/date_time_extension.dart';
+import 'package:piaf/utils/date_time_extension.dart';
 
 import '../../../components/shimmer_widget.dart';
 import '../../../matrix/matrix_image_avatar.dart';

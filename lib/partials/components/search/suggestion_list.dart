@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 import '../../minestrix_room_tile.dart';
 import '../minestrix/minestrix_title.dart';
 

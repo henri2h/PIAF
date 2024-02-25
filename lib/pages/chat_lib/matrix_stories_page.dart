@@ -4,9 +4,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/chat/message_composer/matrix_message_composer.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/chat/message_composer/matrix_message_composer.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
 
 import '../../chat/utils/platform_infos.dart';
 

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 import 'package:pasteboard/pasteboard.dart';
 import '../../../dialogs/custom_dialogs.dart';
 import '../../../matrix/matrix_image_avatar.dart';

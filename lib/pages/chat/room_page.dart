@@ -6,9 +6,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/chat/room/room_timeline.dart';
-import 'package:minestrix/chat/partials/chat/room/room_title.dart';
-import 'package:minestrix/chat/utils/extensions/matrix/peeking_extension.dart';
+import 'package:piaf/chat/partials/chat/room/room_timeline.dart';
+import 'package:piaf/chat/partials/chat/room/room_title.dart';
+import 'package:piaf/chat/utils/extensions/matrix/peeking_extension.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
 import '../../chat/partials/chat/settings/conv_settings.dart';

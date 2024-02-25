@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/chat/event/room_message/event_reactions.dart';
-import 'package:minestrix/chat/utils/l10n/event_localisation_extension.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/chat/event/room_message/event_reactions.dart';
+import 'package:piaf/chat/utils/l10n/event_localisation_extension.dart';
 
 import '../../../dialogs/adaptative_dialogs.dart';
 import '../../../matrix/matrix_image_avatar.dart';

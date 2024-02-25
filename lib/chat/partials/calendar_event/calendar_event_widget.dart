@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/chat/utils/extensions/minestrix/calendar_extension.dart';
-import 'package:minestrix/chat/utils/poll/poll.dart';
 
+import '../../utils/extensions/minestrix/calendar_extension.dart';
+import '../../utils/poll/poll.dart';
 import 'calendar_attendance_button.dart';
 
 /// A class to let the user indicate if he will come or not

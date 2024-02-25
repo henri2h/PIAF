@@ -5,9 +5,9 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/router.dart';
-import 'package:minestrix/chat/utils/login/login_extension.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/router.dart';
+import 'package:piaf/chat/utils/login/login_extension.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 import 'package:provider/provider.dart';
 
 import 'router.gr.dart';
@@ -47,7 +47,7 @@ class AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return Matrix(
-      applicationName: 'MinesTRIX',
+      applicationName: 'PIAF',
       context: context,
       clients: widget.clients,
       child: Builder(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:minestrix/chat/helpers/storage_manager.dart';
+import 'package:piaf/chat/helpers/storage_manager.dart';
 
 import '../platforms_info.dart';
 

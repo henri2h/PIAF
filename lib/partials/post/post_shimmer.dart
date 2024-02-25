@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/chat/partials/components/shimmer_widget.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/partials/components/shimmer_widget.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
 
 class PostShimmer extends StatelessWidget {
   const PostShimmer({

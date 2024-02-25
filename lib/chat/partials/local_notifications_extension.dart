@@ -9,7 +9,7 @@ import 'package:matrix/matrix.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 import '../config/app_config.dart';
 import '../utils/l10n/default_localization.dart';
 

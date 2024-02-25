@@ -3,9 +3,9 @@ import 'package:flutter/material.dart' hide Visibility;
 
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
+import 'package:piaf/partials/components/layouts/custom_header.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 
 @RoutePage()
 class CreateGroupPage extends StatefulWidget {

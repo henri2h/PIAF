@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
-import 'package:minestrix/router.gr.dart';
+import 'package:piaf/router.gr.dart';
 
 class CalendarEventListTile extends StatefulWidget {
   final Room room;

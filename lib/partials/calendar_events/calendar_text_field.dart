@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minestrix/chat/style/constants.dart';
+import 'package:piaf/chat/style/constants.dart';
 
 import 'calendar_section.dart';
 

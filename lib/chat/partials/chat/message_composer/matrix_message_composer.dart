@@ -4,8 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/utils/client_information.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/utils/client_information.dart';
 import 'package:pasteboard/pasteboard.dart';
 
 import '../../../style/constants.dart';

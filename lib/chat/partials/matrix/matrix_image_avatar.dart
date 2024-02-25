@@ -4,7 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/helpers/text_helper.dart';
+import 'package:piaf/chat/helpers/text_helper.dart';
 
 enum MatrixImageAvatarShape { circle, rounded, none }
 

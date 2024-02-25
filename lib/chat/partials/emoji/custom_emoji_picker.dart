@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:minestrix/utils/platforms_info.dart';
+import 'package:piaf/utils/platforms_info.dart';
 
 class CustomEmojiPickerGrid extends StatelessWidget {
   const CustomEmojiPickerGrid({

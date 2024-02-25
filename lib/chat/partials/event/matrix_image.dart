@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image/image.dart' as img;
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
+import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../components/shimmer_widget.dart';

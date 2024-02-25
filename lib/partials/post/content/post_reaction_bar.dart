@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix/chat/partials/chat/event/room_message/event_reactions_dialog.dart';
+import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/chat/partials/chat/event/room_message/event_reactions_dialog.dart';
 
 import '../post_item.dart';
 import 'post_button.dart';

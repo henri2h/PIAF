@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:minestrix/chat/partials/mobile_stepper/mobile_stepper_button.dart';
+import 'package:piaf/chat/partials/mobile_stepper/mobile_stepper_button.dart';
 
 class MobileStepper extends StatefulWidget {
   final List<MStep> steps;

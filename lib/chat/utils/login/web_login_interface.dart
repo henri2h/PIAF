@@ -1,5 +1,5 @@
-import 'package:minestrix/chat/utils/login/web_login_stub.dart'
-    if (dart.library.html) 'package:minestrix/chat/utils/login/web_login.dart';
+import 'package:piaf/chat/utils/login/web_login_stub.dart'
+    if (dart.library.html) 'package:piaf/chat/utils/login/web_login.dart';
 
 /// An interface class to import without issue WebLogin methods
 class WebLoginInterface {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart';
-import 'package:minestrix/pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
-import 'package:minestrix/chat/partials/chat/room_list/room_list_items/room_list_item.dart';
+import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart';
+import 'package:piaf/pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
+import 'package:piaf/chat/partials/chat/room_list/room_list_items/room_list_item.dart';
 
 import '../../../../pages/chat_lib/room_create/create_chat_page.dart';
 import '../search/matrix_chats_search.dart';

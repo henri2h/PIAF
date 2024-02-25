@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 import '../../../dialogs/adaptative_dialogs.dart';
 import 'user_selector.dart';

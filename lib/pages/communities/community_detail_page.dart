@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/layout_view.dart';
-import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/pages/chat_lib/room_settings_page.dart';
+import 'package:piaf/partials/components/layouts/layout_view.dart';
+import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/pages/chat_lib/room_settings_page.dart';
 import '../../partials/minestrix_room_tile.dart';
 import '../../utils/minestrix/minestrix_community_extension.dart';
 import 'community_feed.dart';

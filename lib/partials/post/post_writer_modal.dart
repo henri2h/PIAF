@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix/chat/partials/components/fake_text_field.dart';
-import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix/chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
+import 'package:piaf/chat/partials/components/fake_text_field.dart';
+import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/chat/partials/feed/posts/matrix_post_editor.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 class PostWriterModal extends StatelessWidget {
   const PostWriterModal({super.key, this.room});

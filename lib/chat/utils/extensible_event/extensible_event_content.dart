@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/config/extensible_types.dart';
+import 'package:piaf/chat/config/extensible_types.dart';
 import 'extensible_event_file.dart';
 import 'extensible_event_image.dart';
 

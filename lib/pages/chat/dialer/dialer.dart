@@ -24,7 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../chat/utils/platform_infos.dart';

@@ -1,10 +1,10 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix/chat/utils/extensions/minestrix/model/calendar_event_model.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/chat/utils/extensions/minestrix/model/calendar_event_model.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 import '../components/buttons/custom_future_button.dart';
 import 'calendar_text_field.dart';

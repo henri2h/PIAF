@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_user_avatar.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/partials/matrix/matrix_user_avatar.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 class RoomListExplore extends StatefulWidget {
   const RoomListExplore({super.key, required this.onSelect});

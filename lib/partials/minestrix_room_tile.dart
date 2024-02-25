@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/router.gr.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/feed/minestrix_room_tile.dart';
+import 'package:piaf/router.gr.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/feed/minestrix_room_tile.dart';
 
 class MinestrixRoomTileNavigator extends StatelessWidget {
   const MinestrixRoomTileNavigator(

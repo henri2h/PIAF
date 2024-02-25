@@ -3,11 +3,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix/chat/partials/dialogs/key_verification_dialogs.dart';
-import 'package:minestrix/chat/utils/matrix_sdk_extension/device_extensions.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/components/layouts/custom_header.dart';
+import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/chat/partials/dialogs/key_verification_dialogs.dart';
+import 'package:piaf/chat/utils/matrix_sdk_extension/device_extensions.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:timeago/timeago.dart' as timeago;
 

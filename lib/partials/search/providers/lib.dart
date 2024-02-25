@@ -1,5 +1,5 @@
-export 'package:minestrix/partials/search/providers/explore_search.dart';
-export 'package:minestrix/partials/search/providers/user_search.dart';
+export 'package:piaf/partials/search/providers/explore_search.dart';
+export 'package:piaf/partials/search/providers/user_search.dart';
 
 import 'package:flutter/widgets.dart';
 

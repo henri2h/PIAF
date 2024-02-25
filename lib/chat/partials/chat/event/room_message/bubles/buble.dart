@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
 
 import '../../event_widget.dart';
 import 'audio_buble.dart';

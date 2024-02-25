@@ -5,10 +5,10 @@ import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/helpers/storage_manager.dart';
-import 'package:minestrix/chat/partials/login/login_button.dart';
-import 'package:minestrix/chat/partials/login/login_input.dart';
-import 'package:minestrix/chat/utils/login/web_login_interface.dart';
+import 'package:piaf/chat/helpers/storage_manager.dart';
+import 'package:piaf/chat/partials/login/login_button.dart';
+import 'package:piaf/chat/partials/login/login_input.dart';
+import 'package:piaf/chat/utils/login/web_login_interface.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'matrix_server_chooser.dart';

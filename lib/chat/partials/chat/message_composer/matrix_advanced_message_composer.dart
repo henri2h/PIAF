@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/partials/chat/message_composer/matrix_message_composer.dart';
+import 'package:piaf/chat/partials/chat/message_composer/matrix_message_composer.dart';
 
 /// Allow the user to send a message in a room. If a userId is given, it will
 /// create a direct chat.

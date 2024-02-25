@@ -2,12 +2,12 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/partials/components/layouts/custom_header.dart';
-import 'package:minestrix/partials/components/minestrix/minestrix_title.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/components/layouts/custom_header.dart';
+import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
+import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 import '../partials/settings/tile_radio.dart';

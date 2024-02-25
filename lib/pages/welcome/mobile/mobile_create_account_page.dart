@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import 'package:minestrix/chat/partials/login/create_account_card.dart';
+import 'package:piaf/chat/partials/login/create_account_card.dart';
 
 @RoutePage()
 class MobileCreateAccountPage extends StatelessWidget {

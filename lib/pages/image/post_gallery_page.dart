@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/partials/event/matrix_image.dart';
-import 'package:minestrix/chat/utils/extensions/minestrix/model/social_item.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/partials/event/matrix_image.dart';
+import 'package:piaf/chat/utils/extensions/minestrix/model/social_item.dart';
 
 @RoutePage()
 class PostGalleryPage extends StatefulWidget {

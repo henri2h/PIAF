@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
 
-import 'package:minestrix/chat/utils/matrix_sdk_extension/device_extensions.dart';
+import 'package:piaf/chat/utils/matrix_sdk_extension/device_extensions.dart';
 import '../../../dialogs/key_verification_dialogs.dart';
 
 class RoomUserDeviceKey extends StatefulWidget {

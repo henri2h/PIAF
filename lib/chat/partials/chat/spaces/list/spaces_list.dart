@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/utils/extensions/matrix/client_extension.dart';
+import 'package:piaf/chat/utils/extensions/matrix/client_extension.dart';
 
 import 'space_list_view.dart';
 

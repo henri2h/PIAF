@@ -1,6 +1,6 @@
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
-import 'package:minestrix/chat/utils/matrix/power_levels_extension.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/chat/utils/matrix/power_levels_extension.dart';
 
 // TODO: check this class, should not anymore be needed
 /// A space to store information about a particular user

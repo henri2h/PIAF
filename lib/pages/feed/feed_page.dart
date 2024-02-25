@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 // ignore: implementation_imports
 import 'package:matrix/src/utils/cached_stream_controller.dart';
-import 'package:minestrix/pages/feed/feed_page_view.dart';
-import 'package:minestrix/utils/minestrix/minestrix_client_extension.dart';
-import 'package:minestrix/utils/minestrix/minestrix_notifications.dart';
-import 'package:minestrix/chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:minestrix/chat/utils/matrix_widget.dart';
+import 'package:piaf/pages/feed/feed_page_view.dart';
+import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
+import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
+import 'package:piaf/chat/partials/feed/posts/matrix_post_editor.dart';
+import 'package:piaf/chat/utils/matrix_widget.dart';
 
 import '../../utils/settings.dart';
 
