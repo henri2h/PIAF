@@ -19,8 +19,8 @@ class _MobileExplorePageState extends State<MobileExplorePage> {
   bool get passwordLogin => domainController.loginFlowsSupported
       .contains(AuthenticationTypes.password);
 
-  Future<void> createAccount(Client client) async {
-    const initialDeviceName = "MinesTRIX";
+  Future<void> createGuestAccount(Client client) async {
+    const initialDeviceName = "PIAF";
     const kind = AccountKind.guest;
 
     // domain has already been checked
@@ -57,7 +57,7 @@ class _MobileExplorePageState extends State<MobileExplorePage> {
                 padding: const EdgeInsets.all(20.0),
                 child: LoginButton(
                     icon: Icons.explore,
-                    onPressed: () async => await createAccount(client),
+                    onPressed: () async => await createGuestAccount(client),
                     text: "Explore",
                     filled: true),
               )

@@ -24,7 +24,7 @@ class _CreateAccountCardState extends State<CreateAccountCard> {
   String? _registerErrorText;
 
   Future<void> createAccount(Client client) async {
-    const initialDeviceName = "MinesTRIX";
+    const initialDeviceName = "PIAF";
     const kind = AccountKind.user;
 
     if (_registerErrorText != null) {

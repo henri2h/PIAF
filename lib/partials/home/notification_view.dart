@@ -38,7 +38,7 @@ class NotificationView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(children: [
-                    const H2Title("MinesTRIX notifications"),
+                    const H2Title("Notifications"),
                     if (!client.hasNotifications)
                       const Text("No notifications, please come back later ;)"),
                     for (var notif in client.notifications)

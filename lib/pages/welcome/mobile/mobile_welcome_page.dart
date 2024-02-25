@@ -28,7 +28,7 @@ class MobileWelcomePage extends StatelessWidget {
               child: ListView(
                 children: [
                   Text(
-                    "MinesTRIX",
+                    "PIAF",
                     style: Theme.of(context)
                         .textTheme
                         .displayLarge
