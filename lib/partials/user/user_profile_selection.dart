@@ -11,7 +11,7 @@ import 'package:piaf/chat/utils/matrix/mutual_rooms_extension.dart';
 import 'package:piaf/chat/utils/matrix_widget.dart';
 import 'package:piaf/chat/utils/spaces/space_extension.dart';
 
-import '../minestrix_room_tile.dart';
+import '../room_feed_tile_navigator.dart';
 
 class UserProfileSelection extends StatefulWidget {
   const UserProfileSelection(
@@ -184,7 +184,7 @@ class UserProfileSelectionState extends State<UserProfileSelection> {
                                   title: Text("Rooms in common"),
                                 ),
                                 for (final r in rooms.take(maxRoomsToDisplay))
-                                  MinestrixRoomTileNavigator(
+                                  RoomFeedTileNavigator(
                                     room: r,
                                   ),
                                 if (rooms.length > maxRoomsToDisplay)

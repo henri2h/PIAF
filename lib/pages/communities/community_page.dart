@@ -7,7 +7,7 @@ import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:piaf/chat/utils/matrix_widget.dart';
 
 import '../../partials/calendar_events/calendar_event_create_widget.dart';
-import '../../partials/minestrix_room_tile.dart';
+import '../../partials/room_feed_tile_navigator.dart';
 import '../../partials/navigation/rightbar.dart';
 import '../../router.gr.dart';
 
@@ -118,8 +118,7 @@ class CommunityPageState extends State<CommunityPage> {
                                           children: [
                                             for (final room
                                                 in community.children)
-                                              MinestrixRoomTileNavigator(
-                                                  room: room),
+                                              RoomFeedTileNavigator(room: room),
                                           ],
                                         ),
                                       )

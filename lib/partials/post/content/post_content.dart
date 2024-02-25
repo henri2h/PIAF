@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/partials/minestrix_title.dart';
+import 'package:piaf/partials/app_title.dart';
 import 'package:piaf/router.gr.dart';
 import 'package:piaf/chat/config/matrix_types.dart';
 import 'package:piaf/chat/partials/chat/event/room_message/matrix_video_message.dart';
@@ -85,7 +85,7 @@ class PostContent extends StatelessWidget {
                         style: const TextStyle(
                             fontSize: 24, fontWeight: FontWeight.w400)),
                   ),
-                  const MinestrixTitle()
+                  const AppTitle()
                 ],
               );
             });

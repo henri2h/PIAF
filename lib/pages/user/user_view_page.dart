@@ -18,7 +18,7 @@ import 'package:piaf/chat/utils/spaces/space_extension.dart';
 
 import '../../partials/components/minestrix/minestrix_title.dart';
 import '../../partials/feed/topic_list_tile.dart';
-import '../../partials/minestrix_title.dart';
+import '../../partials/app_title.dart';
 import '../../partials/post/post.dart';
 import '../../partials/post/post_shimmer.dart';
 import '../../partials/user/user_avatar.dart';
@@ -570,10 +570,10 @@ class UserViewPageState extends State<UserViewPage>
                                                   ],
                                                 );
                                               } else if (mroom != null) {
-                                                return const MinestrixTitle();
+                                                return const AppTitle();
                                                 // Room
                                               } else {
-                                                return const MinestrixTitle();
+                                                return const AppTitle();
                                               }
                                             });
                                       }),

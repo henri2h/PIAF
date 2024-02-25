@@ -5,8 +5,8 @@ import 'package:piaf/router.gr.dart';
 import 'package:piaf/chat/minestrix_chat.dart';
 import 'package:piaf/chat/partials/feed/minestrix_room_tile.dart';
 
-class MinestrixRoomTileNavigator extends StatelessWidget {
-  const MinestrixRoomTileNavigator(
+class RoomFeedTileNavigator extends StatelessWidget {
+  const RoomFeedTileNavigator(
       {super.key, required this.room, this.shouldPop = false});
   final Room room;
   final bool shouldPop;

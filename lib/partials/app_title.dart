@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class MinestrixTitle extends StatelessWidget {
-  const MinestrixTitle({super.key});
+class AppTitle extends StatelessWidget {
+  const AppTitle({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -10,14 +10,14 @@ class MinestrixTitle extends StatelessWidget {
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Row(
           children: [
-            Image.asset("assets/icon_512.png",
+            Image.asset("assets/piaf.jpg",
                 width: 72, height: 72, cacheWidth: 140),
             const SizedBox(width: 28),
             const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("MinesTRIX",
+                  Text("PIAF",
                       style:
                           TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
                   Text("A privacy focused social media based on MATRIX",

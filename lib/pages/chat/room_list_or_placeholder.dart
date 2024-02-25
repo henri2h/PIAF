@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../partials/minestrix_title.dart';
+import '../../partials/app_title.dart';
 import '../tabs/tab_chat_page.dart';
 import '../../chat/partials/chat/room_list/simple_room_list.dart';
 
@@ -22,8 +22,7 @@ class RoomListOrPlaceHolderPage extends StatelessWidget {
       if (state.mobile) {
         return const SimpleRoomList();
       }
-      return const SafeArea(
-          child: Card(child: Center(child: MinestrixTitle())));
+      return const SafeArea(child: Card(child: Center(child: AppTitle())));
     });
   }
 }

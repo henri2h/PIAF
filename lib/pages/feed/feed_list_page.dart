@@ -8,7 +8,7 @@ import 'package:piaf/chat/minestrix_chat.dart';
 import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:piaf/chat/utils/matrix_widget.dart';
 
-import '../../partials/minestrix_room_tile.dart';
+import '../../partials/room_feed_tile_navigator.dart';
 import '../groups/create_group_page.dart';
 
 @RoutePage()
@@ -94,7 +94,7 @@ class _FeedListPageState extends State<FeedListPage> {
                               }
                               return false;
                             }))
-                              MinestrixRoomTileNavigator(room: room),
+                              RoomFeedTileNavigator(room: room),
                           ],
                         ),
                       ),

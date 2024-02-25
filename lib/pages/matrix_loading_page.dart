@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/partials/minestrix_title.dart';
+import 'package:piaf/partials/app_title.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
 import 'package:piaf/chat/utils/matrix_widget.dart';
@@ -41,13 +41,13 @@ class MatrixLoadingPageState extends State<MatrixLoadingPage> {
                 stream: sclient.onSyncStatus.stream,
                 builder: (context, snap) {
                   if (!snap.hasData) {
-                    return const Center(child: MinestrixTitle());
+                    return const Center(child: AppTitle());
                   }
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const MinestrixTitle(),
+                      const AppTitle(),
                       FutureBuilder(
                           future: waitForRoomsLoading(sclient),
                           builder: (context, snapLoading) {

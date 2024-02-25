@@ -11,8 +11,8 @@ import '../../partials/account_selection_button.dart';
 import '../../partials/components/layouts/layout_view.dart';
 import '../../partials/components/minestrix/minestrix_title.dart';
 import '../../partials/home/onboarding_widget.dart';
-import '../../partials/minestrix_room_tile.dart';
-import '../../partials/minestrix_title.dart';
+import '../../partials/room_feed_tile_navigator.dart';
+import '../../partials/app_title.dart';
 import '../../partials/navigation/rightbar.dart';
 import '../../partials/post/post.dart';
 import '../../router.gr.dart';
@@ -58,7 +58,7 @@ class FeedPageView extends StatelessWidget {
                           children: [
                             const H2Title("Communities"),
                             for (final community in client.getCommunities())
-                              MinestrixRoomTileNavigator(room: community.space),
+                              RoomFeedTileNavigator(room: community.space),
                           ],
                         ),
                         rightBar: const RightBar(),
@@ -91,7 +91,7 @@ class FeedPageView extends StatelessWidget {
                                                                 MainAxisAlignment
                                                                     .center,
                                                             children: [
-                                                              const MinestrixTitle(),
+                                                              const AppTitle(),
                                                               SyncStatusCard(
                                                                   client:
                                                                       client),
