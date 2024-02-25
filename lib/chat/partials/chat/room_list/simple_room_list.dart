@@ -17,10 +17,10 @@ class SimpleRoomList extends StatelessWidget {
     return Consumer<ChatPageState>(builder: (context, controller, _) {
       final client = controller.client;
 
-      return StreamBuilder<Object>(
+      return StreamBuilder<SyncUpdate>(
           stream: client.onSync.stream.where((up) => up.hasRoomUpdate),
           builder: (context, snapshot) {
-            final rooms = controller.getRoomList(client);
+            final rooms = controller.getFilteredRoomList(client);
 
             return RoomList(
               controller: controller,

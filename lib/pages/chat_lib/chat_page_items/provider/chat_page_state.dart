@@ -111,8 +111,11 @@ class ChatPageState with ChangeNotifier {
     MatrixTypes.account
   ];
 
-  /// Filter rooms based on type and sort them according to last envent timestamp
-  List<Room> getRoomList(Client client) {
+  /// Filter rooms based on type and sort them according to last event timestamp
+  /// Perf: critical, this function is called on every new build of the room list
+  /// due to a roomUpdate
+  List<Room> getFilteredRoomList(Client client) {
+    // TODO: Perf try to optimize this function
     final start = DateTime.now();
 
     List<Room> rooms = client.rooms;
@@ -173,6 +176,8 @@ class ChatPageState with ChangeNotifier {
     if (roomId != null) Matrix.of(context).client.increaseLastOpened(roomId);
     onRoomSelection?.call(roomId);
 
-    notifyListeners();
+    // TODO: Perf see if notifyListener is really needed
+    // Calling notifyListeners trigger calling get filtered room list
+    // notifyListeners();
   }
 }

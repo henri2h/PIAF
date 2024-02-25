@@ -4,10 +4,10 @@ import 'package:matrix/matrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:minestrix/chat/utils/extensions/matrix/event_extension.dart';
-import 'matrix_user_item.dart';
+import '../../../matrix/matrix_user_item.dart';
 
-class EventReactionList extends StatelessWidget {
-  const EventReactionList({
+class EventReactionsDialog extends StatelessWidget {
+  const EventReactionsDialog({
     super.key,
     required this.reactions,
   });

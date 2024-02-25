@@ -1,13 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:infinite_list/infinite_list.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/partials/chat/message_composer/matrix_advanced_message_composer.dart';
 import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:scrollview_observer/scrollview_observer.dart';
 
-import '../../infinite_custom_list_view.dart';
 import '../typing_indicator.dart';
 import 'item_builder.dart';
 
@@ -23,6 +21,9 @@ class RoomTimeline extends StatefulWidget {
   final void Function(Room)? onRoomCreate;
 
   final bool updating;
+  final Stream<int> streamTimelineRemove;
+  final Stream<int> streamTimelineInsert;
+
   const RoomTimeline(
       {super.key,
       required this.room,
@@ -33,7 +34,9 @@ class RoomTimeline extends StatefulWidget {
       this.onRoomCreate,
       required this.timeline,
       required this.updating,
-      required this.setUpdating});
+      required this.setUpdating,
+      required this.streamTimelineRemove,
+      required this.streamTimelineInsert});
 
   @override
   RoomTimelineState createState() => RoomTimelineState();
@@ -45,6 +48,7 @@ class RoomTimelineState extends State<RoomTimeline> {
   late String? initialFullyReadEventId;
   String? fullyReadEventId;
   StreamController<String> onRelpySelected = StreamController.broadcast();
+
   Event? composerReplyToEvent;
   Room? room;
   List<Event> filteredEvents = [];
@@ -52,10 +56,18 @@ class RoomTimelineState extends State<RoomTimeline> {
   Future<void>? request;
 
   // scrolling logic
-  final _scrollController = AutoScrollController(
+  final _scrollController = ScrollController(
     initialScrollOffset: -bottomPadding,
-  ); // initial scroll offset due to list padding
-  InfiniteListController? controller;
+  );
+  // initial scroll offset due to list padding
+
+  late ListObserverController observerController;
+  late ChatScrollObserver chatObserver;
+
+  late StreamSubscription<int>? onInsert;
+  late StreamSubscription<int>? onRemove;
+
+  late bool isDirectChat;
 
   @override
   void initState() {
@@ -65,21 +77,61 @@ class RoomTimelineState extends State<RoomTimeline> {
     initialFullyReadEventId = room?.fullyRead;
     fullyReadEventId = initialFullyReadEventId;
 
+    observerController = ListObserverController(controller: _scrollController)
+      ..cacheJumpIndexOffset = false;
+
+    /// Initialize ChatScrollObserver
+    chatObserver = ChatScrollObserver(observerController)
+      // Greater than this offset will be fixed to the current chat position.
+      ..fixedPositionOffset = 1
+      ..toRebuildScrollViewCallback = () {
+        // Here you can use other way to rebuild the specified listView instead of [setState]
+        setState(() {});
+      }
+      ..onHandlePositionResultCallback = (result) {
+        switch (result.type) {
+          case ChatScrollObserverHandlePositionType.keepPosition:
+            // Keep the current chat position.
+            // updateUnreadMsgCount(changeCount: result.changeCount);
+            break;
+          case ChatScrollObserverHandlePositionType.none:
+            // Do nothing about the chat position.
+            // updateUnreadMsgCount(isReset: true);
+            break;
+        }
+      };
+
     _scrollController.addListener(scrollListener);
-    controller = InfiniteListController(
-        items: filteredEvents, scrollController: _scrollController);
+
+    // Update the chat observer
+    onInsert = widget.streamTimelineInsert.listen((i) {
+      if (i == 0) {
+        // Don't move the chat list up because new element is added to the bottom
+        chatObserver.standby();
+      } else {
+        chatObserver.standby(mode: ChatScrollObserverHandleMode.generative);
+      }
+    });
+    onRemove = widget.streamTimelineRemove.listen((i) {
+      chatObserver.standby(isRemove: true);
+    });
+
+    isDirectChat = room?.isDirectChat ?? false;
   }
 
   @override
   void deactivate() {
     super.deactivate();
     _scrollController.removeListener(scrollListener);
+    onInsert?.cancel();
+    onRemove?.cancel();
   }
 
   bool get hasScrollReachedBottom =>
+      _scrollController.hasClients &&
       _scrollController.position.pixels -
-          _scrollController.position.minScrollExtent <
-      10;
+              _scrollController.position.minScrollExtent <
+          10;
 
   void scrollListener() async {
     if (_scrollController.position.pixels >=
@@ -90,9 +142,6 @@ class RoomTimelineState extends State<RoomTimeline> {
         await widget.timeline?.requestHistory();
         widget.setUpdating(false);
       }
-    }
-    if (_scrollController.hasClients) {
-      controller?.useFirstItemAsCenter = hasScrollReachedBottom;
     }
   }
 
@@ -134,7 +183,10 @@ class RoomTimelineState extends State<RoomTimeline> {
 
     filteredEvents.clear();
     filteredEvents.addAll(filter(widget.timeline?.events) ?? []);
-    final isDirectChat = room?.isDirectChat ?? false;
+
+    final listViewPadding = EdgeInsets.only(
+        top: widget.disableTimelinePadding ? 0 : 52,
+        bottom: !widget.isMobile ? 0 : bottomPadding);
 
     return Stack(children: [
       room != null
@@ -143,19 +195,23 @@ class RoomTimelineState extends State<RoomTimeline> {
                   EdgeInsets.only(bottom: widget.isMobile ? 0 : bottomPadding),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: InfiniteCustomListViewWithEmoji(
-                    controller: controller!,
-                    reverse: true,
-                    itemCount: filteredEvents.length,
-                    padding: EdgeInsets.only(
-                        top: widget.disableTimelinePadding ? 0 : 52,
-                        bottom: !widget.isMobile ? 0 : bottomPadding),
-                    itemBuilder: (BuildContext context, int index,
-                            ItemPositions position, onReact) =>
-                        ItemBuilder(
-                          key: index < filteredEvents.length
-                              ? Key("item_${filteredEvents[index].eventId}")
-                              : null,
+                child: ListViewObserver(
+                  controller: observerController,
+                  onObserve: (resultModel) {
+                    int index = resultModel.firstChild?.index ?? 0;
+                    _lastEventVisible = filteredEvents[index];
+                  },
+                  child: ListView.builder(
+                      controller: _scrollController,
+                      physics: ChatObserverClampingScrollPhysics(
+                          observer: chatObserver),
+                      reverse: true,
+                      cacheExtent: 1000,
+                      itemCount: filteredEvents.length,
+                      padding: listViewPadding,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ItemBuilder(
+                          key: Key("item_${filteredEvents[index].eventId}"),
                           room: room!,
                           // Calculating isDirectChat takes a lot of CPU time so
                           // we need to optimize it's usage
@@ -163,15 +219,18 @@ class RoomTimelineState extends State<RoomTimeline> {
                           filteredEvents: filteredEvents,
                           t: widget.timeline,
                           i: index,
-                          onReact: onReact,
-                          position: position,
                           onReplyEventPressed: (event) async {
-                            final index = widget.timeline!.events.indexOf(
+                            final index = filteredEvents.indexOf(
                                 event.getDisplayEvent(widget.timeline!));
                             if (index != -1) {
-                              await controller?.scrollController
-                                  .scrollToIndex(index);
                               onRelpySelected.add(event.eventId);
+                              await observerController.animateTo(
+                                  index: index,
+                                  alignment:
+                                      0.5, // scroll to the middle position of the child widget
+                                  padding: listViewPadding,
+                                  duration: const Duration(milliseconds: 250),
+                                  curve: Curves.ease);
                             } else {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -182,11 +241,13 @@ class RoomTimelineState extends State<RoomTimeline> {
                             }
                           },
                           onSelected: onRelpySelected.stream,
-                          onReply: (Event oldEvent) => setState(() {
-                            composerReplyToEvent = oldEvent;
+                          onReply: (Event event) => setState(() {
+                            composerReplyToEvent = event;
                           }),
                           fullyReadEventId: initialFullyReadEventId,
-                        )),
+                        );
+                      }),
+                ),
               ),
             )
           : widget.userId?.startsWith("@") == true // Is a user
@@ -264,6 +325,8 @@ class RoomTimelineState extends State<RoomTimeline> {
           }.contains(e.type))
       .toList();
 
+  Event? _lastEventVisible;
+
   /// send a read event if we have read the last event
   Future<bool> markLastRead({required Room room}) async {
     // Only update the read marker if the user is in the room.
@@ -291,7 +354,7 @@ class RoomTimelineState extends State<RoomTimeline> {
         }
       }
     } else {
-      lastVisibleEvent = controller?.getClosestElementToAlignment();
+      lastVisibleEvent = _lastEventVisible;
     }
 
     if (lastVisibleEvent != null &&

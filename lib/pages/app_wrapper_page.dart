@@ -56,6 +56,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
       bool isWideScreen = constraints.maxWidth > 850;
 
       return AutoTabsRouter(
+        homeIndex: 1,
         builder: (context, widget) {
           final path = AutoRouterDelegate.of(context).urlState;
           controller?.add(path);

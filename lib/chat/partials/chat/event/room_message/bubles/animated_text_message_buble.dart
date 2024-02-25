@@ -3,7 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/minestrix_chat.dart';
 
 import '../../event_widget.dart';
-import 'text_message_bubble.dart';
+import 'text_message/text_message_bubble.dart';
 
 class AnimatedTextMessageBuble extends StatelessWidget {
   const AnimatedTextMessageBuble(
@@ -14,9 +14,9 @@ class AnimatedTextMessageBuble extends StatelessWidget {
       required this.noticeForegroundColor,
       required this.noticeBackgroundColor,
       required this.e})
-      : _resizableController = resizableController;
+      : animationController = resizableController;
 
-  final AnimationController _resizableController;
+  final AnimationController animationController;
   final bool redacted;
   final EventWidget widget;
   final Color noticeForegroundColor;
@@ -26,7 +26,7 @@ class AnimatedTextMessageBuble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-        animation: _resizableController,
+        animation: animationController,
         builder: (BuildContext context, Widget? child) => TextMessageBubble(
               redacted: redacted,
               event: e,
@@ -37,7 +37,7 @@ class AnimatedTextMessageBuble extends StatelessWidget {
               borderColor: () {
                 // annimation when jumping to an event
 
-                var pos = _resizableController.value;
+                var pos = animationController.value;
                 if (pos == 0 || pos == 1) {
                   return noticeBackgroundColor;
                 }

@@ -7,11 +7,10 @@ import 'package:minestrix/chat/minestrix_chat.dart';
 import 'package:minestrix/chat/utils/matrix_sdk_extension/matrix_file_extension.dart';
 
 import '../../event_widget.dart';
-import 'animated_text_message_buble.dart';
 import 'audio_buble.dart';
 import 'file_buble.dart';
 import 'image_buble.dart';
-import 'text_message_bubble.dart';
+import 'text_message/text_message_bubble.dart';
 import 'video_buble.dart';
 
 class Buble extends StatefulWidget {
@@ -26,32 +25,9 @@ class Buble extends StatefulWidget {
   State<Buble> createState() => _BubleState();
 }
 
-class _BubleState extends State<Buble> with TickerProviderStateMixin {
-  late Event e;
-
-  late AnimationController _resizableController;
-
-  StreamSubscription? onEventSelectedListener;
-
-  @override
-  void initState() {
-    super.initState();
-    e = widget.e;
-    _resizableController = AnimationController(
-      vsync: this,
-      duration: const Duration(
-        milliseconds: 3000,
-      ),
-    );
-    onEventSelectedListener =
-        widget.state.onEventSelectedStream?.listen((event) {
-      _resizableController.reset();
-      _resizableController.forward();
-    });
-  }
-
+class _BubleState extends State<Buble> {
   Future<void> dowloadAttachement() async {
-    final file = await e.downloadAndDecryptAttachment(
+    final file = await widget.e.downloadAndDecryptAttachment(
       downloadCallback: (Uri url) async {
         final file = await DefaultCacheManager().getSingleFile(url.toString());
         return await file.readAsBytes();
@@ -64,59 +40,59 @@ class _BubleState extends State<Buble> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    bool redacted = e.type == EventTypes.Redaction;
+    bool redacted = widget.e.type == EventTypes.Redaction;
 
-    final foregroundColor = e.sentByUser
+    final foregroundColor = widget.e.sentByUser
         ? Theme.of(context).colorScheme.onPrimary
         : Theme.of(context).colorScheme.onSurface;
 
-    final backgroundColor = e.sentByUser
+    final backgroundColor = widget.e.sentByUser
         ? Theme.of(context).colorScheme.primary
         : ElevationOverlay.applySurfaceTint(
             Theme.of(context).colorScheme.surface,
             Theme.of(context).colorScheme.surfaceTint,
             20);
 
-    final noticeBackgroundColor = e.messageType == MessageTypes.Notice
+    final noticeBackgroundColor = widget.e.messageType == MessageTypes.Notice
         ? ElevationOverlay.applySurfaceTint(
             Theme.of(context).colorScheme.surface,
             Theme.of(context).colorScheme.surfaceTint,
             10)
         : backgroundColor;
 
-    final noticeForegroundColor = e.messageType == MessageTypes.Notice
+    final noticeForegroundColor = widget.e.messageType == MessageTypes.Notice
         ? Theme.of(context).colorScheme.onSurface
         : foregroundColor;
 
     return Builder(builder: (context) {
-      switch (e.messageType) {
+      switch (widget.e.messageType) {
         case MessageTypes.Image:
         case MessageTypes.Sticker:
-          return ImageBuble(event: e);
+          return ImageBuble(event: widget.e);
         case MessageTypes.Video:
-          return VideoBuble(event: e);
+          return VideoBuble(event: widget.e);
 
         case MessageTypes.Audio:
           return AudioBuble(
-            event: e,
+            event: widget.e,
             downloadAttachement: dowloadAttachement,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor,
           );
         case MessageTypes.File:
           return FileBuble(
-            event: e,
+            event: widget.e,
             downloadAttachement: dowloadAttachement,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor,
           );
         default:
           return Column(
-            crossAxisAlignment: e.sentByUser
+            crossAxisAlignment: widget.e.sentByUser
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
-              if (e.relationshipType == RelationshipTypes.reply)
+              if (widget.e.relationshipType == RelationshipTypes.reply)
                 Transform.translate(
                   offset: const Offset(0, 4.0),
                   child: widget.replyEvent == null
@@ -131,7 +107,7 @@ class _BubleState extends State<Buble> with TickerProviderStateMixin {
                                   const NeverScrollableScrollPhysics(), // In order to prevent scrolling the replies
                               children: [
                                 Align(
-                                  alignment: e.sentByUser
+                                  alignment: widget.e.sentByUser
                                       ? Alignment.centerRight
                                       : Alignment.centerLeft,
                                   child: TextMessageBubble(
@@ -150,14 +126,15 @@ class _BubleState extends State<Buble> with TickerProviderStateMixin {
                           ),
                         ),
                 ),
-              // Message annimation when jumping on specific message
-              AnimatedTextMessageBuble(
-                  resizableController: _resizableController,
+              // TODO: Add back annimation builder with the Animated Text Message Class
+              TextMessageBubble(
+                  event: widget.e,
                   redacted: redacted,
-                  widget: widget.state,
-                  e: e,
-                  noticeForegroundColor: noticeForegroundColor,
-                  noticeBackgroundColor: noticeBackgroundColor),
+                  displaySentIndicator:
+                      widget.state.isLastMessage && widget.e.sentByUser,
+                  edited: widget.state.edited,
+                  backgroundColor: noticeBackgroundColor,
+                  color: noticeForegroundColor)
             ],
           );
       }

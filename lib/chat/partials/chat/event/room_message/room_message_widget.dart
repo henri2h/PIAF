@@ -3,11 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/minestrix_chat.dart';
+import 'package:minestrix/chat/partials/chat/event/room_message/event_reactions.dart';
 import 'package:minestrix/chat/utils/l10n/event_localisation_extension.dart';
 
 import '../../../dialogs/adaptative_dialogs.dart';
 import '../../../matrix/matrix_image_avatar.dart';
-import '../../../matrix/reactions_list.dart';
+import 'event_reactions_dialog.dart';
 import '../../user/user_info_dialog.dart';
 import 'bubles/buble.dart';
 import '../event_widget.dart';
@@ -27,28 +28,20 @@ class RoomMessageWidget extends StatelessWidget {
     await AdaptativeDialogs.show(
       context: context,
       title: "Reactions",
-      builder: (context) => EventReactionList(reactions: widget.reactions!),
+      builder: (context) => EventReactionsDialog(reactions: widget.reactions!),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    Map<String?, int> keys = <String?, int>{};
-    if (widget.reactions != null) {
-      for (Event revent in widget.reactions!) {
-        String? key = revent.content
-            .tryGetMap<String, dynamic>('m.relates_to')
-            ?.tryGet<String>('key');
-        if (key != null) {
-          keys.update(key, (value) => value + 1, ifAbsent: () => 1);
-        }
-      }
-    }
+    final sentByUser = event.sentByUser;
+
+    Map<String?, int> keys = getFilteredReactionsList();
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!event.sentByUser)
+        if (!sentByUser)
           Padding(
             padding: const EdgeInsets.only(left: 4, top: 2.0, right: 10),
             child: SizedBox(
@@ -85,12 +78,11 @@ class RoomMessageWidget extends StatelessWidget {
         }(), builder: (context, snapReplyEvent) {
           return Expanded(
             child: Column(
-              crossAxisAlignment: event.sentByUser
+              crossAxisAlignment: sentByUser
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                if (!event.sentByUser && widget.displayName ||
-                    snapReplyEvent.hasData)
+                if (!sentByUser && widget.displayName || snapReplyEvent.hasData)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2),
                     child: Wrap(
@@ -155,61 +147,10 @@ class RoomMessageWidget extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Transform.translate(
-                      offset: const Offset(0, -4),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            for (MapEntry<String?, int> key in keys.entries)
-                              Material(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                                color:
-                                    Theme.of(context).scaffoldBackgroundColor,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(1.6),
-                                  child: Material(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 4, horizontal: 4),
-                                      child: GestureDetector(
-                                          onLongPress: () =>
-                                              displayReactionDialog(context),
-                                          child: MaterialButton(
-                                              minWidth: 8,
-                                              height: 0,
-                                              padding: const EdgeInsets.only(),
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              onPressed: () =>
-                                                  displayReactionDialog(
-                                                      context),
-                                              child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(key.key!,
-                                                        style: const TextStyle(
-                                                            fontSize: 12)),
-                                                    const SizedBox(width: 2),
-                                                    Text(key.value.toString(),
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodySmall)
-                                                  ]))),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
+                        offset: const Offset(0, -4),
+                        child: EventReactions(
+                            displayReactionDialog: displayReactionDialog,
+                            keys: keys)),
                   ),
               ],
             ),
@@ -217,5 +158,20 @@ class RoomMessageWidget extends StatelessWidget {
         }),
       ],
     );
+  }
+
+  Map<String?, int> getFilteredReactionsList() {
+    var keys = <String?, int>{};
+    if (widget.reactions != null) {
+      for (Event revent in widget.reactions!) {
+        String? key = revent.content
+            .tryGetMap<String, dynamic>('m.relates_to')
+            ?.tryGet<String>('key');
+        if (key != null) {
+          keys.update(key, (value) => value + 1, ifAbsent: () => 1);
+        }
+      }
+    }
+    return keys;
   }
 }

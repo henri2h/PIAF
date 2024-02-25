@@ -1,5 +1,7 @@
 library minestrix_chat;
 
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -34,8 +36,17 @@ class RoomPage extends StatefulWidget {
 
 class RoomPageState extends State<RoomPage> {
   Future<Timeline>? futureTimeline;
-  final MultiSplitViewController _controller = MultiSplitViewController(
-      areas: [Area(minimalSize: 400), Area(minimalSize: 200, size: 340)]);
+
+// Perf: MultiSplitViewController constructor takes some time. When not needed, let's
+// avoid building it.
+  MultiSplitViewController? _cachedController;
+  MultiSplitViewController get _controller =>
+      _cachedController ??= MultiSplitViewController(
+          areas: [Area(minimalSize: 400), Area(minimalSize: 200, size: 340)]);
+
+  final streamTimelineInsert = StreamController<int>();
+  final streamTimelineRemove = StreamController<int>();
+
   Room? room;
 
   late String roomId;
@@ -104,9 +115,14 @@ class RoomPageState extends State<RoomPage> {
   Future<Timeline> getTimeline(Room room) async {
     return await room.getTimeline(onInsert: (i) {
       if (mounted) {
+        streamTimelineInsert.add(i);
         setState(() {
           roomUpdate++;
         });
+      }
+    }, onRemove: (i) {
+      if (mounted) {
+        streamTimelineRemove.add(i);
       }
     });
   }
@@ -185,6 +201,8 @@ class RoomPageState extends State<RoomPage> {
             client: widget.client,
             timeline: timeline,
             updating: updating,
+            streamTimelineRemove: streamTimelineRemove.stream,
+            streamTimelineInsert: streamTimelineInsert.stream,
             onRoomCreate: (Room room) {
               timeline = null;
               futureTimeline = getTimeline(room);

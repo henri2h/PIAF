@@ -1,16 +1,13 @@
-import 'dart:math' as math;
-
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:minestrix/chat/minestrix_chat.dart';
 import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
 import 'package:minestrix/chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:minestrix/chat/utils/matrix_widget.dart';
 
 import '../pages/groups/create_group_page.dart';
 import '../router.gr.dart';
+import 'popup_route_wrapper.dart';
 
 class AccountSelectionButton extends StatefulWidget {
   const AccountSelectionButton({super.key});
@@ -29,8 +26,11 @@ class _AccountSelectionButtonState extends State<AccountSelectionButton> {
       return IconButton(
         key: anchorKey,
         onPressed: () {
-          Navigator.of(context)
-              .push(_AccountSelectionRoute(anchorKey: anchorKey));
+          Navigator.of(context).push(PopupRouteWrapper(
+              anchorKeyContext: anchorKey.currentContext,
+              builder: (rect) => AccountSelectionPopup(
+                    position: rect,
+                  )));
         },
         icon: FutureBuilder<Profile>(
             future: client.fetchOwnProfile(),
@@ -49,130 +49,14 @@ class _AccountSelectionButtonState extends State<AccountSelectionButton> {
   }
 }
 
-class _AccountSelectionRoute extends PopupRoute<_AccountSelectionRoute> {
-  _AccountSelectionRoute({
-    required this.anchorKey,
-  });
-
-  final GlobalKey anchorKey;
-
+class AccountSelectionPopup extends StatefulWidget {
+  const AccountSelectionPopup({super.key, required this.position});
+  final Rect position;
   @override
-  Color? get barrierColor => Colors.transparent;
-
-  @override
-  bool get barrierDismissible => true;
-
-  @override
-  String? get barrierLabel => 'Dismiss';
-
-  late final SearchViewThemeData viewTheme;
-  late final DividerThemeData dividerTheme;
-  final RectTween _rectTween = RectTween();
-
-  Rect? getRect() {
-    final BuildContext? context = anchorKey.currentContext;
-    if (context != null) {
-      final RenderBox searchBarBox = context.findRenderObject()! as RenderBox;
-      final Size boxSize = searchBarBox.size;
-      final NavigatorState navigator = Navigator.of(context);
-
-      final Offset boxLocation = searchBarBox.localToGlobal(
-          Offset(0, searchBarBox.size.height),
-          ancestor: navigator.context.findRenderObject());
-      return boxLocation & boxSize;
-    }
-    return null;
-  }
-
-  @override
-  TickerFuture didPush() {
-    assert(anchorKey.currentContext != null);
-    updateViewConfig(anchorKey.currentContext!);
-    updateTweens(anchorKey.currentContext!);
-    return super.didPush();
-  }
-
-  @override
-  bool didPop(_AccountSelectionRoute? result) {
-    assert(anchorKey.currentContext != null);
-    updateTweens(anchorKey.currentContext!);
-    return super.didPop(result);
-  }
-
-  void updateViewConfig(BuildContext context) {
-    viewTheme = SearchViewTheme.of(context);
-    dividerTheme = DividerTheme.of(context);
-  }
-
-  void updateTweens(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
-    final Rect anchorRect = getRect() ?? Rect.zero;
-    const BoxConstraints effectiveConstraints =
-        BoxConstraints(minWidth: 460.0, minHeight: 240.0, maxHeight: 550);
-    _rectTween.begin = anchorRect;
-
-    final double viewWidth = clampDouble(anchorRect.width,
-        effectiveConstraints.minWidth, effectiveConstraints.maxWidth);
-    final double viewHeight = clampDouble(screenSize.height * 2 / 3,
-        effectiveConstraints.minHeight, effectiveConstraints.maxHeight);
-
-    final double viewLeftToScreenRight = screenSize.width - anchorRect.left;
-    final double viewTopToScreenBottom = screenSize.height - anchorRect.top;
-
-    // Make sure the search view doesn't go off the screen. If the search view
-    // doesn't fit, move the top-left corner of the view to fit the window.
-    // If the window is smaller than the view, then we resize the view to fit the window.
-    Offset topLeft = anchorRect.topLeft;
-    if (viewLeftToScreenRight < viewWidth) {
-      topLeft = Offset(
-          screenSize.width - math.min(viewWidth, screenSize.width), topLeft.dy);
-    }
-    if (viewTopToScreenBottom < viewHeight) {
-      topLeft = Offset(topLeft.dx,
-          screenSize.height - math.min(viewHeight, screenSize.height));
-    }
-    final Size endSize = Size(viewWidth, viewHeight);
-    _rectTween.end = (topLeft & endSize);
-    return;
-  }
-
-  @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: AnimatedBuilder(
-          animation: animation,
-          builder: (BuildContext context, Widget? child) {
-            final Animation<double> curvedAnimation = CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeInOutCubicEmphasized,
-              reverseCurve: Curves.easeInOutCubicEmphasized.flipped,
-            );
-
-            final Rect viewRect = _rectTween.evaluate(curvedAnimation)!;
-
-            return _AccountSelectionRouteContent(
-              rect: viewRect,
-            );
-          }),
-    );
-  }
-
-  @override
-  Duration get transitionDuration => const Duration(milliseconds: 100);
+  State<AccountSelectionPopup> createState() => _AccountSelectionPopupState();
 }
 
-class _AccountSelectionRouteContent extends StatefulWidget {
-  const _AccountSelectionRouteContent({required this.rect});
-  final Rect rect;
-  @override
-  State<_AccountSelectionRouteContent> createState() =>
-      _AccountSelectionRouteContentState();
-}
-
-class _AccountSelectionRouteContentState
-    extends State<_AccountSelectionRouteContent> {
+class _AccountSelectionPopupState extends State<AccountSelectionPopup> {
   Future<void> launchCreateGroupModal(BuildContext context) async {
     await AdaptativeDialogs.show(
         context: context, builder: (context) => const CreateGroupPage());
@@ -180,7 +64,7 @@ class _AccountSelectionRouteContentState
 
   @override
   Widget build(BuildContext context) {
-    final rect = widget.rect;
+    final rect = widget.position;
 
     final m = Matrix.of(context);
 

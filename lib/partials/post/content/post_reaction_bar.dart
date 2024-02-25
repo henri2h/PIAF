@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:minestrix/chat/partials/matrix/reactions_list.dart';
+import 'package:minestrix/chat/partials/chat/event/room_message/event_reactions_dialog.dart';
 
 import '../post_item.dart';
 import 'post_button.dart';
@@ -46,8 +46,9 @@ class ReactionBar extends StatelessWidget {
                                 onPressed: () async {
                                   await AdaptativeDialogs.show(
                                       context: context,
-                                      builder: (context) => EventReactionList(
-                                          reactions: reactions!),
+                                      builder: (context) =>
+                                          EventReactionsDialog(
+                                              reactions: reactions!),
                                       title: "Reactions");
                                 }),
                           ),

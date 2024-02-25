@@ -76,11 +76,7 @@ dependencies:
 
   
   # Lists
-  scroll_to_index: ^3.0.1
-  infinite_list:
-    git:
-      url: https://gitlab.com/minestrix/infinite-list.git
-      ref: henri2h/enhancements
+  scrollview_observer: ^1.19.0
 
   # Media 
   camera: ^0.10.5+2
@@ -137,6 +133,7 @@ dependencies:
   connectivity_plus: ^5.0.1
   desktop_lifecycle: ^0.1.0
   flutter_datetime_picker_plus: ^2.1.0
+
 dependency_overrides:
   flutter_secure_storage_linux:
     git:

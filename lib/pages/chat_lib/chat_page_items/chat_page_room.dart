@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'no_room_selected.dart';
 import 'provider/chat_page_state.dart';
 import '../../chat/room_page.dart';
 
@@ -14,21 +15,7 @@ class ChatPageRoom extends StatelessWidget {
     return SafeArea(
       child: Consumer<ChatPageState>(
           builder: (context, controller, _) => controller.selectedRoomID == null
-              ? const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.chat, size: 40),
-                        SizedBox(width: 20),
-                        Text("No room selected",
-                            style: TextStyle(
-                                fontSize: 28, fontWeight: FontWeight.w600)),
-                      ],
-                    )
-                  ],
-                )
+              ? const NoRoomSelected()
               : RoomPage(
                   key: Key("room_${controller.selectedRoomID!}"),
                   roomId: controller.selectedRoomID!,

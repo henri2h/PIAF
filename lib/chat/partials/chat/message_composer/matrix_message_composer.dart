@@ -220,28 +220,7 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (constraints.maxWidth > 600)
-                SizedBox(
-                  height: defaultHeight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: FutureBuilder(
-                        future: widget.client.fetchOwnProfile(),
-                        builder:
-                            (BuildContext context, AsyncSnapshot<Profile> p) {
-                          return MatrixImageAvatar(
-                            client: widget.client,
-                            url: p.data?.avatarUrl,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            defaultText:
-                                p.data?.displayName ?? widget.client.userID,
-                            fit: true,
-                            height: MinestrixAvatarSizeConstants.small,
-                            width: MinestrixAvatarSizeConstants.small,
-                          );
-                        }),
-                  ),
-                ),
+                UserAvatar(defaultHeight: defaultHeight, widget: widget),
               if (widget.allowSendingPictures &&
                   room != null &&
                   (!_isTyping || isAutoFocusEnabled))
@@ -355,5 +334,39 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
         ],
       );
     });
+  }
+}
+
+class UserAvatar extends StatelessWidget {
+  const UserAvatar({
+    super.key,
+    required this.defaultHeight,
+    required this.widget,
+  });
+
+  final double defaultHeight;
+  final MatrixMessageComposer widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: defaultHeight,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: FutureBuilder(
+            future: widget.client.fetchOwnProfile(),
+            builder: (BuildContext context, AsyncSnapshot<Profile> p) {
+              return MatrixImageAvatar(
+                client: widget.client,
+                url: p.data?.avatarUrl,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                defaultText: p.data?.displayName ?? widget.client.userID,
+                fit: true,
+                height: MinestrixAvatarSizeConstants.small,
+                width: MinestrixAvatarSizeConstants.small,
+              );
+            }),
+      ),
+    );
   }
 }

@@ -261,10 +261,10 @@ packages:
     dependency: transitive
     description:
       name: camera_platform_interface
-      sha256: fceb2c36038b6392317b1d5790c6ba9e6ca9f1da3031181b8bea03882bf9387a
+      sha256: a250314a48ea337b35909a4c9d5416a208d736dcb01d0b02c6af122be66660b0
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.3"
+    version: "2.7.4"
   camera_web:
     dependency: transitive
     description:
@@ -1035,15 +1035,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.6.0"
-  infinite_list:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: "henri2h/enhancements"
-      resolved-ref: "956d6d219017d61c2aadfa09c9f2423e4cb193db"
-      url: "https://gitlab.com/minestrix/infinite-list.git"
-    source: git
-    version: "0.0.1"
   intersperse:
     dependency: transitive
     description:
@@ -1702,14 +1693,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.3"
-  scroll_to_index:
+  scrollview_observer:
     dependency: "direct main"
     description:
-      name: scroll_to_index
-      sha256: b707546e7500d9f070d63e5acf74fd437ec7eeeb68d3412ef7b0afada0b4f176
+      name: scrollview_observer
+      sha256: "69de9e6e4900a2d21dd9f593c597a1418e9f463cceeac6677ba83b007bf1f3e9"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
+    version: "1.19.0"
   sdp_transform:
     dependency: transitive
     description:

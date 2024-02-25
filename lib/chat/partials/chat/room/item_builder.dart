@@ -1,9 +1,16 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:infinite_list/infinite_list.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
 import 'package:minestrix/utils/date_time_extension.dart';
 
+import '../../../../partials/popup_route_wrapper.dart';
+import '../../../../utils/platforms_info.dart';
 import '../../dialogs/adaptative_dialogs.dart';
+import '../../emoji/custom_emoji_picker.dart';
+import '../../emoji/emoji_picker.dart';
 import '../event/event_widget.dart';
 import '../event/read_receipts/read_receipt_item.dart';
 import '../event/read_receipts/read_receipts_list.dart';
@@ -19,8 +26,6 @@ class ItemBuilder extends StatelessWidget {
       required this.room,
       required this.t,
       required this.filteredEvents,
-      required this.onReact,
-      required this.position,
       required this.i,
       required this.onReplyEventPressed,
       required this.onReply,
@@ -35,8 +40,6 @@ class ItemBuilder extends StatelessWidget {
   final bool displayRoomName;
   final bool displayTime;
   final bool displayPadding;
-  final void Function(Offset, Event) onReact;
-  final ItemPositions position;
   final int i;
   final void Function(Event) onReplyEventPressed;
   final void Function(Event) onReply;
@@ -52,7 +55,10 @@ class ItemBuilder extends StatelessWidget {
     bool displayPadding = this.displayPadding;
     bool displayAvatar = this.displayAvatar;
 
-    if (position != ItemPositions.item) return Container();
+    if (i >= filteredEvents.length) {
+      return Text("Invalid item $i");
+    }
+
     Event event = filteredEvents[i];
 
     Set<Event> reactions =
@@ -133,7 +139,18 @@ class ItemBuilder extends StatelessWidget {
             edited: edited,
             onEventSelectedStream:
                 onSelected?.where((eventId) => eventId == event.eventId),
-            onReact: (e) => onReact(e, event),
+            onReact: (offset) async {
+              HapticFeedback.heavyImpact();
+
+              await Navigator.of(context).push(PopupRouteWrapper(
+                  anchorKeyContext: context,
+                  useAnimation: false,
+                  offset: offset,
+                  maxHeight: 150,
+                  builder: (rect) {
+                    return ReactionBox(rect, event: event);
+                  }));
+            },
             onReplyEventPressed: onReplyEventPressed,
             onReply: (_) => onReply(oldEvent)),
 
@@ -176,5 +193,161 @@ class ItemBuilder extends StatelessWidget {
       return true;
     }
     return false;
+  }
+}
+
+class ReactionBox extends StatefulWidget {
+  const ReactionBox(this.rect, {super.key, required this.event});
+  final Rect rect;
+  final Event event;
+
+  @override
+  State<ReactionBox> createState() => _ReactionBoxState();
+}
+
+class _ReactionBoxState extends State<ReactionBox> {
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+        key: key,
+        onPointerDown: (e) {
+          _detectTapedItem(e, isEventPointerDown: true);
+        },
+        onPointerUp: _selectTapedItem,
+        onPointerMove: _detectTapedItem,
+        onPointerHover: _detectTapedItem,
+        //onPointerUp: _clearSelection,
+        behavior: HitTestBehavior.translucent,
+        child: Align(
+            alignment: Alignment.topLeft,
+            child: Transform.translate(
+                offset: widget.rect.topLeft,
+                child: SizedBox(
+                    width: widget.rect.width,
+                    height: widget.rect.height,
+                    child: MinestrixEmojiPicker(
+                      width: 100,
+                      height: 100,
+                      selectedEmoji: _selectedEmoji,
+                      selectedEdge: _emojiPickerEdge,
+                      enableDelete:
+                          widget.event.canRedact && !widget.event.redacted,
+                      //enableEdit: _selectedEvent?.canRedact ?? false,
+                      //enableReply: true,
+                    )))));
+  }
+
+  String? _selectedEmoji;
+
+  EdgeInsets? _emojiPickerEdge;
+
+  /// in order to detect when the distance between the cursor and the widget
+  double _emojiItemHeight = 0;
+
+  final GlobalKey key = GlobalKey();
+  Future<void>? res;
+
+  void _detectTapedItem(PointerEvent event, {bool isEventPointerDown = false}) {
+    final RenderBox? box = key.currentContext!.findRenderObject() as RenderBox?;
+
+    if (box != null) {
+      final result = BoxHitTestResult();
+      Offset offset = box.globalToLocal(event.position);
+
+      if (box.hitTest(result, position: offset)) {
+        for (final hit in result.path) {
+          /// temporary variable so that the [is] allows access of [index]
+          final target = hit.target;
+          if (target is EmojiPickerRenderProxy) {
+            EmojiPickerRenderProxy t = target;
+            // did previously update?
+            if (t.index != _selectedEmoji) {
+              setState(() {
+                _selectedEmoji = t.index;
+              });
+
+              res = HapticFeedback.heavyImpact();
+              _emojiItemHeight = event.position.dy;
+            }
+            return;
+          }
+        }
+
+        // hide emoji picker when the cursor leave the emoji picker and a emoji has been selected
+        if (_selectedEmoji != null) {
+          double verticalDistance = _emojiItemHeight - event.position.dy;
+          if (verticalDistance < 0) verticalDistance = -verticalDistance;
+
+          if (verticalDistance > 40) _clearSelection(null);
+        }
+
+        // for desktop, hide emoji picker when clicked on an other part of the screen
+        if (isEventPointerDown) {
+          _clearSelection(null);
+        }
+      } else {
+        if (_selectedEmoji != null) {
+          _clearSelection(null);
+        }
+      }
+    } else {
+      _clearSelection(null);
+    }
+  }
+
+  void _selectTapedItem(_) async {
+    if (_selectedEmoji != null) {
+      Navigator.of(context).pop();
+      if (_selectedEmoji == "+") {
+        Emoji? emoji;
+        if (PlatformInfos.isAndroid) {
+          emoji = await Navigator.of(context).push(EmojiPopupRoute());
+        } else {
+          emoji = await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const Dialog(child: CustomEmojiPickerGrid());
+              });
+        }
+        _selectedEmoji = emoji?.emoji;
+      }
+
+      if (_selectedEmoji != null) {
+        switch (_selectedEmoji) {
+          case "reply":
+          case "edit":
+            break;
+          case "delete":
+            if (mounted) {
+              final result = await showTextInputDialog(
+                useRootNavigator: false,
+                context: context,
+                title: "Confirm removal",
+                message:
+                    "Are you sure you wish to remove this event? This cannot be undone.",
+                okLabel: "Remove",
+                textFields: [
+                  const DialogTextField(
+                      hintText: "Reason (optional)", initialText: "")
+                ],
+              );
+              if (result?.isNotEmpty ?? false) {
+                await widget.event.redactEvent(reason: result?.first);
+              }
+            }
+
+            break;
+          default:
+            await widget.event.room
+                .sendReaction(widget.event.eventId, _selectedEmoji!);
+        }
+      }
+    }
+  }
+
+  void _clearSelection(PointerUpEvent? event) {
+    setState(() {
+      _selectedEmoji = null;
+    });
   }
 }
