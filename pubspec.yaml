@@ -65,7 +65,7 @@ dependencies:
   cupertino_icons: ^1.0.1
 
   # Notifications
-  flutter_local_notifications: ^16.1.0
+  flutter_local_notifications: ^17.0.0
   # unifiedpush: ^5.0.0
   desktop_notifications: ^0.6.3
 
@@ -164,7 +164,6 @@ flutter:
   assets:
     - assets/verification.png
     - assets/sas-emoji.json
-    - assets/icon_512.png
     - assets/bg_paris.jpg
     - assets/login_background.jpg
     - assets/piaf.jpg

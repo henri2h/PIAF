@@ -93,10 +93,10 @@ packages:
     dependency: "direct main"
     description:
       name: auto_route
-      sha256: "82f8df1d177416bc6b7a449127d0270ff1f0f633a91f2ceb7a85d4f07c3affa1"
+      sha256: "683bcee0b1a9da1953a17b3fea4429f42a7d8e1eb766ab1f082155b0ebe3d72d"
       url: "https://pub.dev"
     source: hosted
-    version: "7.8.4"
+    version: "7.9.0"
   auto_route_generator:
     dependency: "direct dev"
     description:
@@ -691,10 +691,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_local_notifications
-      sha256: "55b9b229307a10974b26296ff29f2e132256ba4bd74266939118eaefa941cb00"
+      sha256: f9a05409385b77b06c18f200a41c7c2711ebf7415669350bb0f8474c07bd40d1
       url: "https://pub.dev"
     source: hosted
-    version: "16.3.3"
+    version: "17.0.0"
   flutter_local_notifications_linux:
     dependency: transitive
     description:
@@ -1216,7 +1216,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "0fedbc33075fac48695b4b24213430c35180b5da"
+      resolved-ref: dabe2fc97fcb323bc8847ccf1249994bd4fadc21
       url: "https://github.com/famedly/matrix-dart-sdk"
     source: git
     version: "0.26.0"
