@@ -36,12 +36,10 @@ class CommunityPageState extends State<CommunityPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Communities"),
-        actions: [
-          FilledButton.icon(
-              onPressed: createCommunity,
-              icon: const Icon(Icons.add),
-              label: const Text("Add")),
-        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: createCommunity,
+        child: const Icon(Icons.add),
       ),
       body: StreamBuilder(
           stream: client.onSync.stream.where((sync) => sync.hasRoomUpdate),

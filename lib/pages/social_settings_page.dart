@@ -30,14 +30,8 @@ class _SocialSettingsPageState extends State<SocialSettingsPage> {
             Wrap(
               alignment: WrapAlignment.start,
               children: [
-                if (room.feedType == FeedRoomType.calendar)
-                  SizedBox(
-                      width: 500,
-                      child: Card(child: EditCalendarRoom(room: room))),
-                if (room.feedType == FeedRoomType.calendar)
-                  const SizedBox(
-                    width: 12,
-                  ),
+                // TODO: Support FeedRoomType.calendar rooms
+
                 if (room.isProfileRoom)
                   ConstrainedBox(
                     constraints: const BoxConstraints(

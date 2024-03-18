@@ -59,7 +59,8 @@ class _EditCalendarRoomState extends State<EditCalendarRoom> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return ListView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         CreateCalendarTextField(
           text: "Event name",

@@ -13,6 +13,18 @@ class AppRouter extends $AppRouter {
     AutoRoute(path: 'mobile_explore', page: MobileExploreRoute.page),
   ];
 
+  static List<AutoRoute> communityRoutes = [
+    AutoRoute(path: 'communities', page: CommunityRoute.page),
+    AutoRoute(path: 'community', page: CommunityDetailRoute.page),
+    AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
+  ];
+
+  static List<AutoRoute> calendarRoutes = [
+    AutoRoute(path: 'events', page: CalendarEventListRoute.page),
+    AutoRoute(path: 'events/calendar', page: CalendarEventRoute.page),
+    AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
+  ];
+
   @override
   final List<AutoRoute> routes = [
     AutoRoute(path: '/loading', page: MatrixLoadingRoute.page),
@@ -54,22 +66,22 @@ class AppRouter extends $AppRouter {
           AutoRoute(path: 'debug', page: DebugRoute.page),
           AutoRoute(path: 'chat/:roomId', page: RoomRoute.page),
         ]),
+        ...communityRoutes,
+        ...calendarRoutes
       ]),
 
       AutoRoute(path: 'search', page: SearchRoute.page),
       AutoRoute(path: 'stories', page: TabStoriesRoute.page),
 
-      AutoRoute(path: 'events', page: TabCalendarRoute.page, children: [
-        AutoRoute(path: '', page: CalendarEventListRoute.page),
-        AutoRoute(path: 'events/calendar', page: CalendarEventRoute.page),
-        AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
-      ]),
+      AutoRoute(
+          path: 'events',
+          page: TabCalendarRoute.page,
+          children: calendarRoutes),
 
-      AutoRoute(path: 'community', page: TabCommunityRoute.page, children: [
-        AutoRoute(path: '', page: CommunityRoute.page),
-        AutoRoute(path: 'community', page: CommunityDetailRoute.page),
-        AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
-      ]),
+      AutoRoute(
+          path: 'community',
+          page: TabCommunityRoute.page,
+          children: communityRoutes),
 
       AutoRoute(path: 'camera', page: TabCameraRoute.page),
 

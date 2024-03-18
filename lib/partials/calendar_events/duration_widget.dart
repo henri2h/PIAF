@@ -12,7 +12,7 @@ class DurationWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (context) {
-      final diff = calendarEvent.end!.difference(calendarEvent.start!);
+      final diff = calendarEvent.duration;
       String text = "No duration";
       if (diff.inHours != 0) {
         text = "${diff.inHours} hour(s)";
@@ -23,6 +23,8 @@ class DurationWidget extends StatelessWidget {
         } else {
           text = "${diff.inMinutes} minute(s)";
         }
+      } else {
+        text = "${diff.inMicroseconds}";
       }
 
       return ListTile(

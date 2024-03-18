@@ -7,19 +7,19 @@ class Constants {
   );
 
   static const InputDecoration kBasicSearch = InputDecoration(
-    isDense: true,
+    isDense: false,
     contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
     border: InputBorder.none,
     enabledBorder: OutlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.all(
-        Radius.circular(22),
+        Radius.circular(8),
       ),
     ),
     disabledBorder: OutlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.all(
-        Radius.circular(22),
+        Radius.circular(8),
       ),
     ),
     focusedBorder: OutlineInputBorder(

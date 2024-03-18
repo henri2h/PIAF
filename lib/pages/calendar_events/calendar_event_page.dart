@@ -130,65 +130,10 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                     child: ConstrainedBox(
                                       constraints:
                                           const BoxConstraints(maxWidth: 1200),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                H2Title(room.name),
-                                                Row(
-                                                  children: [
-                                                    const Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 10, right: 4),
-                                                      child: Text("By",
-                                                          style: TextStyle(
-                                                              fontSize: 18.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500)),
-                                                    ),
-                                                    Expanded(
-                                                      child: MatrixUserItem
-                                                          .fromUser(
-                                                              room.creator!,
-                                                              client:
-                                                                  room.client),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child:
-                                                            RoomParticipantsIndicator(
-                                                                room: room),
-                                                      ),
-                                                      ElevatedButton(
-                                                          onPressed:
-                                                              inviteUsers,
-                                                          child: const Row(
-                                                            children: [
-                                                              Icon(Icons
-                                                                  .person_add),
-                                                              SizedBox(
-                                                                  width: 8),
-                                                              Text("Invite"),
-                                                            ],
-                                                          ))
-                                                    ],
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                      child: Description(
+                                          room: room,
+                                          onInvite: inviteUsers,
+                                          calendarEvent: calendarEvent),
                                     ),
                                   ),
                                 ),
@@ -206,36 +151,22 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Card(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      const H2Title("About"),
-                                                      if (room.topic.isNotEmpty)
-                                                        Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(16.0),
-                                                            child: TopicBody(
-                                                              room: room,
-                                                            )),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(16.0),
-                                                        child: AttendancePollCard(
-                                                            snapT: snapT,
-                                                            calendarEvent:
-                                                                calendarEvent,
-                                                            room: room),
-                                                      ),
-                                                    ],
-                                                  ),
+                                              Card(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: AttendancePollCard(
+                                                          snapT: snapT,
+                                                          calendarEvent:
+                                                              calendarEvent,
+                                                          room: room),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                               PostWriterModal(room: room),
@@ -253,16 +184,16 @@ class CalendarEventPageState extends State<CalendarEventPage> {
                                               if (loading) const PostShimmer(),
                                             ],
                                           )),
-                                    if (snapT.hasData && calendarEvent != null)
+                                    if (snapT.hasData)
                                       ConstrainedBox(
                                           constraints: const BoxConstraints(
                                               maxWidth: 450),
                                           child: Padding(
                                             padding: const EdgeInsets.all(8.0),
-                                            child: CalendarEventInfo(
-                                                room: room,
-                                                timeline: snapT.data!,
-                                                calendarEvent: calendarEvent),
+                                            child: CalendarGallery(
+                                              room: room,
+                                              timeline: snapT.data!,
+                                            ),
                                           )),
                                   ],
                                 ),
@@ -299,11 +230,9 @@ class AttendancePollCard extends StatelessWidget {
                   }
 
                   Poll p = Poll(e: snapshot.data!, t: snapT.data!);
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CalendarEventWidget(p: p),
-                    ],
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: CalendarEventWidget(p: p),
                   );
                 })
             : ListTile(
@@ -326,27 +255,67 @@ class AttendancePollCard extends StatelessWidget {
   }
 }
 
-class CalendarEventInfo extends StatelessWidget {
-  const CalendarEventInfo(
-      {super.key,
-      required this.room,
-      required this.calendarEvent,
-      required this.timeline});
+class CalendarGallery extends StatelessWidget {
+  const CalendarGallery(
+      {super.key, required this.room, required this.timeline});
 
   final Room room;
   final Timeline timeline;
-  final CalendarEvent calendarEvent;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Card(
-          child: Column(
+        const H2Title("Images"),
+        SocialGalleryPreviewWigdet(room: room, timeline: timeline),
+      ],
+    );
+  }
+}
+
+class Description extends StatelessWidget {
+  const Description(
+      {super.key,
+      required this.room,
+      required this.calendarEvent,
+      required this.onInvite});
+
+  final Room room;
+
+  final CalendarEvent? calendarEvent;
+  final VoidCallback onInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        H2Title(room.name),
+        if (room.topic.isNotEmpty)
+          Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TopicBody(
+                room: room,
+              )),
+        Row(
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 10, right: 4),
+              child: Text("By",
+                  style:
+                      TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500)),
+            ),
+            Expanded(
+              child:
+                  MatrixUserItem.fromUser(room.creator!, client: room.client),
+            ),
+          ],
+        ),
+        if (calendarEvent != null)
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const H2Title("Info"),
               ListTile(
                   leading: room.joinRules == JoinRules.public
                       ? const Icon(Icons.public)
@@ -358,41 +327,41 @@ class CalendarEventInfo extends StatelessWidget {
                 const ListTile(
                     leading: Icon(Icons.enhanced_encryption),
                     title: Text("Encryption enabled")),
-              ListTile(
-                leading: const Icon(Icons.people),
-                title: Text("${room.summary.mJoinedMemberCount} participants"),
-              ),
-              if (room.canSendDefaultStates || calendarEvent.place != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const H2Title("Location"),
-                    ListTile(
-                      title: Text(calendarEvent.place != null
-                          ? calendarEvent.place!
-                          : "Set place"),
-                      leading: const Icon(Icons.location_on),
-                    ),
-                  ],
+              if (calendarEvent!.place != null)
+                ListTile(
+                  title: Text(calendarEvent!.place!),
+                  leading: const Icon(Icons.location_on),
                 ),
-              const H2Title("Date and time"),
-              if (calendarEvent.start != null)
-                DateTimeTile(text: "Start", date: calendarEvent.start!),
-              if (calendarEvent.end != null && calendarEvent.start != null)
-                calendarEvent.end!
-                        .difference(
-                            calendarEvent.start!.add(const Duration(days: 1)))
-                        .isNegative
-                    ? DurationWidget(calendarEvent: calendarEvent)
-                    : DateTimeTile(text: "End", date: calendarEvent.end!),
-              const H2Title("Organized by"),
-              MatrixUserItem.fromUser(room.creator!, client: room.client),
-              const SizedBox(height: 20),
+              if (calendarEvent?.start != null)
+                DateTimeTile(text: "Start time", date: calendarEvent!.start!),
+
+              // If the duration is less than a day, we display the event duration
+              // else we display the event end date
+              if (calendarEvent?.duration != Duration.zero)
+                calendarEvent!.duration.inHours < 24
+                    ? DurationWidget(calendarEvent: calendarEvent!)
+                    : DateTimeTile(text: "End", date: calendarEvent!.end!),
             ],
           ),
-        ),
-        const H2Title("Images"),
-        SocialGalleryPreviewWigdet(room: room, timeline: timeline),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: RoomParticipantsIndicator(room: room),
+              ),
+              ElevatedButton(
+                  onPressed: onInvite,
+                  child: const Row(
+                    children: [
+                      Icon(Icons.person_add),
+                      SizedBox(width: 8),
+                      Text("Invite"),
+                    ],
+                  ))
+            ],
+          ),
+        )
       ],
     );
   }

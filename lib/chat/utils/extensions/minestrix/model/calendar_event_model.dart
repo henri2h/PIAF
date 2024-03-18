@@ -30,6 +30,16 @@ class CalendarEvent {
     place = e!.content.tryGet<String>(eventPlaceKey);
   }
 
+  /// Get the event's duration with a minute accuracy.
+  /// If the event's duration is negative, then the function will return 0.
+  Duration get duration {
+    if (start == null) {
+      return Duration.zero;
+    }
+
+    return Duration(minutes: end?.difference(start!).inMinutes ?? 0);
+  }
+
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
 

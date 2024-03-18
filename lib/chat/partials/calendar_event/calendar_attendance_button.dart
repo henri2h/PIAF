@@ -23,7 +23,7 @@ class CalendarAttendanceCardButton extends StatelessWidget {
     int participantsCount = resp[value] ?? 0;
 
     return Padding(
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.all(2.0),
       child: MaterialButton(
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
@@ -31,7 +31,7 @@ class CalendarAttendanceCardButton extends StatelessWidget {
                   ? const BorderSide(color: Colors.green, width: 1.8)
                   : BorderSide.none),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2.0),
             child: Row(
               children: [
                 Icon(icon, color: checked ? Colors.green : null),
@@ -40,8 +40,7 @@ class CalendarAttendanceCardButton extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title),
-                    Text(
-                        "$participantsCount personne${participantsCount != 1 ? "s" : ""}",
+                    Text("$participantsCount pers",
                         style: Theme.of(context).textTheme.bodySmall)
                   ],
                 ),

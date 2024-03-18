@@ -60,12 +60,10 @@ class _CalendarEventListPageState extends State<CalendarEventListPage> {
           return Scaffold(
             appBar: AppBar(
               title: const Text("Events"),
-              actions: [
-                FilledButton.icon(
-                    onPressed: createCalendarEvent,
-                    icon: const Icon(Icons.add),
-                    label: const Text("Add")),
-              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: createCalendarEvent,
+              child: const Icon(Icons.add),
             ),
             body: ListView(children: [
               if (post.isNotEmpty) const H2Title("Future events"),

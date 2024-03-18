@@ -21,7 +21,7 @@ class DateTimeCard extends StatelessWidget {
             child: MaterialButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
-              color: Theme.of(context).cardColor,
+              color: Theme.of(context).colorScheme.surfaceVariant,
               onPressed: () async {
                 final result = await showDatePicker(
                     context: context,
@@ -35,7 +35,7 @@ class DateTimeCard extends StatelessWidget {
                 }
               },
               child: ListTile(
-                trailing: const Icon(Icons.edit_calendar),
+                leading: const Icon(Icons.edit_calendar),
                 title: Text(DateFormat.MMMEd().format(date)),
               ),
             ),
@@ -48,7 +48,7 @@ class DateTimeCard extends StatelessWidget {
             child: MaterialButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
-              color: Theme.of(context).cardColor,
+              color: Theme.of(context).colorScheme.surfaceVariant,
               onPressed: () async {
                 final result = await showTimePicker(
                     context: context, initialTime: startTime);
@@ -57,7 +57,7 @@ class DateTimeCard extends StatelessWidget {
                 }
               },
               child: ListTile(
-                trailing: const Icon(Icons.schedule),
+                leading: const Icon(Icons.schedule),
                 title: Text(DateFormat.Hm().format(date)),
               ),
             ),

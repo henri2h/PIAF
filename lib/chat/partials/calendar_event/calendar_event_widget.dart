@@ -32,21 +32,21 @@ class CalendarEventWidgetState extends State<CalendarEventWidget> {
       mainAxisSize: MainAxisSize.min,
       children: [
         CalendarAttendanceCardButton(
-            title: "Je viens",
+            title: "Coming",
             icon: Icons.check,
             value: CalendarAttendanceResponses.going,
             userResponse: userResponse,
             resp: resp,
             check: check),
         CalendarAttendanceCardButton(
-            title: "Intéressé",
+            title: "Maybe",
             icon: Icons.star_border,
             value: CalendarAttendanceResponses.interested,
             userResponse: userResponse,
             resp: resp,
             check: check),
         CalendarAttendanceCardButton(
-            title: "Nop",
+            title: "No",
             icon: Icons.do_not_disturb,
             value: CalendarAttendanceResponses.declined,
             userResponse: userResponse,

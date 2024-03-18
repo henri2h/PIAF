@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
             ),
             Card(
               child: ListTile(
-                title: const Text("Feeds"),
+                title: const Text("Feeds (Experimental)"),
                 subtitle: const Text(
                     "Experimental way of using Matrix for social media"),
                 leading: const CircleAvatar(child: Icon(Icons.feed)),
