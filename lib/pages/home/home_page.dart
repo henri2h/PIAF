@@ -22,7 +22,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         appBar: AppBar(
           leading: const AccountSelectionButton(),
-          title: const Text("PIAF"),
           actions: [
             IconButton(onPressed: () {}, icon: const Icon(Icons.notifications))
           ],

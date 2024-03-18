@@ -178,8 +178,8 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
 
   void setMessageDraft(String text) {
     editTimer?.cancel();
-    editTimer = Timer(const Duration(milliseconds: 600), () {
-      widget.client
+    editTimer = Timer(const Duration(milliseconds: 600), () async {
+      await widget.client
           .setDraft(message: text, roomId: room?.id ?? widget.userId ?? '');
     });
   }

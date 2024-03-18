@@ -29,7 +29,8 @@ extension ClientInformation on Client {
     return map[id];
   }
 
-  void setDraft({required String roomId, required String message}) async {
+  Future<void> setDraft(
+      {required String roomId, required String message}) async {
     Map<String, String> messages = await getDrafts();
 
     if (message.isNotEmpty) {
