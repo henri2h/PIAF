@@ -5,12 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "minestrix",
+            "name": "piaf",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "minestrix (profile mode)",
+            "name": "piaf (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
