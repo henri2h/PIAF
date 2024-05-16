@@ -8,6 +8,7 @@ import 'package:piaf/chat/utils/text.dart';
 
 import '../../dialogs/adaptative_dialogs.dart';
 import 'matrix_chats_search_item.dart';
+import '../../../utils/search/search_item.dart';
 
 class MatrixChatsSearch extends StatefulWidget {
   const MatrixChatsSearch({super.key, required this.client});
@@ -25,44 +26,6 @@ class MatrixChatsSearch extends StatefulWidget {
 
   @override
   State<MatrixChatsSearch> createState() => _MatrixChatsSearchState();
-}
-
-class SearchItem {
-  Room? room;
-  Profile? profile;
-
-  SearchItem({this.room, this.profile})
-      : assert(room != null || profile != null);
-
-  bool get isSpace => room?.isSpace ?? false;
-
-  String get displayname =>
-      room?.getLocalizedDisplayname() ??
-      profile?.displayName ??
-      profile?.userId ??
-      '';
-  Uri? get avatar => room?.avatar ?? profile?.avatarUrl;
-  String get canonicalAlias => room?.canonicalAlias ?? '';
-  String get topic => room?.topic ?? '';
-  String get directChatMatrixID => room?.directChatMatrixID ?? '';
-  bool get isDirectChat => room?.isDirectChat ?? false;
-
-  bool get isProfile => profile != null;
-
-  String get secondText => room != null
-      ? (room!.isDirectChat
-          ? room!.directChatMatrixID ?? ''
-          : room!.topic.isNotEmpty
-              ? room!.topic
-              : room!.canonicalAlias)
-      : profile?.userId ?? '';
-}
-
-class ResultList {
-  final String searchText;
-  final List<SearchItem> items;
-
-  const ResultList(this.items, {this.searchText = ''});
 }
 
 class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
@@ -124,10 +87,11 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
 
   Future<Profile>? futureProfile;
 
-  /// search in local and remote directory.
-  Future<void> searchRoom(String name, {bool remote = false}) async {
+  /// Search in local and remote directory.
+  Future<void> searchRoom(String searchTerm, {bool remote = false}) async {
     List<SearchItem> rooms = widget.client.rooms
         .where((r) =>
+            !publicRoomSearch &&
             !r.isExtinct &&
             (!peopleSearch || r.isDirectChat) &&
             (r
@@ -135,14 +99,15 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
                     .toLowerCase()
                     .removeDiacritics()
                     .removeSpecialCharacters()
-                    .contains(name) ||
-                r.canonicalAlias.contains(name) ||
-                r.id.contains(name)))
+                    .contains(searchTerm) ||
+                r.canonicalAlias.contains(searchTerm) ||
+                r.id.contains(searchTerm)))
         .map((e) => SearchItem(room: e))
         .toList();
 
-    roomsStream.add(ResultList(rooms, searchText: name));
+    roomsStream.add(ResultList(rooms, searchText: searchTerm));
 
+    // Search for profile on server
     if (remote && peopleSearch) {
       // In case if the user has entered a valid userId in the search content,
       // we add it to the search result if the server returned the profile.
@@ -152,7 +117,7 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
 
       try {
         SearchUserDirectoryResponse res =
-            await widget.client.searchUserDirectory(name);
+            await widget.client.searchUserDirectory(searchTerm);
 
         rooms.addAll(res.results
             .where((user) => !rooms // just ignore already found users
@@ -160,7 +125,14 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
             .map((p) => SearchItem(profile: p)));
       } catch (_) {}
 
-      roomsStream.add(ResultList(rooms, searchText: name));
+      roomsStream.add(ResultList(rooms, searchText: searchTerm));
+    }
+
+    // Search for public room on server
+    if (remote && publicRoomSearch) {
+      final res = await widget.client.queryPublicRooms(
+          filter: PublicRoomQueryFilter(genericSearchTerm: searchTerm));
+      rooms.addAll(res.chunk.map((e) => SearchItem(public: e)));
     }
   }
 
@@ -169,6 +141,7 @@ class _MatrixChatsSearchState extends State<MatrixChatsSearch> {
       this.publicRoomSearch = publicRoomSearch ?? this.publicRoomSearch;
       this.peopleSearch = peopleSearch ?? this.peopleSearch;
     });
+
     if (_lastQuery != null) searchRoom(_lastQuery!, remote: true);
   }
 
