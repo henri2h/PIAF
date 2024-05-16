@@ -15,12 +15,12 @@ extension DateTimeExtension on DateTime {
     }
   }
 
-  String get timeSinceInHours {
+  String get simpleFormatTime {
     final dt = DateTime.now();
     if (dt.difference(this).inDays.abs() > 90) {
-      return DateFormat.yMMMMEEEEd().format(this);
+      return DateFormat.yMd().format(this);
     } else if (dt.difference(this).inDays.abs() > 7) {
-      return DateFormat.MMMEd().format(this);
+      return DateFormat.Md().format(this);
     } else if (dt.difference(this).inDays.abs() > 0) {
       return DateFormat.E().format(this);
     } else {

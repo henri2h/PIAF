@@ -106,7 +106,7 @@ class RoomListItem extends StatelessWidget {
             children: [
               Text(
                   lastEvent?.originServerTs != null
-                      ? lastEvent!.originServerTs.timeSinceInHours
+                      ? lastEvent!.originServerTs.simpleFormatTime
                       : "Invalid time",
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: color,

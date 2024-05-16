@@ -10,7 +10,7 @@ class NotificationCountDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 2),
       child: Badge(
           backgroundColor: Colors.red,
           label: Text(room.notificationCount.toString(),
