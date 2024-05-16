@@ -200,8 +200,9 @@ class _RoomSearchState extends State<RoomSearch> {
                                     }
                                     final room = client
                                         .getRoomById(item.result!.roomId!);
-                                    if (room == null)
+                                    if (room == null) {
                                       const Text("No room found");
+                                    }
                                     bool sameRoomAsPrev = false;
                                     if (i + 1 < data.results!.length) {
                                       sameRoomAsPrev = item.result?.roomId ==
