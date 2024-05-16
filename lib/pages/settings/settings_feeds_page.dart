@@ -1,18 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
-import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
-import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/pages/chat_lib/room_settings_page.dart';
 import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
 import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/pages/chat_lib/room_settings_page.dart';
+import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
+import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 
 import '../../partials/components/buttons/custom_future_button.dart';
 import '../../partials/components/buttons/custom_text_future_button.dart';
 import '../../partials/editors/sections.dart';
 import '../../router.gr.dart';
-import '../feed/feed_list_page.dart';
 
 @RoutePage()
 class SettingsFeedsPage extends StatefulWidget {
@@ -194,9 +193,7 @@ class _ProfileSpaceCardState extends State<ProfileSpaceCard> {
 
           final rightBar = Column(
             children: [
-              ListTile(
-                  title: const Text("Rooms"),
-                  trailing: FeedsAddMenuButton(client: client)),
+              const ListTile(title: Text("Rooms")),
               for (final s in room.spaceChildren
                   .where((element) => element.roomId != null))
                 Builder(builder: (context) {

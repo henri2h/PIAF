@@ -9,8 +9,8 @@ part of 'extensible_event_image.dart';
 ExtensibleEventImage _$ExtensibleEventImageFromJson(
         Map<String, dynamic> json) =>
     ExtensibleEventImage()
-      ..width = json['w'] as int?
-      ..height = json['h'] as int?
+      ..width = (json['w'] as num?)?.toInt()
+      ..height = (json['h'] as num?)?.toInt()
       ..blurhash = json['xyz.amorgan.blurhash'] as String?;
 
 Map<String, dynamic> _$ExtensibleEventImageToJson(

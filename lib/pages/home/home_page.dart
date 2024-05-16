@@ -5,6 +5,7 @@ import 'package:piaf/router.gr.dart';
 import '../../chat/partials/sync/sync_status_card.dart';
 import '../../chat/utils/matrix_widget.dart';
 import '../../partials/account_selection_button.dart';
+import '../feed/feed_list_page.dart';
 
 @RoutePage()
 class HomePage extends StatefulWidget {
@@ -59,9 +60,31 @@ class _HomePageState extends State<HomePage> {
             ),
             Card(
               child: ListTile(
+                title: const Text("Profiles"),
+                subtitle: const Text("People you follow"),
+                leading: const CircleAvatar(child: Icon(Icons.contacts)),
+                onTap: () async {
+                  await context.pushRoute(
+                      FeedListRoute(initialSelection: Selection.feed));
+                },
+              ),
+            ),
+            Card(
+              child: ListTile(
+                title: const Text("Feeds"),
+                subtitle: const Text("Feeds you follow"),
+                leading: const CircleAvatar(child: Icon(Icons.feed)),
+                onTap: () async {
+                  await context.pushRoute(
+                      FeedListRoute(initialSelection: Selection.publicFeed));
+                },
+              ),
+            ),
+            Card(
+              child: ListTile(
                 title: const Text("Communities"),
                 subtitle: const Text("Organize your communities"),
-                leading: const CircleAvatar(child: Icon(Icons.group)),
+                leading: const CircleAvatar(child: Icon(Icons.forum)),
                 onTap: () async {
                   await context.pushRoute(const CommunityRoute());
                 },
@@ -69,10 +92,10 @@ class _HomePageState extends State<HomePage> {
             ),
             Card(
               child: ListTile(
-                title: const Text("Feeds (Experimental)"),
+                title: const Text("Feeds agregation (Experimental)"),
                 subtitle: const Text(
                     "Experimental way of using Matrix for social media"),
-                leading: const CircleAvatar(child: Icon(Icons.feed)),
+                leading: const CircleAvatar(child: Icon(Icons.dynamic_feed)),
                 onTap: () async {
                   await context.pushRoute(const FeedRoute());
                 },

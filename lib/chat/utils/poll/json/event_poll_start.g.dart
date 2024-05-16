@@ -20,7 +20,7 @@ EventPollStart _$EventPollStartFromJson(Map<String, dynamic> json) =>
       ..answers = (json['answers'] as List<dynamic>?)
           ?.map((e) => PollAnswer.fromJson(e as Map<String, dynamic>))
           .toList()
-      ..maxSelections = json['max_selections'] as int?;
+      ..maxSelections = (json['max_selections'] as num?)?.toInt();
 
 Map<String, dynamic> _$EventPollStartToJson(EventPollStart instance) {
   final val = <String, dynamic>{};

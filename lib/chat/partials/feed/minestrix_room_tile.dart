@@ -46,7 +46,9 @@ class MinestrixRoomTile extends StatelessWidget {
                       client: c,
                       url: r.avatar,
                       defaultText: r.displayname,
-                      shape: MatrixImageAvatarShape.rounded,
+                      shape: room?.feedType == FeedRoomType.user
+                          ? MatrixImageAvatarShape.circle
+                          : MatrixImageAvatarShape.rounded,
                       width: 42,
                       height: 42,
                     ),

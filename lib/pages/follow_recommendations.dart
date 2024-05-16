@@ -20,17 +20,31 @@ class _FollowRecommendationsPageState extends State<FollowRecommendationsPage> {
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
-    return Column(
-      children: [
-        const CustomHeader(title: "Follow recommendations"),
-        Expanded(
-          child: ConstrainedBox(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Follow recommendations"),
+      ),
+      body: ListView(
+        children: [
+          ListTile(
+            title: const Text("Suggestions"),
+            leading: CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              foregroundColor: Theme.of(context).colorScheme.onSecondary,
+              child: const Icon(Icons.info),
+            ),
+            subtitle: const Text(
+                "Follow suggestions based on your friends followers."),
+          ),
+          ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
             child: FutureBuilder<List<Profile>>(
                 future: client.getFriendsSuggestions(),
                 builder: (context, snap) {
                   if (snap.hasData == false) return const Text("Loading");
                   return GridView.extent(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     maxCrossAxisExtent: 180,
                     childAspectRatio: 0.7,
                     children: [
@@ -43,8 +57,8 @@ class _FollowRecommendationsPageState extends State<FollowRecommendationsPage> {
                   );
                 }),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:piaf/chat/minestrix_chat.dart';
 import 'package:piaf/chat/utils/matrix_widget.dart';
 
+import '../../pages/feed/feed_list_page.dart';
 import '../../router.gr.dart';
 
 class MinestrixNavigationRailItem {
@@ -69,7 +70,7 @@ class _MinestrixNavigationRailState extends State<MinestrixNavigationRail> {
       MinestrixNavigationRailItem(
           icon: const Icon(Icons.rss_feed),
           label: const Text("Feeds"),
-          route: const FeedListRoute()),
+          route: FeedListRoute(initialSelection: Selection.all)),
     ];
 
     var selectedIndex = items.indexWhere((element) {
