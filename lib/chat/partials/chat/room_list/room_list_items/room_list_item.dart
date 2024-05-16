@@ -29,11 +29,10 @@ class RoomListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isUnread = room.isUnreadOrInvited;
-    final bool isUnreadOrNewMessage = isUnread || room.hasNewMessages;
-    final color = isUnreadOrNewMessage
+    final color = isUnread
         ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.onSurface;
-    final fontWeight = isUnreadOrNewMessage ? FontWeight.bold : null;
+        : Theme.of(context).colorScheme.outline;
+    final fontWeight = isUnread ? FontWeight.bold : null;
     final lastEvent = room.lastEvent;
     final directChatMatrixID = room.directChatMatrixID;
 
@@ -50,8 +49,9 @@ class RoomListItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Padding(
-        padding: const EdgeInsets.only(left: 8, right: 12, top: 2, bottom: 2),
+        padding: const EdgeInsets.only(left: 8, right: 12, top: 0, bottom: 0),
         child: ListTile(
+          minVerticalPadding: 0,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
           selected: selected,
@@ -74,10 +74,9 @@ class RoomListItem extends StatelessWidget {
           title: Text(
             room.getLocalizedDisplayname(),
             maxLines: 1,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: fontWeight, color: color),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: fontWeight,
+                color: Theme.of(context).colorScheme.onSurface),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,10 +95,9 @@ class RoomListItem extends StatelessWidget {
                     '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(fontWeight: fontWeight, color: color),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: fontWeight,
+                    color: Theme.of(context).colorScheme.outline),
               ),
             ],
           ),
@@ -115,11 +113,6 @@ class RoomListItem extends StatelessWidget {
                         fontWeight: fontWeight,
                       )),
               if (isUnread) NotificationCountDot(room: room),
-              if (!isUnread && room.hasNewMessages)
-                NotificationCountDot(
-                  room: room,
-                  unreadMessage: true,
-                ),
               if (room.pushRuleState == PushRuleState.dontNotify)
                 const Icon(Icons.volume_mute)
             ],
