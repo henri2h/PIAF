@@ -56,17 +56,17 @@ class MutualRoomsWidget extends StatelessWidget {
               ],
             );
           }
-          final list = snap.data!;
+          final list = snap.data!.where((element) => element != room.id);
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("Mutual rooms",
-                      style: Theme.of(context).textTheme.bodyMedium),
-                ),
-                for (final roomId
-                    in list.where((element) => element != room.id))
+                if (list.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("Mutual rooms",
+                        style: Theme.of(context).textTheme.bodyMedium),
+                  ),
+                for (final roomId in list)
                   Builder(builder: (context) {
                     final r = room.client.getRoomById(roomId);
                     if (r == null) return Container();
