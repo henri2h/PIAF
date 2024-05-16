@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/components/friends_request_list.dart';
-import 'package:piaf/chat/partials/matrix/matrix_user_item.dart';
+import 'package:piaf/chat/partials/chat/user/user_item.dart';
 import 'package:piaf/chat/utils/matrix_widget.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
 
@@ -53,7 +53,7 @@ class NotificationView extends StatelessWidget {
                 if (notificationRooms.isNotEmpty)
                   for (final room in notificationRooms)
                     ListTile(
-                        title: MatrixUserItem(
+                        title: UserItem(
                           client: client,
                           name: room.getLocalizedDisplayname(),
                           userId: room.directChatMatrixID ?? room.id,

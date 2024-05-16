@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../../matrix/matrix_user_item.dart';
+import '../user/user_item.dart';
 import '../user/selector/user_selector_dialog.dart';
 import '../user/user_info_dialog.dart';
 import '../user/user_powerlevel_info_card.dart';
@@ -48,73 +48,103 @@ class ConvSettingsUsersState extends State<ConvSettingsUsers> {
             ),
             body: !snap.hasData
                 ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemCount: users?.length,
-                    itemBuilder: (context, int i) {
-                      User u = users![i];
-                      return MaterialButton(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          minWidth: 0,
-                          padding: EdgeInsets.zero,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: MatrixUserItem(
-                                    name: u.displayName,
-                                    userId: u.senderId,
-                                    client: room.client,
-                                    avatarUrl: u.avatarUrl,
-                                    subtitle: UserPowerLevelInfoCard(user: u)),
-                              ),
-                              if (u.canKick || u.canBan)
-                                PopupMenuButton<String>(
-                                    itemBuilder: (_) => [
-                                          if (u.canKick)
-                                            const PopupMenuItem(
-                                                value: "kick",
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.person_remove),
-                                                    SizedBox(width: 10),
-                                                    Text("Kick"),
-                                                  ],
-                                                )),
-                                          if (u.canBan)
-                                            const PopupMenuItem(
-                                                value: "ban",
-                                                child: Row(
-                                                  children: [
-                                                    Icon(Icons.delete_forever,
-                                                        color: Colors.red),
-                                                    SizedBox(width: 10),
-                                                    Text("Ban",
-                                                        style: TextStyle(
-                                                            color: Colors.red)),
-                                                  ],
-                                                ))
-                                        ],
-                                    icon: const Icon(Icons.more_horiz),
-                                    onSelected: (String action) async {
-                                      switch (action) {
-                                        case "kick":
-                                          await u.kick();
-                                          break;
-                                        case "ban":
-                                          await u.ban();
-                                          break;
-                                        default:
-                                      }
-                                    })
-                            ],
-                          ),
-                          onPressed: () async {
-                            await Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => UserInfoDialog(user: u)));
-                          });
-                    }),
+                : UsersList(users: users, room: room),
           );
+        });
+  }
+}
+
+class UsersList extends StatelessWidget {
+  const UsersList({
+    super.key,
+    required this.users,
+    required this.room,
+  });
+
+  final List<User>? users;
+  final Room room;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        itemCount: users?.length,
+        itemBuilder: (context, int i) {
+          User u = users![i];
+          return UsersListItem(u: u, room: room);
+        });
+  }
+}
+
+class UsersListItem extends StatelessWidget {
+  const UsersListItem({
+    super.key,
+    required this.u,
+    required this.room,
+  });
+
+  final User u;
+  final Room room;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        minWidth: 0,
+        padding: EdgeInsets.zero,
+        child: Row(
+          children: [
+            Expanded(
+              child: UserItem(
+                  name: u.displayName,
+                  userId: u.senderId,
+                  client: room.client,
+                  avatarUrl: u.avatarUrl,
+                  subtitle: UserPowerLevelInfoCard(user: u)),
+            ),
+            if (u.canKick || u.canBan)
+              PopupMenuButton<String>(
+                  itemBuilder: (_) => [
+                        if (u.canKick)
+                          const PopupMenuItem(
+                              value: "kick",
+                              child: Row(
+                                children: [
+                                  Icon(Icons.person_remove),
+                                  SizedBox(width: 10),
+                                  Text("Kick"),
+                                ],
+                              )),
+                        if (u.canBan)
+                          const PopupMenuItem(
+                              value: "ban",
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_forever, color: Colors.red),
+                                  SizedBox(width: 10),
+                                  Text("Ban",
+                                      style: TextStyle(color: Colors.red)),
+                                ],
+                              ))
+                      ],
+                  icon: const Icon(Icons.more_horiz),
+                  onSelected: (String action) async {
+                    switch (action) {
+                      case "kick":
+                        await u.kick();
+                        break;
+                      case "ban":
+                        await u.ban();
+                        break;
+                      default:
+                    }
+                  })
+          ],
+        ),
+        onPressed: () async {
+          await Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => UserInfoDialog(user: u)));
         });
   }
 }

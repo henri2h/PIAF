@@ -4,7 +4,7 @@ import 'package:matrix/matrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:piaf/chat/utils/extensions/matrix/event_extension.dart';
-import '../../../matrix/matrix_user_item.dart';
+import '../../user/user_item.dart';
 
 class EventReactionsDialog extends StatelessWidget {
   const EventReactionsDialog({
@@ -30,7 +30,7 @@ class EventReactionsDialog extends StatelessWidget {
                       child: Row(
                         children: [
                           Expanded(
-                            child: MatrixUserItem(
+                            child: UserItem(
                                 name: e.senderFromMemoryOrFallback.displayName,
                                 userId: e.senderId,
                                 client: e.room.client,

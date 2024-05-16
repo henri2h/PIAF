@@ -8,7 +8,7 @@ import 'package:piaf/chat/minestrix_chat.dart';
 import 'package:piaf/chat/partials/calendar_event/calendar_event_widget.dart';
 import 'package:piaf/chat/partials/chat/room/room_participants_indicator.dart';
 import 'package:piaf/chat/partials/chat/user/selector/user_selector_dialog.dart';
-import 'package:piaf/chat/partials/matrix/matrix_user_item.dart';
+import 'package:piaf/chat/partials/chat/user/user_item.dart';
 import 'package:piaf/chat/partials/social/social_gallery_preview_widget.dart';
 import 'package:piaf/chat/utils/extensions/minestrix/model/calendar_event_model.dart';
 import 'package:piaf/chat/utils/poll/poll.dart';
@@ -307,8 +307,7 @@ class Description extends StatelessWidget {
                       TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500)),
             ),
             Expanded(
-              child:
-                  MatrixUserItem.fromUser(room.creator!, client: room.client),
+              child: UserItem.fromUser(room.creator!, client: room.client),
             ),
           ],
         ),

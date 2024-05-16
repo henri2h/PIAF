@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../../../matrix/matrix_user_item.dart';
+import '../../user/user_item.dart';
 
 class ReadReceiptsList extends StatelessWidget {
   const ReadReceiptsList({
@@ -25,7 +25,7 @@ class ReadReceiptsList extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: MatrixUserItem(
+                  child: UserItem(
                       name: r.user.displayName,
                       userId: r.user.id,
                       client: event.room.client,

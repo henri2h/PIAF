@@ -3,7 +3,7 @@ import 'package:matrix/matrix.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../matrix/matrix_image_avatar.dart';
-import '../../../matrix/matrix_user_item.dart';
+import '../../user/user_item.dart';
 
 class RoomListItemPresence extends StatelessWidget {
   const RoomListItemPresence({
@@ -30,7 +30,7 @@ class RoomListItemPresence extends StatelessWidget {
               minWidth: 0,
               padding: EdgeInsets.zero,
               onPressed: onTap,
-              child: MatrixUserItem(
+              child: UserItem(
                   avatarUrl: user?.avatarUrl,
                   client: client,
                   name: user?.displayName,

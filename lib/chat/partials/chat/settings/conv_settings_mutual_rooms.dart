@@ -22,37 +22,64 @@ class _ConvSettingsMutualRoomsState extends State<ConvSettingsMutualRooms> {
         title: const Text("Mutual rooms"),
         forceMaterialTransparency: true,
       ),
-      body: FutureBuilder<List<String>?>(
-          future: widget.room.client
-              .getMutualRoomsWithUser(widget.room.directChatMatrixID!),
-          builder: (context, snap) {
-            if (!snap.hasData) {
-              return const Column(
-                children: [
-                  MatrixRoomsListTileShimmer(),
-                  MatrixRoomsListTileShimmer()
-                ],
-              );
-            }
-            final list = snap.data!;
-            return ListView(
+      body: ListView(
+        children: [
+          MutualRoomsWidget(room: widget.room),
+        ],
+      ),
+    );
+  }
+}
+
+class MutualRoomsWidget extends StatelessWidget {
+  const MutualRoomsWidget({
+    super.key,
+    required this.room,
+  });
+
+  final Room room;
+
+  @override
+  Widget build(BuildContext context) {
+    final userId = room.directChatMatrixID;
+
+    if (userId == null) return Container();
+
+    return FutureBuilder<List<String>?>(
+        future: room.client.getMutualRoomsWithUser(userId),
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Column(
               children: [
-                for (final roomId in list)
+                MatrixRoomsListTileShimmer(),
+                MatrixRoomsListTileShimmer()
+              ],
+            );
+          }
+          final list = snap.data!;
+          return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Mutual rooms",
+                      style: Theme.of(context).textTheme.bodyMedium),
+                ),
+                for (final roomId
+                    in list.where((element) => element != room.id))
                   Builder(builder: (context) {
-                    final r = widget.room.client.getRoomById(roomId);
+                    final r = room.client.getRoomById(roomId);
                     if (r == null) return Container();
                     return RoomListItem(
                       key: Key("room_${r.id}"),
                       room: r,
-                      open: r == widget.room,
+                      open: r == room,
                       client: r.client,
                       onSelection: (_) {},
                       onLongPress: () {},
                     );
                   }),
-              ],
-            );
-          }),
-    );
+              ]);
+        });
   }
 }

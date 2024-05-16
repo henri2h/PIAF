@@ -5,10 +5,12 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/chat/partials/chat/settings/conv_settings_encryption_keys.dart';
 import 'package:piaf/chat/partials/chat/settings/conv_settings_mutual_rooms.dart';
 import 'package:piaf/chat/partials/matrix/matrix_user_avatar.dart';
+import 'package:piaf/utils/date_time_extension.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 import '../../chat/partials/chat/room/room_search.dart';
@@ -48,6 +50,21 @@ class RoomSettingsPage extends StatefulWidget {
 }
 
 class RoomSettingsPageState extends State<RoomSettingsPage> {
+  void onPressedSearch(BuildContext context, Room room) async {
+    await AdaptativeDialogs.show(
+        context: context, builder: (context) => RoomSearch(room: room));
+  }
+
+  void onPressedMedia(BuildContext context, Room room) async =>
+      await Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => ConvSettingsRoomMedia(room: room)));
+
+  void onPressedSettings(BuildContext context, Room room) async {
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) =>
+            ConvSettingsRoom(room: room, onLeave: widget.onLeave)));
+  }
+
   @override
   Widget build(BuildContext context) {
     Room room = widget.room;
@@ -64,6 +81,9 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
       body: FutureBuilder(
           future: room.postLoad(),
           builder: (context, snapshot) {
+            final isDirectChat = room.isDirectChat;
+            final topicEvent = room.getState(EventTypes.RoomTopic);
+
             return ListView(
               children: [
                 SizedBox(
@@ -85,150 +105,221 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
                     RoomBridgeInfo(event: event),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (room.topic.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(room.topic,
-                                  style: const TextStyle(fontSize: 16)),
-                            ],
-                          ),
-                        ),
-                      if (room.isDirectChat) DirectChatWidget(room: room),
-                      SettingsList(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          lightTheme: const SettingsThemeData(
-                              settingsListBackground: Colors.transparent),
-                          darkTheme: const SettingsThemeData(
-                              settingsListBackground: Colors.transparent),
-                          sections: [
-                            if (room.isDirectChat)
-                              SettingsSection(
-                                  title: const Text("User"),
-                                  tiles: [
-                                    SettingsTile.navigation(
-                                      leading: const Icon(Icons.room),
-                                      title: const Text('Mutual rooms'),
-                                      onPressed: (context) async =>
-                                          await Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ConvSettingsMutualRooms(
-                                                        room: room,
-                                                      ))),
-                                    ),
-                                    if (room.encrypted)
-                                      SettingsTile.navigation(
-                                        leading: const Icon(Icons.lock_sharp),
-                                        title: const Text('Encryption keys'),
-                                        onPressed: (context) async =>
-                                            await Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        ConvSettingsEncryptionKeys(
-                                                            room: room))),
-                                      ),
-                                  ]),
-                            SettingsSection(
-                                title: const Text('Room'),
-                                tiles: <SettingsTile>[
-                                  if (!room.encrypted)
-                                    SettingsTile.navigation(
-                                      leading: const Icon(Icons.search),
-                                      title: const Text('Search'),
-                                      onPressed: (context) async {
-                                        await AdaptativeDialogs.show(
-                                            context: context,
-                                            builder: (context) =>
-                                                RoomSearch(room: room));
-                                      },
-                                    ),
-                                  SettingsTile.navigation(
-                                    leading: const Icon(Icons.people),
-                                    title: const Text('Users'),
-                                    value: Text(
-                                        "${room.summary.mJoinedMemberCount ?? 0} members"),
-                                    onPressed: (context) async =>
-                                        await Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ConvSettingsUsers(
-                                                        room: room))),
-                                  ),
-                                  SettingsTile.navigation(
-                                      leading: const Icon(Icons.settings),
-                                      title: const Text('Room settings'),
-                                      onPressed: (context) async =>
-                                          await Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ConvSettingsRoom(
-                                                          room: room,
-                                                          onLeave: widget
-                                                              .onLeave)))),
-                                  SettingsTile.navigation(
-                                    leading: const Icon(Icons.image),
-                                    title: const Text('Room media'),
-                                    onPressed: (context) async =>
-                                        await Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ConvSettingsRoomMedia(
-                                                        room: room))),
-                                  ),
-                                ]),
-                            SettingsSection(
-                                title: const Text('Security'),
-                                tiles: <SettingsTile>[
-                                  SettingsTile.navigation(
-                                    leading: const Icon(Icons.check_circle),
-                                    title: const Text('Roles & permissions'),
-                                    onPressed: (context) async =>
-                                        await Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ConvSettingsPermissions(
-                                                        room: room))),
-                                  ),
-                                  SettingsTile.navigation(
-                                    leading: const Icon(Icons.lock),
-                                    title: const Text('Room security'),
-                                    onPressed: (context) async =>
-                                        await Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ConvSettingsSecurity(
-                                                        room: room))),
-                                  ),
-                                ]),
-                            SettingsSection(
-                              title: const Text('Danger'),
-                              tiles: <SettingsTile>[
-                                SettingsTile(
-                                    leading: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                    ),
-                                    title: const Text('Leave'),
-                                    onPressed: (context) async {
-                                      await widget.room.leave();
-                                      widget.onLeave();
-                                    }),
-                              ],
-                            ),
-                          ]),
+                      if (!room.encrypted)
+                        GroupIcon(
+                            icon: Icons.search,
+                            title: "Search",
+                            onPressed: () => onPressedSearch(context, room)),
+                      GroupIcon(
+                          icon: Icons.image,
+                          title: "Media",
+                          onPressed: () => onPressedMedia(context, room)),
+                      GroupIcon(
+                          icon: Icons.settings,
+                          title: "Settings",
+                          onPressed: () => onPressedSettings(context, room)),
                     ],
                   ),
                 ),
+                if (isDirectChat == false)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                            "Group with ${room.summary.mJoinedMemberCount} members",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.outline)),
+                      ],
+                    ),
+                  ),
+                if (![null, ""].contains(topicEvent?.content["topic"]))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(topicEvent!.content["topic"] as String,
+                            style: Theme.of(context).textTheme.bodyLarge),
+                        if (topicEvent.senderId.isNotEmpty)
+                          FutureBuilder<Profile>(
+                              future: room.client
+                                  .getProfileFromUserId(topicEvent.senderId),
+                              builder: (context, snapshot) {
+                                String name = topicEvent.senderId;
+                                if (snapshot.data?.displayName?.isNotEmpty ==
+                                    true) {
+                                  name = "${snapshot.data?.displayName}";
+                                }
+
+                                if (topicEvent is Event) {
+                                  return Text(
+                                      "Set by $name on ${topicEvent.originServerTs.timeSinceAWeekOrDuration}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline));
+                                }
+
+                                return Text("Set by $name");
+                              })
+                      ],
+                    ),
+                  ),
+                if (isDirectChat) DirectChatWidget(room: room),
+                if (isDirectChat) MutualRoomsWidget(room: room),
+                const SizedBox(
+                  height: 16,
+                ),
+                if (isDirectChat == false &&
+                    ((room.summary.mInvitedMemberCount ?? 0) +
+                            (room.summary.mJoinedMemberCount ?? 0)) !=
+                        2)
+                  Builder(builder: (context) {
+                    final particpants = room.getParticipants().take(10);
+                    final totalParticpantCount =
+                        (room.summary.mInvitedMemberCount ?? 0) +
+                            (room.summary.mJoinedMemberCount ?? 0);
+                    bool complete = particpants.length == totalParticpantCount;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            "$totalParticpantCount members",
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        for (final user in particpants)
+                          UsersListItem(u: user, room: room),
+                        if (!complete)
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: TextButton(
+                                onPressed: () async {
+                                  await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ConvSettingsUsers(room: room)));
+                                },
+                                child: Text(
+                                    "See all particpants, ${totalParticpantCount - particpants.length} more")),
+                          ),
+                      ],
+                    );
+                  }),
+                SettingsList(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    lightTheme: const SettingsThemeData(
+                        settingsListBackground: Colors.transparent),
+                    darkTheme: const SettingsThemeData(
+                        settingsListBackground: Colors.transparent),
+                    sections: [
+                      if (isDirectChat && room.encrypted)
+                        SettingsSection(title: const Text("User"), tiles: [
+                          SettingsTile.navigation(
+                            leading: const Icon(Icons.lock_sharp),
+                            title: const Text('Encryption keys'),
+                            onPressed: (context) async =>
+                                await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ConvSettingsEncryptionKeys(
+                                                room: room))),
+                          ),
+                        ]),
+                      SettingsSection(
+                          title: const Text('Security'),
+                          tiles: <SettingsTile>[
+                            SettingsTile.navigation(
+                              leading: const Icon(Icons.check_circle),
+                              title: const Text('Roles & permissions'),
+                              onPressed: (context) async => await Navigator.of(
+                                      context)
+                                  .push(MaterialPageRoute(
+                                      builder: (context) =>
+                                          ConvSettingsPermissions(room: room))),
+                            ),
+                            SettingsTile.navigation(
+                              leading: const Icon(Icons.lock),
+                              title: const Text('Room security'),
+                              onPressed: (context) async => await Navigator.of(
+                                      context)
+                                  .push(MaterialPageRoute(
+                                      builder: (context) =>
+                                          ConvSettingsSecurity(room: room))),
+                            ),
+                          ]),
+                      SettingsSection(
+                        tiles: <SettingsTile>[
+                          SettingsTile(
+                              leading: const Icon(
+                                Icons.logout,
+                                color: Colors.red,
+                              ),
+                              title: const Text('Leave',
+                                  style: TextStyle(color: Colors.red)),
+                              onPressed: (context) async {
+                                await widget.room.leave();
+                                widget.onLeave();
+                              }),
+                        ],
+                      ),
+                    ]),
               ],
             );
           }),
+    );
+  }
+}
+
+class GroupIcon extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final void Function() onPressed;
+  const GroupIcon(
+      {super.key,
+      required this.icon,
+      required this.title,
+      required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: FilledButton.tonal(
+            onPressed: onPressed,
+            style: const ButtonStyle(
+                padding: MaterialStatePropertyAll<EdgeInsetsGeometry?>(
+                    EdgeInsets.all(8)),
+                shape: MaterialStatePropertyAll<OutlinedBorder?>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(16))))),
+            child: SizedBox(width: 48, height: 48, child: Icon(icon, size: 28)),
+          ),
+        ),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.labelLarge,
+        )
+      ],
     );
   }
 }

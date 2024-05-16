@@ -13,11 +13,19 @@ class UserPowerLevelInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if ([50, 100].contains(user.powerLevel)) {
-      return Card(
+      return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Text(user.powerLevelText),
-      ));
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+            child: Text(user.powerLevelText,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.onPrimary)),
+          ));
     }
     return Container(width: 0);
   }

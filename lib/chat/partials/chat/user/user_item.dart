@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../components/shimmer_widget.dart';
-import 'matrix_user_avatar.dart';
+import '../../components/shimmer_widget.dart';
+import '../../matrix/matrix_user_avatar.dart';
 
-class MatrixUserItem extends StatelessWidget {
-  const MatrixUserItem(
+class UserItem extends StatelessWidget {
+  const UserItem(
       {super.key,
       required this.avatarUrl,
       required this.client,
@@ -15,7 +15,7 @@ class MatrixUserItem extends StatelessWidget {
       this.avatarWidth,
       this.subtitle});
 
-  MatrixUserItem.fromUser(User user,
+  UserItem.fromUser(User user,
       {super.key,
       required this.client,
       this.subtitle,
@@ -47,12 +47,17 @@ class MatrixUserItem extends StatelessWidget {
         name ?? userId,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.bodyLarge,
       ),
       subtitle: name != null
           ? Text(
               userId,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(color: Theme.of(context).colorScheme.outline),
             )
           : null,
       trailing: subtitle,
