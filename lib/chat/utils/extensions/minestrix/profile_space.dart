@@ -75,9 +75,9 @@ extension ProfileRoom on Room {
 
   /// Remove a child of this space.
   Future<void> removeSpaceChild(String roomId) async {
-    await client.setRoomStateWithKey(id, EventTypes.spaceChild, roomId, {});
+    await client.setRoomStateWithKey(id, EventTypes.SpaceChild, roomId, {});
     try {
-      await client.setRoomStateWithKey(roomId, EventTypes.spaceParent, id, {});
+      await client.setRoomStateWithKey(roomId, EventTypes.SpaceParent, id, {});
     } catch (e) {
       Logs().e("Could not remove space parent for $id in $roomId", e);
     }

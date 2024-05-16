@@ -50,7 +50,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     loadFuture ??= load();
 
     Matrix.of(context).navigatorContext = context;
-    Matrix.of(context).voipPlugin?.context = context;
+    // TODO: See if the Voip View still display correctly even if the context is not beeing updated
+    //Matrix.of(context).context = context;
 
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 850;

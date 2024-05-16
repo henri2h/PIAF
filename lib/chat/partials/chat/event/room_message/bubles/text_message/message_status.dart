@@ -41,8 +41,6 @@ class MessageStatus extends StatelessWidget {
               IconData icon = Icons.error;
               String text = "Arggg";
               switch (event.status) {
-                case EventStatus.removed:
-                  break;
                 case EventStatus.error:
                   // TODO: Handle this case.
                   break;

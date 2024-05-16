@@ -47,19 +47,19 @@ class MatrixServerChooserController extends ChangeNotifier {
           ? Uri.parse(serverUrl)
           : Uri.https(serverUrl, "");
 
-      final homeserver = await client.checkHomeserver(address);
+      var (homeserver, _, loginFlow) = await client.checkHomeserver(address);
 
       // check  if info is not null and
       // if we are the last try (prevent an old request to modify the results)
       if (localVerificationNumber == verificationTrial) {
-        updateDomain(homeserver, address);
+        updateDomain(homeserver, loginFlow, address);
         return;
       }
     } catch (e, s) {
       Logs().e("[Login] : an error happend", e, s);
       if (localVerificationNumber == verificationTrial) {
         errorText = e.toString();
-        updateDomain(null, null);
+        updateDomain(null, null, null);
       }
     }
   }
@@ -72,13 +72,14 @@ class MatrixServerChooserController extends ChangeNotifier {
     });
   }
 
-  void updateDomain(HomeserverSummary? server, Uri? url) {
+  void updateDomain(
+      DiscoveryInformation? server, List<LoginFlow>? loginFlow, Uri? url) {
     if (server != null) {
       // Use the information returned by the server or fallback to the value given by the user
-      domain = server.discoveryInformation?.mHomeserver.baseUrl ?? url;
+      domain = server.mHomeserver.baseUrl;
 
       // update UI according to server capabilities
-      loginFlowsSupported = server.loginFlows.map((e) => e.type).toList();
+      loginFlowsSupported = loginFlow?.map((e) => e.type).toList() ?? [];
     }
 
     // change if hostname hasn't be set by user

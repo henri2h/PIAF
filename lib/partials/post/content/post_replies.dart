@@ -73,9 +73,7 @@ class PostReplies extends StatelessWidget {
                                       children: [
                                         Wrap(
                                           children: [
-                                            Text(
-                                                sender.asUser.displayName
-                                                    .toString(),
+                                            Text(sender.calcDisplayname(),
                                                 style: const TextStyle(
                                                     fontWeight:
                                                         FontWeight.w700)),

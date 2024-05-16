@@ -42,7 +42,7 @@ class RoomPageState extends State<RoomPage> {
   MultiSplitViewController? _cachedController;
   MultiSplitViewController get _controller =>
       _cachedController ??= MultiSplitViewController(
-          areas: [Area(minimalSize: 400), Area(minimalSize: 200, size: 340)]);
+          areas: [Area(min: 400), Area(min: 200, size: 340)]);
 
   final streamTimelineInsert = StreamController<int>();
   final streamTimelineRemove = StreamController<int>();
@@ -230,17 +230,19 @@ class RoomPageState extends State<RoomPage> {
                   highlightedColor: Colors.indigo[900]!)),
           child: MultiSplitView(
             controller: _controller,
-            children: [
-              Card(child: view),
-              if (_displayConvSettings && room != null)
-                Card(
+            builder: ((context, area) {
+              if (area.index == 0) return Card(child: view);
+              if (area.index == 1 && _displayConvSettings && room != null) {
+                return Card(
                   child: ConvSettings(
                       room: room,
                       onClose: () => setState(() {
                             _displayConvSettings = false;
                           })),
-                )
-            ],
+                );
+              }
+              return Container();
+            }),
           ));
     });
   }

@@ -61,7 +61,7 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
         return const Icon(Icons.post_add);
       case MatrixTypes.comment:
         return const Icon(Icons.comment);
-      case EventTypes.spaceChild:
+      case EventTypes.SpaceChild:
         return const Icon(Icons.child_care);
       case EventTypes.Encryption:
         return const Icon(Icons.enhanced_encryption);
@@ -83,7 +83,7 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
         return "Send post";
       case MatrixTypes.comment:
         return "Send comment";
-      case EventTypes.spaceChild:
+      case EventTypes.SpaceChild:
         return "Set space child";
       case EventTypes.Encryption:
         return "Activate encryption";
@@ -190,11 +190,14 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
                               '')),
                       ListTile(
                           title: const Text("Room creator"),
-                          subtitle: Text(room
-                                  .getState(EventTypes.RoomCreate)
-                                  ?.senderFromMemoryOrFallback
-                                  .calcDisplayname() ??
-                              '')),
+                          subtitle: Builder(builder: (context) {
+                            final event = room.getState(EventTypes.RoomCreate);
+                            if (event is Event) {
+                              return Text(event.senderFromMemoryOrFallback
+                                  .calcDisplayname());
+                            }
+                            return const Text("Not found");
+                          })),
                       if (room
                               .getState(EventTypes.RoomCreate)
                               ?.content["type"] !=

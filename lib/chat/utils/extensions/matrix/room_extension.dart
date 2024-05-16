@@ -4,12 +4,17 @@ import 'package:piaf/chat/minestrix_chat.dart';
 import '../../../config/matrix_types.dart';
 
 extension RoomExtension on Room {
-  Event? get createEvent => getState(EventTypes.RoomCreate);
-  User? get creator => createEvent?.senderFromMemoryOrFallback;
+  StrippedStateEvent? get createEvent => getState(EventTypes.RoomCreate);
+  User? get creator {
+    final event = createEvent;
+    if (event is Event) return event.senderFromMemoryOrFallback;
+    return null;
+  }
+
   String? get creatorId => createEvent?.senderId;
   String get type => createEvent?.content.tryGet<String>('type') ?? '';
 
-  Event? get typeEvent => getState("m.room.type");
+  StrippedStateEvent? get typeEvent => getState("m.room.type");
   String? get subtype => typeEvent?.content.tryGet<String>('type');
 
   bool get isLowPriority => tags.containsKey(TagType.lowPriority);

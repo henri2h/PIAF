@@ -9,24 +9,17 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/pages/chat/dialer/dialer.dart';
 import 'package:webrtc_interface/webrtc_interface.dart' hide Navigator;
 
-import 'famedlysdk_store.dart';
+import 'matrix_widget.dart';
 import 'platform_infos.dart';
 import 'voip/callkeep_manager.dart';
 import 'voip/user_media_manager.dart';
 
 class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
-  final Client client;
-  BuildContext context;
-  VoipPlugin({required this.client, required this.context}) {
+  final MatrixState matrix;
+  Client get client => matrix.client;
+
+  VoipPlugin(this.matrix) {
     voip = VoIP(client, this);
-    Connectivity()
-        .onConnectivityChanged
-        .listen(_handleNetworkChanged)
-        .onError((e) => _currentConnectivity = ConnectivityResult.none);
-    Connectivity()
-        .checkConnectivity()
-        .then((result) => _currentConnectivity = result)
-        .catchError((e) => _currentConnectivity = ConnectivityResult.none);
     if (!kIsWeb) {
       final wb = WidgetsBinding.instance;
       wb.addObserver(this);
@@ -36,24 +29,13 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
   bool background = false;
   bool speakerOn = false;
   late VoIP voip;
-  ConnectivityResult? _currentConnectivity;
   OverlayEntry? overlayEntry;
-
-  void _handleNetworkChanged(ConnectivityResult result) async {
-    /// Got a new connectivity status!
-    if (_currentConnectivity != result) {
-      voip.calls.forEach((_, sess) {
-        sess.restartIce();
-      });
-    }
-    _currentConnectivity = result;
-  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState? state) {
-    Logs().v('AppLifecycleState = $state');
     background = (state == AppLifecycleState.detached ||
         state == AppLifecycleState.paused);
+    Logs().w('Set background mode in VOIP plugin', background);
   }
 
   void addCallingOverlay(String callId, CallSession call) {
@@ -65,9 +47,9 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
     // falling back on a dialog
     if (kIsWeb) {
       showDialog(
-        context: context,
+        context: matrix.context,
         builder: (context) => Calling(
-          context: context,
+          context: matrix.context,
           client: client,
           callId: callId,
           call: call,
@@ -77,16 +59,17 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
     } else {
       overlayEntry = OverlayEntry(
         builder: (_) => Calling(
-            context: context,
-            client: client,
-            callId: callId,
-            call: call,
-            onClear: () {
-              overlayEntry?.remove();
-              overlayEntry = null;
-            }),
+          context: matrix.context,
+          client: client,
+          callId: callId,
+          call: call,
+          onClear: () {
+            overlayEntry?.remove();
+            overlayEntry = null;
+          },
+        ),
       );
-      Overlay.of(context).insert(overlayEntry!);
+      Overlay.of(matrix.context).insert(overlayEntry!);
     }
   }
 
@@ -94,29 +77,21 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
   MediaDevices get mediaDevices => webrtc_impl.navigator.mediaDevices;
 
   @override
-  // remove this from sdk once callkeep is stable
-  bool get isBackgroud => false;
-
-  @override
   bool get isWeb => kIsWeb;
 
   @override
   Future<RTCPeerConnection> createPeerConnection(
-          Map<String, dynamic> configuration,
-          [Map<String, dynamic> constraints = const {}]) =>
+    Map<String, dynamic> configuration, [
+    Map<String, dynamic> constraints = const {},
+  ]) =>
       webrtc_impl.createPeerConnection(configuration, constraints);
-
-  @override
-  VideoRenderer createRenderer() {
-    return webrtc_impl.RTCVideoRenderer();
-  }
 
   Future<bool> get hasCallingAccount async =>
       kIsWeb ? false : await CallKeepManager().hasPhoneAccountEnabled;
 
   @override
   Future<void> playRingtone() async {
-    if (!background && PlatformInfos.isMobile && !await hasCallingAccount) {
+    if (!background && !await hasCallingAccount) {
       try {
         await UserMediaManager().startRingingTone();
       } catch (_) {}
@@ -125,7 +100,7 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
 
   @override
   Future<void> stopRingtone() async {
-    if (!background && PlatformInfos.isMobile && !await hasCallingAccount) {
+    if (!background && !await hasCallingAccount) {
       try {
         await UserMediaManager().stopRingingTone();
       } catch (_) {}
@@ -148,8 +123,8 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
       } else {
         try {
           final wasForeground = await FlutterForegroundTask.isAppOnForeground;
-          await Store().setItem(
-              'wasForeground', wasForeground == true ? 'true' : 'false');
+
+          await matrix.store.setItemBool('wasForeground', wasForeground);
           FlutterForegroundTask.setOnLockScreenVisibility(true);
           FlutterForegroundTask.wakeUpScreen();
           FlutterForegroundTask.launchApp();
@@ -159,11 +134,14 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
         // use fallback flutter call pages for outgoing and video calls.
         addCallingOverlay(call.callId, call);
         try {
-          if (context.mounted && !hasCallingAccount) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          if (!hasCallingAccount) {
+            ScaffoldMessenger.of(matrix.context).showSnackBar(
+              const SnackBar(
                 content: Text(
-              'No calling accounts found (used for native calls UI)',
-            )));
+                  'No calling accounts found (used for native calls UI)',
+                ),
+              ),
+            );
           }
         } catch (e) {
           Logs().e('failed to show snackbar');
@@ -182,19 +160,19 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
       if (PlatformInfos.isAndroid) {
         FlutterForegroundTask.setOnLockScreenVisibility(false);
         FlutterForegroundTask.stopService();
-        final wasForeground = await Store().getItem('wasForeground');
-        wasForeground == 'false' ? FlutterForegroundTask.minimizeApp() : null;
+        final wasForeground = await matrix.store.getItemBool('wasForeground');
+        wasForeground == false ? FlutterForegroundTask.minimizeApp() : null;
       }
     }
   }
 
   @override
-  Future<void> handleGroupCallEnded(GroupCall groupCall) async {
+  Future<void> handleGroupCallEnded(GroupCallSession groupCall) async {
     // TODO: implement handleGroupCallEnded
   }
 
   @override
-  Future<void> handleNewGroupCall(GroupCall groupCall) async {
+  Future<void> handleNewGroupCall(GroupCallSession groupCall) async {
     // TODO: implement handleNewGroupCall
   }
 
@@ -207,4 +185,8 @@ class VoipPlugin with WidgetsBindingObserver implements WebRTCDelegate {
   Future<void> handleMissedCall(CallSession session) async {
     // TODO: implement handleMissedCall
   }
+
+  @override
+  // TODO: implement keyProvider
+  EncryptionKeyProvider? get keyProvider => throw UnimplementedError();
 }

@@ -63,7 +63,7 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
 
   final Map<int, bool?> _isGuest = {};
 
-  HomeserverSummary? loginHomeserverSummary;
+  DiscoveryInformation? loginHomeserverSummary;
   XFile? loginAvatar;
   String? loginUsername;
   bool? loginRegistrationSupported;
@@ -381,8 +381,9 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
 
   void createVoipPlugin() async {
     if (AppConfig.experimentalVoip) {
+      
       voipPlugin = webrtcIsSupported
-          ? VoipPlugin(client: client, context: context)
+          ? VoipPlugin(this)
           : null;
     }
   }

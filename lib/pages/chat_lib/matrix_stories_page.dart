@@ -402,11 +402,15 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
                                     Navigator.of(context).pop();
                                   },
                                 ),
-                                title: Text(widget.room
-                                        .getState(EventTypes.RoomCreate)
-                                        ?.senderFromMemoryOrFallback
-                                        .calcDisplayname() ??
-                                    'Story not found'),
+                                title: Builder(builder: (context) {
+                                  final event = widget.room
+                                      .getState(EventTypes.RoomCreate);
+                                  if (event is Event) {
+                                    return Text(event.senderFromMemoryOrFallback
+                                            .calcDisplayname());
+                                  }
+                                  return const Text("Story not found");
+                                }),
                               ),
                               Row(
                                 children: [

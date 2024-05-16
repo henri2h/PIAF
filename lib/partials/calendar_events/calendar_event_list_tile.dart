@@ -28,6 +28,8 @@ class _CalendarEventListTileState extends State<CalendarEventListTile> {
     return FutureBuilder(
         future: getState,
         builder: (context, snapshot) {
+          final createEvent = widget.room.createEvent;
+
           return Card(
             child: ListTile(
                 title: Text(
@@ -45,10 +47,11 @@ class _CalendarEventListTileState extends State<CalendarEventListTile> {
                         const Text("Created by ",
                             style: TextStyle(fontSize: 14)),
                         Text(
-                            widget.room.createEvent?.senderFromMemoryOrFallback
-                                    .displayName ??
-                                widget.room.createEvent?.senderId ??
-                                "",
+                            createEvent is Event
+                                ? createEvent.senderFromMemoryOrFallback
+                                        .displayName ??
+                                    createEvent.senderId
+                                : "",
                             style: const TextStyle(fontWeight: FontWeight.bold))
                       ],
                     )

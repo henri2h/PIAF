@@ -7,8 +7,6 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:matrix/matrix.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../voip_plugin.dart';
-
 class CallKeeper {
   CallKeeper(this.callKeepManager, this.call) {
     call.onCallStateChanged.stream.listen(_handleCallState);
@@ -39,31 +37,14 @@ class CallKeeper {
       case CallState.kEnded:
         callKeepManager.hangup(call.callId);
         break;
-      /* TODO:
-      case CallState.kMuted:
-        callKeepManager.setMutedCall(uuid, true);
-        break;
-      case CallState.kHeld:
-        callKeepManager.setOnHold(uuid, true);
-        break;
-      */
+
       case CallState.kFledgling:
-        // TODO: Handle this case.
-        break;
       case CallState.kInviteSent:
-        // TODO: Handle this case.
-        break;
       case CallState.kWaitLocalMedia:
-        // TODO: Handle this case.
-        break;
       case CallState.kCreateOffer:
-        // TODO: Handle this case.
-        break;
       case CallState.kCreateAnswer:
-        // TODO: Handle this case.
-        break;
       case CallState.kRinging:
-        // TODO: Handle this case.
+      case CallState.kEnding:
         break;
     }
   }
@@ -83,7 +64,6 @@ class CallKeepManager {
   static final CallKeepManager _instance = CallKeepManager._internal();
 
   late FlutterCallkeep _callKeep;
-  VoipPlugin? _voipPlugin;
 
   String get appName => 'FluffyChat';
 
@@ -110,14 +90,15 @@ class CallKeepManager {
   Future<void> showCallkitIncoming(CallSession call) async {
     if (!setupDone) {
       await _callKeep.setup(
-          null,
-          <String, dynamic>{
-            'ios': <String, dynamic>{
-              'appName': appName,
-            },
-            'android': alertOptions,
+        null,
+        <String, dynamic>{
+          'ios': <String, dynamic>{
+            'appName': appName,
           },
-          backgroundMode: true);
+          'android': alertOptions,
+        },
+        backgroundMode: true,
+      );
     }
     setupDone = true;
     await displayIncomingCall(call);
@@ -128,9 +109,10 @@ class CallKeepManager {
     });
     call.onCallEventChanged.stream.listen(
       (event) {
-        if (event == CallEvent.kLocalHoldUnhold) {
+        if (event == CallStateChange.kLocalHoldUnhold) {
           Logs().i(
-              'Call hold event: local ${call.localHold}, remote ${call.remoteOnHold}');
+            'Call hold event: local ${call.localHold}, remote ${call.remoteOnHold}',
+          );
         }
       },
     );
@@ -167,11 +149,12 @@ class CallKeepManager {
   Future<void> initialize() async {
     _callKeep.on(CallKeepPerformAnswerCallAction(), answerCall);
     _callKeep.on(CallKeepDidPerformDTMFAction(), didPerformDTMFAction);
-    _callKeep.on(
-        CallKeepDidReceiveStartCallAction(), didReceiveStartCallAction);
+
     _callKeep.on(CallKeepDidToggleHoldAction(), didToggleHoldCallAction);
     _callKeep.on(
-        CallKeepDidPerformSetMutedCallAction(), didPerformSetMutedCallAction);
+      CallKeepDidPerformSetMutedCallAction(),
+      didPerformSetMutedCallAction,
+    );
     _callKeep.on(CallKeepPerformEndCallAction(), endCall);
     _callKeep.on(CallKeepPushKitToken(), onPushKitToken);
     _callKeep.on(CallKeepDidDisplayIncomingCall(), didDisplayIncomingCall);
@@ -208,11 +191,17 @@ class CallKeepManager {
   Future<void> updateDisplay(String callUUID) async {
     // Workaround because Android doesn't display well displayName, se we have to switch ...
     if (isIOS) {
-      await _callKeep.updateDisplay(callUUID,
-          displayName: 'New Name', handle: callUUID);
+      await _callKeep.updateDisplay(
+        callUUID,
+        displayName: 'New Name',
+        handle: callUUID,
+      );
     } else {
-      await _callKeep.updateDisplay(callUUID,
-          displayName: callUUID, handle: 'New Name');
+      await _callKeep.updateDisplay(
+        callUUID,
+        displayName: callUUID,
+        handle: 'New Name',
+      );
     }
   }
 
@@ -221,8 +210,9 @@ class CallKeepManager {
     addCall(call.callId, callKeeper);
     await _callKeep.displayIncomingCall(
       call.callId,
-      '${call.displayName}!} (FluffyChat)',
-      localizedCallerName: '${call.displayName!} (FluffyChat)',
+      '${call.room.getLocalizedDisplayname()} (FluffyChat)',
+      localizedCallerName:
+          '${call.room.getLocalizedDisplayname()} (FluffyChat)',
       handleType: 'number',
       hasVideo: call.type == CallType.kVideo,
     );
@@ -298,7 +288,7 @@ class CallKeepManager {
 
   Future<void> endCall(CallKeepPerformEndCallAction event) async {
     final keeper = calls[event.callUUID];
-    keeper?.call.hangup();
+    keeper?.call.hangup(reason: CallErrorCode.userHangup);
     removeCall(event.callUUID);
   }
 
@@ -307,26 +297,9 @@ class CallKeepManager {
     keeper.call.sendDTMF(event.digits!);
   }
 
-  Future<void> didReceiveStartCallAction(
-      CallKeepDidReceiveStartCallAction event) async {
-    if (event.handle == null) {
-      // @TODO: sometime we receive `didReceiveStartCallAction` with handle` undefined`
-      return;
-    }
-    final callUUID = event.callUUID!;
-    if (event.callUUID == null) {
-      final call =
-          await _voipPlugin!.voip.inviteToCall(event.handle!, CallType.kVideo);
-      addCall(callUUID, CallKeeper(this, call));
-    }
-    await _callKeep.startCall(callUUID, event.handle!, event.handle!);
-    Timer(const Duration(seconds: 1), () {
-      _callKeep.setCurrentCallActive(callUUID);
-    });
-  }
-
   Future<void> didPerformSetMutedCallAction(
-      CallKeepDidPerformSetMutedCallAction event) async {
+    CallKeepDidPerformSetMutedCallAction event,
+  ) async {
     final keeper = calls[event.callUUID];
     if (event.muted!) {
       keeper!.call.setMicrophoneMuted(true);
@@ -337,7 +310,8 @@ class CallKeepManager {
   }
 
   Future<void> didToggleHoldCallAction(
-      CallKeepDidToggleHoldAction event) async {
+    CallKeepDidToggleHoldAction event,
+  ) async {
     final keeper = calls[event.callUUID];
     if (event.hold!) {
       keeper!.call.setRemoteOnHold(true);
