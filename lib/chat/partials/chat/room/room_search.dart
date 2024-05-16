@@ -110,169 +110,180 @@ class _RoomSearchState extends State<RoomSearch> {
   @override
   Widget build(BuildContext context) {
     final client = widget.room.client;
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: KeyboardListener(
-                  focusNode: focusNode,
-                  onKeyEvent: (KeyEvent key) {
-                    if (key.logicalKey == LogicalKeyboardKey.enter) {
-                      launchSearch();
-                    }
-                  },
-                  child: TextField(
-                      controller: _controller,
-                      onChanged: onEdit,
-                      autofocus: true,
-                      decoration: Constants.kBasicSearch.copyWith(
-                          hintText: "Search",
-                          suffixIcon: IconButton(
-                              onPressed: launchSearch,
-                              icon: const Icon(Icons.search)))),
-                ),
-              ),
-              if (widget.onClosePressed != null)
-                IconButton(
-                    onPressed: widget.onClosePressed,
-                    icon: const Icon(Icons.close))
-            ],
-          ),
-        ),
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SegmentedButton<Selection>(
-                onSelectionChanged: (value) {
-                  setState(() {
-                    _selected = value;
-                  });
-                  launchSearch();
-                },
-                segments: const [
-                  ButtonSegment(
-                      value: Selection.room,
-                      icon: Icon(Icons.chat),
-                      label: Text("In the room")),
-                  ButtonSegment(
-                      value: Selection.all,
-                      icon: Icon(Icons.home),
-                      label: Text("Everywhere"))
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Search"),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: KeyboardListener(
+                      focusNode: focusNode,
+                      onKeyEvent: (KeyEvent key) {
+                        if (key.logicalKey == LogicalKeyboardKey.enter) {
+                          launchSearch();
+                        }
+                      },
+                      child: TextField(
+                          controller: _controller,
+                          onChanged: onEdit,
+                          autofocus: true,
+                          decoration: Constants.kBasicSearch.copyWith(
+                              hintText: "Search",
+                              suffixIcon: IconButton(
+                                  onPressed: launchSearch,
+                                  icon: const Icon(Icons.search)))),
+                    ),
+                  ),
+                  if (widget.onClosePressed != null)
+                    IconButton(
+                        onPressed: widget.onClosePressed,
+                        icon: const Icon(Icons.close))
                 ],
-                selected: _selected),
-          ),
-        ),
-        Expanded(
-          child: ListView(
-            controller: _scrollController,
-            reverse: true,
-            children: [
-              StreamBuilder<SearchResults>(
-                  stream: _results.stream,
-                  builder: (context, snapshot) {
-                    final data = snapshot.data?.searchCategories.roomEvents;
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (data?.results == null) const Text("Enter text"),
-                          if (data?.count != null)
-                            Text(" ${data?.count} results"),
-                          Text(" ${data?.nextBatch} batch"),
-                          if (data?.results != null)
-                            for (int i = data!.results!.length - 1; i >= 0; i--)
-                              Builder(builder: (context) {
-                                final item = data.results![i];
-                                if (item.result?.roomId == null) {
-                                  return const Text("no event");
-                                }
-                                final room =
-                                    client.getRoomById(item.result!.roomId!);
-                                if (room == null) const Text("No room found");
-                                bool sameRoomAsPrev = false;
-                                if (i + 1 < data.results!.length) {
-                                  sameRoomAsPrev = item.result?.roomId ==
-                                      data.results![i + 1].result?.roomId;
-                                }
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SegmentedButton<Selection>(
+                    onSelectionChanged: (value) {
+                      setState(() {
+                        _selected = value;
+                      });
+                      launchSearch();
+                    },
+                    segments: const [
+                      ButtonSegment(
+                          value: Selection.room,
+                          icon: Icon(Icons.chat),
+                          label: Text("In the room")),
+                      ButtonSegment(
+                          value: Selection.all,
+                          icon: Icon(Icons.home),
+                          label: Text("Everywhere"))
+                    ],
+                    selected: _selected),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                controller: _scrollController,
+                reverse: true,
+                children: [
+                  StreamBuilder<SearchResults>(
+                      stream: _results.stream,
+                      builder: (context, snapshot) {
+                        final data = snapshot.data?.searchCategories.roomEvents;
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (data?.results == null)
+                                const Text("Enter text"),
+                              if (data?.count != null)
+                                Text(" ${data?.count} results"),
+                              Text(" ${data?.nextBatch} batch"),
+                              if (data?.results != null)
+                                for (int i = data!.results!.length - 1;
+                                    i >= 0;
+                                    i--)
+                                  Builder(builder: (context) {
+                                    final item = data.results![i];
+                                    if (item.result?.roomId == null) {
+                                      return const Text("no event");
+                                    }
+                                    final room = client
+                                        .getRoomById(item.result!.roomId!);
+                                    if (room == null)
+                                      const Text("No room found");
+                                    bool sameRoomAsPrev = false;
+                                    if (i + 1 < data.results!.length) {
+                                      sameRoomAsPrev = item.result?.roomId ==
+                                          data.results![i + 1].result?.roomId;
+                                    }
 
-                                final event =
-                                    Event.fromMatrixEvent(item.result!, room!);
-                                return Column(
-                                  children: [
-                                    if (!sameRoomAsPrev)
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          children: [
-                                            const Expanded(
-                                                child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 20),
-                                              child: Divider(),
-                                            )),
-                                            Text(room.getLocalizedDisplayname(
-                                                const MatrixDefaultLocalizations())),
-                                            const Expanded(
-                                                child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 20),
-                                              child: Divider(),
-                                            ))
-                                          ],
-                                        ),
-                                      ),
-                                    if (item.context?.eventsBefore != null)
-                                      for (final event
-                                          in item.context!.eventsBefore!)
-                                        Opacity(
-                                          opacity: 0.6,
-                                          child: EventWidget(
-                                              client: client,
-                                              event: Event.fromMatrixEvent(
-                                                  event, room),
-                                              addPaddingTop: true,
-                                              displayAvatar: true,
-                                              displayName: true),
-                                        ),
-                                    EventWidget(
-                                        client: client,
-                                        event: event,
-                                        addPaddingTop: true,
-                                        displayAvatar: true,
-                                        displayName: true),
-                                    if (item.context?.eventsAfter != null)
-                                      for (final event
-                                          in item.context!.eventsAfter!)
-                                        Opacity(
-                                          opacity: 0.6,
-                                          child: EventWidget(
-                                              client: client,
-                                              event: Event.fromMatrixEvent(
-                                                  event, room),
-                                              addPaddingTop: true,
-                                              displayAvatar: true,
-                                              displayName: true),
-                                        ),
-                                  ],
-                                );
-                              }),
-                          if (_searching)
-                            const ListTile(
-                              title: Text("Searching..."),
-                              leading: CircularProgressIndicator(),
-                            ),
-                        ],
-                      ),
-                    );
-                  }),
-            ],
-          ),
+                                    final event = Event.fromMatrixEvent(
+                                        item.result!, room!);
+                                    return Column(
+                                      children: [
+                                        if (!sameRoomAsPrev)
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              children: [
+                                                const Expanded(
+                                                    child: Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 20),
+                                                  child: Divider(),
+                                                )),
+                                                Text(room.getLocalizedDisplayname(
+                                                    const MatrixDefaultLocalizations())),
+                                                const Expanded(
+                                                    child: Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 20),
+                                                  child: Divider(),
+                                                ))
+                                              ],
+                                            ),
+                                          ),
+                                        if (item.context?.eventsBefore != null)
+                                          for (final event
+                                              in item.context!.eventsBefore!)
+                                            Opacity(
+                                              opacity: 0.6,
+                                              child: EventWidget(
+                                                  client: client,
+                                                  event: Event.fromMatrixEvent(
+                                                      event, room),
+                                                  addPaddingTop: true,
+                                                  displayAvatar: true,
+                                                  displayName: true),
+                                            ),
+                                        EventWidget(
+                                            client: client,
+                                            event: event,
+                                            addPaddingTop: true,
+                                            displayAvatar: true,
+                                            displayName: true),
+                                        if (item.context?.eventsAfter != null)
+                                          for (final event
+                                              in item.context!.eventsAfter!)
+                                            Opacity(
+                                              opacity: 0.6,
+                                              child: EventWidget(
+                                                  client: client,
+                                                  event: Event.fromMatrixEvent(
+                                                      event, room),
+                                                  addPaddingTop: true,
+                                                  displayAvatar: true,
+                                                  displayName: true),
+                                            ),
+                                      ],
+                                    );
+                                  }),
+                              if (_searching)
+                                const ListTile(
+                                  title: Text("Searching..."),
+                                  leading: CircularProgressIndicator(),
+                                ),
+                            ],
+                          ),
+                        );
+                      }),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
