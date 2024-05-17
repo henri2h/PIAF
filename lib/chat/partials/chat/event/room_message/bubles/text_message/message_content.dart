@@ -16,20 +16,15 @@ class MessageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: // TODO: Perf: Html and Markdown widget consumes a lot of cpu time Revert
-          !event.redacted && event.isRichMessage
-              ? HtmlMessage(
-                  html: event.formattedText,
-                  textColor: colorPatch,
-                  room: event.room,
-                )
-              : MarkdownContent(
-                  color: colorPatch,
-                  text: event.getLocalizedBody(
-                      const MatrixDefaultLocalizations(),
-                      hideReply: true)),
-    );
+    return !event.redacted && event.isRichMessage
+        ? HtmlMessage(
+            html: event.formattedText,
+            textColor: colorPatch,
+            room: event.room,
+          )
+        : MarkdownContent(
+            color: colorPatch,
+            text: event.getLocalizedBody(const MatrixDefaultLocalizations(),
+                hideReply: true));
   }
 }

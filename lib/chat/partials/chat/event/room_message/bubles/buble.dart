@@ -15,10 +15,13 @@ import 'video_buble.dart';
 
 class Buble extends StatefulWidget {
   const Buble(
-      {super.key, required this.e, required this.state, this.replyEvent});
+      {super.key,
+      required this.e,
+      required this.eventWidgetState,
+      this.replyEvent});
 
   final Event e;
-  final EventWidget state;
+  final EventWidget eventWidgetState;
   final Event? replyEvent;
 
   @override
@@ -44,14 +47,11 @@ class _BubleState extends State<Buble> {
 
     final foregroundColor = widget.e.sentByUser
         ? Theme.of(context).colorScheme.onPrimary
-        : Theme.of(context).colorScheme.onSurface;
+        : Theme.of(context).colorScheme.onSecondary;
 
     final backgroundColor = widget.e.sentByUser
         ? Theme.of(context).colorScheme.primary
-        : ElevationOverlay.applySurfaceTint(
-            Theme.of(context).colorScheme.surface,
-            Theme.of(context).colorScheme.surfaceTint,
-            20);
+        : Theme.of(context).colorScheme.secondary;
 
     final noticeBackgroundColor = widget.e.messageType == MessageTypes.Notice
         ? ElevationOverlay.applySurfaceTint(
@@ -97,44 +97,58 @@ class _BubleState extends State<Buble> {
                   offset: const Offset(0, 4.0),
                   child: widget.replyEvent == null
                       ? Container()
-                      : Opacity(
-                          opacity: 0.7,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxHeight: 100),
-                            child: ListView(
-                              shrinkWrap: true,
-                              physics:
-                                  const NeverScrollableScrollPhysics(), // In order to prevent scrolling the replies
-                              children: [
-                                Align(
-                                  alignment: widget.e.sentByUser
-                                      ? Alignment.centerRight
-                                      : Alignment.centerLeft,
-                                  child: TextMessageBubble(
-                                      redacted: redacted,
-                                      event: widget.replyEvent!,
-                                      displayTime: false,
-                                      onTap: () => widget
-                                          .state.onReplyEventPressed
-                                          ?.call(widget.replyEvent!),
-                                      color:
-                                          foregroundColor, // TODO: correct color
-                                      backgroundColor: backgroundColor),
-                                )
-                              ],
-                            ),
+                      : ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 100),
+                          child: ListView(
+                            shrinkWrap: true,
+                            physics:
+                                const NeverScrollableScrollPhysics(), // In order to prevent scrolling the replies
+                            children: [
+                              Align(
+                                alignment: widget.e.sentByUser
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                                child: TextMessageBubble(
+                                    redacted: redacted,
+                                    event: widget.replyEvent!,
+                                    showMessageSentTime: false,
+                                    // don't show sender name in direct chat
+                                    showSenderName:
+                                        !widget.eventWidgetState.isDirectChat,
+                                    onTap: () => widget
+                                        .eventWidgetState.onReplyEventPressed
+                                        ?.call(widget.replyEvent!),
+                                    color: widget.replyEvent!.sentByUser
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onPrimaryContainer
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSecondaryContainer,
+                                    backgroundColor:
+                                        widget.replyEvent!.sentByUser
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primaryContainer
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .secondaryContainer),
+                              )
+                            ],
                           ),
                         ),
                 ),
               // TODO: Add back annimation builder with the Animated Text Message Class
               TextMessageBubble(
-                  event: widget.e,
-                  redacted: redacted,
-                  displaySentIndicator:
-                      widget.state.isLastMessage && widget.e.sentByUser,
-                  edited: widget.state.edited,
-                  backgroundColor: noticeBackgroundColor,
-                  color: noticeForegroundColor)
+                event: widget.e,
+                redacted: redacted,
+                showSentIndicator: widget.eventWidgetState.isLastMessage &&
+                    widget.e.sentByUser,
+                edited: widget.eventWidgetState.edited,
+                backgroundColor: noticeBackgroundColor,
+                color: noticeForegroundColor,
+                showSenderName: widget.eventWidgetState.displayName,
+              )
             ],
           );
       }

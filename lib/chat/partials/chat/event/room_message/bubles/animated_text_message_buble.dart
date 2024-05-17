@@ -30,7 +30,8 @@ class AnimatedTextMessageBuble extends StatelessWidget {
         builder: (BuildContext context, Widget? child) => TextMessageBubble(
               redacted: redacted,
               event: e,
-              displaySentIndicator: widget.isLastMessage && e.sentByUser,
+              showSentIndicator: widget.isLastMessage && e.sentByUser,
+              showSenderName: widget.displayName,
               edited: widget.edited,
               color: noticeForegroundColor,
               backgroundColor: noticeBackgroundColor,

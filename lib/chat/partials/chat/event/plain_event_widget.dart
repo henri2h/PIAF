@@ -12,12 +12,12 @@ import 'room_message/room_event_update_widget.dart';
 class PlainEventWidget extends StatelessWidget {
   const PlainEventWidget({
     super.key,
-    required this.widget,
+    required this.eventWidgetState,
     required this.context,
     required this.event,
   });
 
-  final EventWidget widget;
+  final EventWidget eventWidgetState;
   final BuildContext context;
   final Event event;
 
@@ -39,8 +39,9 @@ class PlainEventWidget extends StatelessWidget {
           case MessageTypes.Video:
           case MessageTypes.BadEncrypted:
             return SwipeTo(
-                onRightSwipe: widget.onReply,
-                child: RoomMessageWidget(widget: widget, event: event));
+                onRightSwipe: eventWidgetState.onReply,
+                child: RoomMessageWidget(
+                    eventWidgetState: eventWidgetState, event: event));
 
           default:
             return Text("other message type : ${event.messageType}");
@@ -87,15 +88,16 @@ class PlainEventWidget extends StatelessWidget {
           return Text(
               "${event.sender.displayName ?? event.sender.senderId} redacted a poll");
         }
-        if (widget.timeline != null) {
-          return PollWidget(event: event, timeline: widget.timeline!);
+        if (eventWidgetState.timeline != null) {
+          return PollWidget(event: event, timeline: eventWidgetState.timeline!);
         }
         break;
       case MatrixEventTypes.pollResponse:
         return Container();
       case EventTypes.CallInvite:
-        if (widget.timeline != null) {
-          return CallMessageDisplay(event, timeline: widget.timeline!);
+        if (eventWidgetState.timeline != null) {
+          return CallMessageDisplay(event,
+              timeline: eventWidgetState.timeline!);
         }
         break;
       default:

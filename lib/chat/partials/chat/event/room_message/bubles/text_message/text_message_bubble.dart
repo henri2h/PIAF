@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/chat/minestrix_chat.dart';
 
 import 'bad_encrypted.dart';
 import 'message_content.dart';
@@ -14,10 +16,11 @@ class TextMessageBubble extends StatelessWidget {
       this.borderColor,
       required this.event,
       required this.redacted,
-      this.displaySentIndicator = false,
+      this.showSentIndicator = false,
       this.edited = false,
       this.onTap,
-      this.displayTime = true});
+      this.showMessageSentTime = true,
+      required this.showSenderName});
 
   final Event event;
   final Color? backgroundColor;
@@ -26,9 +29,10 @@ class TextMessageBubble extends StatelessWidget {
   final bool redacted;
   final bool displayEdit;
   final bool edited; // display the edited indicator
-  final bool displaySentIndicator;
+  final bool showSentIndicator;
   final VoidCallback? onTap;
-  final bool displayTime;
+  final bool showMessageSentTime;
+  final bool showSenderName;
 
   @override
   Widget build(BuildContext context) {
@@ -70,18 +74,39 @@ class TextMessageBubble extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
-                MessageContent(event: event, colorPatch: colorPatch),
-                if (displayTime ||
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (showSenderName && !event.sentByUser)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2.0),
+                          child: Text(
+                              event.senderFromMemoryOrFallback
+                                  .calcDisplayname(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                      color: colorPatch,
+                                      fontWeight: FontWeight.w600)),
+                        ),
+                      MessageContent(event: event, colorPatch: colorPatch),
+                    ],
+                  ),
+                ),
+                if (showMessageSentTime ||
                     edited ||
-                    displaySentIndicator ||
+                    showSentIndicator ||
                     event.status != EventStatus.synced)
                   MessageStatus(
                       edited: edited,
                       colorPatch: colorPatch,
                       textTheme: textTheme,
-                      displayTime: displayTime,
+                      displayTime: showMessageSentTime,
                       event: event,
-                      displaySentIndicator: displaySentIndicator),
+                      displaySentIndicator: showSentIndicator),
               ],
             );
           }),

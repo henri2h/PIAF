@@ -23,6 +23,7 @@ class EventWidget extends StatefulWidget {
   final bool addPaddingTop;
   final bool edited;
   final bool isLastMessage;
+  final bool isDirectChat;
 
   final Stream<String>? onEventSelectedStream;
   const EventWidget(
@@ -39,7 +40,8 @@ class EventWidget extends StatefulWidget {
       this.displayName = false,
       this.addPaddingTop = false,
       this.edited = false,
-      this.onReplyEventPressed});
+      this.onReplyEventPressed,
+      this.isDirectChat = false});
 
   @override
   EventWidgetState createState() => EventWidgetState();
@@ -84,7 +86,8 @@ class EventWidgetState extends State<EventWidget> {
     return MouseRegion(
       child: Padding(
         padding: EdgeInsets.only(top: widget.addPaddingTop ? 16 : 3, right: 8),
-        child: PlainEventWidget(widget: widget, context: context, event: event),
+        child: PlainEventWidget(
+            eventWidgetState: widget, context: context, event: event),
       ),
       onEnter: (_) => setState(() {
         hover = true;

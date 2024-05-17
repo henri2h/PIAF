@@ -136,6 +136,7 @@ class ItemBuilder extends StatelessWidget {
             displayAvatar: displayAvatar,
             displayName: displayRoomName,
             addPaddingTop: displayPadding,
+            isDirectChat: isDirectChat,
             edited: edited,
             onEventSelectedStream:
                 onSelected?.where((eventId) => eventId == event.eventId),
