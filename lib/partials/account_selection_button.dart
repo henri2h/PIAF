@@ -35,13 +35,10 @@ class _AccountSelectionButtonState extends State<AccountSelectionButton> {
         icon: FutureBuilder<Profile>(
             future: client.fetchOwnProfile(),
             builder: (context, snap) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: MatrixImageAvatar(
-                  url: snap.data?.avatarUrl,
-                  client: client,
-                  defaultText: snap.data?.displayName ?? client.userID!,
-                ),
+              return MatrixImageAvatar(
+                url: snap.data?.avatarUrl,
+                client: client,
+                defaultText: snap.data?.displayName ?? client.userID!,
               );
             }),
       );

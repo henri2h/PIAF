@@ -39,7 +39,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(path: 'feeds', page: FeedListRoute.page),
         AutoRoute(path: 'feeds/create', page: FeedCreationRoute.page),
         AutoRoute(path: 'post', page: PostRoute.page),
-        AutoRoute(path: 'research', page: SearchRoute.page),
+        AutoRoute(path: 'feeds/search', page: SearchRoute.page),
         AutoRoute(path: 'group/:roomId', page: GroupRoute.page),
         AutoRoute(path: 'group/create', page: CreateGroupRoute.page),
         AutoRoute(path: 'user_feed', page: UserViewRoute.page),
@@ -68,7 +68,8 @@ class AppRouter extends $AppRouter {
           AutoRoute(path: 'chat/:roomId', page: RoomRoute.page),
         ]),
         ...communityRoutes,
-        ...calendarRoutes
+        ...calendarRoutes,
+        AutoRoute(path: 'feeds/search', page: SearchRoute.page),
       ]),
 
       AutoRoute(path: 'search', page: SearchRoute.page),

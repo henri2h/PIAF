@@ -24,7 +24,11 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           leading: const AccountSelectionButton(),
           actions: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.notifications))
+            IconButton(
+                onPressed: () async {
+                  await context.navigateTo(SearchRoute());
+                },
+                icon: const Icon(Icons.explore))
           ],
         ),
         body: Column(
