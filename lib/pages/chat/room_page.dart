@@ -44,8 +44,8 @@ class RoomPageState extends State<RoomPage> {
       _cachedController ??= MultiSplitViewController(
           areas: [Area(min: 400), Area(min: 200, size: 340)]);
 
-  final streamTimelineInsert = StreamController<int>();
-  final streamTimelineRemove = StreamController<int>();
+  final streamTimelineInsert = StreamController<int>.broadcast();
+  final streamTimelineRemove = StreamController<int>.broadcast();
 
   Room? room;
 
@@ -169,9 +169,34 @@ class RoomPageState extends State<RoomPage> {
     );
   }
 
+  void onRoomCreated(Room room) {
+    timeline = null;
+    futureTimeline = getTimeline(room);
+    this.room = room;
+
+    setState(() {
+      roomId = room.id;
+    });
+  }
+
+// Global key to prevent the room timeline from beeing rebuilt when
+// the RoomTimeline's depth changes
+  final roomTimelineKey = GlobalKey();
+
   Widget buildChatView(Room? room) {
     return LayoutBuilder(builder: (context, constraints) {
       bool isMobile = constraints.maxWidth < 600;
+      bool isTablet = !isMobile && constraints.maxWidth < 800;
+      bool isDesktop = !isTablet && !isMobile;
+
+      // Display the conv settings pannel by default on desktop
+      // hide it by default on tablet
+      // never show it on mobile
+      bool displayView = room == null ||
+          isMobile ||
+          (isTablet && _displayConvSettings) ||
+          (isDesktop && !_displayConvSettings);
+
       final view = Column(
         children: [
           MatrixRoomTitle(
@@ -194,7 +219,7 @@ class RoomPageState extends State<RoomPage> {
               }),
           Expanded(
               child: RoomTimeline(
-            key: Key("room_timeline_$roomId"),
+            key: roomTimelineKey, // Key("room_timeline_$roomId"),
             isMobile: isMobile,
             room: room,
             userId: room?.id ?? widget.roomId,
@@ -203,15 +228,7 @@ class RoomPageState extends State<RoomPage> {
             updating: updating,
             streamTimelineRemove: streamTimelineRemove.stream,
             streamTimelineInsert: streamTimelineInsert.stream,
-            onRoomCreate: (Room room) {
-              timeline = null;
-              futureTimeline = getTimeline(room);
-              this.room = room;
-
-              setState(() {
-                roomId = room.id;
-              });
-            },
+            onRoomCreate: onRoomCreated,
             setUpdating: (val) => mounted
                 ? setState(() {
                     updating = val;
@@ -221,7 +238,7 @@ class RoomPageState extends State<RoomPage> {
         ],
       );
 
-      if (isMobile) return view;
+      if (displayView) return view;
 
       return MultiSplitViewTheme(
           data: MultiSplitViewThemeData(
@@ -232,12 +249,12 @@ class RoomPageState extends State<RoomPage> {
             controller: _controller,
             builder: ((context, area) {
               if (area.index == 0) return Card(child: view);
-              if (area.index == 1 && _displayConvSettings && room != null) {
+              if (area.index == 1) {
                 return Card(
                   child: ConvSettings(
                       room: room,
                       onClose: () => setState(() {
-                            _displayConvSettings = false;
+                            _displayConvSettings != _displayConvSettings;
                           })),
                 );
               }
