@@ -88,16 +88,17 @@ class PlainEventWidget extends StatelessWidget {
           return Text(
               "${event.sender.displayName ?? event.sender.senderId} redacted a poll");
         }
-        if (eventWidgetState.timeline != null) {
-          return PollWidget(event: event, timeline: eventWidgetState.timeline!);
+        if (eventWidgetState.evContext.timeline != null) {
+          return PollWidget(
+              event: event, timeline: eventWidgetState.evContext.timeline!);
         }
         break;
       case MatrixEventTypes.pollResponse:
         return Container();
       case EventTypes.CallInvite:
-        if (eventWidgetState.timeline != null) {
+        if (eventWidgetState.evContext.timeline != null) {
           return CallMessageDisplay(event,
-              timeline: eventWidgetState.timeline!);
+              timeline: eventWidgetState.evContext.timeline!);
         }
         break;
       default:

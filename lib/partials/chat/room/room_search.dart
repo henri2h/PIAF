@@ -6,6 +6,7 @@ import 'package:matrix/matrix.dart';
 
 import '../../style/constants.dart';
 import '../event/event_widget.dart';
+import 'item_builder.dart';
 
 enum Selection { room, all }
 
@@ -242,15 +243,18 @@ class _RoomSearchState extends State<RoomSearch> {
                                               opacity: 0.6,
                                               child: EventWidget(
                                                   client: client,
-                                                  event: Event.fromMatrixEvent(
-                                                      event, room),
+                                                  evContext: RoomEventContext(
+                                                      event:
+                                                          Event.fromMatrixEvent(
+                                                              event, room)),
                                                   addPaddingTop: true,
                                                   displayAvatar: true,
                                                   displayName: true),
                                             ),
                                         EventWidget(
                                             client: client,
-                                            event: event,
+                                            evContext:
+                                                RoomEventContext(event: event),
                                             addPaddingTop: true,
                                             displayAvatar: true,
                                             displayName: true),
@@ -261,8 +265,10 @@ class _RoomSearchState extends State<RoomSearch> {
                                               opacity: 0.6,
                                               child: EventWidget(
                                                   client: client,
-                                                  event: Event.fromMatrixEvent(
-                                                      event, room),
+                                                  evContext: RoomEventContext(
+                                                      event:
+                                                          Event.fromMatrixEvent(
+                                                              event, room)),
                                                   addPaddingTop: true,
                                                   displayAvatar: true,
                                                   displayName: true),

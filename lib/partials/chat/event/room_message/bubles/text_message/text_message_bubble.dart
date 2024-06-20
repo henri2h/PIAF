@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/partials/chat/event/event_widget.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
 import 'bad_encrypted.dart';
@@ -20,7 +20,8 @@ class TextMessageBubble extends StatelessWidget {
       this.edited = false,
       this.onTap,
       this.showMessageSentTime = true,
-      required this.showSenderName});
+      required this.showSenderName,
+      this.eventContext});
 
   final Event event;
   final Color? backgroundColor;
@@ -33,6 +34,7 @@ class TextMessageBubble extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showMessageSentTime;
   final bool showSenderName;
+  final EventWidget? eventContext;
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +49,29 @@ class TextMessageBubble extends StatelessWidget {
         .bodySmall
         ?.copyWith(color: colorPatch.withOpacity(0.7), fontSize: 10);
 
+    // Determine if we should have rounded borders in case of the
+    // previous message has also been sent by the same user.
+    final samePrev = eventContext?.evContext.isPreEventFromSameId ?? false;
+    final sameNext = eventContext?.evContext.isNextEventFromSameId ?? false;
+    final sentByUser = eventContext?.evContext.sentByUser ?? false;
+
     return Card(
       margin: EdgeInsets.zero,
       color: backgroundColorComputed,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: samePrev && !sentByUser
+                  ? Radius.zero
+                  : const Radius.circular(8),
+              topRight: samePrev && sentByUser
+                  ? Radius.zero
+                  : const Radius.circular(8),
+              bottomLeft: sameNext && !sentByUser
+                  ? Radius.zero
+                  : const Radius.circular(8),
+              bottomRight: sameNext && sentByUser
+                  ? Radius.zero
+                  : const Radius.circular(8))),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(28),

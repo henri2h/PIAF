@@ -141,6 +141,7 @@ class _BubleState extends State<Buble> {
               // TODO: Add back annimation builder with the Animated Text Message Class
               TextMessageBubble(
                 event: widget.e,
+                eventContext: widget.eventWidgetState,
                 redacted: redacted,
                 showSentIndicator: widget.eventWidgetState.isLastMessage &&
                     widget.e.sentByUser,

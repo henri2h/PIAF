@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
+import '../room/item_builder.dart';
 import 'plain_event_widget.dart';
 
 /// A widget display the event and decripting it if needed
 class EventWidget extends StatefulWidget {
-  final Event event;
-  final Timeline? timeline;
+  final RoomEventContext evContext;
 
   final Set<Event>? reactions;
 
@@ -28,11 +28,10 @@ class EventWidget extends StatefulWidget {
   final Stream<String>? onEventSelectedStream;
   const EventWidget(
       {super.key,
-      required this.event,
+      required this.evContext,
       required this.client,
       this.reactions,
       this.onReact,
-      this.timeline,
       this.onEventSelectedStream,
       this.onReply,
       this.isLastMessage = false,
@@ -42,6 +41,7 @@ class EventWidget extends StatefulWidget {
       this.edited = false,
       this.onReplyEventPressed,
       this.isDirectChat = false});
+
 
   @override
   EventWidgetState createState() => EventWidgetState();
@@ -57,11 +57,12 @@ class EventWidgetState extends State<EventWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.event.messageType == MessageTypes.BadEncrypted) {
+    if (widget.evContext.event.messageType == MessageTypes.BadEncrypted) {
       return FutureBuilder<Event>(
-          future: widget.event.room.client.encryption!.decryptRoomEvent(
-              widget.event.roomId!, widget.event,
-              store: true),
+          future: widget.evContext.event.room.client.encryption!
+              .decryptRoomEvent(
+                  widget.evContext.event.roomId!, widget.evContext.event,
+                  store: true),
           builder: (BuildContext context, snapshot) {
             if (snapshot.hasError) {
               return const Row(
@@ -74,12 +75,13 @@ class EventWidgetState extends State<EventWidget> {
                 ],
               );
             }
-            return buildMouseRegion(context, snapshot.data ?? widget.event);
+            return buildMouseRegion(
+                context, snapshot.data ?? widget.evContext.event);
           });
     }
 
     // then load the event
-    return buildMouseRegion(context, widget.event);
+    return buildMouseRegion(context, widget.evContext.event);
   }
 
   MouseRegion buildMouseRegion(BuildContext context, Event event) {

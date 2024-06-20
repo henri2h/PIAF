@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/partials/utils/extensions/matrix/event_extension.dart';
 import 'package:piaf/utils/date_time_extension.dart';
 
 import '../../popup_route_wrapper.dart';
@@ -15,6 +16,48 @@ import '../event/event_widget.dart';
 import '../event/read_receipts/read_receipt_item.dart';
 import '../event/read_receipts/read_receipts_list.dart';
 import 'fully_read_indicator.dart';
+
+class RoomEventContext {
+  final Event? prevEvent;
+  final Event? nextEvent;
+  final Event event;
+  final Event? oldEvent;
+  final Timeline? timeline;
+  final Set<Event>? reactions;
+  Client get client => event.room.client;
+
+  RoomEventContext(
+      {required this.event,
+      this.oldEvent,
+      this.prevEvent,
+      this.nextEvent,
+      this.timeline,
+      this.reactions});
+
+  bool get isNextEventFromSameId =>
+      nextEvent?.type == EventTypes.Message &&
+      nextEvent?.senderId == event.senderId;
+
+  bool get isPreEventFromSameId =>
+      prevEvent?.type == EventTypes.Message &&
+      prevEvent?.senderId == event.senderId;
+
+  bool get sentByUser => event.sentByUser;
+}
+
+class RoomEventDisplaySetting {
+  final bool displayAvatar;
+
+  final bool displayRoomName;
+  final bool displayTime;
+  final bool displayPadding;
+
+  RoomEventDisplaySetting(
+      {required this.displayRoomName,
+      required this.displayTime,
+      required this.displayPadding,
+      required this.displayAvatar});
+}
 
 class ItemBuilder extends StatelessWidget {
   const ItemBuilder(
@@ -88,8 +131,9 @@ class ItemBuilder extends StatelessWidget {
       }
     }
 
-    if (nextEvent?.senderId != event.senderId ||
-        nextEvent?.type != EventTypes.Message) {
+    if (!isDirectChat &&
+        (nextEvent?.senderId != event.senderId ||
+            nextEvent?.type != EventTypes.Message)) {
       displayAvatar = true;
     }
 
@@ -118,6 +162,14 @@ class ItemBuilder extends StatelessWidget {
       displayPadding = false;
     }
 
+    final eventContext = RoomEventContext(
+        prevEvent: displayTime ? null : prevEvent,
+        nextEvent: nextEvent,
+        event: event,
+        oldEvent: oldEvent,
+        timeline: t,
+        reactions: reactions);
+
     return Column(
       children: [
         if (displayTime)
@@ -128,8 +180,7 @@ class ItemBuilder extends StatelessWidget {
           ),
         EventWidget(
             key: Key("ed_${event.eventId}"),
-            event: event,
-            timeline: t,
+            evContext: eventContext,
             reactions: reactions,
             client: room.client,
             isLastMessage: i == 0,

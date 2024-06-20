@@ -47,34 +47,41 @@ class RoomMessageWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!sentByUser)
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, top: 2.0, right: 10),
-                  child: SizedBox(
-                    width: 40,
-                    child: eventWidgetState.displayAvatar
-                        ? MaterialButton(
-                            onPressed: () async {
-                              await UserInfoDialog.show(
-                                  user: user, context: context);
-                            },
-                            minWidth: 0,
-                            padding: EdgeInsets.zero,
-                            shape: const CircleBorder(),
-                            child: MatrixImageAvatar(
-                                url: user.avatarUrl,
-                                defaultText: user.calcDisplayname(),
-                                width: MinestrixAvatarSizeConstants.small,
-                                height: MinestrixAvatarSizeConstants.small,
-                                fit: true,
-                                client: eventWidgetState.client),
-                          )
-                        : null,
-                  ),
-                ),
+                eventWidgetState.isDirectChat
+                    ? const SizedBox(
+                        width:
+                            4) // Don't display user avatar in a direct chat but add a bit of padding
+                    : Padding(
+                        padding:
+                            const EdgeInsets.only(left: 4, top: 2.0, right: 10),
+                        child: SizedBox(
+                          width: 40,
+                          child: eventWidgetState.displayAvatar
+                              ? MaterialButton(
+                                  onPressed: () async {
+                                    await UserInfoDialog.show(
+                                        user: user, context: context);
+                                  },
+                                  minWidth: 0,
+                                  padding: EdgeInsets.zero,
+                                  shape: const CircleBorder(),
+                                  child: MatrixImageAvatar(
+                                      url: user.avatarUrl,
+                                      defaultText: user.calcDisplayname(),
+                                      width: MinestrixAvatarSizeConstants.small,
+                                      height:
+                                          MinestrixAvatarSizeConstants.small,
+                                      fit: true,
+                                      client: eventWidgetState.client),
+                                )
+                              : null,
+                        ),
+                      ),
               FutureBuilder<Event?>(future: () async {
-                if (eventWidgetState.timeline != null &&
+                if (eventWidgetState.evContext.timeline != null &&
                     event.relationshipType == RelationshipTypes.reply) {
-                  return event.getReplyEvent(eventWidgetState.timeline!);
+                  return event
+                      .getReplyEvent(eventWidgetState.evContext.timeline!);
                 }
 
                 return null;
