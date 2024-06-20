@@ -28,7 +28,7 @@ Future<MatrixImageFileResizedResponse?> customImageResizer(
 
       dartFrame.image.dispose();
       dartCodec.dispose();
-      nativeImg = native.Image.loadRGBA(width, height, rgba);
+      nativeImg = native.Image.fromRGBA(width, height, rgba);
     } catch (e, s) {
       Logs().e("Could not generate preview", e, s);
       rethrow;

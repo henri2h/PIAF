@@ -48,9 +48,8 @@ dependencies:
   file_picker: ^8.0.3
   path_provider: ^2.0.5
   native_imaging:
-    git: 
-      url: https://github.com/famedly/dart_native_imaging.git
-      ref: nico/update-dependencies
+    git: https://github.com/famedly/dart_native_imaging.git
+
 
   # Intl
   intl: ^0.19.0
