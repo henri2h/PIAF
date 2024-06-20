@@ -42,7 +42,6 @@ class EventWidget extends StatefulWidget {
       this.onReplyEventPressed,
       this.isDirectChat = false});
 
-
   @override
   EventWidgetState createState() => EventWidgetState();
 }
