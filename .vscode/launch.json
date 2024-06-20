@@ -15,5 +15,11 @@
             "type": "dart",
             "flutterMode": "profile"
         },
+        {
+            "name": "piaf (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
     ]
 }

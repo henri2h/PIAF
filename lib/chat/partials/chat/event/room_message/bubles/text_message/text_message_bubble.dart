@@ -50,12 +50,12 @@ class TextMessageBubble extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       color: backgroundColorComputed,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(28),
         child: Padding(
-          padding: const EdgeInsets.all(4.0),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           child: Builder(builder: (context) {
             if (redacted) {
               return Row(mainAxisSize: MainAxisSize.min, children: [
@@ -75,7 +75,7 @@ class TextMessageBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.all(2.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -100,13 +100,16 @@ class TextMessageBubble extends StatelessWidget {
                     edited ||
                     showSentIndicator ||
                     event.status != EventStatus.synced)
-                  MessageStatus(
-                      edited: edited,
-                      colorPatch: colorPatch,
-                      textTheme: textTheme,
-                      displayTime: showMessageSentTime,
-                      event: event,
-                      displaySentIndicator: showSentIndicator),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0, bottom: 2),
+                    child: MessageStatus(
+                        edited: edited,
+                        colorPatch: colorPatch,
+                        textTheme: textTheme,
+                        displayTime: showMessageSentTime,
+                        event: event,
+                        displaySentIndicator: showSentIndicator),
+                  ),
               ],
             );
           }),
