@@ -407,7 +407,7 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
                                       .getState(EventTypes.RoomCreate);
                                   if (event is Event) {
                                     return Text(event.senderFromMemoryOrFallback
-                                            .calcDisplayname());
+                                        .calcDisplayname());
                                   }
                                   return const Text("Story not found");
                                 }),

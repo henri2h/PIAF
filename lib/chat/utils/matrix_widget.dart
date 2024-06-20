@@ -381,10 +381,7 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
 
   void createVoipPlugin() async {
     if (AppConfig.experimentalVoip) {
-      
-      voipPlugin = webrtcIsSupported
-          ? VoipPlugin(this)
-          : null;
+      voipPlugin = webrtcIsSupported ? VoipPlugin(this) : null;
     }
   }
 

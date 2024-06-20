@@ -14,7 +14,7 @@ class RoomFeedTileNavigator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
-      shape:  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       padding: EdgeInsets.zero,
       onPressed: () async {
         if (shouldPop) Navigator.of(context).pop();

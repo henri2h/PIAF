@@ -69,7 +69,8 @@ extension CalendarRoomExtension on Room {
 
   /// Try to get the poll attendance event from the timeline or the server
   CalendarEvent? getEventAttendanceEvent() {
-    StrippedStateEvent? event = getState(MatrixStateTypes.calendarEventPollAttendance);
+    StrippedStateEvent? event =
+        getState(MatrixStateTypes.calendarEventPollAttendance);
     return event is Event ? CalendarEvent.fromEvent(event) : null;
   }
 }
