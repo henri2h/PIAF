@@ -14,7 +14,7 @@ class MinestrixAvatarSizeConstants {
   static const double medium = 60;
   static const double small = 40;
   static const double extraSmall = 34;
-  static const double avatar = 46;
+  static const double roomListAvatar = 56;
 }
 
 class MatrixImageAvatar extends StatelessWidget {

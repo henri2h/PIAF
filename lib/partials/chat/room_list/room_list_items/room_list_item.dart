@@ -49,74 +49,99 @@ class RoomListItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Padding(
-        padding: const EdgeInsets.only(left: 8, right: 12, top: 0, bottom: 0),
-        child: ListTile(
-          minVerticalPadding: 0,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-          selected: selected,
-          leading: SizedBox(
-            height: 46,
-            width: 46,
-            child: selected
-                ? const CircleAvatar(child: Icon(Icons.check))
-                : directChatMatrixID == null
-                    ? RoomAvatar(room: room, client: client)
-                    : MatrixUserAvatar(
-                        avatarUrl: room.avatar,
-                        userId: directChatMatrixID,
-                        name: room.getLocalizedDisplayname(),
-                        client: client,
-                        height: MinestrixAvatarSizeConstants.avatar,
-                        width: MinestrixAvatarSizeConstants.avatar,
-                      ),
-          ),
-          title: Text(
-            room.getLocalizedDisplayname(),
-            maxLines: 1,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: fontWeight,
-                color: Theme.of(context).colorScheme.onSurface),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (room.membership == Membership.invite)
-                const Text(
-                  "Invited",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              Text(
-                lastEvent?.getLocalizedBody(const MatrixDefaultLocalizations(),
-                        hideReply: true,
-                        hideEdit: true,
-                        withSenderNamePrefix: !room.isDirectChat ||
-                            room.lastEvent?.senderId == room.client.userID) ??
-                    '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: fontWeight,
-                    color: Theme.of(context).colorScheme.outline),
+        padding: const EdgeInsets.only(left: 0, right: 16, top: 8, bottom: 10),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                height: MinestrixAvatarSizeConstants.roomListAvatar,
+                width: MinestrixAvatarSizeConstants.roomListAvatar,
+                child: selected
+                    ? const CircleAvatar(child: Icon(Icons.check))
+                    : directChatMatrixID == null
+                        ? RoomAvatar(
+                            room: room,
+                            client: client,
+                            width: MinestrixAvatarSizeConstants.roomListAvatar,
+                          )
+                        : MatrixUserAvatar(
+                            avatarUrl: room.avatar,
+                            userId: directChatMatrixID,
+                            name: room.getLocalizedDisplayname(),
+                            client: client,
+                            height: MinestrixAvatarSizeConstants.roomListAvatar,
+                            width: MinestrixAvatarSizeConstants.roomListAvatar,
+                          ),
               ),
-            ],
-          ),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                  lastEvent?.originServerTs != null
-                      ? lastEvent!.originServerTs.simpleFormatTime
-                      : "Invalid time",
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: color,
-                        fontWeight: fontWeight,
-                      )),
-              if (isUnread) NotificationCountDot(room: room),
-              if (room.pushRuleState == PushRuleState.dontNotify)
-                const Icon(Icons.volume_mute)
-            ],
-          ),
+            ),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          room.getLocalizedDisplayname(),
+                          maxLines: 1,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                                  fontWeight: fontWeight,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
+                        ),
+                        if (room.membership == Membership.invite)
+                          const Text(
+                            "Invited",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        Text(
+                          lastEvent?.getLocalizedBody(
+                                  const MatrixDefaultLocalizations(),
+                                  hideReply: true,
+                                  hideEdit: true,
+                                  withSenderNamePrefix: !room.isDirectChat ||
+                                      room.lastEvent?.senderId ==
+                                          room.client.userID) ??
+                              '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                  fontWeight: fontWeight,
+                                  color: Theme.of(context).colorScheme.outline),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                          lastEvent?.originServerTs != null
+                              ? lastEvent!.originServerTs.simpleFormatTime
+                              : "Invalid time",
+                          style:
+                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: color,
+                                    fontWeight: fontWeight,
+                                  )),
+                      if (isUnread) NotificationCountDot(room: room),
+                      if (room.pushRuleState == PushRuleState.dontNotify)
+                        const Icon(Icons.volume_mute)
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

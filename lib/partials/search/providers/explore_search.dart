@@ -20,8 +20,8 @@ class ExploreSearch implements ItemManager<PublicRoomsChunk> {
           userId: room.roomId,
           name: room.name,
           client: client,
-          height: MinestrixAvatarSizeConstants.avatar,
-          width: MinestrixAvatarSizeConstants.avatar,
+          height: MinestrixAvatarSizeConstants.roomListAvatar,
+          width: MinestrixAvatarSizeConstants.roomListAvatar,
         ),
         title: Text("${room.name}"),
         subtitle: Column(

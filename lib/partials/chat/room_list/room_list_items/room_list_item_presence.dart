@@ -35,8 +35,8 @@ class RoomListItemPresence extends StatelessWidget {
                   client: client,
                   name: user?.displayName,
                   userId: presence.userid,
-                  avatarHeight: MinestrixAvatarSizeConstants.avatar,
-                  avatarWidth: MinestrixAvatarSizeConstants.avatar,
+                  avatarHeight: MinestrixAvatarSizeConstants.roomListAvatar,
+                  avatarWidth: MinestrixAvatarSizeConstants.roomListAvatar,
                   subtitle: presence.lastActiveTimestamp != null
                       ? Text(timeago.format(presence.lastActiveTimestamp!))
                       : null));

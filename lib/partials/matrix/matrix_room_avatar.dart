@@ -47,8 +47,8 @@ class RoomAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = width ?? MinestrixAvatarSizeConstants.avatar;
-    final h = height ?? MinestrixAvatarSizeConstants.avatar;
+    final w = width ?? MinestrixAvatarSizeConstants.roomListAvatar;
+    final h = height ?? MinestrixAvatarSizeConstants.roomListAvatar;
 
     if (room.feedType != null) {
       final calendarEvent = room.getEventAttendanceEvent();

@@ -13,8 +13,13 @@ class NotificationCountDot extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 2),
       child: Badge(
           backgroundColor: Colors.red,
-          label: Text(room.notificationCount.toString(),
-              style: const TextStyle(fontWeight: FontWeight.bold))),
+          largeSize: 20,
+          label: Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: Text(room.notificationCount.toString(),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white)),
+          )),
     );
   }
 }
