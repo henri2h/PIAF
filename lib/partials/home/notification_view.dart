@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/components/friends_request_list.dart';
-import 'package:piaf/chat/partials/chat/user/user_item.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/chat/user/user_item.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
 
 import '../components/minestrix/minestrix_title.dart';

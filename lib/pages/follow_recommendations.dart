@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/utils/minestrix/minestrix_friends_suggestions.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 import '../partials/components/account/account_card.dart';
 import '../partials/components/layouts/custom_header.dart';

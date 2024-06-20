@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:piaf/pages/chat_lib/room_settings_page.dart';
 import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';

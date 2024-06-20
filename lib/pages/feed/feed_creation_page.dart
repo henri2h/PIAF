@@ -2,8 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 
-import '../../chat/partials/dialogs/adaptative_dialogs.dart';
-import '../../chat/utils/matrix_widget.dart';
+import '../../partials/dialogs/adaptative_dialogs.dart';
+import '../../partials/utils/matrix_widget.dart';
 import '../groups/create_group_page.dart';
 
 @RoutePage()

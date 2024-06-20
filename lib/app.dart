@@ -6,8 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/router.dart';
-import 'package:piaf/chat/utils/login/login_extension.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/utils/login/login_extension.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:provider/provider.dart';
 
 import 'router.gr.dart';

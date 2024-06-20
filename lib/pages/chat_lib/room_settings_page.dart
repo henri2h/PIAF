@@ -6,22 +6,22 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/partials/chat/settings/conv_settings_encryption_keys.dart';
-import 'package:piaf/chat/partials/chat/settings/conv_settings_mutual_rooms.dart';
+import 'package:piaf/partials/chat/settings/conv_settings_encryption_keys.dart';
+import 'package:piaf/partials/chat/settings/conv_settings_mutual_rooms.dart';
 import 'package:piaf/utils/date_time_extension.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import '../../chat/partials/chat/room/room_search.dart';
-import '../../chat/partials/chat/settings/conv_settings_permissions.dart';
-import '../../chat/partials/chat/settings/conv_settings_room.dart';
-import '../../chat/partials/chat/settings/conv_settings_room_media.dart';
-import '../../chat/partials/chat/settings/conv_settings_security.dart';
-import '../../chat/partials/chat/settings/conv_settings_users.dart';
-import '../../chat/partials/chat/settings/items/direct_chat_widget.dart';
-import '../../chat/partials/chat/settings/items/large_item_button.dart';
-import '../../chat/partials/chat/settings/items/room_bridge_info.dart';
-import '../../chat/partials/dialogs/adaptative_dialogs.dart';
-import '../../chat/partials/matrix/matrix_image_avatar.dart';
+import '../../partials/chat/room/room_search.dart';
+import '../../partials/chat/settings/conv_settings_permissions.dart';
+import '../../partials/chat/settings/conv_settings_room.dart';
+import '../../partials/chat/settings/conv_settings_room_media.dart';
+import '../../partials/chat/settings/conv_settings_security.dart';
+import '../../partials/chat/settings/conv_settings_users.dart';
+import '../../partials/chat/settings/items/direct_chat_widget.dart';
+import '../../partials/chat/settings/items/large_item_button.dart';
+import '../../partials/chat/settings/items/room_bridge_info.dart';
+import '../../partials/dialogs/adaptative_dialogs.dart';
+import '../../partials/matrix/matrix_image_avatar.dart';
 
 @RoutePage()
 class RoomSettingsPage extends StatefulWidget {

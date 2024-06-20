@@ -4,10 +4,10 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/app_title.dart';
 import 'package:piaf/router.gr.dart';
-import 'package:piaf/chat/config/matrix_types.dart';
-import 'package:piaf/chat/partials/chat/event/room_message/matrix_video_message.dart';
-import 'package:piaf/chat/partials/event/matrix_image.dart';
-import 'package:piaf/chat/partials/feed/posts/matrix_post_content.dart';
+import 'package:piaf/config/matrix_types.dart';
+import 'package:piaf/partials/chat/event/room_message/matrix_video_message.dart';
+import 'package:piaf/partials/event/matrix_image.dart';
+import 'package:piaf/partials/chat_feed/posts/matrix_post_content.dart';
 
 class PostContent extends StatelessWidget {
   final Event event;

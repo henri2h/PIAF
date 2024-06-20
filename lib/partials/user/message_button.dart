@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:piaf/pages/chat/room_page.dart';
-import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 import '../components/buttons/custom_future_button.dart';
 

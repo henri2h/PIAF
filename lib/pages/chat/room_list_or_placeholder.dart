@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../partials/app_title.dart';
 import '../tabs/tab_chat_page.dart';
-import '../../chat/partials/chat/room_list/simple_room_list.dart';
+import '../../partials/chat/room_list/simple_room_list.dart';
 
 /// This class is supposed to be displayed on the right part of
 /// the chat tab. In desktop mode it should render as a

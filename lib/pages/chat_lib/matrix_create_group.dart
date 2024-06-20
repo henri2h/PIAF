@@ -4,7 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
 
-import '../../chat/style/constants.dart';
+import '../../partials/style/constants.dart';
 
 @RoutePage()
 class MatrixCreateGroup extends StatefulWidget {

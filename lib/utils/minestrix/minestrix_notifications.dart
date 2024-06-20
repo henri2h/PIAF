@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/config/matrix_types.dart';
+import 'package:piaf/config/matrix_types.dart';
 import 'minestrix_client_extension.dart';
 
 extension MinestrixNotifications on Client {

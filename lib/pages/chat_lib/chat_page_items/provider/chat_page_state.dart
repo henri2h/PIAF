@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/chat/partials/chat/spaces/list/spaces_list.dart';
-import 'package:piaf/chat/utils/client_information.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/chat/spaces/list/spaces_list.dart';
+import 'package:piaf/partials/utils/client_information.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
-import '../../../../chat/config/matrix_types.dart';
+import '../../../../config/matrix_types.dart';
 
 class ChatPageState with ChangeNotifier {
   final Client client;

@@ -1,8 +1,8 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
-import 'package:piaf/chat/utils/spaces/space_extension.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/partials/utils/spaces/space_extension.dart';
 
 import '../components/buttons/custom_future_button.dart';
 

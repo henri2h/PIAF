@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/components/layouts/layout_view.dart';
 import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
 import 'package:piaf/pages/chat_lib/room_settings_page.dart';
 import '../../partials/room_feed_tile_navigator.dart';
 import '../../utils/minestrix/minestrix_community_extension.dart';

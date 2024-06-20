@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:piaf/partials/search/providers/explore_search.dart';
 import 'package:piaf/partials/search/providers/user_search.dart';
 import 'package:piaf/partials/search/ui/lib.dart';
-import 'package:piaf/chat/style/constants.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/style/constants.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 import '../../partials/components/search/suggestion_list.dart';
 import '../../utils/platforms_info.dart';

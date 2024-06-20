@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:piaf/chat/partials/login/login_card.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/login/login_card.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 @RoutePage()
 class MobileLoginPage extends StatefulWidget {

@@ -2,9 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/components/buttons/custom_future_button.dart';
-import 'package:piaf/chat/config/matrix_types.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/config/matrix_types.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 import '../../partials/components/layouts/custom_header.dart';
 

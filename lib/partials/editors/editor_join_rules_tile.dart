@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/partials/matrix/matrix_room_avatar.dart';
+import 'package:piaf/partials/matrix/matrix_room_avatar.dart';
 
 class JoinRulesTile extends StatelessWidget {
   const JoinRulesTile({

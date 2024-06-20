@@ -1,13 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/partials/chat/room_list/room_list_items/room_list_item.dart';
+import 'package:piaf/partials/chat/room_list/room_list_items/room_list_item.dart';
 
-import '../../chat/style/constants.dart';
-import '../../chat/partials/dialogs/adaptative_dialogs.dart';
-import '../../chat/partials/matrix/matrix_image_avatar.dart';
-import '../../chat/partials/chat/room/room_participants_indicator.dart';
-import '../../chat/partials/chat/spaces/space_room_selection.dart';
+import '../../partials/style/constants.dart';
+import '../../partials/dialogs/adaptative_dialogs.dart';
+import '../../partials/matrix/matrix_image_avatar.dart';
+import '../../partials/chat/room/room_participants_indicator.dart';
+import '../../partials/chat/spaces/space_room_selection.dart';
 
 @RoutePage()
 class SpacePage extends StatefulWidget {

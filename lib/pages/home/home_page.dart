@@ -2,8 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:piaf/router.gr.dart';
 
-import '../../chat/partials/sync/sync_status_card.dart';
-import '../../chat/utils/matrix_widget.dart';
+import '../../partials/sync/sync_status_card.dart';
+import '../../partials/utils/matrix_widget.dart';
 import '../../partials/account_selection_button.dart';
 import '../feed/feed_list_page.dart';
 

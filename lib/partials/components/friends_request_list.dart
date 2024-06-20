@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
-import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 class FriendRequestList extends StatelessWidget {
   const FriendRequestList({super.key});

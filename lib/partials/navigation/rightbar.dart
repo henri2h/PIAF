@@ -4,8 +4,8 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/room_feed_tile_navigator.dart';
 import 'package:piaf/router.gr.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 import '../calendar_events/calendar_event_card.dart';
 import '../components/minestrix/minestrix_title.dart';

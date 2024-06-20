@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/router.gr.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
-import 'package:piaf/chat/config/matrix_types.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/chat/partials/feed/minestrix_room_tile.dart';
-import 'package:piaf/chat/utils/matrix/mutual_rooms_extension.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
-import 'package:piaf/chat/utils/spaces/space_extension.dart';
+import 'package:piaf/config/matrix_types.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/chat_feed/minestrix_room_tile.dart';
+import 'package:piaf/partials/utils/matrix/mutual_rooms_extension.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/partials/utils/spaces/space_extension.dart';
 
 import '../room_feed_tile_navigator.dart';
 

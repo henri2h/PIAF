@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/partials/login/login_button.dart';
-import 'package:piaf/chat/partials/login/matrix_server_chooser.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/login/login_button.dart';
+import 'package:piaf/partials/login/matrix_server_chooser.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 @RoutePage()
 class MobileExplorePage extends StatefulWidget {

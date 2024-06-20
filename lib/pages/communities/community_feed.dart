@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 // ignore: implementation_imports
 import 'package:matrix/src/utils/cached_stream_controller.dart'; // TODO: Find a solution
-import 'package:piaf/chat/config/matrix_types.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/chat/partials/chat/room/room_participants_indicator.dart';
-import 'package:piaf/chat/partials/chat/user/selector/user_selector_dialog.dart';
-import 'package:piaf/chat/partials/custom_list_view.dart';
-import 'package:piaf/chat/partials/stories/stories_list.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/config/matrix_types.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/chat/room/room_participants_indicator.dart';
+import 'package:piaf/partials/chat/user/selector/user_selector_dialog.dart';
+import 'package:piaf/partials/custom_list_view.dart';
+import 'package:piaf/partials/stories/stories_list.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 import '../../partials/calendar_events/calendar_event_card.dart';
 import '../../partials/feed/topic_list_tile.dart';

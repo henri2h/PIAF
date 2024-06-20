@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/components/layouts/custom_header.dart';
-import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:piaf/chat/partials/dialogs/key_verification_dialogs.dart';
-import 'package:piaf/chat/utils/matrix_sdk_extension/device_extensions.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/partials/dialogs/key_verification_dialogs.dart';
+import 'package:piaf/partials/utils/matrix_sdk_extension/device_extensions.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:timeago/timeago.dart' as timeago;
 

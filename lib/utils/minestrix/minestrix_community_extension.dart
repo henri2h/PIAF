@@ -1,5 +1,5 @@
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
 
 class Community {
   final Room space;

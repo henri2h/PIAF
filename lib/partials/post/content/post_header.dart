@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/router.gr.dart';
-import 'package:piaf/chat/config/matrix_types.dart';
-import 'package:piaf/chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:piaf/chat/partials/matrix/matrix_user_avatar.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/config/matrix_types.dart';
+import 'package:piaf/partials/chat_feed/posts/matrix_post_editor.dart';
+import 'package:piaf/partials/matrix/matrix_user_avatar.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostHeader extends StatelessWidget {

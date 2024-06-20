@@ -4,7 +4,7 @@ import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
 
 import 'package:piaf/partials/components/layouts/custom_header.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 
 @RoutePage()

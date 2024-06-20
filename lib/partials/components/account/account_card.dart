@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
 import 'package:piaf/pages/chat/room_page.dart';
-import 'package:piaf/chat/partials/dialogs/adaptative_dialogs.dart';
-import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/partials/dialogs/adaptative_dialogs.dart';
+import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 
 import 'package:piaf/router.gr.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 class AccountCard extends StatelessWidget {
   const AccountCard(

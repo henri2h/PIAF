@@ -4,8 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/chat/partials/matrix/matrix_image_avatar.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 @RoutePage()

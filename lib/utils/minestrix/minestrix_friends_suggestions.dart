@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
 
 extension MinestrixFriendsSugestion on Client {
   /// Add a simple way to display friend suggestions

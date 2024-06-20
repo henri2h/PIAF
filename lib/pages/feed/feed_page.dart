@@ -8,8 +8,8 @@ import 'package:matrix/src/utils/cached_stream_controller.dart';
 import 'package:piaf/pages/feed/feed_page_view.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
-import 'package:piaf/chat/partials/feed/posts/matrix_post_editor.dart';
-import 'package:piaf/chat/utils/matrix_widget.dart';
+import 'package:piaf/partials/chat_feed/posts/matrix_post_editor.dart';
+import 'package:piaf/partials/utils/matrix_widget.dart';
 
 import '../../utils/settings.dart';
 

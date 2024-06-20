@@ -2,8 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/post/post_item.dart';
-import 'package:piaf/chat/minestrix_chat.dart';
-import 'package:piaf/chat/partials/chat/message_composer/matrix_message_composer.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/chat/message_composer/matrix_message_composer.dart';
 
 import '../partials/post/content/post_replies.dart';
 
