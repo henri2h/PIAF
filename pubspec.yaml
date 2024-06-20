@@ -20,8 +20,8 @@ dependencies:
 
   # Cryptography
   encrypt: ^5.0.1
-  flutter_olm: ^1.3.2
-  flutter_openssl_crypto: ^0.3.0
+  flutter_olm: ^2.0.0
+  flutter_openssl_crypto: ^0.5.0
 
   # Storage and database
   sqflite_common_ffi: ^2.3.2+1
@@ -71,7 +71,7 @@ dependencies:
 
   # Calls
   callkeep: ^0.3.2
-  flutter_webrtc: ^0.10.4
+  flutter_webrtc: ^0.11.1
   flutter_ringtone_player: ^4.0.0
 
   
@@ -155,7 +155,7 @@ dev_dependencies:
   auto_route_generator: ^8.0.0
   build_runner: ^2.1.2
   import_sorter: ^4.6.0
-  flutter_lints: ^3.0.1
+  flutter_lints: ^4.0.0
   json_serializable: ^6.1.4
 
 flutter:
