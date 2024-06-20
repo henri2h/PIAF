@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/pages/chat_lib/space_page.dart';
+import 'package:piaf/pages/chat/chat_lib/space_page.dart';
 
 @RoutePage()
 class OverrideRoomSpacePage extends StatelessWidget {

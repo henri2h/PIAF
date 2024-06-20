@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'room_list.dart';
 import '../../../router.gr.dart';
-import '../../../pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
+import '../../../pages/chat/chat_lib/chat_page_items/provider/chat_page_state.dart';
 
 class SimpleRoomList extends StatelessWidget {
   final bool mobile;

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../calendar_event/date_card.dart';
+import '../calendar_events/date_card.dart';
 import 'matrix_image_avatar.dart';
 
 class RoomAvatar extends StatelessWidget {

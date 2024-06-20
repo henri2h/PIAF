@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
+import 'package:piaf/pages/chat/chat_lib/chat_page_items/provider/chat_page_state.dart';
 import 'package:provider/provider.dart';
 
 @RoutePage()

@@ -11,17 +11,17 @@ import 'package:piaf/partials/chat/settings/conv_settings_mutual_rooms.dart';
 import 'package:piaf/utils/date_time_extension.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-import '../../partials/chat/room/room_search.dart';
-import '../../partials/chat/settings/conv_settings_permissions.dart';
-import '../../partials/chat/settings/conv_settings_room.dart';
-import '../../partials/chat/settings/conv_settings_room_media.dart';
-import '../../partials/chat/settings/conv_settings_security.dart';
-import '../../partials/chat/settings/conv_settings_users.dart';
-import '../../partials/chat/settings/items/direct_chat_widget.dart';
-import '../../partials/chat/settings/items/large_item_button.dart';
-import '../../partials/chat/settings/items/room_bridge_info.dart';
-import '../../partials/dialogs/adaptative_dialogs.dart';
-import '../../partials/matrix/matrix_image_avatar.dart';
+import '../../../partials/chat/room/room_search.dart';
+import '../../../partials/chat/settings/conv_settings_permissions.dart';
+import '../../../partials/chat/settings/conv_settings_room.dart';
+import '../../../partials/chat/settings/conv_settings_room_media.dart';
+import '../../../partials/chat/settings/conv_settings_security.dart';
+import '../../../partials/chat/settings/conv_settings_users.dart';
+import '../../../partials/chat/settings/items/direct_chat_widget.dart';
+import '../../../partials/chat/settings/items/large_item_button.dart';
+import '../../../partials/chat/settings/items/room_bridge_info.dart';
+import '../../../partials/dialogs/adaptative_dialogs.dart';
+import '../../../partials/matrix/matrix_image_avatar.dart';
 
 @RoutePage()
 class RoomSettingsPage extends StatefulWidget {

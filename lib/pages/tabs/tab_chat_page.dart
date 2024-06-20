@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:piaf/partials/chat/room_list/simple_room_list.dart';
 
-import 'package:piaf/pages/chat_lib/chat_page_items/provider/chat_page_provider.dart';
+import 'package:piaf/pages/chat/chat_lib/chat_page_items/provider/chat_page_provider.dart';
 import 'package:piaf/partials/chat/spaces/list/spaces_list.dart';
 
 import 'package:piaf/partials/utils/matrix_widget.dart';

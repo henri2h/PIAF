@@ -17,6 +17,24 @@ import 'package:piaf/pages/calendar_events/calendar_event_page.dart' as _i4;
 import 'package:piaf/pages/calendar_events/calendar_events_list_page.dart'
     as _i3;
 import 'package:piaf/pages/chat/add_user_page.dart' as _i1;
+import 'package:piaf/pages/chat/chat_lib/chat_page_items/chat_page_room.dart'
+    as _i6;
+import 'package:piaf/pages/chat/chat_lib/chat_page_items/chat_page_space_page.dart'
+    as _i8;
+import 'package:piaf/pages/chat/chat_lib/chat_page_items/chat_page_spaces_list.dart'
+    as _i7;
+import 'package:piaf/pages/chat/chat_lib/chat_page_items/provider/chat_page_provider.dart'
+    as _i5;
+import 'package:piaf/pages/chat/chat_lib/device_media_gallery.dart' as _i16;
+import 'package:piaf/pages/chat/chat_lib/matrix_create_group.dart' as _i23;
+import 'package:piaf/pages/chat/chat_lib/matrix_storie_create.dart' as _i24;
+import 'package:piaf/pages/chat/chat_lib/matrix_stories_page.dart' as _i26;
+import 'package:piaf/pages/chat/chat_lib/room_create/create_chat_page.dart'
+    as _i11;
+import 'package:piaf/pages/chat/chat_lib/room_create/create_group_page.dart'
+    as _i12;
+import 'package:piaf/pages/chat/chat_lib/room_settings_page.dart' as _i39;
+import 'package:piaf/pages/chat/chat_lib/space_page.dart' as _i52;
 import 'package:piaf/pages/chat/overrides/override_room_list_room_page.dart'
     as _i32;
 import 'package:piaf/pages/chat/overrides/override_room_list_space_page.dart'
@@ -25,21 +43,6 @@ import 'package:piaf/pages/chat/overrides/override_room_space_page.dart'
     as _i34;
 import 'package:piaf/pages/chat/room_list_or_placeholder.dart' as _i37;
 import 'package:piaf/pages/chat/room_page.dart' as _i38;
-import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_room.dart' as _i6;
-import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_space_page.dart'
-    as _i8;
-import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_spaces_list.dart'
-    as _i7;
-import 'package:piaf/pages/chat_lib/chat_page_items/provider/chat_page_provider.dart'
-    as _i5;
-import 'package:piaf/pages/chat_lib/device_media_gallery.dart' as _i16;
-import 'package:piaf/pages/chat_lib/matrix_create_group.dart' as _i23;
-import 'package:piaf/pages/chat_lib/matrix_storie_create.dart' as _i24;
-import 'package:piaf/pages/chat_lib/matrix_stories_page.dart' as _i26;
-import 'package:piaf/pages/chat_lib/room_create/create_chat_page.dart' as _i11;
-import 'package:piaf/pages/chat_lib/room_create/create_group_page.dart' as _i12;
-import 'package:piaf/pages/chat_lib/room_settings_page.dart' as _i39;
-import 'package:piaf/pages/chat_lib/space_page.dart' as _i52;
 import 'package:piaf/pages/communities/community_detail_page.dart' as _i9;
 import 'package:piaf/pages/communities/community_page.dart' as _i10;
 import 'package:piaf/pages/debug_page.dart' as _i13;

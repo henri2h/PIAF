@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import 'package:piaf/pages/chat_lib/chat_page_items/chat_page_room.dart';
+import 'package:piaf/pages/chat/chat_lib/chat_page_items/chat_page_room.dart';
 
 @RoutePage()
 class OverrideRoomListRoomPage extends StatelessWidget {

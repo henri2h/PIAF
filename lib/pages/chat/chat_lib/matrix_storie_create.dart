@@ -5,7 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/stories/stories_user_selection.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../../partials/utils/platform_infos.dart';
+import '../../../partials/utils/platform_infos.dart';
 import 'device_media_gallery.dart';
 
 @RoutePage()

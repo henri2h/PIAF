@@ -12,7 +12,7 @@ import 'package:piaf/partials/utils/extensions/matrix/peeking_extension.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
 import '../../partials/chat/settings/conv_settings.dart';
-import '../chat_lib/room_settings_page.dart';
+import 'chat_lib/room_settings_page.dart';
 
 @RoutePage()
 class RoomPage extends StatefulWidget {

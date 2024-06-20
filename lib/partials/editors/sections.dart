@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/config/matrix_types.dart';
-import 'package:piaf/pages/chat_lib/room_settings_page.dart';
+import 'package:piaf/pages/chat/chat_lib/room_settings_page.dart';
 import 'package:piaf/partials/chat/settings/conv_settings_permissions.dart';
 
 import '../components/minestrix/minestrix_title.dart';

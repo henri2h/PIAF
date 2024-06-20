@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/chat_page_state.dart';
-import '../../../partials/chat/spaces/list/spaces_list.dart';
+import '../../../../partials/chat/spaces/list/spaces_list.dart';
 
 @RoutePage()
 class ChatPageSpaceList extends StatelessWidget {

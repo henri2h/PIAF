@@ -5,7 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
 import 'package:piaf/config/matrix_types.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
-import 'package:piaf/partials/calendar_event/calendar_event_widget.dart';
+import 'package:piaf/partials/calendar_events/calendar_event_widget.dart';
 import 'package:piaf/partials/chat/room/room_participants_indicator.dart';
 import 'package:piaf/partials/chat/user/selector/user_selector_dialog.dart';
 import 'package:piaf/partials/chat/user/user_item.dart';

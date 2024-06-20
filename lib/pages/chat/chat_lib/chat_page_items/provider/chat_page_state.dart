@@ -5,7 +5,7 @@ import 'package:piaf/partials/chat/spaces/list/spaces_list.dart';
 import 'package:piaf/partials/utils/client_information.dart';
 import 'package:piaf/partials/utils/matrix_widget.dart';
 
-import '../../../../config/matrix_types.dart';
+import '../../../../../config/matrix_types.dart';
 
 class ChatPageState with ChangeNotifier {
   final Client client;

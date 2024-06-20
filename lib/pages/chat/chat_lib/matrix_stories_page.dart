@@ -8,7 +8,7 @@ import 'package:piaf/partials/minestrix_chat.dart';
 import 'package:piaf/partials/chat/message_composer/matrix_message_composer.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 
-import '../../partials/utils/platform_infos.dart';
+import '../../../partials/utils/platform_infos.dart';
 
 @RoutePage()
 class MatrixStoriesPage extends StatefulWidget {

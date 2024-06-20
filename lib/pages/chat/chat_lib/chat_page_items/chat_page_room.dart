@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'no_room_selected.dart';
 import 'provider/chat_page_state.dart';
-import '../../chat/room_page.dart';
+import '../../room_page.dart';
 
 @RoutePage()
 class ChatPageRoom extends StatelessWidget {

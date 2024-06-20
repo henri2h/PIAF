@@ -1,7 +1,7 @@
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../../../../pages/chat_lib/chat_page_items/provider/chat_page_state.dart';
+import '../../../../pages/chat/chat_lib/chat_page_items/provider/chat_page_state.dart';
 
 extension ClientExtension on Client {
   Iterable<Room> filterRoomWithType(String type) {
