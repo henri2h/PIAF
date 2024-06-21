@@ -21,9 +21,11 @@ class TextMessageBubble extends StatelessWidget {
       this.onTap,
       this.showMessageSentTime = true,
       required this.showSenderName,
+      this.isReply = false,
       this.eventContext});
 
   final Event event;
+  final bool isReply;
   final Color? backgroundColor;
   final Color? color;
   final Color? borderColor;
@@ -54,27 +56,23 @@ class TextMessageBubble extends StatelessWidget {
     final samePrev = eventContext?.evContext.isPreEventFromSameId ?? false;
     final sameNext = eventContext?.evContext.isNextEventFromSameId ?? false;
     final sentByUser = eventContext?.evContext.sentByUser ?? false;
+    final borderRadius = BorderRadius.only(
+        topLeft:
+            samePrev && !sentByUser ? Radius.zero : const Radius.circular(8),
+        topRight:
+            samePrev && sentByUser ? Radius.zero : const Radius.circular(8),
+        bottomLeft:
+            sameNext && !sentByUser ? Radius.zero : const Radius.circular(8),
+        bottomRight:
+            sameNext && sentByUser ? Radius.zero : const Radius.circular(8));
 
     return Card(
       margin: EdgeInsets.zero,
       color: backgroundColorComputed,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-              topLeft: samePrev && !sentByUser
-                  ? Radius.zero
-                  : const Radius.circular(8),
-              topRight: samePrev && sentByUser
-                  ? Radius.zero
-                  : const Radius.circular(8),
-              bottomLeft: sameNext && !sentByUser
-                  ? Radius.zero
-                  : const Radius.circular(8),
-              bottomRight: sameNext && sentByUser
-                  ? Radius.zero
-                  : const Radius.circular(8))),
+      shape: RoundedRectangleBorder(borderRadius: borderRadius),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: borderRadius,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           child: Builder(builder: (context) {
@@ -89,6 +87,27 @@ class TextMessageBubble extends StatelessWidget {
             }
             if (event.messageType == MessageTypes.BadEncrypted) {
               return BadEncrypted(colorPatch: colorPatch);
+            }
+
+            Widget messageView =
+                MessageContent(event: event, colorPatch: colorPatch);
+
+            if (isReply) {
+              /*messageView = ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 100),
+                  child: ListView(
+                      shrinkWrap: true,
+                      physics:
+                          const NeverScrollableScrollPhysics(), // In order to prevent scrolling the replies
+                      children: [messageView]));*/
+              // TODO: Find a way to support markdown or html messages also in reply
+              messageView = Text(
+                event.calcLocalizedBodyFallback(
+                    const MatrixDefaultLocalizations(),
+                    hideReply: true),
+                maxLines: 2,
+                overflow: TextOverflow.fade,
+              );
             }
 
             return Column(
@@ -113,7 +132,7 @@ class TextMessageBubble extends StatelessWidget {
                                       color: colorPatch,
                                       fontWeight: FontWeight.w600)),
                         ),
-                      MessageContent(event: event, colorPatch: colorPatch),
+                      messageView,
                     ],
                   ),
                 ),

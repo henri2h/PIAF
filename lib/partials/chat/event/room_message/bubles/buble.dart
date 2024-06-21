@@ -92,51 +92,24 @@ class _BubleState extends State<Buble> {
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
-              if (widget.e.relationshipType == RelationshipTypes.reply)
+              if (widget.replyEvent != null)
                 Transform.translate(
                   offset: const Offset(0, 4.0),
-                  child: widget.replyEvent == null
-                      ? Container()
-                      : ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 100),
-                          child: ListView(
-                            shrinkWrap: true,
-                            physics:
-                                const NeverScrollableScrollPhysics(), // In order to prevent scrolling the replies
-                            children: [
-                              Align(
-                                alignment: widget.e.sentByUser
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                                child: TextMessageBubble(
-                                    redacted: redacted,
-                                    event: widget.replyEvent!,
-                                    showMessageSentTime: false,
-                                    // don't show sender name in direct chat
-                                    showSenderName:
-                                        !widget.eventWidgetState.isDirectChat,
-                                    onTap: () => widget
-                                        .eventWidgetState.onReplyEventPressed
-                                        ?.call(widget.replyEvent!),
-                                    color: widget.replyEvent!.sentByUser
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onPrimaryContainer
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .onSecondaryContainer,
-                                    backgroundColor:
-                                        widget.replyEvent!.sentByUser
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primaryContainer
-                                            : Theme.of(context)
-                                                .colorScheme
-                                                .secondaryContainer),
-                              )
-                            ],
-                          ),
-                        ),
+                  child: TextMessageBubble(
+                      redacted: redacted,
+                      isReply: true,
+                      event: widget.replyEvent!,
+                      showMessageSentTime: false,
+                      // don't show sender name in direct chat
+                      showSenderName: !widget.eventWidgetState.isDirectChat,
+                      onTap: () => widget.eventWidgetState.onReplyEventPressed
+                          ?.call(widget.replyEvent!),
+                      color: widget.replyEvent!.sentByUser
+                          ? Theme.of(context).colorScheme.onPrimaryContainer
+                          : Theme.of(context).colorScheme.onSecondaryContainer,
+                      backgroundColor: widget.replyEvent!.sentByUser
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : Theme.of(context).colorScheme.secondaryContainer),
                 ),
               // TODO: Add back annimation builder with the Animated Text Message Class
               TextMessageBubble(
