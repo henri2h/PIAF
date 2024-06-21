@@ -3,13 +3,12 @@ import 'package:matrix/matrix.dart';
 import 'package:swipe_to/swipe_to.dart';
 
 import '../../../config/matrix_types.dart';
-import '../../poll/poll_widget.dart';
-import 'event_types/event_type_encrypted.dart';
 import 'event_types/event_type_call_message.dart';
+import 'event_types/event_type_encrypted.dart';
 import 'event_types/event_type_poll_start.dart';
-import 'event_widget.dart';
 import 'event_types/event_type_room_message.dart';
 import 'event_types/event_type_room_state.dart';
+import 'event_widget.dart';
 
 class PlainEventWidget extends StatelessWidget {
   const PlainEventWidget({

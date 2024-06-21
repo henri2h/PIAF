@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../room/room_event_item.dart';
 import 'event_type_builder.dart';
 
 class RoomEventContext {

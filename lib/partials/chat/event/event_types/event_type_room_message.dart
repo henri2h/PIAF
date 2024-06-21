@@ -2,15 +2,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/partials/minestrix_chat.dart';
 import 'package:piaf/partials/chat/event/event_types/room_message/event_reactions.dart';
 
 import '../../../dialogs/adaptative_dialogs.dart';
 import '../../../matrix/matrix_image_avatar.dart';
 import '../../user/user_info_dialog.dart';
+import '../dialogs/event_reactions_dialog.dart';
 import '../event_widget.dart';
 import 'room_message/buble.dart';
-import '../dialogs/event_reactions_dialog.dart';
 
 class EventTypeRoomMessage extends StatelessWidget {
   const EventTypeRoomMessage({
