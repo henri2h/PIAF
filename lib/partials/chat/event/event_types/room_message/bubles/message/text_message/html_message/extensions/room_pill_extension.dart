@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:matrix/matrix.dart';
 
-import '../../../../../../utils/matrix_widget.dart';
-import '../../../../../../matrix/matrix_image_avatar.dart';
+import '../../../../../../../../../utils/matrix_widget.dart';
+import '../../../../../../../../../matrix/matrix_image_avatar.dart';
 
 class RoomPillExtension extends HtmlExtension {
   final Room room;
