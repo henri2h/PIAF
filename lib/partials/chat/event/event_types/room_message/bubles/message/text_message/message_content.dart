@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../../../../markdown_content.dart';
-import '../../html_message/html_messaged.dart';
+import '../../../../../../markdown_content.dart';
+import '../../../html_message/html_messaged.dart';
 
 class MessageContent extends StatelessWidget {
   const MessageContent({

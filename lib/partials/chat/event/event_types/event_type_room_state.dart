@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-class RoomEventUpdateWidget extends StatelessWidget {
-  const RoomEventUpdateWidget(
+class EventTypeRoomState extends StatelessWidget {
+  const EventTypeRoomState(
     this.event, {
     super.key,
   });

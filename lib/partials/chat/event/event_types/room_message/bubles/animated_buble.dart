@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../event_widget.dart';
-import 'bubles/animated_text_message_buble.dart';
+import '../../../event_widget.dart';
+import 'animated_text_message_buble.dart';
 
-class AnnimatedBuble extends StatefulWidget {
-  const AnnimatedBuble(
+class AnimatedBuble extends StatefulWidget {
+  const AnimatedBuble(
       {super.key,
       required this.event,
       required this.noticeForegroundColor,
@@ -21,10 +21,10 @@ class AnnimatedBuble extends StatefulWidget {
   final EventWidget state;
 
   @override
-  State<AnnimatedBuble> createState() => _AnnimatedBubleState();
+  State<AnimatedBuble> createState() => _AnimatedBubleState();
 }
 
-class _AnnimatedBubleState extends State<AnnimatedBuble>
+class _AnimatedBubleState extends State<AnimatedBuble>
     with TickerProviderStateMixin {
   late AnimationController animationController;
 

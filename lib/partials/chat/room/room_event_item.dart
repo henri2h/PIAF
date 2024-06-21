@@ -17,34 +17,6 @@ import '../event/read_receipts/read_receipt_item.dart';
 import '../event/read_receipts/read_receipts_list.dart';
 import 'fully_read_indicator.dart';
 
-class RoomEventContext {
-  final Event? prevEvent;
-  final Event? nextEvent;
-  final Event event;
-  final Event? oldEvent;
-  final Timeline? timeline;
-  final Set<Event>? reactions;
-  Client get client => event.room.client;
-
-  RoomEventContext(
-      {required this.event,
-      this.oldEvent,
-      this.prevEvent,
-      this.nextEvent,
-      this.timeline,
-      this.reactions});
-
-  bool get isNextEventFromSameId =>
-      nextEvent?.type == EventTypes.Message &&
-      nextEvent?.senderId == event.senderId;
-
-  bool get isPreEventFromSameId =>
-      prevEvent?.type == EventTypes.Message &&
-      prevEvent?.senderId == event.senderId;
-
-  bool get sentByUser => event.sentByUser;
-}
-
 class RoomEventDisplaySetting {
   final bool displayAvatar;
 
@@ -59,8 +31,8 @@ class RoomEventDisplaySetting {
       required this.displayAvatar});
 }
 
-class ItemBuilder extends StatelessWidget {
-  const ItemBuilder(
+class RoomEventItem extends StatelessWidget {
+  const RoomEventItem(
       {super.key,
       this.displayAvatar = false,
       this.displayRoomName = false,
@@ -168,7 +140,10 @@ class ItemBuilder extends StatelessWidget {
         event: event,
         oldEvent: oldEvent,
         timeline: t,
-        reactions: reactions);
+        reactions: reactions,
+        isDirectChat: isDirectChat,
+        edited: edited,
+        isLastMessage: i == 0);
 
     return Column(
       children: [
@@ -180,15 +155,10 @@ class ItemBuilder extends StatelessWidget {
           ),
         EventWidget(
             key: Key("ed_${event.eventId}"),
-            evContext: eventContext,
-            reactions: reactions,
-            client: room.client,
-            isLastMessage: i == 0,
+            ctx: eventContext,
             displayAvatar: displayAvatar,
             displayName: displayRoomName,
             addPaddingTop: displayPadding,
-            isDirectChat: isDirectChat,
-            edited: edited,
             onEventSelectedStream:
                 onSelected?.where((eventId) => eventId == event.eventId),
             onReact: (offset) async {

@@ -7,7 +7,7 @@ import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 import '../typing_indicator.dart';
-import 'item_builder.dart';
+import 'room_event_item.dart';
 
 class RoomTimeline extends StatefulWidget {
   final Room? room;
@@ -210,7 +210,7 @@ class RoomTimelineState extends State<RoomTimeline> {
                       itemCount: filteredEvents.length,
                       padding: listViewPadding,
                       itemBuilder: (BuildContext context, int index) {
-                        return ItemBuilder(
+                        return RoomEventItem(
                           key: Key("item_${filteredEvents[index].eventId}"),
                           room: room!,
                           // Calculating isDirectChat takes a lot of CPU time so

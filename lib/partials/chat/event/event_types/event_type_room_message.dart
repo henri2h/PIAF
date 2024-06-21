@@ -3,51 +3,50 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
-import 'package:piaf/partials/chat/event/room_message/event_reactions.dart';
+import 'package:piaf/partials/chat/event/event_types/room_message/event_reactions.dart';
 
 import '../../../dialogs/adaptative_dialogs.dart';
 import '../../../matrix/matrix_image_avatar.dart';
 import '../../user/user_info_dialog.dart';
 import '../event_widget.dart';
-import 'bubles/buble.dart';
-import 'event_reactions_dialog.dart';
+import 'room_message/buble.dart';
+import '../dialogs/event_reactions_dialog.dart';
 
-class RoomMessageWidget extends StatelessWidget {
-  const RoomMessageWidget({
+class EventTypeRoomMessage extends StatelessWidget {
+  const EventTypeRoomMessage({
     super.key,
-    required this.eventWidgetState,
-    required this.event,
+    required this.state,
   });
 
-  final EventWidget eventWidgetState;
-  final Event event;
+  final EventWidget state;
 
   Future<void> displayReactionDialog(BuildContext context) async {
-    if (eventWidgetState.reactions == null) return;
+    if (state.ctx.reactions == null) return;
     await AdaptativeDialogs.show(
       context: context,
       title: "Reactions",
       builder: (context) =>
-          EventReactionsDialog(reactions: eventWidgetState.reactions!),
+          EventReactionsDialog(reactions: state.ctx.reactions!),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final sentByUser = event.sentByUser;
+    final sentByUser = state.ctx.sentByUser;
 
     Map<String?, int> keys = getFilteredReactionsList();
 
     return FutureBuilder<User?>(
-        future: event.room.requestUser(event.senderId),
+        future: state.ctx.event.room.requestUser(state.ctx.event.senderId),
         builder: (context, snapshot) {
-          final user = snapshot.data ?? event.senderFromMemoryOrFallback;
+          final user =
+              snapshot.data ?? state.ctx.event.senderFromMemoryOrFallback;
 
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!sentByUser)
-                eventWidgetState.isDirectChat
+                state.ctx.isDirectChat
                     ? const SizedBox(
                         width:
                             4) // Don't display user avatar in a direct chat but add a bit of padding
@@ -56,7 +55,7 @@ class RoomMessageWidget extends StatelessWidget {
                             const EdgeInsets.only(left: 4, top: 2.0, right: 10),
                         child: SizedBox(
                           width: 40,
-                          child: eventWidgetState.displayAvatar
+                          child: state.displayAvatar
                               ? MaterialButton(
                                   onPressed: () async {
                                     await UserInfoDialog.show(
@@ -72,16 +71,16 @@ class RoomMessageWidget extends StatelessWidget {
                                       height:
                                           MinestrixAvatarSizeConstants.small,
                                       fit: true,
-                                      client: eventWidgetState.client),
+                                      client: state.ctx.client),
                                 )
                               : null,
                         ),
                       ),
               FutureBuilder<Event?>(future: () async {
-                if (eventWidgetState.evContext.timeline != null &&
-                    event.relationshipType == RelationshipTypes.reply) {
-                  return event
-                      .getReplyEvent(eventWidgetState.evContext.timeline!);
+                if (state.ctx.timeline != null &&
+                    state.ctx.event.relationshipType ==
+                        RelationshipTypes.reply) {
+                  return state.ctx.event.getReplyEvent(state.ctx.timeline!);
                 }
 
                 return null;
@@ -94,12 +93,13 @@ class RoomMessageWidget extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onLongPressStart: (pos) {
-                          eventWidgetState.onReact?.call(pos.globalPosition);
+                          state.onReact?.call(pos.globalPosition);
                         },
                         onSecondaryTapDown: (pos) {
-                          if (event.messageType == MessageTypes.Text) {
+                          if (state.ctx.event.messageType ==
+                              MessageTypes.Text) {
                             // only enable fast reply and reaction on text data
-                            eventWidgetState.onReact?.call(pos.globalPosition);
+                            state.onReact?.call(pos.globalPosition);
                           }
                         },
                         onLongPressUp: () {},
@@ -109,9 +109,7 @@ class RoomMessageWidget extends StatelessWidget {
                                   MediaQuery.of(context).size.width * 0.7, 500),
                             ),
                             child: Buble(
-                                e: event,
-                                eventWidgetState: eventWidgetState,
-                                replyEvent: snapReplyEvent.data)),
+                                state: state, replyEvent: snapReplyEvent.data)),
                       ),
                       if (keys.entries.isNotEmpty)
                         Padding(
@@ -133,8 +131,8 @@ class RoomMessageWidget extends StatelessWidget {
 
   Map<String?, int> getFilteredReactionsList() {
     var keys = <String?, int>{};
-    if (eventWidgetState.reactions != null) {
-      for (Event revent in eventWidgetState.reactions!) {
+    if (state.ctx.reactions != null) {
+      for (Event revent in state.ctx.reactions!) {
         String? key = revent.content
             .tryGetMap<String, dynamic>('m.relates_to')
             ?.tryGet<String>('key');

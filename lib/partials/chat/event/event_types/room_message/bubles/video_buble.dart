@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../matrix_video_message.dart';
+import 'message/matrix_video_message.dart';
 
 class VideoBuble extends StatelessWidget {
   const VideoBuble({super.key, required this.event});

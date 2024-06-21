@@ -2,17 +2,48 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../room/item_builder.dart';
-import 'plain_event_widget.dart';
+import '../room/room_event_item.dart';
+import 'event_type_builder.dart';
+
+class RoomEventContext {
+  final Event? prevEvent;
+  final Event? nextEvent;
+  Event event;
+  final Event? oldEvent;
+  final Timeline? timeline;
+  final Set<Event>? reactions;
+  final bool isDirectChat;
+  final bool isLastMessage;
+  final bool edited;
+  Client get client => event.room.client;
+
+  RoomEventContext(
+      {required this.event,
+      this.oldEvent,
+      this.prevEvent,
+      this.nextEvent,
+      this.timeline,
+      this.reactions,
+      this.isDirectChat = false,
+      this.isLastMessage = false,
+      this.edited = false});
+
+  bool get isNextEventFromSameId =>
+      nextEvent?.type == EventTypes.Message &&
+      nextEvent?.senderId == event.senderId;
+
+  bool get isPreEventFromSameId =>
+      prevEvent?.type == EventTypes.Message &&
+      prevEvent?.senderId == event.senderId;
+
+  bool get sentByUser => event.sentByUser;
+}
 
 /// A widget display the event and decripting it if needed
 class EventWidget extends StatefulWidget {
-  final RoomEventContext evContext;
-
-  final Set<Event>? reactions;
-
-  final Client? client;
+  final RoomEventContext ctx;
 
   final GestureDragUpdateCallback? onReply;
   final void Function(Event reply)? onReplyEventPressed;
@@ -21,26 +52,19 @@ class EventWidget extends StatefulWidget {
   final bool displayAvatar;
   final bool displayName;
   final bool addPaddingTop;
-  final bool edited;
-  final bool isLastMessage;
-  final bool isDirectChat;
 
   final Stream<String>? onEventSelectedStream;
-  const EventWidget(
-      {super.key,
-      required this.evContext,
-      required this.client,
-      this.reactions,
-      this.onReact,
-      this.onEventSelectedStream,
-      this.onReply,
-      this.isLastMessage = false,
-      this.displayAvatar = false,
-      this.displayName = false,
-      this.addPaddingTop = false,
-      this.edited = false,
-      this.onReplyEventPressed,
-      this.isDirectChat = false});
+  const EventWidget({
+    super.key,
+    required this.ctx,
+    this.onReact,
+    this.onEventSelectedStream,
+    this.onReply,
+    this.displayAvatar = false,
+    this.displayName = false,
+    this.addPaddingTop = false,
+    this.onReplyEventPressed,
+  });
 
   @override
   EventWidgetState createState() => EventWidgetState();
@@ -52,16 +76,13 @@ class EventWidgetState extends State<EventWidget> {
     super.initState();
   }
 
-  bool hover = false;
-
   @override
   Widget build(BuildContext context) {
-    if (widget.evContext.event.messageType == MessageTypes.BadEncrypted) {
+    if (widget.ctx.event.messageType == MessageTypes.BadEncrypted) {
       return FutureBuilder<Event>(
-          future: widget.evContext.event.room.client.encryption!
-              .decryptRoomEvent(
-                  widget.evContext.event.roomId!, widget.evContext.event,
-                  store: true),
+          future: widget.ctx.event.room.client.encryption!.decryptRoomEvent(
+              widget.ctx.event.roomId!, widget.ctx.event,
+              store: true),
           builder: (BuildContext context, snapshot) {
             if (snapshot.hasError) {
               return const Row(
@@ -74,28 +95,22 @@ class EventWidgetState extends State<EventWidget> {
                 ],
               );
             }
-            return buildMouseRegion(
-                context, snapshot.data ?? widget.evContext.event);
+            if (snapshot.hasData) {
+              widget.ctx.event = snapshot.data!;
+            }
+
+            return buildEventWithPadding(context);
           });
     }
 
     // then load the event
-    return buildMouseRegion(context, widget.evContext.event);
+    return buildEventWithPadding(context);
   }
 
-  MouseRegion buildMouseRegion(BuildContext context, Event event) {
-    return MouseRegion(
-      child: Padding(
-        padding: EdgeInsets.only(top: widget.addPaddingTop ? 16 : 3, right: 8),
-        child: PlainEventWidget(
-            eventWidgetState: widget, context: context, event: event),
-      ),
-      onEnter: (_) => setState(() {
-        hover = true;
-      }),
-      onExit: (_) => setState(() {
-        hover = false;
-      }),
+  Widget buildEventWithPadding(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(top: widget.addPaddingTop ? 16 : 3, right: 8),
+      child: PlainEventWidget(state: widget),
     );
   }
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../../event_widget.dart';
-import 'text_message/text_message_bubble.dart';
+import '../../../event_widget.dart';
+import 'text_message_bubble.dart';
 
 class AnimatedTextMessageBuble extends StatelessWidget {
   const AnimatedTextMessageBuble(
@@ -30,9 +30,9 @@ class AnimatedTextMessageBuble extends StatelessWidget {
         builder: (BuildContext context, Widget? child) => TextMessageBubble(
               redacted: redacted,
               event: e,
-              showSentIndicator: widget.isLastMessage && e.sentByUser,
+              showSentIndicator: widget.ctx.isLastMessage && e.sentByUser,
               showSenderName: widget.displayName,
-              edited: widget.edited,
+              edited: widget.ctx.edited,
               color: noticeForegroundColor,
               backgroundColor: noticeBackgroundColor,
               borderColor: () {

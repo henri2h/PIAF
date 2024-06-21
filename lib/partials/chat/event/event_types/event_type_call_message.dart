@@ -5,19 +5,20 @@ import 'package:piaf/utils/date_time_extension.dart';
 
 import '../../../matrix/matrix_user_avatar.dart';
 
-class CallMessageDisplay extends StatelessWidget {
-  const CallMessageDisplay(this.event, {super.key, required this.timeline});
+class EventTypeCallMessage extends StatelessWidget {
+  const EventTypeCallMessage(this.event, {super.key, required this.timeline});
 
   final Event event;
-  final Timeline timeline;
+  final Timeline? timeline;
 
   @override
   Widget build(BuildContext context) {
+    if (timeline == null) return const Text("call event");
     return Card(
         child: Padding(
       padding: const EdgeInsets.all(8.0),
       child: Builder(builder: (context) {
-        final e = timeline.events.where((element) =>
+        final e = timeline!.events.where((element) =>
             element.type != EventTypes.CallInvite &&
             element.content.tryGet("call_id") ==
                 event.content.tryGet("call_id"));

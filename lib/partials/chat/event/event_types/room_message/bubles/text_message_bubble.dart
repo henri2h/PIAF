@@ -3,9 +3,9 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/chat/event/event_widget.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import 'bad_encrypted.dart';
-import 'message_content.dart';
-import 'message_status.dart';
+import 'message/text_message/bad_encrypted.dart';
+import 'message/text_message/message_content.dart';
+import 'message/text_message/message_status.dart';
 
 class TextMessageBubble extends StatelessWidget {
   const TextMessageBubble(
@@ -53,9 +53,9 @@ class TextMessageBubble extends StatelessWidget {
 
     // Determine if we should have rounded borders in case of the
     // previous message has also been sent by the same user.
-    final samePrev = eventContext?.evContext.isPreEventFromSameId ?? false;
-    final sameNext = eventContext?.evContext.isNextEventFromSameId ?? false;
-    final sentByUser = eventContext?.evContext.sentByUser ?? false;
+    final samePrev = eventContext?.ctx.isPreEventFromSameId ?? false;
+    final sameNext = eventContext?.ctx.isNextEventFromSameId ?? false;
+    final sentByUser = eventContext?.ctx.sentByUser ?? false;
     final borderRadius = BorderRadius.only(
         topLeft:
             samePrev && !sentByUser ? Radius.zero : const Radius.circular(8),

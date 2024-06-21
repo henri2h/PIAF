@@ -6,7 +6,7 @@ import 'package:matrix/matrix.dart';
 
 import '../../style/constants.dart';
 import '../event/event_widget.dart';
-import 'item_builder.dart';
+import 'room_event_item.dart';
 
 enum Selection { room, all }
 
@@ -242,8 +242,7 @@ class _RoomSearchState extends State<RoomSearch> {
                                             Opacity(
                                               opacity: 0.6,
                                               child: EventWidget(
-                                                  client: client,
-                                                  evContext: RoomEventContext(
+                                                  ctx: RoomEventContext(
                                                       event:
                                                           Event.fromMatrixEvent(
                                                               event, room)),
@@ -252,9 +251,7 @@ class _RoomSearchState extends State<RoomSearch> {
                                                   displayName: true),
                                             ),
                                         EventWidget(
-                                            client: client,
-                                            evContext:
-                                                RoomEventContext(event: event),
+                                            ctx: RoomEventContext(event: event),
                                             addPaddingTop: true,
                                             displayAvatar: true,
                                             displayName: true),
@@ -264,8 +261,7 @@ class _RoomSearchState extends State<RoomSearch> {
                                             Opacity(
                                               opacity: 0.6,
                                               child: EventWidget(
-                                                  client: client,
-                                                  evContext: RoomEventContext(
+                                                  ctx: RoomEventContext(
                                                       event:
                                                           Event.fromMatrixEvent(
                                                               event, room)),

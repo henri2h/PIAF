@@ -5,7 +5,7 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/app_title.dart';
 import 'package:piaf/router.gr.dart';
 import 'package:piaf/config/matrix_types.dart';
-import 'package:piaf/partials/chat/event/room_message/matrix_video_message.dart';
+import 'package:piaf/partials/chat/event/event_types/room_message/bubles/message/matrix_video_message.dart';
 import 'package:piaf/partials/event/matrix_image.dart';
 import 'package:piaf/partials/chat_feed/posts/matrix_post_content.dart';
 

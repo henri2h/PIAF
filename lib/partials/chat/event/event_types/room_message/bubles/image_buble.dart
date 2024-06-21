@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../../../../event/matrix_image.dart';
+import '../../../../../event/matrix_image.dart';
 
 class ImageBuble extends StatelessWidget {
   const ImageBuble({super.key, required this.event});
