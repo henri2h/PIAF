@@ -25,6 +25,16 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
 
   Future<Timeline>? _futureTimeline;
   Future<InMemoryMediaTimeline>? _futureInMemoryMediaTimeline;
+
+  Timeline? encryptedTimeline;
+  InMemoryMediaTimeline? memoryTimeline;
+
+  // If both timeline are null, we need to request the history at least one
+  // to build the timeline object
+  bool get canRequestHistoryOrNull => encryptedTimeline != null
+      ? encryptedTimeline!.canRequestHistory
+      : memoryTimeline?.canRequestHistory ?? true;
+
   int start = 0;
   bool isGettingEvents = false;
 
@@ -54,6 +64,7 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
   Future<void> requestEncryptedTimeline(int more) async {
     _futureTimeline ??= widget.room.getTimeline();
     final timeline = await _futureTimeline!;
+    encryptedTimeline = timeline;
 
     int requestCount = 0;
     final prevCount = eventLen;
@@ -73,6 +84,7 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
     _futureInMemoryMediaTimeline ??=
         InMemoryMediaTimeline.getTimeline(widget.room);
     final timeline = await _futureInMemoryMediaTimeline!;
+    memoryTimeline = timeline;
 
     int requestCount = 0;
     final prevCount = eventLen;
@@ -91,7 +103,6 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
   @override
   void initState() {
     super.initState();
-    loadTimeline(20);
     controller.addListener(onScroll);
   }
 
@@ -123,6 +134,16 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
 
   @override
   Widget build(BuildContext context) {
+    if (canRequestHistoryOrNull) {
+      if (!controller.hasClients ||
+          (controller.position.hasContentDimensions &&
+              controller.position.maxScrollExtent == 0)) {
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          loadTimeline(20);
+        });
+      }
+    }
+
     return StreamBuilder<List<Event>>(
         stream: streamController.stream,
         builder: (context, snap) {
@@ -150,13 +171,13 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
                         : Padding(
                             padding: const EdgeInsets.all(4.0),
                             child: SizedBox(
-                              height: 100,
+                              height: 200,
                               child: MImageViewer(
                                   event: events[index], fit: BoxFit.cover),
                             ),
                           ),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 100),
+                    maxCrossAxisExtent: 200),
               );
             }),
           );
