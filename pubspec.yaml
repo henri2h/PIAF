@@ -132,19 +132,7 @@ dependencies:
   connectivity_plus: ^6.0.3
   desktop_lifecycle: ^0.1.0
   flutter_datetime_picker_plus: ^2.1.0
-
-dependency_overrides:
-  flutter_secure_storage_linux:
-    git:
-      url: https://github.com/mogol/flutter_secure_storage
-      ref: develop
-      path: flutter_secure_storage_linux
-
-  flutter_math_fork:
-  # FIXME: we need this fix https://github.com/simpleclub-extended/flutter_math_fork/pull/87
-    git:
-      url: https://github.com/The-Redhat/flutter_math_fork/
-      ref: 3442b36a436880ce1c023e25c868d6f4004c4c24
+  flutter_math_fork: ^0.7.2
 
 
 dev_dependencies:
