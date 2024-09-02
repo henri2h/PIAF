@@ -61,8 +61,8 @@ class PostContent extends StatelessWidget {
                         constraints: BoxConstraints(
                             maxHeight: imageMaxHeight!,
                             minHeight: imageMaxHeight ?? 400),
-                        child: MatrixEventImage(event: event))
-                    : MatrixEventImage(event: event),
+                        child: MatrixImage(event: event))
+                    : MatrixImage(event: event),
               ],
             );
           case MessageTypes.Video:
@@ -104,7 +104,7 @@ class PostContent extends StatelessWidget {
                         "${sender.calcDisplayname()} Changed page picture",
                         style: const TextStyle()),
                   ),
-                  MatrixEventImage(event: event),
+                  MatrixImage(event: event),
                 ],
               );
             });

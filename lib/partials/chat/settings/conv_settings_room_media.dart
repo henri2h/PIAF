@@ -173,7 +173,10 @@ class _ConvSettingsRoomMediaState extends State<ConvSettingsRoomMedia> {
                             child: SizedBox(
                               height: 200,
                               child: MImageViewer(
-                                  event: events[index], fit: BoxFit.cover),
+                                  imageWidth: 200,
+                                  imageHeight: 200,
+                                  event: events[index],
+                                  fit: BoxFit.cover),
                             ),
                           ),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

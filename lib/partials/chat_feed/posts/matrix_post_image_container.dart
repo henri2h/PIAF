@@ -67,7 +67,7 @@ class _MatrixPostImageContainerState extends State<MatrixPostImageContainer> {
                 fit: StackFit.expand,
                 children: [
                   if (event != null && image != null)
-                    MatrixEventImage(
+                    MatrixImage(
                         key: Key(event!.eventId),
                         event: image,
                         fit: BoxFit.cover,

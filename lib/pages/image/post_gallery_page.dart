@@ -93,7 +93,7 @@ class _PostGalleryPageState extends State<PostGalleryPage>
                                   return InteractiveViewer(
                                     minScale: 0.01,
                                     maxScale: 4,
-                                    child: MatrixEventImage(
+                                    child: MatrixImage(
                                       key: Key("img_event_${image.eventId}"),
                                       fit: BoxFit.contain,
                                       borderRadius: BorderRadius.zero,

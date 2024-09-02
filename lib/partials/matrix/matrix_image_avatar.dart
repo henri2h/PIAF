@@ -60,6 +60,9 @@ class MatrixImageAvatar extends StatelessWidget {
     double h = height ?? MinestrixAvatarSizeConstants.small;
     double w = width ?? MinestrixAvatarSizeConstants.small;
 
+    int memCacheHeight = h.toInt();
+    int memCacheWidth = w.toInt();
+
     double roomInitialsTextPadding = h <= 40 ? textPadding : 9; // hmm dirty fix
 
     final thumnailUrl = url
@@ -115,6 +118,9 @@ class MatrixImageAvatar extends StatelessWidget {
                 maxHeightDiskCache: maxHeight,
                 maxWidthDiskCache: maxWidth,
 
+                memCacheHeight: memCacheHeight,
+                memCacheWidth: memCacheWidth,
+
                 imageUrl: httpurl ?? thumnailUrl!,
                 imageBuilder: (context, imageProvider) => Container(
                   decoration: BoxDecoration(
@@ -141,6 +147,9 @@ class MatrixImageAvatar extends StatelessWidget {
                             //width: unconstraigned ? null : w,
                             maxHeightDiskCache: maxHeight,
                             maxWidthDiskCache: maxWidth,
+
+                            memCacheHeight: memCacheHeight,
+                            memCacheWidth: memCacheWidth,
 
                             imageUrl: thumnailUrl!,
                             imageBuilder: (context, imageProvider) => Container(

@@ -13,10 +13,17 @@ import '../chat_components/shimmer_widget.dart';
 
 class MImageViewer extends StatelessWidget {
   const MImageViewer(
-      {super.key, required this.event, this.fit = BoxFit.contain});
+      {super.key,
+      required this.event,
+      this.fit = BoxFit.contain,
+      this.imageWidth,
+      this.imageHeight});
 
   final BoxFit fit;
   final Event event;
+
+  final int? imageWidth;
+  final int? imageHeight;
 
   Future<void> saveImage(BuildContext context) async {
     final file = await event.downloadAndDecryptAttachment(
@@ -48,7 +55,7 @@ class MImageViewer extends StatelessWidget {
                 child: SizedBox(
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height,
-                    child: MatrixEventImage(
+                    child: MatrixImage(
                         event: event,
                         getThumbnail: false,
                         fit: BoxFit.contain,
@@ -56,54 +63,37 @@ class MImageViewer extends StatelessWidget {
       },
       child: ClipRRect(
           borderRadius: BorderRadius.circular(5),
-          child: MatrixEventImage(
+          child: MatrixImage(
             event: event,
             fit: fit,
+            imageHeight: imageHeight,
+            imageWidth: imageWidth,
             key: Key("img_${event.eventId}"),
           )),
     );
   }
 }
 
-class MatrixEventImage extends StatelessWidget {
-  final Event event;
-  final BoxFit fit;
-  final bool getThumbnail;
-  final BorderRadius? borderRadius;
-  const MatrixEventImage(
-      {super.key,
-      required this.event,
-      this.getThumbnail = true,
-      this.borderRadius,
-      this.fit = BoxFit.contain});
-
-  @override
-  Widget build(BuildContext context) {
-    return MatrixImage(
-      event: event,
-      fit: fit,
-      room: event.room,
-      getThumbnail: getThumbnail,
-      borderRadius: borderRadius,
-    );
-  }
-}
-
 class MatrixImage extends StatefulWidget {
-  final Room room;
+  final Room? room;
   final Event event;
   final bool highRes;
   final bool getThumbnail;
 
   final BoxFit fit;
   final BorderRadius? borderRadius;
+  final int? imageWidth;
+  final int? imageHeight;
+
   const MatrixImage(
       {super.key,
       required this.event,
-      required this.room,
+      this.room,
       this.fit = BoxFit.contain,
       this.borderRadius,
       this.highRes = false,
+      this.imageHeight,
+      this.imageWidth,
       this.getThumbnail = true});
 
   @override
@@ -112,7 +102,7 @@ class MatrixImage extends StatefulWidget {
 
 class _MatrixImageState extends State<MatrixImage> {
   Event get event => widget.event;
-  Room get room => widget.room;
+  Room get room => widget.room ?? event.room;
   bool get getThumbnail => widget.getThumbnail;
 
   Future<MatrixFile>? futureFile;
@@ -190,14 +180,15 @@ class _MatrixImageState extends State<MatrixImage> {
       builder: (BuildContext context, AsyncSnapshot<MatrixFile> file) {
         if (file.hasData) {
           return Image.memory(file.data!.bytes,
-              fit: widget.fit, cacheWidth: width);
+              fit: widget.fit, cacheWidth: widget.imageWidth ?? width);
         }
         var blurhashImage = getBlurHashImage();
         if (blurhashImage != null) {
           return Stack(
             fit: StackFit.expand,
             children: [
-              Image.memory(blurhashImage, fit: widget.fit, cacheWidth: width),
+              Image.memory(blurhashImage,
+                  fit: widget.fit, cacheWidth: widget.imageWidth ?? width),
               Center(
                 child: Shimmer.fromColors(
                   baseColor: Colors.transparent,
