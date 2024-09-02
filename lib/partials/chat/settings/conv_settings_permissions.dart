@@ -181,34 +181,7 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
                           permissionName: getNameForPermission(item.toString()),
                           room: room,
                         ),
-                      ListTile(
-                          title: const Text("Room version"),
-                          subtitle: Text(room
-                                  .getState(EventTypes.RoomCreate)
-                                  ?.content["room_version"]
-                                  .toString() ??
-                              '')),
-                      ListTile(
-                          title: const Text("Room creator"),
-                          subtitle: Builder(builder: (context) {
-                            final event = room.getState(EventTypes.RoomCreate);
-                            if (event is Event) {
-                              return Text(event.senderFromMemoryOrFallback
-                                  .calcDisplayname());
-                            }
-                            return const Text("Not found");
-                          })),
-                      if (room
-                              .getState(EventTypes.RoomCreate)
-                              ?.content["type"] !=
-                          null)
-                        ListTile(
-                            title: const Text("Room type"),
-                            subtitle: Text(room
-                                    .getState(EventTypes.RoomCreate)
-                                    ?.content["type"]
-                                    .toString() ??
-                                ''))
+                     
                     ],
                   ),
           );

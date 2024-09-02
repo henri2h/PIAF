@@ -178,7 +178,32 @@ class _RoomSettingsState extends State<RoomSettings> {
               content: Text("Copied room ID in the clipbard."),
             ));
           },
-        )
+        ),
+        ListTile(
+            title: const Text("Room version"),
+            subtitle: Text(widget.room
+                    .getState(EventTypes.RoomCreate)
+                    ?.content["room_version"]
+                    .toString() ??
+                '')),
+        ListTile(
+            title: const Text("Room creator"),
+            subtitle: Builder(builder: (context) {
+              final event = widget.room.getState(EventTypes.RoomCreate);
+              if (event is Event) {
+                return Text(event.senderFromMemoryOrFallback.calcDisplayname());
+              }
+              return const Text("Not found");
+            })),
+        if (widget.room.getState(EventTypes.RoomCreate)?.content["type"] !=
+            null)
+          ListTile(
+              title: const Text("Room type"),
+              subtitle: Text(widget.room
+                      .getState(EventTypes.RoomCreate)
+                      ?.content["type"]
+                      .toString() ??
+                  ''))
       ],
     );
   }

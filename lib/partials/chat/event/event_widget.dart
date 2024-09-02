@@ -31,11 +31,15 @@ class RoomEventContext {
 
   bool get isNextEventFromSameId =>
       nextEvent?.type == EventTypes.Message &&
-      nextEvent?.senderId == event.senderId;
+      nextEvent?.senderId == event.senderId &&
+      !(nextEvent?.hasAttachment ?? false);
 
   bool get isPreEventFromSameId =>
       prevEvent?.type == EventTypes.Message &&
-      prevEvent?.senderId == event.senderId;
+      prevEvent?.senderId == event.senderId &&
+      
+  
+      !(prevEvent?.hasAttachment ?? false);
 
   bool get sentByUser => event.sentByUser;
 }
