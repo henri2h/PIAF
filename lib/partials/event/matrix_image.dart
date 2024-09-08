@@ -10,6 +10,7 @@ import 'package:piaf/partials/utils/matrix_sdk_extension/matrix_file_extension.d
 import 'package:shimmer/shimmer.dart';
 
 import '../chat_components/shimmer_widget.dart';
+import '../utils/matrix_widget.dart';
 
 class MImageViewer extends StatelessWidget {
   const MImageViewer(
@@ -26,9 +27,11 @@ class MImageViewer extends StatelessWidget {
   final int? imageHeight;
 
   Future<void> saveImage(BuildContext context) async {
+    final client = Matrix.of(context).client;
     final file = await event.downloadAndDecryptAttachment(
       downloadCallback: (Uri url) async {
-        final file = await DefaultCacheManager().getSingleFile(url.toString());
+        final file = await DefaultCacheManager().getSingleFile(url.toString(),
+            headers: {"authorization": "Bearer ${client.accessToken}"});
         return await file.readAsBytes();
       },
     );
@@ -116,6 +119,8 @@ class _MatrixImageState extends State<MatrixImage> {
 
   @override
   void initState() {
+    final client = Matrix.of(context).client;
+
     ratio = event.infoMap['w'] is int && event.infoMap['h'] is int
         ? event.infoMap['w'] / event.infoMap['h']
         : null;
@@ -142,7 +147,8 @@ class _MatrixImageState extends State<MatrixImage> {
     futureFile = event.downloadAndDecryptAttachment(
       getThumbnail: getThumbnail,
       downloadCallback: (Uri url) async {
-        final file = await DefaultCacheManager().getSingleFile(url.toString());
+        final file = await DefaultCacheManager().getSingleFile(url.toString(),
+            headers: {"authorization": "Bearer ${client.accessToken}"});
         return await file.readAsBytes();
       },
     );

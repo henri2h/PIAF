@@ -135,7 +135,7 @@ packages:
     source: hosted
     version: "2.0.0"
   blurhash_dart:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: blurhash_dart
       sha256: "43955b6c2e30a7d440028d1af0fa185852f3534b795cc6eb81fbf397b464409f"

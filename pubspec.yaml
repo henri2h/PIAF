@@ -136,6 +136,7 @@ dependencies:
   shared_preferences: ^2.3.2
   http: ^0.13.6
   webrtc_interface: ^1.2.0
+  blurhash_dart: ^1.2.1
 
 
 dev_dependencies:
