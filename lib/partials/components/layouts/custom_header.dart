@@ -34,7 +34,7 @@ class CustomHeader extends StatelessWidget {
                     IconButton(
                         onPressed: () {
                           if (onBack != null) onBack!();
-                          context.router.pop();
+                          context.router.maybePop();
                         },
                         icon: const Icon(Icons.arrow_back)),
                   if (context.router.canPop() == false && drawerEnabled)

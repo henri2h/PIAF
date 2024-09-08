@@ -68,7 +68,7 @@ class SettingsPanel extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.router.pop()),
+            onPressed: () => context.router.maybePop()),
         title: const Text("Settings"),
       ),
       body: FutureBuilder<TokenOwnerInfo>(

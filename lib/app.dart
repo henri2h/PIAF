@@ -89,24 +89,7 @@ class AppState extends State<App> {
                             future: initMatrix(client),
                             builder: (context, snap) {
                               return MaterialApp.router(
-                                routerDelegate: AutoRouterDelegate.declarative(
-                                  _appRouter,
-                                  routes: (_) {
-                                    final isLogged = client.isLogged();
-                                    return [
-                                      if (isLogged)
-                                        const AppWrapperRoute()
-
-                                      // if they are not logged in, bring them to the Login page
-                                      else if (Platform.isAndroid)
-                                        const MobileWelcomeRouter()
-                                      else
-                                        DesktopLoginRoute()
-                                    ];
-                                  },
-                                ),
-                                routeInformationParser:
-                                    _appRouter.defaultRouteParser(),
+                                routerConfig: _appRouter.config(),
                                 debugShowCheckedModeBanner: false,
                                 theme: ThemeData(
                                   colorScheme:
@@ -129,5 +112,38 @@ class AppState extends State<App> {
         ),
       ),
     );
+  }
+}
+
+@RoutePage()
+class MainRouterPage extends StatefulWidget {
+  const MainRouterPage({super.key});
+
+  @override
+  State<MainRouterPage> createState() => _MainRouterPageState();
+}
+
+class _MainRouterPageState extends State<MainRouterPage> {
+  @override
+  Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
+
+    return StreamBuilder<LoginState?>(
+        stream: Matrix.of(context).client.onLoginStateChanged.stream,
+        builder: (context, AsyncSnapshot<LoginState?> state) {
+          return AutoRouter.declarative(routes: (_) {
+            final isLogged = client.isLogged();
+            return [
+              if (isLogged)
+                const AppWrapperRoute()
+
+              // if they are not logged in, bring them to the Login page
+              else if (Platform.isAndroid)
+                const MobileWelcomeRouter()
+              else
+                DesktopLoginRoute()
+            ];
+          });
+        });
   }
 }

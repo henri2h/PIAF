@@ -148,7 +148,7 @@ class _AccountSelectionPopupState extends State<AccountSelectionPopup> {
                             leading: const Icon(Icons.settings),
                             title: const Text("Settings"),
                             onTap: () async {
-                              context.popRoute();
+                              context.maybePop();
                               context.pushRoute(const SettingsRoute());
                             }),
                       ],

@@ -90,8 +90,7 @@ class CallKeepManager {
   Future<void> showCallkitIncoming(CallSession call) async {
     if (!setupDone) {
       await _callKeep.setup(
-        null,
-        <String, dynamic>{
+        options: <String, dynamic>{
           'ios': <String, dynamic>{
             'appName': appName,
           },
@@ -136,8 +135,8 @@ class CallKeepManager {
   }
 
   void didDisplayIncomingCall(CallKeepDidDisplayIncomingCall event) {
-    final callUUID = event.callUUID;
-    final number = event.handle;
+    final callUUID = event.callData.callUUID;
+    final number = event.callData.handle;
     Logs().v('[displayIncomingCall] $callUUID number: $number');
     // addCall(callUUID, CallKeeper(this null));
   }
@@ -147,17 +146,16 @@ class CallKeepManager {
   }
 
   Future<void> initialize() async {
-    _callKeep.on(CallKeepPerformAnswerCallAction(), answerCall);
-    _callKeep.on(CallKeepDidPerformDTMFAction(), didPerformDTMFAction);
+    _callKeep.on<CallKeepPerformAnswerCallAction>(answerCall);
+    _callKeep.on<CallKeepDidPerformDTMFAction>(didPerformDTMFAction);
 
-    _callKeep.on(CallKeepDidToggleHoldAction(), didToggleHoldCallAction);
-    _callKeep.on(
-      CallKeepDidPerformSetMutedCallAction(),
+    _callKeep.on<CallKeepDidToggleHoldAction>(didToggleHoldCallAction);
+    _callKeep.on<CallKeepDidPerformSetMutedCallAction>(
       didPerformSetMutedCallAction,
     );
-    _callKeep.on(CallKeepPerformEndCallAction(), endCall);
-    _callKeep.on(CallKeepPushKitToken(), onPushKitToken);
-    _callKeep.on(CallKeepDidDisplayIncomingCall(), didDisplayIncomingCall);
+    _callKeep.on<CallKeepPerformEndCallAction>(endCall);
+    _callKeep.on<CallKeepPushKitToken>(onPushKitToken);
+    _callKeep.on<CallKeepDidDisplayIncomingCall>(didDisplayIncomingCall);
     Logs().i('[VOIP] Initialized');
   }
 
@@ -179,12 +177,12 @@ class CallKeepManager {
   }
 
   Future<void> setOnHold(String callUUID, bool held) async {
-    await _callKeep.setOnHold(callUUID, held);
+    await _callKeep.setOnHold(uuid: callUUID, shouldHold: held);
     setCallHeld(callUUID, held);
   }
 
   Future<void> setMutedCall(String callUUID, bool muted) async {
-    await _callKeep.setMutedCall(callUUID, muted);
+    await _callKeep.setMutedCall(uuid: callUUID, shouldMute: muted);
     setCallMuted(callUUID, muted);
   }
 
@@ -192,14 +190,14 @@ class CallKeepManager {
     // Workaround because Android doesn't display well displayName, se we have to switch ...
     if (isIOS) {
       await _callKeep.updateDisplay(
-        callUUID,
-        displayName: 'New Name',
+        uuid: callUUID,
+        callerName: 'New Name',
         handle: callUUID,
       );
     } else {
       await _callKeep.updateDisplay(
-        callUUID,
-        displayName: callUUID,
+        uuid: callUUID,
+        callerName: callUUID,
         handle: 'New Name',
       );
     }
@@ -209,10 +207,9 @@ class CallKeepManager {
     final callKeeper = CallKeeper(this, call);
     addCall(call.callId, callKeeper);
     await _callKeep.displayIncomingCall(
-      call.callId,
-      '${call.room.getLocalizedDisplayname()} (FluffyChat)',
-      localizedCallerName:
-          '${call.room.getLocalizedDisplayname()} (FluffyChat)',
+      uuid: call.callId,
+      handle: '${call.room.getLocalizedDisplayname()} (FluffyChat)',
+      callerName: '${call.room.getLocalizedDisplayname()} (FluffyChat)',
       handleType: 'number',
       hasVideo: call.type == CallType.kVideo,
     );
@@ -237,8 +234,8 @@ class CallKeepManager {
             ),
             const Divider(),
             ListTile(
-              onTap: () => FlutterForegroundTask.openSystemAlertWindowSettings(
-                  forceOpen: true),
+              onTap: () =>
+                  FlutterForegroundTask.openSystemAlertWindowSettings(),
               title: const Text("appearOnTop"),
               subtitle: const Text("appearOnTopDetails"),
               trailing: const Icon(Icons.file_upload_rounded),
@@ -256,7 +253,7 @@ class CallKeepManager {
   }
 
   void openCallingAccountsPage(BuildContext context) async {
-    await _callKeep.setup(context, <String, dynamic>{
+    await _callKeep.setup(options: <String, dynamic>{
       'ios': <String, dynamic>{
         'appName': appName,
       },
@@ -265,7 +262,7 @@ class CallKeepManager {
     final hasPhoneAccount = await _callKeep.hasPhoneAccount();
     Logs().e(hasPhoneAccount.toString());
     if (!hasPhoneAccount) {
-      await _callKeep.hasDefaultPhoneAccount(context, alertOptions);
+      await _callKeep.hasDefaultPhoneAccount(alertOptions);
     } else {
       await _callKeep.openPhoneAccounts();
     }
@@ -273,8 +270,8 @@ class CallKeepManager {
 
   /// CallActions.
   Future<void> answerCall(CallKeepPerformAnswerCallAction event) async {
-    final callUUID = event.callUUID;
-    final keeper = calls[event.callUUID]!;
+    final callUUID = event.callData.callUUID;
+    final keeper = calls[event.callData.callUUID]!;
     if (!keeper.connected) {
       Logs().e('answered');
       // Answer Call
