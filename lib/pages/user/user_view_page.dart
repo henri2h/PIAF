@@ -16,7 +16,9 @@ import 'package:piaf/partials/stories/stories_list.dart';
 import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:piaf/partials/utils/spaces/space_extension.dart';
 
+import '../../partials/chat_feed/posts/matrix_post_editor.dart';
 import '../../partials/components/minestrix/minestrix_title.dart';
+import '../../partials/dialogs/adaptative_dialogs.dart';
 import '../../partials/feed/topic_list_tile.dart';
 import '../../partials/app_title.dart';
 import '../../partials/post/post.dart';
@@ -287,16 +289,6 @@ class UserViewPageState extends State<UserViewPage>
                           controller: controller,
                           displayChat: false,
                           room: mroom?.room,
-                          leftBar: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              if (userId != null)
-                                UserProfileSelection(
-                                    userId: userId!,
-                                    onRoomSelected: selectRoom,
-                                    roomSelectedId: mroom?.id),
-                            ],
-                          ),
                           sidebarBuilder: ({required bool displayLeftBar}) =>
                               Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,18 +311,29 @@ class UserViewPageState extends State<UserViewPage>
                                 ),
                             ],
                           ),
-                          customHeaderText:
-                              isUserPage ? "My feed" : "User Feed",
+                          appBarTitle: Row(
+                            children: [
+                              Text(isUserPage ? "My feed" : "User Feed"),
+                            ],
+                          ),
                           customHeaderActionsButtons: [
                             if (isUserPage)
                               IconButton(
-                                  icon: const Icon(Icons.settings),
-                                  onPressed: () {
-                                    context.navigateTo(const SettingsRoute());
+                                  icon: const Icon(Icons.post_add),
+                                  onPressed: () async {
+                                    AdaptativeDialogs.show(
+                                        context: context,
+                                        title: "Create post",
+                                        builder: (BuildContext context) =>
+                                            PostEditorPage(
+                                                room: mroom?.room != null
+                                                    ? [mroom!.room!]
+                                                    : client
+                                                        .minestrixUserRoom));
                                   }),
                             if (isUserPage)
                               IconButton(
-                                  icon: const Icon(Icons.edit),
+                                  icon: const Icon(Icons.settings),
                                   onPressed: () {
                                     final space = client.getProfileSpace();
                                     if (space != null) {
@@ -489,13 +492,6 @@ class UserViewPageState extends State<UserViewPage>
                                                               mroom?.creatorId ==
                                                                   client
                                                                       .userID),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8.0),
-                                                        child: PostWriterModal(
-                                                            room: mroom?.room),
-                                                      )
                                                     ],
                                                   );
                                                 } else if ((i - 1) <

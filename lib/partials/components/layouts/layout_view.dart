@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
+import '../../utils/matrix_widget.dart';
 import '../chat/room_chat_card.dart';
 
 class LayoutView extends StatelessWidget {
@@ -23,7 +24,9 @@ class LayoutView extends StatelessWidget {
       this.displayChat = true,
       this.maxHeaderWidth = 1200,
       this.room,
-      this.rightBar});
+      this.appBarTitle,
+      this.rightBar})
+      : assert(!(customHeaderText != null && appBarTitle != null));
 
   final Widget? leftBar;
   final Widget? rightBar;
@@ -51,6 +54,8 @@ class LayoutView extends StatelessWidget {
   final double? headerHeight;
   final double maxHeaderWidth;
 
+  final Widget? appBarTitle;
+
   static Gradient noImageBoxDecoration(BuildContext context) => LinearGradient(
         begin: Alignment.topRight,
         end: Alignment.bottomLeft,
@@ -62,11 +67,6 @@ class LayoutView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? roomUrl = room?.avatar
-        ?.getThumbnail(room!.client,
-            width: 1000, height: 800, method: ThumbnailMethod.scale)
-        .toString();
-
     return Scaffold(
       appBar: !(customHeaderText == null &&
               customHeaderChild == null &&
@@ -85,6 +85,7 @@ class LayoutView extends StatelessWidget {
 
         final displayLaterals = constraints.maxWidth > maxHeaderWidth + 2 * 300;
         final headerRounded = constraints.minWidth >= maxHeaderWidth;
+        final client = Matrix.of(context).client;
 
         final header = ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxHeaderWidth),
@@ -92,25 +93,36 @@ class LayoutView extends StatelessWidget {
             padding: headerRounded && displayChat
                 ? const EdgeInsets.all(8.0)
                 : EdgeInsets.zero,
-            child: Container(
-              height: headerHeight,
-              decoration: BoxDecoration(
-                borderRadius: !headerRounded ? null : BorderRadius.circular(8),
-                image: roomUrl != null
-                    ? DecorationImage(
-                        image: CachedNetworkImageProvider(roomUrl),
-                        fit: BoxFit.cover)
-                    : null,
-                gradient:
-                    roomUrl != null ? null : noImageBoxDecoration(context),
-              ),
-              child: Column(
-                children: [
-                  if (headerChildBuilder != null)
-                    headerChildBuilder!(displaySideBar: displaySideBar),
-                ],
-              ),
-            ),
+            child: FutureBuilder<String?>(future: () async {
+              var uri = await room?.avatar?.getThumbnailUri(client,
+                  width: 1000, height: 800, method: ThumbnailMethod.scale);
+              return uri.toString();
+            }(), builder: (context, snapshot) {
+              final roomUrl = snapshot.data;
+
+              return Container(
+                height: headerHeight,
+                decoration: BoxDecoration(
+                  borderRadius:
+                      !headerRounded ? null : BorderRadius.circular(8),
+                  image: roomUrl != null
+                      ? DecorationImage(
+                          image: CachedNetworkImageProvider(roomUrl, headers: {
+                            "authorization": "Bearer ${client.accessToken}"
+                          }),
+                          fit: BoxFit.cover)
+                      : null,
+                  gradient:
+                      roomUrl != null ? null : noImageBoxDecoration(context),
+                ),
+                child: Column(
+                  children: [
+                    if (headerChildBuilder != null)
+                      headerChildBuilder!(displaySideBar: displaySideBar),
+                  ],
+                ),
+              );
+            }),
           ),
         );
 

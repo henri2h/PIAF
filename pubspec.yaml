@@ -133,6 +133,9 @@ dependencies:
   desktop_lifecycle: ^0.1.0
   flutter_datetime_picker_plus: ^2.1.0
   flutter_math_fork: ^0.7.2
+  shared_preferences: ^2.3.2
+  http: ^0.13.6
+  webrtc_interface: ^1.2.0
 
 
 dev_dependencies:

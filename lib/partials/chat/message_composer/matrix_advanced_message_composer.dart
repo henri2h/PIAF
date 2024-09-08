@@ -150,7 +150,7 @@ class MatrixAdvancedMessageComposerState
                             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: matrixComposerWidget)))
                 : Container(
-                    color: Theme.of(context).colorScheme.background,
+                    color: Theme.of(context).colorScheme.surface,
                     child: matrixComposerWidget);
           }),
         if (room?.canSendDefaultMessages == false ||
