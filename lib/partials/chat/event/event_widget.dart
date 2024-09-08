@@ -37,8 +37,6 @@ class RoomEventContext {
   bool get isPreEventFromSameId =>
       prevEvent?.type == EventTypes.Message &&
       prevEvent?.senderId == event.senderId &&
-      
-  
       !(prevEvent?.hasAttachment ?? false);
 
   bool get sentByUser => event.sentByUser;

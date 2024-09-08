@@ -181,7 +181,6 @@ class _ConvSettingsPermissionsState extends State<ConvSettingsPermissions> {
                           permissionName: getNameForPermission(item.toString()),
                           room: room,
                         ),
-                     
                     ],
                   ),
           );
