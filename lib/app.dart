@@ -90,7 +90,6 @@ class AppState extends State<App> {
                             builder: (context, snap) {
                               return MaterialApp.router(
                                 routerConfig: _appRouter.config(),
-                                debugShowCheckedModeBanner: false,
                                 theme: ThemeData(
                                   colorScheme:
                                       lightDynamic ?? _defaultLightColorScheme,
