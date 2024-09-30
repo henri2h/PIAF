@@ -9,4 +9,7 @@ abstract class SettingKeys {
   static const String showNoGoogle = 'fr.henri2h.minestrix.show_no_google';
   static const String ownStatusMessage = 'fr.henri2h.minestrix.status_msg';
   static const String sentry = 'sentry';
+
+  static String noEncryptionWarningShown =
+      "fr.henri2h.no_encryption_warning_shown";
 }

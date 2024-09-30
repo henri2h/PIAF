@@ -1,19 +1,16 @@
 // Copied from https://github.com/krille-chan/fluffychat/blob/c147330e05217f98efbcf441235c5f99396bf51d/lib/utils/matrix_sdk_extensions/flutter_matrix_sdk_database_builder.dart
 
-import 'dart:convert';
-import 'dart:math';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:matrix/matrix.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
-import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:universal_html/html.dart' as html;
 
 import '../platform_infos.dart';
+import 'cipher.dart';
 
 Future<DatabaseApi> flutterMatrixSdkDatabaseBuilder(Client client) async {
   MatrixSdkDatabase? database;
@@ -27,63 +24,81 @@ Future<MatrixSdkDatabase> _constructDatabase(Client client) async {
     html.window.navigator.storage?.persist();
     return MatrixSdkDatabase(client.clientName);
   }
-  if (PlatformInfos.isDesktop) {
-    final path = await getApplicationSupportDirectory();
-    return MatrixSdkDatabase(
-      client.clientName,
-      database: await ffi.databaseFactoryFfi.openDatabase(
-        '${path.path}/${client.clientName}',
-      ),
-      maxFileSize: 1024 * 1024 * 10,
-      fileStoragePath: path,
-      deleteFilesAfterDuration: const Duration(days: 30),
+
+  Directory? fileStorageLocation;
+  try {
+    fileStorageLocation = await getTemporaryDirectory();
+  } on MissingPlatformDirectoryException catch (_) {
+    Logs().w(
+      'No temporary directory for file cache available on this platform.',
     );
   }
 
-  final path = await getDatabasesPath();
-  const passwordStorageKey = 'database_password';
-  String? password;
+  final cipher = await getDatabaseCipher();
+  final path = await _getDatabasePath(client.clientName);
 
-  try {
-    // Workaround for secure storage is calling Platform.operatingSystem on web
-    if (kIsWeb) throw MissingPluginException();
+  // import the SQLite / SQLCipher shared objects / dynamic libraries
+  final factory =
+      createDatabaseFactoryFfi(ffiInit: SQfLiteEncryptionHelper.ffiInit);
 
-    const secureStorage = FlutterSecureStorage();
-    final containsEncryptionKey =
-        await secureStorage.read(key: passwordStorageKey) != null;
-    if (!containsEncryptionKey) {
-      final rng = Random.secure();
-      final list = Uint8List(32);
-      list.setAll(0, Iterable.generate(list.length, (i) => rng.nextInt(256)));
-      final newPassword = base64UrlEncode(list);
-      await secureStorage.write(
-        key: passwordStorageKey,
-        value: newPassword,
-      );
-    }
-    // workaround for if we just wrote to the key and it still doesn't exist
-    password = await secureStorage.read(key: passwordStorageKey);
-    if (password == null) throw MissingPluginException();
-  } on MissingPluginException catch (_) {
-    const FlutterSecureStorage()
-        .delete(key: passwordStorageKey)
-        .catchError((_) {});
-    Logs().i('Database encryption is not supported on this platform');
-  } catch (e, s) {
-    const FlutterSecureStorage()
-        .delete(key: passwordStorageKey)
-        .catchError((_) {});
-    Logs().w('Unable to init database encryption', e, s);
-  }
+  // migrate from potential previous SQLite database path to current one
+  await _migrateLegacyLocation(path, client.clientName);
+
+  // in case we got a cipher, we use the encryption helper
+  // to manage SQLite encryption
+  final helper = cipher == null
+      ? null
+      : SQfLiteEncryptionHelper(
+          factory: factory,
+          path: path,
+          cipher: cipher,
+        );
+
+  // check whether the DB is already encrypted and otherwise do so
+  await helper?.ensureDatabaseFileEncrypted();
+  final database = await factory.openDatabase(
+    path,
+    options: OpenDatabaseOptions(
+      version: 1,
+      // most important : apply encryption when opening the DB
+      onConfigure: helper?.applyPragmaKey,
+    ),
+  );
 
   return MatrixSdkDatabase(
     client.clientName,
-    database: await openDatabase(
-      '$path/${client.clientName}',
-      password: password,
-    ),
+    database: database,
     maxFileSize: 1024 * 1024 * 10,
-    fileStoragePath: await getTemporaryDirectory(),
+    fileStorageLocation: fileStorageLocation?.uri,
     deleteFilesAfterDuration: const Duration(days: 30),
   );
+}
+
+Future<String> _getDatabasePath(String clientName) async {
+  final databaseDirectory = PlatformInfos.isIOS || PlatformInfos.isMacOS
+      ? await getLibraryDirectory()
+      : await getApplicationSupportDirectory();
+
+  return join(databaseDirectory.path, '$clientName.sqlite'.replaceAll(" ", ""));
+}
+
+Future<void> _migrateLegacyLocation(
+  String sqlFilePath,
+  String clientName,
+) async {
+  final oldPath = PlatformInfos.isDesktop
+      ? (await getApplicationSupportDirectory()).path
+      : await getDatabasesPath();
+
+  final oldFilePath = join(oldPath, clientName);
+  if (oldFilePath == sqlFilePath) return;
+
+  final maybeOldFile = File(oldFilePath);
+  if (await maybeOldFile.exists()) {
+    Logs().i(
+      'Migrate legacy location for database from "$oldFilePath" to "$sqlFilePath"',
+    );
+    await maybeOldFile.copy(sqlFilePath);
+    await maybeOldFile.delete();
+  }
 }
