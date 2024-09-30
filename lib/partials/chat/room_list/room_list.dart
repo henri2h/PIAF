@@ -7,6 +7,9 @@ import 'package:piaf/partials/chat/room_list/room_list_items/room_list_item.dart
 import '../../../pages/chat/chat_lib/room_create/create_chat_page.dart';
 import '../search/matrix_chats_search.dart';
 import '../spaces/list/spaces_list.dart';
+import 'custom_list/no_rooms_list.dart';
+import 'custom_list/placeholder_list.dart';
+import 'custom_list/presence_list.dart';
 import 'room_list_explore.dart';
 import 'room_list_items/room_list_item_presence.dart';
 
@@ -116,7 +119,7 @@ class _RoomListState extends State<RoomList> {
                     builder: (context) => CreateChatPage(
                         client: client, onRoomSelected: onSelection)));
               },
-              label: const Text("Start chat"),
+              label: const Text("new chat"),
               icon: const Icon(Icons.message),
             )
           : null,
@@ -231,39 +234,7 @@ class _RoomListState extends State<RoomList> {
                                     if (presences == null)
                                       widget.sortedRooms != null
                                           ? widget.sortedRooms!.isEmpty
-                                              ? SliverList(
-                                                  key: const Key(
-                                                      "placeholder_list"),
-                                                  delegate:
-                                                      SliverChildBuilderDelegate(
-                                                    (BuildContext context,
-                                                            int i) =>
-                                                        Center(
-                                                            child: Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 80.0),
-                                                      child: Column(
-                                                        children: [
-                                                          const Icon(
-                                                              Icons
-                                                                  .message_outlined,
-                                                              size: 60),
-                                                          const SizedBox(
-                                                            height: 30,
-                                                          ),
-                                                          Text(
-                                                            "No rooms",
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodyLarge,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    )),
-                                                    childCount: 1,
-                                                  ))
+                                              ? NoRoomList()
                                               : SliverPadding(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -303,15 +274,7 @@ class _RoomListState extends State<RoomList> {
                                                                   .sortedRooms!
                                                                   .length)),
                                                 )
-                                          : SliverList(
-                                              key:
-                                                  const Key("placeholder_list"),
-                                              delegate:
-                                                  SliverChildBuilderDelegate(
-                                                (BuildContext context, int i) =>
-                                                    const MatrixRoomsListTileShimmer(),
-                                                childCount: 5,
-                                              ))
+                                          : PlaceholderList()
                                   ],
                                 );
                               }),
@@ -319,33 +282,5 @@ class _RoomListState extends State<RoomList> {
               ],
             ),
     );
-  }
-}
-
-class PresenceList extends StatelessWidget {
-  const PresenceList({
-    super.key,
-    required this.presences,
-    required this.client,
-    required this.onSelection,
-  });
-
-  final List<CachedPresence>? presences;
-  final Client client;
-  final Function(String? p1) onSelection;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverList(
-        delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-      final presence = presences![index];
-      return RoomListItemPresence(
-          client: client,
-          presence: presence,
-          onTap: () {
-            final room = client.getDirectChatFromUserId(presence.userid);
-            onSelection(room ?? presence.userid);
-          });
-    }, childCount: presences!.length));
   }
 }
