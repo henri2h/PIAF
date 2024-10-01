@@ -13,7 +13,6 @@ class SimpleRoomList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scrollController = ScrollController();
     return Consumer<ChatPageState>(builder: (context, controller, _) {
       final client = controller.client;
 
@@ -27,7 +26,6 @@ class SimpleRoomList extends StatelessWidget {
 
                   return RoomList(
                     controller: controller,
-                    scrollController: scrollController,
                     client: client,
                     sortedRooms: rooms,
                     isMobile: true,
