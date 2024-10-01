@@ -31,48 +31,20 @@ class MatrixUserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<CachedPresence>(
-        future: client?.fetchCurrentPresence(userId),
-        builder: (context, snapshot) {
-          final presence = snapshot.data;
-
-          final accentColor = presence?.currentlyActive == true
-              ? Theme.of(context).colorScheme.primary
-              : ElevationOverlay.applySurfaceTint(
-                  // apply card color
-                  Theme.of(context).colorScheme.surface,
-                  Theme.of(context).colorScheme.surfaceTint,
-                  60);
-
-          return Stack(
-            alignment: Alignment.topRight,
-            children: [
-              CircleAvatar(
-                radius: height != null ? height! / 2 : null,
-                backgroundColor: accentColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: CircleAvatar(
-                    radius: height != null ? (height! - 2) / 2 : null,
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: MatrixImageAvatar(
-                        url: avatarUrl,
-                        client: client,
-                        height: height,
-                        width: width,
-                        fit: true,
-                        defaultIcon: const Icon(Icons.person, size: 40),
-                        defaultText: name ?? userId,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        });
+    return Stack(
+      alignment: Alignment.topRight,
+      children: [
+        MatrixImageAvatar(
+          url: avatarUrl,
+          client: client,
+          height: height,
+          width: width,
+          fit: true,
+          defaultIcon: const Icon(Icons.person, size: 40),
+          defaultText: name ?? userId,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      ],
+    );
   }
 }
