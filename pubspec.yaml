@@ -69,7 +69,8 @@ dependencies:
   desktop_notifications: ^0.6.3
 
   # Calls
-  callkeep: ^0.4.0
+  callkeep: # need a new release after https://github.com/flutter-webrtc/callkeep/pull/190
+    git: https://github.com/flutter-webrtc/callkeep.git
   flutter_webrtc: ^0.11.1
   flutter_ringtone_player: ^4.0.0
 

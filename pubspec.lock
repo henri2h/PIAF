@@ -241,10 +241,11 @@ packages:
   callkeep:
     dependency: "direct main"
     description:
-      name: callkeep
-      sha256: e55bb9c0f90b6b6f0ab0e305e606e886eb13e152a372cd12068645c97e68339d
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: a3c46737b4467898321c51affbbc03a153169d40
+      url: "https://github.com/flutter-webrtc/callkeep.git"
+    source: git
     version: "0.4.0"
   camera:
     dependency: "direct main"
