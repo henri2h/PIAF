@@ -97,6 +97,12 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: ':roomId', page: OverrideRoomListRoomRoute.page),
         ]),
 
+        AutoRoute(path: 'todo', page: TabTodoRoute.page, children: [
+          AutoRoute(path: '', page: TodoListRoute.page),
+          AutoRoute(path: 'add', page: TodoListAddRoute.page),
+          AutoRoute(path: 'list', page: TodoRoomRoute.page)
+        ]),
+
         AutoRoute(path: 'desktop_login', page: DesktopLoginRoute.page),
         AutoRoute(path: 'mobile_login', page: MobileLoginRoute.page),
 

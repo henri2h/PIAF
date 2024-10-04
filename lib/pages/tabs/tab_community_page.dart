@@ -7,6 +7,6 @@ class TabCommunityPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AutoRouter();
+    return const AutoRouter(inheritNavigatorObservers: true);
   }
 }

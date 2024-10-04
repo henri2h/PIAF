@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:piaf/partials/home/notification_view.dart';
+import 'package:piaf/utils/autoroute_observer.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
 import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:provider/provider.dart';
 
 import '../partials/navigation/navigation_rail.dart';
 import '../router.gr.dart';
@@ -26,6 +28,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
   static const displayAppBarList = {
     "/home",
     "/stories",
+    "/todo",
     "/", // chat page
   };
 
@@ -36,14 +39,25 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     await m.roomsLoading;
   }
 
+  StreamSubscription? subscription;
   @override
   void initState() {
     super.initState();
     controller = StreamController.broadcast();
+    subscription = controller.stream.listen(onData);
   }
 
-  bool displayAppBar = false;
-  StreamController<UrlState>? controller;
+  void onData(String data) {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    subscription?.cancel();
+    super.dispose();
+  }
+
+  late StreamController<String> controller;
 
   @override
   Widget build(BuildContext context) {
@@ -53,40 +67,30 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     // TODO: See if the Voip View still display correctly even if the context is not beeing updated
     //Matrix.of(context).context = context;
 
+    // Set the color of bellow the navigation bar
+    setBellowNavigationBarColorForAndroid(context, true);
+
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 850;
 
       return AutoTabsRouter(
+        navigatorObservers: () {
+          return [MyObserver(controller)];
+        },
         homeIndex: 1,
         builder: (context, widget) {
           final path = AutoRouterDelegate.of(context).urlState;
-          controller?.add(path);
-
           bool shouldDisplayAppBar =
               displayAppBarList.contains(path.uri.toString());
 
-          if (displayAppBar != shouldDisplayAppBar) {
-            SchedulerBinding.instance.addPostFrameCallback((_) {
-              setState(() {
-                displayAppBar = shouldDisplayAppBar;
-              });
-            });
-          }
-
-          final hideNavBar = isWideScreen || !displayAppBar;
-
-          setBellowNavigationBarColorForAndroid(context, hideNavBar);
+          final hideNavBar = isWideScreen || !shouldDisplayAppBar;
 
           final tabsRouter = AutoTabsRouter.of(context);
+
           return Scaffold(
             body: Row(
               children: [
-                if (isWideScreen)
-                  StreamBuilder<UrlState>(
-                      stream: controller?.stream,
-                      builder: (context, snapshot) {
-                        return MinestrixNavigationRail(path: snapshot.data);
-                      }),
+                if (isWideScreen) MinestrixNavigationRail(path: path),
                 Expanded(
                     child: Column(
                   children: [
@@ -133,6 +137,8 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                               }),
                           label: "Chats"),
                       const NavigationDestination(
+                          icon: Icon(Icons.list), label: "Todo"),
+                      const NavigationDestination(
                           icon: Icon(Icons.web_stories), label: "Stories"),
                     ],
                   ),
@@ -142,6 +148,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
         routes: const [
           TabHomeRoute(),
           TabChatRoute(),
+          TabTodoRoute(),
           TabStoriesRoute(),
         ],
       );

@@ -76,7 +76,8 @@ class TabChatPageState extends State<TabChatPage> {
                           ),
                         )),
                   ),
-                const Expanded(child: AutoRouter()),
+                const Expanded(
+                    child: AutoRouter(inheritNavigatorObservers: true)),
               ],
             );
           }),

@@ -2,8 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
-class TabCalendarPage extends StatelessWidget {
-  const TabCalendarPage({super.key});
+class TabTodoPage extends StatelessWidget {
+  const TabTodoPage({super.key});
 
   @override
   Widget build(BuildContext context) {
