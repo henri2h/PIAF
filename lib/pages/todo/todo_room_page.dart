@@ -46,16 +46,17 @@ class _TodoRoomPageState extends State<TodoRoomPage> {
             builder: (context, snapshot) {
               final timeline = snapshot.data;
 
-              final events = (timeline?.events ?? [])
-                  .where((event) =>
-                      event.type == MatrixTypes.todo && !event.redacted)
-                  .toList();
-
               return Column(
                 children: [
                   StreamBuilder<Object>(
                       stream: widget.room.onRoomInSync(),
                       builder: (context, snapshot) {
+                        final events = (timeline?.events ?? [])
+                            .where((event) =>
+                                event.type == MatrixTypes.todo &&
+                                !event.redacted)
+                            .toList();
+
                         return Expanded(
                           child: ListView.builder(
                               itemCount: events.length,
