@@ -14,13 +14,13 @@ class RoomListItem extends StatelessWidget {
     required this.room,
     required this.client,
     required this.onSelection,
-    required this.open,
+    required this.opened,
     required this.onLongPress,
     this.selected = false,
   });
 
   final Room room;
-  final bool open;
+  final bool opened;
   final Client client;
   final void Function(String) onSelection;
   final VoidCallback onLongPress;
@@ -41,7 +41,7 @@ class RoomListItem extends StatelessWidget {
         onSelection(room.id);
       },
       onLongPress: onLongPress,
-      color: open || selected ? Theme.of(context).highlightColor : null,
+      color: opened || selected ? Theme.of(context).highlightColor : null,
       minWidth: 0,
       padding: EdgeInsets.zero,
       elevation: 0,

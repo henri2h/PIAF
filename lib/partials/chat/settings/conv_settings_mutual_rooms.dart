@@ -73,7 +73,7 @@ class MutualRoomsWidget extends StatelessWidget {
                     return RoomListItem(
                       key: Key("room_${r.id}"),
                       room: r,
-                      open: r == room,
+                      opened: r == room,
                       client: r.client,
                       onSelection: (_) {},
                       onLongPress: () {},

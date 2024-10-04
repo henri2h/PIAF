@@ -2,13 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'no_room_selected.dart';
-import 'provider/chat_page_state.dart';
-import '../../room_page.dart';
+import 'chat_lib/chat_page_items/no_room_selected.dart';
+import 'chat_lib/chat_page_items/provider/chat_page_state.dart';
+import 'room_page.dart';
 
 @RoutePage()
-class ChatPageRoom extends StatelessWidget {
-  const ChatPageRoom({super.key, this.displaySettingsOnDesktop = false});
+class ChatRoomPage extends StatelessWidget {
+  const ChatRoomPage({super.key, this.displaySettingsOnDesktop = false});
   final bool displaySettingsOnDesktop;
   @override
   Widget build(BuildContext context) {

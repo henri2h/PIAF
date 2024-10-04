@@ -183,73 +183,67 @@ class _RoomListState extends State<RoomList> {
                       widget.controller.selectRoom(roomId);
                     },
                   )
-                : widget.controller.displaySpaceList
-                    ? ChatPageSpaceList(
-                        popAfterSelection: isMobile,
-                        scrollController: spaceListScrollController,
-                      )
-                    : FutureBuilder(
-                        future: client.roomsLoading, // Refresh the room
-                        // list when client has finished loading.
-                        builder: (context, snapshot) {
-                          return CustomScrollView(
-                            cacheExtent: 400,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            controller: scrollController,
-                            slivers: [
-                              // Room list selector
-                              FilterBar(
-                                roomListSelectorHeight: roomListSelectorHeight,
-                                controller: widget.controller,
-                              ),
-                              if (presences != null)
-                                PresenceList(
-                                    presences: presences,
-                                    client: client,
-                                    onSelection: onSelection),
-                              if (presences == null)
-                                widget.sortedRooms != null
-                                    ? widget.sortedRooms!.isEmpty
-                                        ? NoRoomList()
-                                        : SliverPadding(
-                                            padding: const EdgeInsets.only(
-                                                top: 8, bottom: 60),
-                                            sliver: SliverList(
-                                                delegate:
-                                                    SliverChildBuilderDelegate(
-                                                        (BuildContext context,
-                                                            int i) {
-                                              Room r = widget.sortedRooms![i];
-                                              return RoomListItem(
-                                                key: Key("room_${r.id}"),
-                                                room: r,
-                                                open: !isMobile &&
-                                                    r.id == selectedRoomId,
-                                                selected: selectedRooms
-                                                    .contains(r.id),
-                                                client: widget.client,
-                                                onSelection: (String text) {
-                                                  if (selectMode) {
-                                                    toggleElement(r.id);
-                                                  } else {
-                                                    onSelection(text);
-                                                  }
-                                                },
-                                                onLongPress: () {
-                                                  selectedRooms.add(r.id);
-                                                  enableSelection();
-                                                },
-                                              );
+                : FutureBuilder(
+                    future: client.roomsLoading, // Refresh the room
+                    // list when client has finished loading.
+                    builder: (context, snapshot) {
+                      return CustomScrollView(
+                        cacheExtent: 400,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        controller: scrollController,
+                        slivers: [
+                          // Room list selector
+                          FilterBar(
+                            roomListSelectorHeight: roomListSelectorHeight,
+                            controller: widget.controller,
+                          ),
+                          if (presences != null)
+                            PresenceList(
+                                presences: presences,
+                                client: client,
+                                onSelection: onSelection),
+                          if (presences == null)
+                            widget.sortedRooms != null
+                                ? widget.sortedRooms!.isEmpty
+                                    ? NoRoomList()
+                                    : SliverPadding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8, bottom: 60),
+                                        sliver: SliverList(
+                                            delegate:
+                                                SliverChildBuilderDelegate(
+                                                    (BuildContext context,
+                                                        int i) {
+                                          Room r = widget.sortedRooms![i];
+                                          return RoomListItem(
+                                            key: Key("room_${r.id}"),
+                                            room: r,
+                                            opened: !isMobile &&
+                                                r.id == selectedRoomId,
+                                            selected:
+                                                selectedRooms.contains(r.id),
+                                            client: widget.client,
+                                            onSelection: (String text) {
+                                              if (selectMode) {
+                                                toggleElement(r.id);
+                                              } else {
+                                                onSelection(text);
+                                              }
                                             },
-                                                        childCount: widget
-                                                            .sortedRooms!
-                                                            .length)),
-                                          )
-                                    : PlaceholderList(),
-                              SliverFillRemaining(),
-                            ],
-                          );
-                        }),
+                                            onLongPress: () {
+                                              selectedRooms.add(r.id);
+                                              enableSelection();
+                                            },
+                                          );
+                                        },
+                                                    childCount: widget
+                                                        .sortedRooms!.length)),
+                                      )
+                                : PlaceholderList(),
+                          SliverFillRemaining(),
+                        ],
+                      );
+                    }),
           ),
         ],
       ),

@@ -1,13 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:piaf/partials/chat/room_list/simple_room_list.dart';
-
 import 'package:piaf/pages/chat/chat_lib/chat_page_items/provider/chat_page_provider.dart';
+import 'package:piaf/partials/chat/room_list/simple_room_list.dart';
 import 'package:piaf/partials/chat/spaces/list/spaces_list.dart';
-
+import 'package:piaf/partials/utils/extensions/matrix/room_extension.dart';
 import 'package:piaf/partials/utils/matrix_widget.dart';
 import 'package:provider/provider.dart';
 
+import '../../config/matrix_types.dart';
 import '../../router.gr.dart';
 
 @RoutePage()
@@ -26,8 +26,13 @@ class TabChatPageState extends State<TabChatPage> {
   bool mobile = true;
   Future<void> onRoomSelected(String? id) async {
     if (id != null) {
-      await context.navigateTo(
-          OverrideRoomListRoomRoute(displaySettingsOnDesktop: true));
+      final client = Matrix.of(context).client;
+      final room = client.getRoomById(id);
+      if (room?.type == MatrixTypes.todo) {
+        await context.pushRoute(TodoRoomRoute(room: room!));
+      } else {
+        await context.navigateTo(ChatRoomRoute(displaySettingsOnDesktop: true));
+      }
     } else {
       await context.navigateTo(const RoomListOrPlaceHolderRoute());
     }

@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:piaf/pages/chat/chat_lib/chat_page_items/chat_page_room.dart';
+import 'package:piaf/pages/chat/chat_room_page.dart';
 
 @RoutePage()
 class OverrideRoomListSpacePage extends StatelessWidget {
@@ -10,6 +10,6 @@ class OverrideRoomListSpacePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ChatPageRoom();
+    return const ChatRoomPage();
   }
 }

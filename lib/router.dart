@@ -45,6 +45,10 @@ class AppRouter extends RootStackRouter {
     ]),
   ];
 
+  static List<AutoRoute> todoRoutes = [
+    AutoRoute(path: 'list', page: TodoRoomRoute.page)
+  ];
+
   @override
   final List<AutoRoute> routes = [
     AutoRoute(page: MainRouterRoute.page, initial: true, children: [
@@ -97,14 +101,15 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: '', page: RoomListOrPlaceHolderRoute.page),
           AutoRoute(path: 'space', page: OverrideRoomListSpaceRoute.page),
           AutoRoute(path: 'space/:spaceId', page: OverrideRoomSpaceRoute.page),
-          AutoRoute(path: ':roomId', page: OverrideRoomListRoomRoute.page),
+          AutoRoute(path: ':roomId', page: ChatRoomRoute.page),
           ...settingsRoutes,
+          ...todoRoutes
         ]),
 
         AutoRoute(path: 'todo', page: TabTodoRoute.page, children: [
           AutoRoute(path: '', page: TodoListRoute.page),
           AutoRoute(path: 'add', page: TodoListAddRoute.page),
-          AutoRoute(path: 'list', page: TodoRoomRoute.page)
+          ...todoRoutes
         ]),
 
         AutoRoute(path: 'desktop_login', page: DesktopLoginRoute.page),

@@ -91,7 +91,7 @@ class RoomListItemSlidableState extends State<RoomListItemSlidable> {
       child: RoomListItem(
         key: Key("room_${widget.r.id}"),
         room: widget.r,
-        open: widget.r.id == widget.selectedRoomId,
+        opened: widget.r.id == widget.selectedRoomId,
         client: widget.client,
         onSelection: widget.onSelection,
         onLongPress: widget.onLongPress,
