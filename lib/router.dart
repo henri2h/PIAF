@@ -25,6 +25,26 @@ class AppRouter extends RootStackRouter {
     AutoRoute(path: 'social_page_settings', page: SocialSettingsRoute.page),
   ];
 
+  static List<AutoRoute> settingsRoutes = [
+    AutoRoute(path: 'settings', page: SettingsRoute.page, children: [
+      AutoRoute(
+        path: '',
+        page: SettingsPanelInnerRoute.page,
+      ),
+      AutoRoute(path: 'account', page: SettingsAccountRoute.page),
+      AutoRoute(path: 'account_switch', page: SettingsAccountSwitchRoute.page),
+      AutoRoute(path: 'theme', page: SettingsThemeRoute.page),
+      AutoRoute(path: 'security', page: SettingsSecurityRoute.page),
+      AutoRoute(path: 'labs', page: SettingsLabsRoute.page),
+      AutoRoute(path: 'sync', page: SettingsSyncRoute.page),
+      AutoRoute(path: 'storys', page: SettingsStorysRoute.page),
+      AutoRoute(path: 'story', page: SettingsStorysDetailRoute.page),
+      AutoRoute(path: 'accounts', page: SettingsFeedsRoute.page),
+      AutoRoute(path: 'debug', page: DebugRoute.page),
+      AutoRoute(path: 'chat/:roomId', page: RoomRoute.page),
+    ]),
+  ];
+
   @override
   final List<AutoRoute> routes = [
     AutoRoute(page: MainRouterRoute.page, initial: true, children: [
@@ -51,24 +71,7 @@ class AppRouter extends RootStackRouter {
               path: 'recommandations', page: FollowRecommendationsRoute.page),
           AutoRoute(
               path: 'social_page_settings', page: SocialSettingsRoute.page),
-          AutoRoute(path: 'settings', page: SettingsRoute.page, children: [
-            AutoRoute(
-              path: '',
-              page: SettingsPanelInnerRoute.page,
-            ),
-            AutoRoute(path: 'account', page: SettingsAccountRoute.page),
-            AutoRoute(
-                path: 'account_switch', page: SettingsAccountSwitchRoute.page),
-            AutoRoute(path: 'theme', page: SettingsThemeRoute.page),
-            AutoRoute(path: 'security', page: SettingsSecurityRoute.page),
-            AutoRoute(path: 'labs', page: SettingsLabsRoute.page),
-            AutoRoute(path: 'sync', page: SettingsSyncRoute.page),
-            AutoRoute(path: 'storys', page: SettingsStorysRoute.page),
-            AutoRoute(path: 'story', page: SettingsStorysDetailRoute.page),
-            AutoRoute(path: 'accounts', page: SettingsFeedsRoute.page),
-            AutoRoute(path: 'debug', page: DebugRoute.page),
-            AutoRoute(path: 'chat/:roomId', page: RoomRoute.page),
-          ]),
+          ...settingsRoutes,
           ...communityRoutes,
           ...calendarRoutes,
           AutoRoute(path: 'feeds/search', page: SearchRoute.page),
@@ -95,6 +98,7 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'space', page: OverrideRoomListSpaceRoute.page),
           AutoRoute(path: 'space/:spaceId', page: OverrideRoomSpaceRoute.page),
           AutoRoute(path: ':roomId', page: OverrideRoomListRoomRoute.page),
+          ...settingsRoutes,
         ]),
 
         AutoRoute(path: 'todo', page: TabTodoRoute.page, children: [

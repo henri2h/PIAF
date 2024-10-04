@@ -21,28 +21,46 @@ class _AccountSelectionButtonState extends State<AccountSelectionButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(builder: (context) {
-      final client = Matrix.of(context).client;
-      return IconButton(
-        key: anchorKey,
-        onPressed: () {
-          Navigator.of(context).push(PopupRouteWrapper(
-              anchorKeyContext: anchorKey.currentContext,
-              builder: (rect) => AccountSelectionPopup(
-                    position: rect,
-                  )));
-        },
-        icon: FutureBuilder<Profile>(
-            future: client.fetchOwnProfile(),
-            builder: (context, snap) {
-              return MatrixImageAvatar(
-                url: snap.data?.avatarUrl,
-                client: client,
-                defaultText: snap.data?.displayName ?? client.userID!,
-              );
-            }),
-      );
-    });
+    return Center(
+      child: Builder(builder: (context) {
+        final client = Matrix.of(context).client;
+        return AccountButton(
+            key: anchorKey,
+            onPressed: () {
+              Navigator.of(context).push(PopupRouteWrapper(
+                  anchorKeyContext: anchorKey.currentContext,
+                  builder: (rect) => AccountSelectionPopup(
+                        position: rect,
+                      )));
+            },
+            client: client);
+      }),
+    );
+  }
+}
+
+class AccountButton extends StatelessWidget {
+  const AccountButton(
+      {super.key, required this.client, required this.onPressed});
+
+  final Client client;
+  final VoidCallback onPressed;
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: FutureBuilder<Profile>(
+          future: client.fetchOwnProfile(),
+          builder: (context, snap) {
+            return MatrixImageAvatar(
+              url: snap.data?.avatarUrl,
+              client: client,
+              width: 34,
+              height: 34,
+              defaultText: snap.data?.displayName ?? client.userID!,
+            );
+          }),
+    );
   }
 }
 

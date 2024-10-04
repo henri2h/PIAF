@@ -23,8 +23,6 @@ class AppWrapperPage extends StatefulWidget {
 }
 
 class _AppWrapperPageState extends State<AppWrapperPage> {
-  Future<void>? loadFuture;
-
   static const displayAppBarList = {
     "/home",
     "/stories",
@@ -32,11 +30,11 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     "/", // chat page
   };
 
-  /// bah dirty
-
-  Future<void> load() async {
+  Future<bool>? loadFuture;
+  Future<bool> load() async {
     final m = Matrix.of(context).client;
     await m.roomsLoading;
+    return true;
   }
 
   StreamSubscription? subscription;
@@ -73,85 +71,99 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
     return LayoutBuilder(builder: (context, constraints) {
       bool isWideScreen = constraints.maxWidth > 850;
 
-      return AutoTabsRouter(
-        navigatorObservers: () {
-          return [MyObserver(controller)];
-        },
-        homeIndex: 1,
-        builder: (context, widget) {
-          final path = AutoRouterDelegate.of(context).urlState;
-          bool shouldDisplayAppBar =
-              displayAppBarList.contains(path.uri.toString());
+      return FutureBuilder(
+          future: loadFuture,
+          builder: (context, snapshot) {
+            if (snapshot.hasData == false) {
+              return Center(child: CircularProgressIndicator());
+            }
 
-          final hideNavBar = isWideScreen || !shouldDisplayAppBar;
+            return AutoTabsRouter(
+              navigatorObservers: () {
+                return [MyObserver(controller)];
+              },
+              homeIndex: 1,
+              builder: (context, widget) {
+                final path = AutoRouterDelegate.of(context).urlState;
+                bool shouldDisplayAppBar =
+                    displayAppBarList.contains(path.uri.toString());
 
-          final tabsRouter = AutoTabsRouter.of(context);
+                final hideNavBar = isWideScreen || !shouldDisplayAppBar;
 
-          return Scaffold(
-            body: Row(
-              children: [
-                if (isWideScreen) MinestrixNavigationRail(path: path),
-                Expanded(
-                    child: Column(
-                  children: [
-                    if (isWideScreen)
-                      const SizedBox(
-                        height: 6,
-                      ),
-                    Expanded(child: widget),
-                  ],
-                )),
-              ],
-            ),
-            bottomNavigationBar: hideNavBar
-                ? null
-                : NavigationBar(
-                    selectedIndex: tabsRouter.activeIndex,
-                    onDestinationSelected: (index) {
-                      // here we switch between tabs
-                      tabsRouter.setActiveIndex(index);
-                    },
-                    destinations: [
-                      const NavigationDestination(
-                          icon: Icon(Icons.home), label: "Home"),
-                      NavigationDestination(
-                          icon: StreamBuilder(
-                              stream: Matrix.of(context).onClientChange.stream,
-                              builder: (context, snap) {
-                                return StreamBuilder(
-                                    stream:
-                                        Matrix.of(context).client.onSync.stream,
-                                    builder: (context, _) {
-                                      int notif = Matrix.of(context)
-                                          .client
-                                          .totalNotificationsCount;
-                                      if (notif == 0) {
-                                        return const Icon(
-                                            Icons.message_outlined);
-                                      } else {
-                                        return Badge.count(
-                                            count: notif,
-                                            child: const Icon(Icons.message));
-                                      }
-                                    });
-                              }),
-                          label: "Chats"),
-                      const NavigationDestination(
-                          icon: Icon(Icons.list), label: "Todo"),
-                      const NavigationDestination(
-                          icon: Icon(Icons.web_stories), label: "Stories"),
+                final tabsRouter = AutoTabsRouter.of(context);
+
+                return Scaffold(
+                  body: Row(
+                    children: [
+                      if (isWideScreen) MinestrixNavigationRail(path: path),
+                      Expanded(
+                          child: Column(
+                        children: [
+                          if (isWideScreen)
+                            const SizedBox(
+                              height: 6,
+                            ),
+                          Expanded(child: widget),
+                        ],
+                      )),
                     ],
                   ),
-            endDrawer: const NotificationView(),
-          );
-        },
-        routes: const [
-          TabHomeRoute(),
-          TabChatRoute(),
-          TabTodoRoute(),
-          TabStoriesRoute(),
-        ],
-      );
+                  bottomNavigationBar: hideNavBar
+                      ? null
+                      : NavigationBar(
+                          selectedIndex: tabsRouter.activeIndex,
+                          onDestinationSelected: (index) {
+                            // here we switch between tabs
+                            tabsRouter.setActiveIndex(index);
+                          },
+                          destinations: [
+                            const NavigationDestination(
+                                icon: Icon(Icons.home), label: "Home"),
+                            NavigationDestination(
+                                icon: StreamBuilder(
+                                    stream: Matrix.of(context)
+                                        .onClientChange
+                                        .stream,
+                                    builder: (context, snap) {
+                                      return StreamBuilder(
+                                          stream: Matrix.of(context)
+                                              .client
+                                              .onSync
+                                              .stream,
+                                          builder: (context, _) {
+                                            int notif = Matrix.of(context)
+                                                .client
+                                                .totalNotificationsCount;
+                                            if (notif == 0) {
+                                              return const Icon(
+                                                  Icons.message_outlined);
+                                            } else {
+                                              return Badge.count(
+                                                  count: notif,
+                                                  child: const Icon(
+                                                      Icons.message));
+                                            }
+                                          });
+                                    }),
+                                label: "Chats"),
+                            const NavigationDestination(
+                                icon: Icon(Icons.list), label: "Todo"),
+                            const NavigationDestination(
+                                icon: Icon(Icons.web_stories),
+                                label: "Stories"),
+                          ],
+                        ),
+                  endDrawer: const NotificationView(),
+                );
+              },
+              routes: const [
+                TabHomeRoute(),
+                TabChatRoute(),
+                TabTodoRoute(),
+                TabStoriesRoute(),
+              ],
+            );
+          });
     });
   }
 

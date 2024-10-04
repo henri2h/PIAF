@@ -1,10 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/pages/chat/chat_lib/chat_page_items/chat_page_spaces_list.dart';
 import 'package:piaf/pages/chat/chat_lib/chat_page_items/provider/chat_page_state.dart';
 import 'package:piaf/partials/chat/room_list/room_list_items/room_list_item.dart';
+import 'package:piaf/router.gr.dart';
 
 import '../../../pages/chat/chat_lib/room_create/create_chat_page.dart';
+import '../../account_selection_button.dart';
 import '../search/matrix_chats_search.dart';
 import '../spaces/list/spaces_list.dart';
 import 'custom_list/no_rooms_list.dart';
@@ -34,8 +37,6 @@ class RoomList extends StatefulWidget {
 }
 
 class _RoomListState extends State<RoomList> {
-  bool spaceSelectionMode = false;
-
   Function(String?) get onSelection => (String? roomId) {
         widget.controller.selectRoom(roomId);
       };
@@ -115,181 +116,143 @@ class _RoomListState extends State<RoomList> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: isHome
-          ? FloatingActionButton.extended(
+          ? FloatingActionButton(
               onPressed: () async {
                 await Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => CreateChatPage(
                         client: client, onRoomSelected: onSelection)));
               },
-              label: const Text("new chat"),
-              icon: const Icon(Icons.message),
+              child: const Icon(Icons.message),
             )
           : null,
-      drawer: Drawer(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        child: SafeArea(
-          child: ChatPageSpaceList(
-              popAfterSelection: true,
-              scrollController: scrollControllerDrawer),
-        ),
-      ),
-      appBar: spaceSelectionMode
-          ? AppBar(
-              title: const Text("Filter chats"),
-              leading: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () {
-                  setState(() {
-                    spaceSelectionMode = false;
-                  });
+      appBar: selectMode == true
+          ? AppBar(actions: [
+              IconButton(
+                  onPressed: disableSelection, icon: const Icon(Icons.close))
+            ], automaticallyImplyLeading: false, title: const Text("Edit"))
+          : AppBar(
+              forceMaterialTransparency: true,
+              title: Text(title),
+              leading: AccountButton(
+                client: client,
+                onPressed: () async {
+                  await context
+                      .navigateTo(TabHomeRoute(children: [SettingsRoute()]));
                 },
               ),
-            )
-          : selectMode == true
-              ? AppBar(actions: [
+              actions: [
+                if (isHome)
                   IconButton(
-                      onPressed: disableSelection,
-                      icon: const Icon(Icons.close))
-                ], automaticallyImplyLeading: false, title: const Text("Edit"))
-              : AppBar(
-                  leading: IconButton(
-                    icon: const Icon(Icons.menu),
-                    onPressed: () {
-                      setState(() {
-                        spaceSelectionMode = true;
-                      });
-                    },
-                  ),
-                  title: Text(title),
-                  actions: [
-                    if (isHome)
-                      IconButton(
-                          onPressed: () async {
-                            final id =
-                                await MatrixChatsSearch.show(context, client);
-                            if (id != null) {
-                              widget.controller.selectRoom(id);
-                            }
-                          },
-                          icon: const Icon(Icons.search)),
-                    if (spaceRoom != null)
-                      IconButton(
-                          onPressed: () {
-                            widget.controller.onLongPressedSpace(selectedSpace);
-                          },
-                          icon: const Icon(Icons.info))
-                  ],
-                ),
-      body: spaceSelectionMode
-          ? ChatPageSpaceList(
-              onSelection: () {
-                setState(() {
-                  spaceSelectionMode = false;
-                });
-              },
-              popAfterSelection: false,
-              scrollController: scrollControllerDrawer)
-          : Column(
-              children: [
-                StreamBuilder<SyncStatusUpdate>(
-                    stream: client.onSyncStatus.stream,
-                    builder: (context, snap) {
-                      if (snap.hasData) {
-                        if (snap.data!.status == SyncStatus.processing &&
-                            ![null, 0, 1.0].contains(snap.data!.progress)) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: LinearProgressIndicator(
-                                value: snap.data!.progress!),
-                          );
+                      onPressed: () async {
+                        final id =
+                            await MatrixChatsSearch.show(context, client);
+                        if (id != null) {
+                          widget.controller.selectRoom(id);
                         }
-                      }
-                      return Container();
-                    }),
-                Expanded(
-                  child: selectedSpace == CustomSpacesTypes.explore
-                      ? RoomListExplore(
-                          onSelect: (String roomId) {
-                            widget.controller.selectRoom(roomId);
-                          },
-                        )
-                      : widget.controller.displaySpaceList
-                          ? ChatPageSpaceList(
-                              popAfterSelection: isMobile,
-                              scrollController: spaceListScrollController,
-                            )
-                          : FutureBuilder(
-                              future: client.roomsLoading, // Refresh the room
-                              // list when client has finished loading.
-                              builder: (context, snapshot) {
-                                return CustomScrollView(
-                                  cacheExtent: 400,
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  controller: scrollController,
-                                  slivers: [
-                                    // Room list selector
-                                    FilterBar(
-                                      roomListSelectorHeight:
-                                          roomListSelectorHeight,
-                                      controller: widget.controller,
-                                    ),
-                                    if (presences != null)
-                                      PresenceList(
-                                          presences: presences,
-                                          client: client,
-                                          onSelection: onSelection),
-                                    if (presences == null)
-                                      widget.sortedRooms != null
-                                          ? widget.sortedRooms!.isEmpty
-                                              ? NoRoomList()
-                                              : SliverPadding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 8, bottom: 60),
-                                                  sliver: SliverList(
-                                                      delegate:
-                                                          SliverChildBuilderDelegate(
-                                                              (BuildContext
-                                                                      context,
-                                                                  int i) {
-                                                    Room r =
-                                                        widget.sortedRooms![i];
-                                                    return RoomListItem(
-                                                      key: Key("room_${r.id}"),
-                                                      room: r,
-                                                      open: !isMobile &&
-                                                          r.id ==
-                                                              selectedRoomId,
-                                                      selected: selectedRooms
-                                                          .contains(r.id),
-                                                      client: widget.client,
-                                                      onSelection:
-                                                          (String text) {
-                                                        if (selectMode) {
-                                                          toggleElement(r.id);
-                                                        } else {
-                                                          onSelection(text);
-                                                        }
-                                                      },
-                                                      onLongPress: () {
-                                                        selectedRooms.add(r.id);
-                                                        enableSelection();
-                                                      },
-                                                    );
-                                                  },
-                                                              childCount: widget
-                                                                  .sortedRooms!
-                                                                  .length)),
-                                                )
-                                          : PlaceholderList(),
-                                    SliverFillRemaining(),
-                                  ],
-                                );
-                              }),
-                ),
+                      },
+                      icon: const Icon(Icons.search)),
+                if (spaceRoom != null)
+                  IconButton(
+                      onPressed: () {
+                        widget.controller.onLongPressedSpace(selectedSpace);
+                      },
+                      icon: const Icon(Icons.info))
               ],
             ),
+      body: Column(
+        children: [
+          StreamBuilder<SyncStatusUpdate>(
+              stream: client.onSyncStatus.stream,
+              builder: (context, snap) {
+                if (snap.hasData) {
+                  if (snap.data!.status == SyncStatus.processing &&
+                      ![null, 0, 1.0].contains(snap.data!.progress)) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child:
+                          LinearProgressIndicator(value: snap.data!.progress!),
+                    );
+                  }
+                }
+                return Container();
+              }),
+          Expanded(
+            child: selectedSpace == CustomSpacesTypes.explore
+                ? RoomListExplore(
+                    onSelect: (String roomId) {
+                      widget.controller.selectRoom(roomId);
+                    },
+                  )
+                : widget.controller.displaySpaceList
+                    ? ChatPageSpaceList(
+                        popAfterSelection: isMobile,
+                        scrollController: spaceListScrollController,
+                      )
+                    : FutureBuilder(
+                        future: client.roomsLoading, // Refresh the room
+                        // list when client has finished loading.
+                        builder: (context, snapshot) {
+                          return CustomScrollView(
+                            cacheExtent: 400,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            controller: scrollController,
+                            slivers: [
+                              // Room list selector
+                              FilterBar(
+                                roomListSelectorHeight: roomListSelectorHeight,
+                                controller: widget.controller,
+                              ),
+                              if (presences != null)
+                                PresenceList(
+                                    presences: presences,
+                                    client: client,
+                                    onSelection: onSelection),
+                              if (presences == null)
+                                widget.sortedRooms != null
+                                    ? widget.sortedRooms!.isEmpty
+                                        ? NoRoomList()
+                                        : SliverPadding(
+                                            padding: const EdgeInsets.only(
+                                                top: 8, bottom: 60),
+                                            sliver: SliverList(
+                                                delegate:
+                                                    SliverChildBuilderDelegate(
+                                                        (BuildContext context,
+                                                            int i) {
+                                              Room r = widget.sortedRooms![i];
+                                              return RoomListItem(
+                                                key: Key("room_${r.id}"),
+                                                room: r,
+                                                open: !isMobile &&
+                                                    r.id == selectedRoomId,
+                                                selected: selectedRooms
+                                                    .contains(r.id),
+                                                client: widget.client,
+                                                onSelection: (String text) {
+                                                  if (selectMode) {
+                                                    toggleElement(r.id);
+                                                  } else {
+                                                    onSelection(text);
+                                                  }
+                                                },
+                                                onLongPress: () {
+                                                  selectedRooms.add(r.id);
+                                                  enableSelection();
+                                                },
+                                              );
+                                            },
+                                                        childCount: widget
+                                                            .sortedRooms!
+                                                            .length)),
+                                          )
+                                    : PlaceholderList(),
+                              SliverFillRemaining(),
+                            ],
+                          );
+                        }),
+          ),
+        ],
+      ),
     );
   }
 }
