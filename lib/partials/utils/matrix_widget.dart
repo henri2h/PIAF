@@ -34,18 +34,13 @@ class Matrix extends StatefulWidget {
 
   final Map<String, String>? queryParameters;
 
-  final String applicationName;
-
-  Matrix({
+  const Matrix({
     this.child,
     required this.context,
     required this.clients,
-    required this.applicationName,
     this.queryParameters,
     super.key,
-  }) {
-    AppConfig.applicationName = applicationName;
-  }
+  });
 
   @override
   MatrixState createState() => MatrixState();
@@ -164,7 +159,7 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
       return client;
     }
     final candidate = _loginClientCandidate ??= ClientManager.createClient(
-        '${widget.applicationName}-${DateTime.now().millisecondsSinceEpoch}')
+        '${AppConfig.applicationName}-${DateTime.now().millisecondsSinceEpoch}')
       ..onLoginStateChanged
           .stream
           .where((l) => l == LoginState.loggedIn)

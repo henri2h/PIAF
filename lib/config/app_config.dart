@@ -1,5 +1,5 @@
 abstract class AppConfig {
-  static String applicationName = ''; // set in MatrixWidget
+  static String applicationName = 'PIAF';
   static const String enablePushTutorial =
       'https://www.reddit.com/r/fluffychat/comments/qn6liu/enable_push_notifications_without_google_services/';
   static const String pushNotificationsChannelId = 'minestrix_push';

@@ -125,7 +125,7 @@ class BackgroundPush {
     if (PlatformInfos.isIOS) {
       await firebase?.requestPermission();
     }
-    final clientName = PlatformInfos.clientName;
+    final clientName = PlatformInfos.firstClientName;
     oldTokens ??= <String>{};
     final pushers = await (client.getPushers().catchError((e) {
           Logs().w('[Push] Unable to request pushers', e);

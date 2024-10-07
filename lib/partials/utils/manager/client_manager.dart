@@ -13,10 +13,12 @@ import '../platform_infos.dart';
 abstract class ClientManager {
   static String clientNamespace =
       'fr.minestrix.store.clients${kDebugMode ? '.debug' : ''}';
+
   static Future<List<Client>> getClients({bool initialize = true}) async {
     final clientNames = <String>{};
     try {
       final rawClientNames = await Store().getItem(clientNamespace);
+
       if (rawClientNames != null) {
         final clientNamesList =
             (jsonDecode(rawClientNames) as List).cast<String>();
@@ -27,7 +29,7 @@ abstract class ClientManager {
       await Store().deleteItem(clientNamespace);
     }
     if (clientNames.isEmpty) {
-      clientNames.add(PlatformInfos.clientName);
+      clientNames.add(PlatformInfos.firstClientName);
       await Store().setItem(clientNamespace, jsonEncode(clientNames.toList()));
     }
     final clients = clientNames.map(createClient).toList();

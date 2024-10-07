@@ -47,7 +47,6 @@ class AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return Matrix(
-      applicationName: 'PIAF',
       context: context,
       clients: widget.clients,
       child: Builder(

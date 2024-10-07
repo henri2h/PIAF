@@ -79,7 +79,7 @@ Future<String> _getDatabasePath(String clientName) async {
       ? await getLibraryDirectory()
       : await getApplicationSupportDirectory();
 
-  return join(databaseDirectory.path, '$clientName.sqlite'.replaceAll(" ", ""));
+  return join(databaseDirectory.path, '$clientName.sqlite');
 }
 
 Future<void> _migrateLegacyLocation(

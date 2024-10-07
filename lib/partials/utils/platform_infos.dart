@@ -33,6 +33,6 @@ abstract class PlatformInfos {
     return version;
   }
 
-  static String get clientName =>
-      '${AppConfig.applicationName} ${isWeb ? 'web' : Platform.operatingSystem}${kReleaseMode ? '' : 'Debug'}';
+  static String get firstClientName =>
+      '${AppConfig.applicationName}-${isWeb ? 'web' : Platform.operatingSystem}${kReleaseMode ? '' : '-debug'}';
 }
