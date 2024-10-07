@@ -4,7 +4,7 @@ import 'package:piaf/helpers/storage_manager.dart';
 import 'package:piaf/partials/utils/login/web_login_interface.dart';
 
 extension MatrixLoginExtension on Client {
-  Future<bool> customLoginAction(LoginType loginType,
+  Future<bool> customLoginAction(String loginType,
       {required String homeserver,
       String? user,
       String? password,
