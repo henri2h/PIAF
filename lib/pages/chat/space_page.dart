@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/partials/chat/room/room_title.dart';
 import 'package:piaf/partials/chat/room_list/room_list_items/room_list_item.dart';
 import 'package:piaf/router.gr.dart';
 
@@ -47,15 +47,17 @@ class _SpacePageState extends State<SpacePage> {
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
-    final room = client.getRoomById(widget.spaceId);
+    final space = client.getRoomById(widget.spaceId);
+
+    final children = space?.spaceChildren ?? [];
 
     return FutureBuilder(
-        future: room?.postLoad(),
+        future: space?.postLoad(),
         builder: (context, _) {
           return Scaffold(
             appBar: AppBar(
               title: Text(
-                "${room?.getLocalizedDisplayname()}",
+                "${space?.getLocalizedDisplayname()}",
               ),
             ),
             body: ListView(
@@ -67,7 +69,7 @@ class _SpacePageState extends State<SpacePage> {
                       constraints: const BoxConstraints(maxWidth: 600),
                       child: Row(
                         children: [
-                          if (room != null)
+                          if (space != null)
                             Padding(
                               padding: const EdgeInsets.only(right: 8.0),
                               child: MatrixImageAvatar(
@@ -75,26 +77,27 @@ class _SpacePageState extends State<SpacePage> {
                                   height: MinestrixAvatarSizeConstants.large,
                                   width: MinestrixAvatarSizeConstants.large,
                                   client: client,
-                                  url: room.avatar,
-                                  defaultText: room.getLocalizedDisplayname()),
+                                  url: space.avatar,
+                                  defaultText: space.getLocalizedDisplayname()),
                             ),
                           Expanded(
                               child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ListTile(
-                                  title: Text(room?.getLocalizedDisplayname() ??
-                                      widget.spaceId),
-                                  subtitle: room?.topic.isNotEmpty == true
-                                      ? Text(room!.topic)
+                                  title: Text(
+                                      space?.getLocalizedDisplayname() ??
+                                          widget.spaceId),
+                                  subtitle: space?.topic.isNotEmpty == true
+                                      ? Text(space!.topic)
                                       : null),
-                              if (room?.membership == Membership.invite)
+                              if (space?.membership == Membership.invite)
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8.0),
                                   child: FilledButton(
                                       onPressed: () async {
-                                        await room?.join();
+                                        await space?.join();
                                         if (mounted) {
                                           setState(() {});
                                         }
@@ -108,29 +111,29 @@ class _SpacePageState extends State<SpacePage> {
                     ),
                   ),
                 ),
-                if (room != null)
+                if (space != null)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
                         ListTile(
-                            leading: room.joinRules == JoinRules.public
+                            leading: space.joinRules == JoinRules.public
                                 ? const Icon(Icons.public)
                                 : const Icon(Icons.lock),
-                            title: Text(room.joinRules == JoinRules.public
+                            title: Text(space.joinRules == JoinRules.public
                                 ? "Public space"
                                 : "Private space")),
                         ListTile(
                           leading: const Icon(Icons.people),
                           title: Text(
-                              "${room.summary.mJoinedMemberCount} participants"),
+                              "${space.summary.mJoinedMemberCount} participants"),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
                             children: [
                               Expanded(
-                                child: RoomParticipantsIndicator(room: room),
+                                child: RoomParticipantsIndicator(room: space),
                               ),
                             ],
                           ),
@@ -151,22 +154,19 @@ class _SpacePageState extends State<SpacePage> {
                     ],
                   ),
                 ),
-                Builder(builder: (context) {
-                  final children = room?.spaceChildren ?? [];
-                  return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: children.length,
-                      itemBuilder: (BuildContext context, int i) {
-                        final space = children[i];
-                        if (space.roomId != null) {
-                          final room = client.getRoomById(space.roomId!);
-                          if (room != null) {
-                            return RoomListItem(room: room);
-                          }
+                ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: children.length,
+                    itemBuilder: (BuildContext context, int i) {
+                      final spaceChild = children[i];
+                      if (spaceChild.roomId != null) {
+                        final room = client.getRoomById(spaceChild.roomId!);
+                        if (room != null) {
+                          return RoomListItem(room: room);
                         }
-                        return null;
-                      });
-                }),
+                      }
+                      return null;
+                    }),
                 Divider(),
                 FutureBuilder<List<SpaceRoomsChunk>>(
                     future: rooms ??= loadRoomHierarchy(),
@@ -189,9 +189,22 @@ class _SpacePageState extends State<SpacePage> {
                                 itemCount: spaceChunks.length,
                                 itemBuilder: (BuildContext context, int i) {
                                   final spaceChunk = spaceChunks[i];
+                                  if (spaceChunk.roomId == space?.id) {
+                                    return null;
+                                  }
+
                                   final room =
                                       client.getRoomById(spaceChunk.roomId);
                                   if (room != null) {
+                                    // Check if this space has already beeen displayed previoulsly in the listView of the room.spaceChildren
+                                    final wasAlreadyDisplayed =
+                                        children.firstWhereOrNull((s) =>
+                                                s.roomId ==
+                                                spaceChunk.roomId) !=
+                                            null;
+                                    if (wasAlreadyDisplayed) {
+                                      return null;
+                                    }
                                     return RoomListItem(room: room);
                                   }
 
