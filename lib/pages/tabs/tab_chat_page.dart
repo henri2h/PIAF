@@ -53,15 +53,15 @@ class TabChatPageState extends State<TabChatPage> {
         onRoomSelection: onRoomSelected,
         onSpaceSelection: (String spaceId) async {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
-            await context.navigateTo(const OverrideRoomListSpaceRoute());
+            await context.navigateTo(ChatRoomRoute());
           } else {
             await context.navigateTo(const RoomListOrPlaceHolderRoute());
           }
         },
         onLongPressedSpace: (String? id) async {
           if (id != null) {
-            await context.navigateTo(OverrideRoomSpaceRoute(
-                spaceId: id, client: Matrix.of(context).client));
+            await context.navigateTo(
+                SpaceRoute(spaceId: id, client: Matrix.of(context).client));
           }
         },
 

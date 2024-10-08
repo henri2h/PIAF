@@ -59,7 +59,8 @@ class AppRouter extends RootStackRouter {
 // as it's distracting when typing messages
       AutoRoute(path: '', page: AppWrapperRoute.page, children: [
         AutoRoute(path: 'home', page: TabHomeRoute.page, children: [
-          AutoRoute(path: '', page: HomeRoute.page),
+          AutoRoute(path: '', page: HomeSpaceRoute.page),
+          AutoRoute(path: 'home', page: HomeRoute.page),
           AutoRoute(path: 'feed', page: FeedRoute.page),
           AutoRoute(path: 'feeds', page: FeedListRoute.page),
           AutoRoute(path: 'feeds/create', page: FeedCreationRoute.page),
@@ -99,8 +100,8 @@ class AppRouter extends RootStackRouter {
         // chats, initial page
         AutoRoute(path: '', page: TabChatRoute.page, children: [
           AutoRoute(path: '', page: RoomListOrPlaceHolderRoute.page),
-          AutoRoute(path: 'space', page: OverrideRoomListSpaceRoute.page),
-          AutoRoute(path: 'space/:spaceId', page: OverrideRoomSpaceRoute.page),
+          AutoRoute(path: 'space', page: ChatRoomRoute.page),
+          AutoRoute(path: 'space/:spaceId', page: SpaceRoute.page),
           AutoRoute(path: ':roomId', page: ChatRoomRoute.page),
           ...settingsRoutes,
           ...todoRoutes
