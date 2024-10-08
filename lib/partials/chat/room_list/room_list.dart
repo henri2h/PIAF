@@ -222,7 +222,6 @@ class _RoomListState extends State<RoomList> {
                                                 r.id == selectedRoomId,
                                             selected:
                                                 selectedRooms.contains(r.id),
-                                            client: widget.client,
                                             onSelection: (String text) {
                                               if (selectMode) {
                                                 toggleElement(r.id);

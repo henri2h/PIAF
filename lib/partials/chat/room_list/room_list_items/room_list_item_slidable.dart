@@ -10,14 +10,12 @@ class RoomListItemSlidable extends StatefulWidget {
     super.key,
     required this.r,
     required this.selectedRoomId,
-    required this.client,
     required this.onSelection,
     required this.onLongPress,
   });
 
   final Room r;
   final String? selectedRoomId;
-  final Client client;
   final Function(String?) onSelection;
   final VoidCallback onLongPress;
 
@@ -92,7 +90,6 @@ class RoomListItemSlidableState extends State<RoomListItemSlidable> {
         key: Key("room_${widget.r.id}"),
         room: widget.r,
         opened: widget.r.id == widget.selectedRoomId,
-        client: widget.client,
         onSelection: widget.onSelection,
         onLongPress: widget.onLongPress,
       ),

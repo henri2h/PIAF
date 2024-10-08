@@ -50,10 +50,7 @@ class MutualRoomsWidget extends StatelessWidget {
         builder: (context, snap) {
           if (!snap.hasData) {
             return const Column(
-              children: [
-                MatrixRoomsListTileShimmer(),
-                MatrixRoomsListTileShimmer()
-              ],
+              children: [RoomListItemShimmer(), RoomListItemShimmer()],
             );
           }
           final list = snap.data!.where((element) => element != room.id);
@@ -74,7 +71,6 @@ class MutualRoomsWidget extends StatelessWidget {
                       key: Key("room_${r.id}"),
                       room: r,
                       opened: r == room,
-                      client: r.client,
                       onSelection: (_) {},
                       onLongPress: () {},
                     );

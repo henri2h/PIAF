@@ -12,7 +12,7 @@ class PlaceholderList extends StatelessWidget {
     return SliverList(
         key: const Key("placeholder_list"),
         delegate: SliverChildBuilderDelegate(
-          (BuildContext context, int i) => const MatrixRoomsListTileShimmer(),
+          (BuildContext context, int i) => const RoomListItemShimmer(),
           childCount: 5,
         ));
   }

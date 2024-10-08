@@ -80,7 +80,6 @@ class UserInfoDialog extends StatelessWidget {
                               key: Key("room_${room.id}"),
                               room: room,
                               opened: room == user.room,
-                              client: room.client,
                               onLongPress: () {},
                               onSelection: (_) {});
                         }),

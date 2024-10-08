@@ -1,33 +1,37 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/utils/date_time_extension.dart';
 
+import '../../../../router.gr.dart';
 import '../../../chat_components/shimmer_widget.dart';
 import '../../../matrix/matrix_image_avatar.dart';
 import '../../../matrix/matrix_room_avatar.dart';
 import '../../../matrix/matrix_user_avatar.dart';
+import '../../../utils/matrix_widget.dart';
 import '../../matrix_notification_count_dot.dart';
 
 class RoomListItem extends StatelessWidget {
   const RoomListItem({
     super.key,
     required this.room,
-    required this.client,
-    required this.onSelection,
-    required this.opened,
-    required this.onLongPress,
+    this.onSelection,
+    this.opened = false,
+    this.onLongPress,
     this.selected = false,
   });
 
   final Room room;
   final bool opened;
-  final Client client;
-  final void Function(String) onSelection;
-  final VoidCallback onLongPress;
+
+  final void Function(String)? onSelection;
+  final VoidCallback? onLongPress;
   final bool selected;
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
+
     final bool isUnread = room.isUnreadOrInvited;
     final color = isUnread
         ? Theme.of(context).colorScheme.primary
@@ -37,8 +41,12 @@ class RoomListItem extends StatelessWidget {
     final directChatMatrixID = room.directChatMatrixID;
 
     return MaterialButton(
-      onPressed: () {
-        onSelection(room.id);
+      onPressed: () async {
+        if (onSelection != null) {
+          onSelection!(room.id);
+        } else {
+          await context.pushRoute(RoomRoute(roomId: room.id));
+        }
       },
       onLongPress: onLongPress,
       color: opened || selected ? Theme.of(context).highlightColor : null,
@@ -148,8 +156,8 @@ class RoomListItem extends StatelessWidget {
   }
 }
 
-class MatrixRoomsListTileShimmer extends StatelessWidget {
-  const MatrixRoomsListTileShimmer({
+class RoomListItemShimmer extends StatelessWidget {
+  const RoomListItemShimmer({
     super.key,
   });
 

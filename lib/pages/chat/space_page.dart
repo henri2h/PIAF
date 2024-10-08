@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/partials/chat/room/room_title.dart';
 import 'package:piaf/partials/chat/room_list/room_list_items/room_list_item.dart';
 import 'package:piaf/router.gr.dart';
 
@@ -27,6 +28,7 @@ class _SpacePageState extends State<SpacePage> {
   Future<List<SpaceRoomsChunk>>? rooms;
   Future<List<SpaceRoomsChunk>> loadRoomHierarchy() async {
     final client = Matrix.of(context).client;
+
     try {
       return (await client.getSpaceHierarchy(widget.spaceId)).rooms;
     } catch (e, s) {
@@ -77,12 +79,30 @@ class _SpacePageState extends State<SpacePage> {
                                   defaultText: room.getLocalizedDisplayname()),
                             ),
                           Expanded(
-                              child: ListTile(
+                              child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
                                   title: Text(room?.getLocalizedDisplayname() ??
                                       widget.spaceId),
-                                  subtitle: room?.topic != null
+                                  subtitle: room?.topic.isNotEmpty == true
                                       ? Text(room!.topic)
-                                      : null)),
+                                      : null),
+                              if (room?.membership == Membership.invite)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: FilledButton(
+                                      onPressed: () async {
+                                        await room?.join();
+                                        if (mounted) {
+                                          setState(() {});
+                                        }
+                                      },
+                                      child: Text("Join")),
+                                ),
+                            ],
+                          )),
                         ],
                       ),
                     ),
@@ -131,43 +151,67 @@ class _SpacePageState extends State<SpacePage> {
                     ],
                   ),
                 ),
+                Builder(builder: (context) {
+                  final children = room?.spaceChildren ?? [];
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: children.length,
+                      itemBuilder: (BuildContext context, int i) {
+                        final space = children[i];
+                        if (space.roomId != null) {
+                          final room = client.getRoomById(space.roomId!);
+                          if (room != null) {
+                            return RoomListItem(room: room);
+                          }
+                        }
+                        return null;
+                      });
+                }),
+                Divider(),
                 FutureBuilder<List<SpaceRoomsChunk>>(
                     future: rooms ??= loadRoomHierarchy(),
                     builder: (context, snap) {
-                      final rooms = snap.data;
+                      final spaceChunks = snap.data;
 
                       return Column(
                         children: [
-                          if (rooms == null)
+                          if (spaceChunks == null)
                             const Column(
                               children: [
-                                MatrixRoomsListTileShimmer(),
-                                MatrixRoomsListTileShimmer(),
-                                MatrixRoomsListTileShimmer(),
+                                RoomListItemShimmer(),
+                                RoomListItemShimmer(),
+                                RoomListItemShimmer(),
                               ],
                             ),
-                          if (rooms != null)
+                          if (spaceChunks != null)
                             ListView.builder(
                                 shrinkWrap: true,
-                                itemCount: rooms.length,
+                                itemCount: spaceChunks.length,
                                 itemBuilder: (BuildContext context, int i) {
-                                  final room = rooms[i];
+                                  final spaceChunk = spaceChunks[i];
+                                  final room =
+                                      client.getRoomById(spaceChunk.roomId);
+                                  if (room != null) {
+                                    return RoomListItem(room: room);
+                                  }
+
                                   return SpaceRoomListTile(
-                                      room: room,
+                                      room: spaceChunk,
                                       client: client,
                                       onPressed: () async {
-                                        await context.pushRoute(
-                                            RoomRoute(roomId: room.roomId));
+                                        await context.pushRoute(RoomRoute(
+                                            roomId: spaceChunk.roomId));
                                       },
                                       onJoinPressed: () async {
-                                        for (final r in rooms) {
+                                        for (final r in spaceChunks) {
                                           for (final rchild
                                               in r.childrenState) {
                                             if (rchild.stateKey ==
-                                                room.roomId) {
+                                                spaceChunk.roomId) {
                                               final via = rchild.content
                                                   .tryGetList<String>("via");
-                                              await client.joinRoom(room.roomId,
+                                              await client.joinRoom(
+                                                  spaceChunk.roomId,
                                                   serverName: via);
                                               setState(() {});
                                             }
