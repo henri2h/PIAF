@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../partials/calendar_events/calendar_event_create_widget.dart';
 import '../partials/components/layouts/custom_header.dart';
 import '../partials/editors/sections.dart';
 import 'settings/settings_feeds_page.dart';

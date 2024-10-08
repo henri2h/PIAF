@@ -28,9 +28,8 @@ class _HomeSpacePageState extends State<HomeSpacePage> {
               ListTile(
                 title: Text(space.getLocalizedDisplayname()),
                 onTap: () {
-                  context.navigateTo(TabChatRoute(children: [
-                    SpaceRoute(spaceId: space.id, client: client)
-                  ]));
+                  context
+                      .pushRoute(SpaceRoute(spaceId: space.id));
                 },
               )
           ],

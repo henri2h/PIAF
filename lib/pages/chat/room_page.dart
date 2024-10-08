@@ -12,6 +12,7 @@ import 'package:piaf/partials/utils/extensions/matrix/peeking_extension.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
 import '../../partials/chat/settings/conv_settings.dart';
+import '../../partials/utils/matrix_widget.dart';
 import 'chat_lib/room_settings_page.dart';
 
 @RoutePage()
@@ -19,13 +20,11 @@ class RoomPage extends StatefulWidget {
   const RoomPage(
       {super.key,
       required this.roomId,
-      required this.client,
       this.onBack,
-      this.allowPop = false,
+      this.allowPop = true,
       this.displaySettingsOnDesktop = false});
 
   final String roomId;
-  final Client client;
   final void Function()? onBack;
   final bool allowPop;
   final bool displaySettingsOnDesktop;
@@ -73,8 +72,9 @@ class RoomPageState extends State<RoomPage> {
 
   void init() {
     timeline = null;
+    final client = Matrix.of(context).client;
 
-    room = widget.client.getRoomById(widget.roomId);
+    room = client.getRoomById(widget.roomId);
 
     if (room != null) {
       futureTimeline = getTimeline(room!);
@@ -85,8 +85,9 @@ class RoomPageState extends State<RoomPage> {
   }
 
   Future<Timeline> peekRoom() async {
+    final client = Matrix.of(context).client;
     try {
-      final timeline = await widget.client.peekRoom(widget.roomId);
+      final timeline = await client.peekRoom(widget.roomId);
       // update local variables
       room = timeline.room;
       this.timeline = timeline;
@@ -203,7 +204,6 @@ class RoomPageState extends State<RoomPage> {
               height: 52,
               key: Key(room?.id ?? ""),
               room: room,
-              client: widget.client,
               userId: widget.roomId,
               updating: updating,
               onBack: widget.onBack ??
@@ -223,7 +223,6 @@ class RoomPageState extends State<RoomPage> {
             isMobile: isMobile,
             room: room,
             userId: room?.id ?? widget.roomId,
-            client: widget.client,
             timeline: timeline,
             updating: updating,
             streamTimelineRemove: streamTimelineRemove.stream,

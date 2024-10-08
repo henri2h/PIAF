@@ -3,13 +3,11 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:piaf/partials/home/notification_view.dart';
 import 'package:piaf/utils/autoroute_observer.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
 import 'package:piaf/partials/utils/matrix_widget.dart';
-import 'package:provider/provider.dart';
 
 import '../partials/navigation/navigation_rail.dart';
 import '../router.gr.dart';

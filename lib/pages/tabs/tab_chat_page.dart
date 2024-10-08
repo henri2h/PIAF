@@ -31,7 +31,8 @@ class TabChatPageState extends State<TabChatPage> {
       if (room?.type == MatrixTypes.todo) {
         await context.pushRoute(TodoRoomRoute(room: room!));
       } else {
-        await context.navigateTo(ChatRoomRoute(displaySettingsOnDesktop: true));
+        await context
+            .navigateTo(RoomRoute(displaySettingsOnDesktop: true, roomId: id));
       }
     } else {
       await context.navigateTo(const RoomListOrPlaceHolderRoute());
@@ -53,7 +54,7 @@ class TabChatPageState extends State<TabChatPage> {
         onRoomSelection: onRoomSelected,
         onSpaceSelection: (String spaceId) async {
           if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
-            await context.navigateTo(ChatRoomRoute());
+            await context.navigateTo(RoomRoute(roomId: spaceId));
           } else {
             await context.navigateTo(const RoomListOrPlaceHolderRoute());
           }
@@ -61,7 +62,7 @@ class TabChatPageState extends State<TabChatPage> {
         onLongPressedSpace: (String? id) async {
           if (id != null) {
             await context.navigateTo(
-                SpaceRoute(spaceId: id, client: Matrix.of(context).client));
+                SpaceRoute(spaceId: id));
           }
         },
 

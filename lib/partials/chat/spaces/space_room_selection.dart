@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:matrix/matrix.dart';
 
 import '../../matrix/matrix_image_avatar.dart';
+import '../../utils/matrix_widget.dart';
 
 class SpaceRoomSelection extends StatefulWidget {
-  const SpaceRoomSelection({super.key, required this.client});
-
-  final Client client;
+  const SpaceRoomSelection({super.key});
 
   @override
   State<SpaceRoomSelection> createState() => _SpaceRoomSelectionState();
@@ -17,10 +15,11 @@ class _SpaceRoomSelectionState extends State<SpaceRoomSelection> {
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
     return ListView.builder(
-        itemCount: widget.client.rooms.length,
+        itemCount: client.rooms.length,
         itemBuilder: (context, index) {
-          final room = widget.client.rooms[index];
+          final room = client.rooms[index];
           return CheckboxListTile(
             secondary: MatrixImageAvatar(
                 client: room.client,

@@ -245,7 +245,7 @@ class GroupPageState extends State<GroupPage> {
                               context: context,
                               title: "Group",
                               builder: (context) => RoomPage(
-                                  roomId: widget.roomId, client: sclient));
+                                  roomId: widget.roomId));
                         }),
                   const H2Title("Images"),
                   SocialGalleryPreviewWigdet(room: room, timeline: timeline),

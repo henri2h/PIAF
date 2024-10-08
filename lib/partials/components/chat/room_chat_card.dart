@@ -23,7 +23,7 @@ class RoomChatCard extends StatelessWidget {
           Expanded(
             child: Container(
               color: Theme.of(context).cardColor,
-              child: RoomPage(roomId: room.id, client: room.client),
+              child: RoomPage(roomId: room.id),
             ),
           ),
         ],

@@ -6,12 +6,12 @@ import 'package:piaf/partials/chat/message_composer/matrix_advanced_message_comp
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
+import '../../utils/matrix_widget.dart';
 import '../typing_indicator.dart';
 import 'room_event_item.dart';
 
 class RoomTimeline extends StatefulWidget {
   final Room? room;
-  final Client client;
   final String? userId;
   final Timeline? timeline;
   final Function(bool) setUpdating;
@@ -27,7 +27,6 @@ class RoomTimeline extends StatefulWidget {
   const RoomTimeline(
       {super.key,
       required this.room,
-      required this.client,
       required this.isMobile,
       this.userId,
       this.disableTimelinePadding = false,
@@ -162,6 +161,8 @@ class RoomTimelineState extends State<RoomTimeline> {
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
+
     if (!init) {
       if (widget.timeline?.events.isNotEmpty == true && room != null) {
         init = true;
@@ -252,7 +253,7 @@ class RoomTimelineState extends State<RoomTimeline> {
             )
           : widget.userId?.startsWith("@") == true // Is a user
               ? FutureBuilder<Profile>(
-                  future: widget.client.getProfileFromUserId(widget.userId!),
+                  future: client.getProfileFromUserId(widget.userId!),
                   builder: (context, snap) {
                     return Padding(
                       padding: const EdgeInsets.all(20.0),
@@ -261,7 +262,7 @@ class RoomTimelineState extends State<RoomTimeline> {
                         children: [
                           MatrixImageAvatar(
                             url: snap.data?.avatarUrl,
-                            client: widget.client,
+                            client: client,
                             height: MinestrixAvatarSizeConstants.big,
                             width: MinestrixAvatarSizeConstants.big,
                             shape: MatrixImageAvatarShape.rounded,
@@ -295,7 +296,7 @@ class RoomTimelineState extends State<RoomTimeline> {
               room: room,
               isMobile: widget.isMobile,
               userId: widget.userId,
-              client: widget.client,
+              client: client,
               onRoomCreate: widget.onRoomCreate,
               reply: composerReplyToEvent,
               removeReply: () {

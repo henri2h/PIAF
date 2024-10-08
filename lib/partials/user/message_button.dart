@@ -23,7 +23,6 @@ class MessageButton extends StatelessWidget {
               context: context,
               builder: (BuildContext context) => RoomPage(
                   roomId: roomId ?? userId,
-                  client: client,
                   onBack: () => context.maybePop()));
         },
         children: const [Text("Message")]);

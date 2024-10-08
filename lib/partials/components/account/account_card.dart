@@ -90,7 +90,6 @@ class AccountCard extends StatelessWidget {
                                   context: context,
                                   builder: (BuildContext context) => RoomPage(
                                       roomId: roomId ?? userId,
-                                      client: client,
                                       onBack: () => context.maybePop()));
                             },
                             icon: const Icon(Icons.send))

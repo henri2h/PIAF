@@ -3,11 +3,11 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 
 import '../../style/constants.dart';
+import '../../utils/matrix_widget.dart';
 
 class MatrixRoomTitle extends StatelessWidget {
   final Room? room;
   final String? userId;
-  final Client client;
   final bool updating;
   final VoidCallback? onBack;
   final VoidCallback? onToggleSettings;
@@ -16,7 +16,6 @@ class MatrixRoomTitle extends StatelessWidget {
   const MatrixRoomTitle(
       {super.key,
       required this.room,
-      required this.client,
       required this.height,
       this.userId,
       this.updating = false,
@@ -25,6 +24,8 @@ class MatrixRoomTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
+    
     if (room != null) {
       return AppBar(
         forceMaterialTransparency: true,

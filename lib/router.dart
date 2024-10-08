@@ -45,6 +45,12 @@ class AppRouter extends RootStackRouter {
     ]),
   ];
 
+  static List<AutoRoute> chatRoutes = [
+    AutoRoute(path: 'space', page: RoomRoute.page),
+    AutoRoute(path: 'space/:spaceId', page: SpaceRoute.page),
+    AutoRoute(path: ':roomId', page: RoomRoute.page),
+  ];
+
   static List<AutoRoute> todoRoutes = [
     AutoRoute(path: 'list', page: TodoRoomRoute.page)
   ];
@@ -79,6 +85,7 @@ class AppRouter extends RootStackRouter {
           ...settingsRoutes,
           ...communityRoutes,
           ...calendarRoutes,
+          ...chatRoutes,
           AutoRoute(path: 'feeds/search', page: SearchRoute.page),
         ]),
 
@@ -100,9 +107,7 @@ class AppRouter extends RootStackRouter {
         // chats, initial page
         AutoRoute(path: '', page: TabChatRoute.page, children: [
           AutoRoute(path: '', page: RoomListOrPlaceHolderRoute.page),
-          AutoRoute(path: 'space', page: ChatRoomRoute.page),
-          AutoRoute(path: 'space/:spaceId', page: SpaceRoute.page),
-          AutoRoute(path: ':roomId', page: ChatRoomRoute.page),
+          ...chatRoutes,
           ...settingsRoutes,
           ...todoRoutes
         ]),
