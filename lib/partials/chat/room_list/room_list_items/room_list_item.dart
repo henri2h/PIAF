@@ -40,120 +40,134 @@ class RoomListItem extends StatelessWidget {
     final lastEvent = room.lastEvent;
     final directChatMatrixID = room.directChatMatrixID;
 
-    return MaterialButton(
-      onPressed: () async {
-        if (onSelection != null) {
-          onSelection!(room.id);
-        } else {
-          await context
-              .pushRoute(RoomRoute(key: Key(room.id), roomId: room.id));
-        }
-      },
-      onLongPress: onLongPress,
-      color: opened || selected ? Theme.of(context).highlightColor : null,
-      minWidth: 0,
-      padding: EdgeInsets.zero,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 0, right: 16, top: 8, bottom: 10),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SizedBox(
-                height: MinestrixAvatarSizeConstants.roomListAvatar,
-                width: MinestrixAvatarSizeConstants.roomListAvatar,
-                child: selected
-                    ? const CircleAvatar(child: Icon(Icons.check))
-                    : directChatMatrixID == null
-                        ? RoomAvatar(
-                            room: room,
-                            client: client,
-                            width: MinestrixAvatarSizeConstants.roomListAvatar,
-                          )
-                        : MatrixUserAvatar(
-                            avatarUrl: room.avatar,
-                            userId: directChatMatrixID,
-                            name: room.getLocalizedDisplayname(),
-                            client: client,
-                            height: MinestrixAvatarSizeConstants.roomListAvatar,
-                            width: MinestrixAvatarSizeConstants.roomListAvatar,
-                          ),
-              ),
+    return FutureBuilder<List<User>>(
+        future: room.loadHeroUsers(),
+        builder: (context, snapshot) {
+          return MaterialButton(
+            onPressed: () async {
+              if (onSelection != null) {
+                onSelection!(room.id);
+              } else {
+                await context
+                    .pushRoute(RoomRoute(key: Key(room.id), roomId: room.id));
+              }
+            },
+            onLongPress: onLongPress,
+            color: opened || selected ? Theme.of(context).highlightColor : null,
+            minWidth: 0,
+            padding: EdgeInsets.zero,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-            Expanded(
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 0, right: 16, top: 8, bottom: 10),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: SizedBox(
+                      height: MinestrixAvatarSizeConstants.roomListAvatar,
+                      width: MinestrixAvatarSizeConstants.roomListAvatar,
+                      child: selected
+                          ? const CircleAvatar(child: Icon(Icons.check))
+                          : directChatMatrixID == null
+                              ? RoomAvatar(
+                                  room: room,
+                                  client: client,
+                                  width: MinestrixAvatarSizeConstants
+                                      .roomListAvatar,
+                                )
+                              : MatrixUserAvatar(
+                                  avatarUrl: room.avatar,
+                                  userId: directChatMatrixID,
+                                  name: room.getLocalizedDisplayname(),
+                                  client: client,
+                                  height: MinestrixAvatarSizeConstants
+                                      .roomListAvatar,
+                                  width: MinestrixAvatarSizeConstants
+                                      .roomListAvatar,
+                                ),
+                    ),
+                  ),
                   Expanded(
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          room.getLocalizedDisplayname(),
-                          maxLines: 1,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                  fontWeight: fontWeight,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface),
-                        ),
-                        if (room.membership == Membership.invite)
-                          const Text(
-                            "Invited",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                room.getLocalizedDisplayname(),
+                                maxLines: 1,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                        fontWeight: fontWeight,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface),
+                              ),
+                              if (room.membership == Membership.invite)
+                                const Text(
+                                  "Invited",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              Text(
+                                lastEvent?.getLocalizedBody(
+                                        const MatrixDefaultLocalizations(),
+                                        hideReply: true,
+                                        hideEdit: true,
+                                        withSenderNamePrefix:
+                                            !room.isDirectChat ||
+                                                room.lastEvent?.senderId ==
+                                                    room.client.userID) ??
+                                    '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                        fontWeight: fontWeight,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline),
+                              ),
+                            ],
                           ),
-                        Text(
-                          lastEvent?.getLocalizedBody(
-                                  const MatrixDefaultLocalizations(),
-                                  hideReply: true,
-                                  hideEdit: true,
-                                  withSenderNamePrefix: !room.isDirectChat ||
-                                      room.lastEvent?.senderId ==
-                                          room.client.userID) ??
-                              '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                  fontWeight: fontWeight,
-                                  color: Theme.of(context).colorScheme.outline),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                                lastEvent?.originServerTs != null
+                                    ? lastEvent!.originServerTs.simpleFormatTime
+                                    : "Invalid time",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                      color: color,
+                                      fontWeight: fontWeight,
+                                    )),
+                            if (isUnread) NotificationCountDot(room: room),
+                            if (room.pushRuleState == PushRuleState.dontNotify)
+                              const Icon(Icons.volume_mute)
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                          lastEvent?.originServerTs != null
-                              ? lastEvent!.originServerTs.simpleFormatTime
-                              : "Invalid time",
-                          style:
-                              Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: color,
-                                    fontWeight: fontWeight,
-                                  )),
-                      if (isUnread) NotificationCountDot(room: room),
-                      if (room.pushRuleState == PushRuleState.dontNotify)
-                        const Icon(Icons.volume_mute)
-                    ],
-                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
+          );
+        });
   }
 }
 
