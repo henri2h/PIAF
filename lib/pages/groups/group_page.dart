@@ -244,8 +244,8 @@ class GroupPageState extends State<GroupPage> {
                           AdaptativeDialogs.show(
                               context: context,
                               title: "Group",
-                              builder: (context) => RoomPage(
-                                  roomId: widget.roomId));
+                              builder: (context) =>
+                                  RoomPage(roomId: widget.roomId));
                         }),
                   const H2Title("Images"),
                   SocialGalleryPreviewWigdet(room: room, timeline: timeline),

@@ -32,8 +32,7 @@ class TabChatPageState extends State<TabChatPage> {
         await context.pushRoute(TodoRoomRoute(room: room!));
       } else {
         await context.navigateTo(RoomRoute(
-          key: Key(id),
-            displaySettingsOnDesktop: true, roomId: id));
+            key: Key(id), displaySettingsOnDesktop: true, roomId: id));
       }
     } else {
       await context.navigateTo(const RoomListOrPlaceHolderRoute());

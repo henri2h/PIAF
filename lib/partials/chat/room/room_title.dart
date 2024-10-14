@@ -25,7 +25,7 @@ class MatrixRoomTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = Matrix.of(context).client;
-    
+
     if (room != null) {
       return AppBar(
         forceMaterialTransparency: true,

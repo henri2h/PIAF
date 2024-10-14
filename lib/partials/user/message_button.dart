@@ -22,8 +22,7 @@ class MessageButton extends StatelessWidget {
           AdaptativeDialogs.show(
               context: context,
               builder: (BuildContext context) => RoomPage(
-                  roomId: roomId ?? userId,
-                  onBack: () => context.maybePop()));
+                  roomId: roomId ?? userId, onBack: () => context.maybePop()));
         },
         children: const [Text("Message")]);
   }
