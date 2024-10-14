@@ -48,7 +48,7 @@ class AppRouter extends RootStackRouter {
   static List<AutoRoute> chatRoutes = [
     AutoRoute(path: 'space', page: RoomRoute.page),
     AutoRoute(path: 'space/:spaceId', page: SpaceRoute.page),
-    AutoRoute(path: ':roomId', page: RoomRoute.page),
+    AutoRoute(path: ':id', page: RoomRoute.page),
   ];
 
   static List<AutoRoute> todoRoutes = [

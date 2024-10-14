@@ -1302,6 +1302,7 @@ class RoomRoute extends _i63.PageRouteInfo<RoomRouteArgs> {
             allowPop: allowPop,
             displaySettingsOnDesktop: displaySettingsOnDesktop,
           ),
+          rawPathParams: {'id': roomId},
           initialChildren: children,
         );
 
@@ -1310,7 +1311,9 @@ class RoomRoute extends _i63.PageRouteInfo<RoomRouteArgs> {
   static _i63.PageInfo page = _i63.PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<RoomRouteArgs>();
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<RoomRouteArgs>(
+          orElse: () => RoomRouteArgs(roomId: pathParams.getString('id')));
       return _i36.RoomPage(
         key: args.key,
         roomId: args.roomId,

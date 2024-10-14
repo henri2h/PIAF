@@ -46,7 +46,9 @@ class _TodoListPageState extends State<TodoListPage> {
                     subtitle: Text(room.topic),
                     trailing: Icon(Icons.navigate_next),
                     onTap: () async {
-                      await context.pushRoute(TodoRoomRoute(room: room));
+                      await context.pushRoute(TodoRoomRoute(
+                        key: Key(room.id),
+                        room: room));
                     },
                   );
                 },

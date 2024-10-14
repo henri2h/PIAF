@@ -19,7 +19,7 @@ import 'chat_lib/room_settings_page.dart';
 class RoomPage extends StatefulWidget {
   const RoomPage(
       {super.key,
-      required this.roomId,
+      @PathParam('id') required this.roomId,
       this.onBack,
       this.allowPop = true,
       this.displaySettingsOnDesktop = false});

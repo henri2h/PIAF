@@ -31,8 +31,9 @@ class TabChatPageState extends State<TabChatPage> {
       if (room?.type == MatrixTypes.todo) {
         await context.pushRoute(TodoRoomRoute(room: room!));
       } else {
-        await context
-            .navigateTo(RoomRoute(displaySettingsOnDesktop: true, roomId: id));
+        await context.navigateTo(RoomRoute(
+          key: Key(id),
+            displaySettingsOnDesktop: true, roomId: id));
       }
     } else {
       await context.navigateTo(const RoomListOrPlaceHolderRoute());
@@ -61,8 +62,7 @@ class TabChatPageState extends State<TabChatPage> {
         },
         onLongPressedSpace: (String? id) async {
           if (id != null) {
-            await context.navigateTo(
-                SpaceRoute(spaceId: id));
+            await context.navigateTo(SpaceRoute(spaceId: id));
           }
         },
 

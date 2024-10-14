@@ -45,7 +45,8 @@ class RoomListItem extends StatelessWidget {
         if (onSelection != null) {
           onSelection!(room.id);
         } else {
-          await context.pushRoute(RoomRoute(roomId: room.id));
+          await context
+              .pushRoute(RoomRoute(key: Key(room.id), roomId: room.id));
         }
       },
       onLongPress: onLongPress,
