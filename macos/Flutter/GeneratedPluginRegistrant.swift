@@ -30,7 +30,7 @@ import photo_manager
 import screen_brightness_macos
 import share_plus
 import shared_preferences_foundation
-import sqflite
+import sqflite_darwin
 import sqflite_sqlcipher
 import sqlcipher_flutter_libs
 import url_launcher_macos
