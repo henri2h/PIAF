@@ -50,7 +50,6 @@ dependencies:
   native_imaging:
     git: https://github.com/famedly/dart_native_imaging.git
 
-
   # Intl
   intl: ^0.19.0
   timeago: ^3.0.2
@@ -58,10 +57,6 @@ dependencies:
   # Cache
   flutter_cache_manager: ^3.0.1
   cached_network_image: ^3.0.0
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.1
 
   # Notifications
   flutter_local_notifications: ^17.0.0
@@ -118,14 +113,12 @@ dependencies:
 
   flutter_slidable: ^3.0.1
   wakelock_plus: ^1.1.4
-  flutter_blurhash:
-      # Waiting for: https://github.com/fluttercommunity/flutter_blurhash/pull/59
-    git: https://github.com/MominRaza/flutter_blurhash.git
+  flutter_blurhash: ^0.8.1
 
   multi_split_view: ^3.0.1
   pasteboard: ^0.2.0
   flutter_highlighter: ^0.1.1
-  flutter_foreground_task: ^8.7.0
+  flutter_foreground_task: ^8.10.4
   share_plus: ^10.0.0
   flutter_html_table: ^3.0.0-beta.2
   linkify: ^5.0.0
