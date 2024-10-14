@@ -13,6 +13,7 @@ import '../spaces/list/spaces_list.dart';
 import 'custom_list/no_rooms_list.dart';
 import 'custom_list/placeholder_list.dart';
 import 'custom_list/presence_list.dart';
+import 'filter_bar.dart';
 import 'room_list_explore.dart';
 
 class RoomList extends StatefulWidget {
@@ -245,86 +246,6 @@ class _RoomListState extends State<RoomList> {
                     }),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class FilterBar extends StatelessWidget {
-  const FilterBar({
-    super.key,
-    required this.roomListSelectorHeight,
-    required this.controller,
-  });
-
-  final ChatPageState controller;
-  final double roomListSelectorHeight;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverFixedExtentList.builder(
-      itemExtent: roomListSelectorHeight,
-      itemBuilder: (BuildContext context, int i) => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Center(
-          child: Row(
-            children: [
-              CustomFilter(
-                controller: controller,
-                name: "All",
-                spaceName: CustomSpacesTypes.home,
-              ),
-              CustomFilter(
-                controller: controller,
-                name: "Unreads",
-                spaceName: CustomSpacesTypes.unread,
-              ),
-              CustomFilter(
-                controller: controller,
-                name: "Favorites",
-                spaceName: CustomSpacesTypes.favorites,
-              ),
-              CustomFilter(
-                controller: controller,
-                name: "DMs",
-                spaceName: CustomSpacesTypes.dm,
-              ),
-              CustomFilter(
-                controller: controller,
-                name: "Low priority",
-                spaceName: CustomSpacesTypes.lowPriority,
-              ),
-            ],
-          ),
-        ),
-      ),
-      itemCount: 1,
-    );
-  }
-}
-
-class CustomFilter extends StatelessWidget {
-  const CustomFilter({
-    super.key,
-    required this.controller,
-    required this.name,
-    required this.spaceName,
-  });
-
-  final ChatPageState controller;
-  final String name;
-  final String spaceName;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: FilterChip(
-        label: Text(name),
-        selected: controller.selectedSpace == spaceName,
-        onSelected: (bool value) {
-          controller.selectSpace(spaceName);
-        },
       ),
     );
   }
