@@ -43,7 +43,8 @@ class MutualRoomsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final userId = room.directChatMatrixID;
 
-    if (userId == null) return Container();
+    // We can't get the room in commons with ourselves
+    if (userId == null || userId == room.client.userID) return Container();
 
     return FutureBuilder<List<String>?>(
         future: room.client.getMutualRoomsWithUser(userId),
