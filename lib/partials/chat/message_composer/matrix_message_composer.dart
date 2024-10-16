@@ -81,7 +81,19 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
       });
     }
 
+    _sendController.addListener(onTextChanged);
+
     super.initState();
+  }
+
+  // Refresh the widget when the user has written his first text
+  bool _wasTextEmpty = false;
+  void onTextChanged() {
+    if (_sendController.text.isEmpty != _wasTextEmpty) {
+      setState(() {
+        _wasTextEmpty = _sendController.text.isEmpty;
+      });
+    }
   }
 
   Future<String?> loadText() async {
@@ -192,146 +204,151 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
 
   @override
   Widget build(BuildContext context) {
-    double defaultHeight = 55;
+    double defaultHeight = 48;
     return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (file?.bytes != null)
-            Stack(
-              children: [
-                ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 200),
-                    child: Image.memory(file!.bytes!)),
-                Positioned(
-                  right: 15,
-                  top: 10,
-                  child: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        setState(() {
-                          file = null;
-                        });
-                      }),
-                ),
-              ],
-            ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (constraints.maxWidth > 600)
-                UserAvatar(defaultHeight: defaultHeight, widget: widget),
-              if (widget.allowSendingPictures &&
-                  room != null &&
-                  (!_isTyping || isAutoFocusEnabled))
-                SizedBox(
-                  height: defaultHeight,
-                  child: IconButton(
-                    onPressed: () {
-                      if (room != null) addImage(context, room!);
-                    },
-                    tooltip: 'Send file',
-                    icon: const Icon(Icons.attach_file),
+      return Padding(
+        padding: const EdgeInsets.only(top: 4.0, bottom: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (file?.bytes != null)
+              Stack(
+                children: [
+                  ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      child: Image.memory(file!.bytes!)),
+                  Positioned(
+                    right: 15,
+                    top: 10,
+                    child: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() {
+                            file = null;
+                          });
+                        }),
                   ),
-                ),
-              Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: defaultHeight),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Center(
-                      child: RawKeyboardListener(
-                        focusNode: focusNode,
-                        onKey: (event) async {
-                          if (shouldResetView) {
-                            setState(() {
-                              _sendController.clear();
-                              shouldResetView = false;
-                              setMessageDraft("");
-                            });
-                          }
-
-                          if (event.isControlPressed) {
-                            if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                              _sendMessageOrCreate();
-                              shouldResetView = true;
-                            }
-
-                            if (event.isKeyPressed(LogicalKeyboardKey.keyV)) {
-                              final imageBytes = await Pasteboard.image;
-                              if (imageBytes != null) {
+                ],
+              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (constraints.maxWidth > 600)
+                  UserAvatar(defaultHeight: defaultHeight, widget: widget),
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: defaultHeight),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Center(
+                        child: RawKeyboardListener(
+                            focusNode: focusNode,
+                            onKey: (event) async {
+                              if (shouldResetView) {
                                 setState(() {
-                                  file = PlatformFile(
-                                      name: "clipboard",
-                                      size: imageBytes.length,
-                                      bytes: imageBytes);
+                                  _sendController.clear();
+                                  shouldResetView = false;
+                                  setMessageDraft("");
                                 });
                               }
-                            }
-                          }
-                        },
-                        child: TextField(
-                            autofocus: isAutoFocusEnabled,
-                            focusNode: textFieldFocusNode,
-                            maxLines: 5,
-                            minLines: 1,
-                            controller: _sendController,
-                            onChanged: onEdit,
-                            keyboardType: TextInputType.multiline,
-                            textAlignVertical: TextAlignVertical.center,
-                            decoration: !_isTyping || isAutoFocusEnabled
-                                ? Constants.kTextFieldInputDecoration.copyWith(
-                                    prefixIcon: const Icon(
-                                      Icons.message,
-                                    ),
-                                    hintText: widget.hintText,
-                                  )
-                                : InputDecoration(
-                                    isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 12),
+
+                              if (event.isControlPressed) {
+                                if (event
+                                    .isKeyPressed(LogicalKeyboardKey.enter)) {
+                                  _sendMessageOrCreate();
+                                  shouldResetView = true;
+                                }
+
+                                if (event
+                                    .isKeyPressed(LogicalKeyboardKey.keyV)) {
+                                  final imageBytes = await Pasteboard.image;
+                                  if (imageBytes != null) {
+                                    setState(() {
+                                      file = PlatformFile(
+                                          name: "clipboard",
+                                          size: imageBytes.length,
+                                          bytes: imageBytes);
+                                    });
+                                  }
+                                }
+                              }
+                            },
+                            child: TextField(
+                                autofocus: isAutoFocusEnabled,
+                                focusNode: textFieldFocusNode,
+                                maxLines: 5,
+                                minLines: 1,
+                                controller: _sendController,
+                                onChanged: onEdit,
+                                keyboardType: TextInputType.multiline,
+                                textAlignVertical: TextAlignVertical.center,
+                                decoration: InputDecoration(
+                                    filled: true,
+                                    
                                     border: InputBorder.none,
+                                    prefixIcon: _isTyping
+                                        ? null
+                                        : const Icon(
+                                            Icons.message,
+                                          ),
                                     enabledBorder: const OutlineInputBorder(
                                       borderSide: BorderSide.none,
                                       borderRadius: BorderRadius.all(
-                                        Radius.circular(22),
+                                        Radius.circular(16),
                                       ),
                                     ),
                                     focusedBorder: const OutlineInputBorder(
                                       borderSide: BorderSide.none,
                                       borderRadius: BorderRadius.all(
-                                        Radius.circular(22),
+                                        Radius.circular(16),
                                       ),
                                     ),
-                                    filled: true,
                                     hintText: widget.hintText,
-                                  )),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 12),
+                                    suffixIcon: widget.allowSendingPictures &&
+                                            room != null &&
+                                            (!_isTyping || isAutoFocusEnabled)
+                                        ? IconButton(
+                                            onPressed: () {
+                                              if (room != null) {
+                                                addImage(context, room!);
+                                              }
+                                            },
+                                            icon: Icon(Icons.image))
+                                        : null))),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              SizedBox(
-                height: defaultHeight,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: _isSending
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Icon(Icons.send,
-                              color: Theme.of(context).colorScheme.primary),
-                      color: Colors.white,
-                      onPressed:
-                          _isSending == true ? null : _sendMessageOrCreate,
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0, right: 4),
+                  child: SizedBox(
+                    height: defaultHeight,
+                    width: 40,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _isSending
+                            ? const CircularProgressIndicator()
+                            : IconButton.filled(
+                                icon: Icon(
+                                  Icons.send,
+                                ),
+                                onPressed: !_isSending &&
+                                        (_sendController.text.isNotEmpty ||
+                                            file != null)
+                                    ? _sendMessageOrCreate
+                                    : null,
+                              ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       );
     });
   }
