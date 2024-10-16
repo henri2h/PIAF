@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/pages/chat/chat_lib/chat_page_items/chat_page_spaces_list.dart';
 import 'package:piaf/pages/chat/chat_lib/chat_page_items/provider/chat_page_state.dart';
 import 'package:piaf/partials/chat/room_list/room_list_items/room_list_item.dart';
 import 'package:piaf/router.gr.dart';
@@ -13,6 +12,7 @@ import '../spaces/list/spaces_list.dart';
 import 'custom_list/no_rooms_list.dart';
 import 'custom_list/placeholder_list.dart';
 import 'custom_list/presence_list.dart';
+import 'double_scroll_physic.dart';
 import 'filter_bar.dart';
 import 'room_list_explore.dart';
 
@@ -51,7 +51,9 @@ class _RoomListState extends State<RoomList> {
   Set<String> selectedRooms = {};
   bool selectMode = false;
 
-  static const double roomListSelectorHeight = 40;
+  ScrollState state = ScrollState(selectorHeight: 50);
+
+  static const double roomListSelectorHeight = 50;
 
   final scrollController =
       ScrollController(initialScrollOffset: roomListSelectorHeight);
@@ -160,92 +162,100 @@ class _RoomListState extends State<RoomList> {
                       icon: const Icon(Icons.info))
               ],
             ),
-      body: Column(
-        children: [
-          StreamBuilder<SyncStatusUpdate>(
-              stream: client.onSyncStatus.stream,
-              builder: (context, snap) {
-                if (snap.hasData) {
-                  if (snap.data!.status == SyncStatus.processing &&
-                      ![null, 0, 1.0].contains(snap.data!.progress)) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child:
-                          LinearProgressIndicator(value: snap.data!.progress!),
-                    );
-                  }
-                }
-                return Container();
-              }),
-          Expanded(
-            child: selectedSpace == CustomSpacesTypes.explore
-                ? RoomListExplore(
-                    onSelect: (String roomId) {
-                      widget.controller.selectRoom(roomId);
-                    },
-                  )
-                : FutureBuilder(
-                    future: client.roomsLoading, // Refresh the room
-                    // list when client has finished loading.
-                    builder: (context, snapshot) {
-                      return CustomScrollView(
-                        cacheExtent: 400,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        controller: scrollController,
-                        slivers: [
-                          // Room list selector
-                          FilterBar(
-                            roomListSelectorHeight: roomListSelectorHeight,
-                            controller: widget.controller,
-                          ),
-                          if (presences != null)
-                            PresenceList(
-                                presences: presences,
-                                client: client,
-                                onSelection: onSelection),
-                          if (presences == null)
-                            widget.sortedRooms != null
-                                ? widget.sortedRooms!.isEmpty
-                                    ? NoRoomList()
-                                    : SliverPadding(
-                                        padding: const EdgeInsets.only(
-                                            top: 8, bottom: 60),
-                                        sliver: SliverList(
-                                            delegate:
-                                                SliverChildBuilderDelegate(
-                                                    (BuildContext context,
-                                                        int i) {
-                                          Room r = widget.sortedRooms![i];
-                                          return RoomListItem(
-                                            key: Key("room_${r.id}"),
-                                            room: r,
-                                            opened: !isMobile &&
-                                                r.id == selectedRoomId,
-                                            selected:
-                                                selectedRooms.contains(r.id),
-                                            onSelection: (String text) {
-                                              if (selectMode) {
-                                                toggleElement(r.id);
-                                              } else {
-                                                onSelection(text);
-                                              }
-                                            },
-                                            onLongPress: () {
-                                              selectedRooms.add(r.id);
-                                              enableSelection();
-                                            },
-                                          );
-                                        },
-                                                    childCount: widget
-                                                        .sortedRooms!.length)),
-                                      )
-                                : PlaceholderList(),
-                          SliverFillRemaining(),
-                        ],
+      body: Listener(
+        onPointerDown: (_) {
+          state.apply();
+        },
+        child: Column(
+          children: [
+            StreamBuilder<SyncStatusUpdate>(
+                stream: client.onSyncStatus.stream,
+                builder: (context, snap) {
+                  if (snap.hasData) {
+                    if (snap.data!.status == SyncStatus.processing &&
+                        ![null, 0, 1.0].contains(snap.data!.progress)) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: LinearProgressIndicator(
+                            value: snap.data!.progress!),
                       );
-                    }),
-          ),
-        ],
+                    }
+                  }
+                  return Container();
+                }),
+            Expanded(
+              child: selectedSpace == CustomSpacesTypes.explore
+                  ? RoomListExplore(
+                      onSelect: (String roomId) {
+                        widget.controller.selectRoom(roomId);
+                      },
+                    )
+                  : FutureBuilder(
+                      future: client.roomsLoading, // Refresh the room
+                      // list when client has finished loading.
+                      builder: (context, snapshot) {
+                        return CustomScrollView(
+                          cacheExtent: 400,
+                          physics: DoubleScrollPhysic(state),
+                          controller: scrollController,
+                          slivers: [
+                            // Room list selector
+                            FilterBar(
+                              roomListSelectorHeight: roomListSelectorHeight,
+                              controller: widget.controller,
+                            ),
+
+                            if (presences != null)
+                              PresenceList(
+                                  presences: presences,
+                                  client: client,
+                                  onSelection: onSelection),
+                            if (presences == null)
+                              widget.sortedRooms != null
+                                  ? widget.sortedRooms!.isEmpty
+                                      ? NoRoomList()
+                                      : SliverPadding(
+                                          padding: const EdgeInsets.only(
+                                              top: 8, bottom: 60),
+                                          sliver: SliverList(
+                                              delegate:
+                                                  SliverChildBuilderDelegate(
+                                                      (BuildContext context,
+                                                          int i) {
+                                            Room r = widget.sortedRooms![i];
+                                            return RoomListItem(
+                                              key: Key("room_${r.id}"),
+                                              room: r,
+                                              opened: !isMobile &&
+                                                  r.id == selectedRoomId,
+                                              selected:
+                                                  selectedRooms.contains(r.id),
+                                              onSelection: (String text) {
+                                                if (selectMode) {
+                                                  toggleElement(r.id);
+                                                } else {
+                                                  onSelection(text);
+                                                }
+                                              },
+                                              onLongPress: () {
+                                                selectedRooms.add(r.id);
+                                                enableSelection();
+                                              },
+                                            );
+                                          },
+                                                      childCount: widget
+                                                          .sortedRooms!
+                                                          .length)),
+                                        )
+                                  : PlaceholderList(),
+                            // TODO: See why this was added
+                            //       SliverFillRemaining(),
+                          ],
+                        );
+                      }),
+            ),
+          ],
+        ),
       ),
     );
   }
