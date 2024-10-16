@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
-import 'package:piaf/pages/chat/chat_lib/matrix_stories_page.dart';
+import 'package:piaf/features/chat/pages/matrix_stories_page.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
 @RoutePage()
 class TabStoriesPage extends StatefulWidget {

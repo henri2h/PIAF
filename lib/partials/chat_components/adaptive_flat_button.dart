@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../utils/platform_infos.dart';
+import '../../utils/platform_infos.dart';
 
 class AdaptiveFlatButton extends StatelessWidget {
   final String label;

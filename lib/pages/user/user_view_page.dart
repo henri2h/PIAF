@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/partials/components/layouts/layout_view.dart';
-import 'package:piaf/partials/post/post_writer_modal.dart';
-import 'package:piaf/partials/user/user_friends_card.dart';
-import 'package:piaf/partials/user/user_profile_selection.dart';
+import 'package:piaf/partials/layouts/layout_view.dart';
+import 'package:piaf/features/feed/widgets/post/post_writer_modal.dart';
+import 'package:piaf/features/user/widgets/user_friends_card.dart';
+import 'package:piaf/features/user/widgets/user_profile_selection.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/config/matrix_types.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
@@ -13,20 +13,20 @@ import 'package:piaf/partials/custom_list_view.dart';
 import 'package:piaf/partials/chat_feed/minestrix_room_tile.dart';
 import 'package:piaf/partials/social/social_gallery_preview_widget.dart';
 import 'package:piaf/partials/stories/stories_list.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
-import 'package:piaf/partials/utils/spaces/space_extension.dart';
+import 'package:piaf/utils/matrix_widget.dart';
+import 'package:piaf/utils/spaces/space_extension.dart';
 
-import '../../partials/chat_feed/posts/matrix_post_editor.dart';
-import '../../partials/components/minestrix/minestrix_title.dart';
+import '../../features/feed/widgets/posts/matrix_post_editor.dart';
+import '../../partials/typo/titles.dart';
 import '../../partials/dialogs/adaptative_dialogs.dart';
-import '../../partials/feed/topic_list_tile.dart';
+import '../../features/feed/widgets/topic_list_tile.dart';
 import '../../partials/app_title.dart';
-import '../../partials/post/post.dart';
-import '../../partials/post/post_shimmer.dart';
-import '../../partials/user/user_avatar.dart';
+import '../../features/feed/widgets/post/post.dart';
+import '../../features/feed/widgets/post/post_shimmer.dart';
+import '../../features/user/widgets/user_avatar.dart';
 import '../../router.gr.dart';
-import '../../partials/user/follow_button.dart';
-import '../../partials/user/message_button.dart';
+import '../../features/user/widgets/follow_button.dart';
+import '../../features/user/widgets/message_button.dart';
 
 /// This page display the base user information and the first MinesTRIX profile it could find
 /// In case of multpile MinesTRIX profiles associated with this user, it should display

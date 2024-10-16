@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../partials/components/layouts/custom_header.dart';
-import '../partials/editors/sections.dart';
-import 'settings/settings_feeds_page.dart';
+import '../partials/layouts/custom_header.dart';
+import '../partials/matrix/room/settings/editors/sections.dart';
+import '../features/settings/pages/settings_feeds_page.dart';
 
 @RoutePage()
 class SocialSettingsPage extends StatefulWidget {

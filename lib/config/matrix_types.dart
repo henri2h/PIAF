@@ -18,10 +18,15 @@ abstract class MatrixTypes {
 
   static const String calendarEvent = "fr.emse.minitel.event";
 
-  static const String reference = "m.reference";
-
   static const String todo = "fr.henri2h.todo";
   // MSC: https://github.com/matrix-org/matrix-spec-proposals/pull/2836
+}
+
+abstract class MatrixRelationshipTypes {
+  static const String reference = 'm.reference';
+  static const String reply = 'm.in_reply_to';
+  static const String edit = 'm.replace';
+  static const String reaction = 'm.annotation';
 }
 
 abstract class MatrixRoomTypes {

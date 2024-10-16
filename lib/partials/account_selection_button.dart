@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/dialogs/adaptative_dialogs.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
-import '../pages/groups/create_group_page.dart';
+import '../features/groups/pages/create_group_page.dart';
 import '../router.gr.dart';
 import 'popup_route_wrapper.dart';
 

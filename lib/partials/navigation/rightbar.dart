@@ -5,10 +5,10 @@ import 'package:piaf/partials/room_feed_tile_navigator.dart';
 import 'package:piaf/router.gr.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
-import '../calendar_events/calendar_event_card.dart';
-import '../components/minestrix/minestrix_title.dart';
+import '../../features/calendar_events/partials/calendar_event_card.dart';
+import '../typo/titles.dart';
 
 class RightBar extends StatelessWidget {
   const RightBar({super.key});

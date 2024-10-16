@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:piaf/utils/settings.dart';
-import 'package:piaf/partials/utils/background_push.dart';
-import 'package:piaf/partials/utils/manager/client_manager.dart';
+import 'package:piaf/utils/background_push.dart';
+import 'package:piaf/utils/manager/client_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 

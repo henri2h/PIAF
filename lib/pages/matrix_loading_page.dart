@@ -4,9 +4,9 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/app_title.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
-import '../partials/feed/minestrix_profile_not_created.dart';
+import '../features/feed/widgets/minestrix_profile_not_created.dart';
 
 @RoutePage()
 class MatrixLoadingPage extends StatefulWidget {

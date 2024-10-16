@@ -6,13 +6,13 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 
-import 'package:piaf/partials/components/account/account_card.dart';
-import 'package:piaf/partials/components/minestrix/minestrix_title.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/partials/account/account_card.dart';
+import 'package:piaf/partials/typo/titles.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../../partials/components/layouts/custom_header.dart';
+import '../../partials/layouts/custom_header.dart';
 
 @RoutePage()
 class UserFollowersPage extends StatefulWidget {

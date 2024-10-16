@@ -4,7 +4,7 @@ import 'package:piaf/partials/search/providers/lib.dart';
 import 'package:piaf/config/matrix_types.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 import 'package:piaf/partials/matrix/matrix_user_avatar.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
 class ExploreSearch implements ItemManager<PublicRoomsChunk> {
   String? nextBatch;

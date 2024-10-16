@@ -4,10 +4,10 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/models/search/search_mode.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/partials/dialogs/adaptative_dialogs.dart';
-import 'package:piaf/partials/chat_feed/posts/matrix_post_editor.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/features/feed/widgets/posts/matrix_post_editor.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
-import '../../pages/groups/create_group_page.dart';
+import '../../features/groups/pages/create_group_page.dart';
 import '../../router.gr.dart';
 import 'welcome_actions_button.dart';
 

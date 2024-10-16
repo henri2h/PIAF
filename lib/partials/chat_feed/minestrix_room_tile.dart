@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
-import '../utils/spaces/space_extension.dart';
-import '../calendar_events/date_card.dart';
+import '../../utils/spaces/space_extension.dart';
+import '../../features/calendar_events/partials/date_card.dart';
 import '../matrix/matrix_image_avatar.dart';
 
 class MinestrixRoomTile extends StatelessWidget {

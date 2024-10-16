@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:piaf/partials/home/notification_view.dart';
 import 'package:piaf/utils/autoroute_observer.dart';
 import 'package:piaf/utils/minestrix/minestrix_notifications.dart';
-import 'package:piaf/partials/utils/matrix_widget.dart';
+import 'package:piaf/utils/matrix_widget.dart';
 
 import '../partials/navigation/navigation_rail.dart';
 import '../router.gr.dart';

@@ -30,9 +30,9 @@ import 'package:matrix/matrix.dart';
 
 import '../../config/app_config.dart';
 import '../../config/settings_key.dart';
-import 'famedlysdk_store.dart';
-import 'platform_infos.dart';
-import 'push_helper.dart';
+import '../../utils/famedlysdk_store.dart';
+import '../../utils/platform_infos.dart';
+import '../../utils/push_helper.dart';
 
 //import 'package:fcm_shared_isolate/fcm_shared_isolate.dart';
 

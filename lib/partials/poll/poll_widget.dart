@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
 
-import 'package:piaf/partials/utils/poll/json/event_poll_start.dart';
-import 'package:piaf/partials/utils/poll/poll.dart';
+import 'package:piaf/utils/poll/json/event_poll_start.dart';
+import 'package:piaf/utils/poll/poll.dart';
 
 class PollWidget extends StatefulWidget {
   final Event event;

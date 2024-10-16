@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
 import 'package:piaf/partials/stories/stories_user_list_view.dart';
-import 'package:piaf/partials/utils/extensions/matrix/stories_extension.dart';
+import 'package:piaf/utils/extensions/matrix/stories_extension.dart';
 
 class UserSelection extends StatefulWidget {
   const UserSelection(

@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/config/matrix_types.dart';
-import 'package:piaf/partials/utils/matrix/power_levels_extension.dart';
+import 'package:piaf/utils/matrix/power_levels_extension.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
 
 extension MinestrixClientExtension on Client {

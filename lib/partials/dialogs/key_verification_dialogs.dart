@@ -11,8 +11,8 @@ import 'package:matrix/encryption.dart';
 import 'package:matrix/matrix.dart';
 
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
-import '../utils/platform_infos.dart';
-import '../utils/text.dart';
+import '../../utils/platform_infos.dart';
+import '../../utils/text.dart';
 import '../chat_components/adaptive_flat_button.dart';
 
 class KeyVerificationDialog extends StatefulWidget {

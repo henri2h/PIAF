@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 
-import '../event/matrix_image.dart';
+import '../matrix/event/matrix_image.dart';
 
 class SocialImagePreviewWidget extends StatelessWidget {
   final Event e;
