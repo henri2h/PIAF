@@ -22,12 +22,6 @@ class App extends StatefulWidget {
 }
 
 class AppState extends State<App> {
-  static final _defaultLightColorScheme =
-      ColorScheme.fromSwatch(primarySwatch: Colors.blue);
-
-  static final _defaultDarkColorScheme = ColorScheme.fromSwatch(
-      primarySwatch: Colors.blue, brightness: Brightness.dark);
-
   final _appRouter = AppRouter();
   bool _initLock = false;
   Future<void> initMatrix(Client m) async {
@@ -84,20 +78,22 @@ class AppState extends State<App> {
                           );
                         }
 
+                        final darkTheme =
+                            darkDynamic?.copyWith(surface: Colors.black) ??
+                                ColorScheme.dark();
+
                         return FutureBuilder(
                             future: initMatrix(client),
                             builder: (context, snap) {
                               return MaterialApp.router(
                                 routerConfig: _appRouter.config(),
                                 theme: ThemeData(
-                                  colorScheme:
-                                      lightDynamic ?? _defaultLightColorScheme,
-                                  textTheme: theme.whiteTextTheme,
-                                  useMaterial3: true,
-                                ),
+                                    colorScheme:
+                                        lightDynamic ?? ColorScheme.light(),
+                                    textTheme: theme.whiteTextTheme,
+                                    useMaterial3: true),
                                 darkTheme: ThemeData(
-                                  colorScheme:
-                                      darkDynamic ?? _defaultDarkColorScheme,
+                                  colorScheme: darkTheme,
                                   textTheme: theme.darkTextTheme,
                                   useMaterial3: true,
                                 ),

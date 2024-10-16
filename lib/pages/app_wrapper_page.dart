@@ -109,6 +109,7 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                   bottomNavigationBar: hideNavBar
                       ? null
                       : NavigationBar(
+                          backgroundColor: Colors.black,
                           selectedIndex: tabsRouter.activeIndex,
                           onDestinationSelected: (index) {
                             // here we switch between tabs
