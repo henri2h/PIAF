@@ -28,7 +28,7 @@ class _CalendarEventListTileState extends State<CalendarEventListTile> {
     return FutureBuilder(
         future: getState,
         builder: (context, snapshot) {
-          final createEvent = widget.room.createEvent;
+          final createEvent = widget.room.stateRoomCreate;
 
           return Card(
             child: ListTile(

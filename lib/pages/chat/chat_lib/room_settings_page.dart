@@ -1,5 +1,3 @@
-library minestrix_chat;
-
 import 'dart:async';
 import 'dart:io';
 
@@ -8,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/chat/settings/conv_settings_encryption_keys.dart';
 import 'package:piaf/partials/chat/settings/conv_settings_mutual_rooms.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
 import 'package:piaf/utils/date_time_extension.dart';
 import 'package:settings_ui/settings_ui.dart';
 
@@ -76,8 +75,7 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
       body: FutureBuilder(
           future: room.postLoad(),
           builder: (context, snapshot) {
-            final isDirectChat = room.isDirectChat;
-            final topicEvent = room.getState(EventTypes.RoomTopic);
+            final topicEvent = room.stateRoomTopic;
             final totalParticpantCount =
                 (room.summary.mInvitedMemberCount ?? 0) +
                     (room.summary.mJoinedMemberCount ?? 0);
@@ -100,7 +98,7 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8.0, bottom: 8),
                       child: Text(
-                          isDirectChat == false
+                          room.isDirectChat == false
                               ? "Group with ${room.summary.mJoinedMemberCount} members"
                               : room.directChatMatrixID.toString(),
                           style: Theme.of(context)
@@ -173,12 +171,12 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
                         ],
                       ),
                     ),
-                  if (isDirectChat) DirectChatWidget(room: room),
-                  if (isDirectChat) MutualRoomsWidget(room: room),
+                  if (room.isDirectChat) DirectChatWidget(room: room),
+                  if (room.isDirectChat) MutualRoomsWidget(room: room),
                   const SizedBox(
                     height: 16,
                   ),
-                  if (isDirectChat == false && totalParticpantCount != 2)
+                  if (room.isDirectChat == false && totalParticpantCount != 2)
                     Builder(builder: (context) {
                       final particpants = room.getParticipants().take(10);
 
@@ -222,7 +220,7 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
                       darkTheme: const SettingsThemeData(
                           settingsListBackground: Colors.transparent),
                       sections: [
-                        if (isDirectChat && room.encrypted)
+                        if (room.isDirectChat && room.encrypted)
                           SettingsSection(title: const Text("User"), tiles: [
                             SettingsTile.navigation(
                               leading: const Icon(Icons.lock_sharp),

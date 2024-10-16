@@ -4,18 +4,21 @@ import 'package:piaf/partials/minestrix_chat.dart';
 import '../../../../config/matrix_types.dart';
 
 extension RoomExtension on Room {
-  StrippedStateEvent? get createEvent => getState(EventTypes.RoomCreate);
+  StrippedStateEvent? get stateRoomCreate => getState(EventTypes.RoomCreate);
+  StrippedStateEvent? get stateRoomtype => getState("m.room.type");
+  StrippedStateEvent? get stateRoomTopic => getState(EventTypes.RoomTopic);
+  StrippedStateEvent? get stateRoomBridgeInfo => getState(EventTypes.RoomTopic);
+
   User? get creator {
-    final event = createEvent;
+    final event = stateRoomCreate;
     if (event is Event) return event.senderFromMemoryOrFallback;
     return null;
   }
 
-  String? get creatorId => createEvent?.senderId;
-  String get type => createEvent?.content.tryGet<String>('type') ?? '';
+  String? get creatorId => stateRoomCreate?.senderId;
 
-  StrippedStateEvent? get typeEvent => getState("m.room.type");
-  String? get subtype => typeEvent?.content.tryGet<String>('type');
+  String get type => stateRoomCreate?.content.tryGet<String>('type') ?? '';
+  String? get subtype => stateRoomtype?.content.tryGet<String>('type');
 
   bool get isLowPriority => tags.containsKey(TagType.lowPriority);
   Future<void> setLowPriority(bool lowPriority) => lowPriority
@@ -27,6 +30,12 @@ extension RoomExtension on Room {
       client.onRoomInSync(id, join: join, invite: invite, leave: leave);
 
   Future<void> waitForRoomSync() async => await onRoomInSync().first;
+
+  Event? getEventFromState(String type) {
+    final event = getState(type);
+    if (event is Event) return event;
+    return null;
+  }
 }
 
 extension RoomFeedExtension on Room {
