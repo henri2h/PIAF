@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/post/post_item.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
-import 'package:piaf/partials/chat/message_composer/matrix_message_composer.dart';
+import 'package:piaf/partials/chat/message_composer/message_composer.dart';
 
 import '../partials/post/content/post_replies.dart';
 
@@ -41,7 +41,7 @@ class _PostPageState extends State<PostPage> {
                       isMobile: false,
                       enableComment: false),
                   const Divider(),
-                  MatrixMessageComposer(
+                  MessageComposer(
                     client: widget.event.room.client,
                     room: widget.event.room,
                     enableAutoFocusOnDesktop: false,

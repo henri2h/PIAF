@@ -44,7 +44,7 @@ class RoomEventItem extends StatelessWidget {
       required this.i,
       required this.onReplyEventPressed,
       required this.onReply,
-      this.onSelected,
+      this.eventsToAnimateStream,
       this.fullyReadEventId,
       required this.isDirectChat});
 
@@ -58,7 +58,8 @@ class RoomEventItem extends StatelessWidget {
   final int i;
   final void Function(Event) onReplyEventPressed;
   final void Function(Event) onReply;
-  final Stream<String>? onSelected;
+  // To display an annimation when this event is selected
+  final Stream<String>? eventsToAnimateStream;
   final String? fullyReadEventId;
   final bool isDirectChat;
 
@@ -159,8 +160,8 @@ class RoomEventItem extends StatelessWidget {
             displayAvatar: displayAvatar,
             displayName: displayRoomName,
             addPaddingTop: displayPadding,
-            onEventSelectedStream:
-                onSelected?.where((eventId) => eventId == event.eventId),
+            onEventSelectedStream: eventsToAnimateStream
+                ?.where((eventId) => eventId == event.eventId),
             onReact: (offset) async {
               HapticFeedback.heavyImpact();
 

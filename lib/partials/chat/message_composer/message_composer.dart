@@ -4,15 +4,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 import 'package:piaf/partials/utils/client_information.dart';
-import 'package:pasteboard/pasteboard.dart';
 
-import '../../style/constants.dart';
 import '../../utils/files_picker.dart';
 import '../../utils/platform_infos.dart';
 
-class MatrixMessageComposer extends StatefulWidget {
+class MessageComposer extends StatefulWidget {
   final Client client;
   final Room? room;
   final String? userId;
@@ -31,7 +30,7 @@ class MatrixMessageComposer extends StatefulWidget {
   /// Save message draft
   final bool loadSavedText;
 
-  const MatrixMessageComposer(
+  const MessageComposer(
       {super.key,
       required this.client,
       this.userId,
@@ -47,10 +46,10 @@ class MatrixMessageComposer extends StatefulWidget {
       this.loadSavedText = true});
 
   @override
-  MatrixMessageComposerState createState() => MatrixMessageComposerState();
+  MessageComposerState createState() => MessageComposerState();
 }
 
-class MatrixMessageComposerState extends State<MatrixMessageComposer> {
+class MessageComposerState extends State<MessageComposer> {
   final TextEditingController _sendController = TextEditingController();
 
   Room? room;
@@ -284,7 +283,6 @@ class MatrixMessageComposerState extends State<MatrixMessageComposer> {
                                 textAlignVertical: TextAlignVertical.center,
                                 decoration: InputDecoration(
                                     filled: true,
-                                    
                                     border: InputBorder.none,
                                     prefixIcon: _isTyping
                                         ? null
@@ -362,7 +360,7 @@ class UserAvatar extends StatelessWidget {
   });
 
   final double defaultHeight;
-  final MatrixMessageComposer widget;
+  final MessageComposer widget;
 
   @override
   Widget build(BuildContext context) {

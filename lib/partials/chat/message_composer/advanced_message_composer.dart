@@ -4,11 +4,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/partials/chat/message_composer/matrix_message_composer.dart';
+import 'package:piaf/partials/chat/message_composer/message_composer.dart';
 
 /// Allow the user to send a message in a room. If a userId is given, it will
 /// create a direct chat.
-class MatrixAdvancedMessageComposer extends StatefulWidget {
+class AdvancedMessageComposer extends StatefulWidget {
   final Room? room;
   final String? userId;
   final Client client;
@@ -17,7 +17,7 @@ class MatrixAdvancedMessageComposer extends StatefulWidget {
   final void Function(Room)? onRoomCreate;
   final bool isMobile;
 
-  const MatrixAdvancedMessageComposer({
+  const AdvancedMessageComposer({
     super.key,
     required this.room,
     required this.client,
@@ -29,19 +29,17 @@ class MatrixAdvancedMessageComposer extends StatefulWidget {
   });
 
   @override
-  MatrixAdvancedMessageComposerState createState() =>
-      MatrixAdvancedMessageComposerState();
+  AdvancedMessageComposerState createState() => AdvancedMessageComposerState();
 }
 
-class MatrixAdvancedMessageComposerState
-    extends State<MatrixAdvancedMessageComposer> {
+class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
   bool joiningRoom = false;
   @override
   Widget build(BuildContext context) {
     final room = widget.room;
     Event? reply = widget.reply;
 
-    final matrixComposerWidget = MatrixMessageComposer(
+    final matrixComposerWidget = MessageComposer(
         client: widget.client,
         room: room,
         userId: widget.userId,
@@ -149,9 +147,7 @@ class MatrixAdvancedMessageComposerState
                         child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: matrixComposerWidget)))
-                : Container(
-                    color: Theme.of(context).colorScheme.surface,
-                    child: matrixComposerWidget);
+                : matrixComposerWidget;
           }),
         if (room?.canSendDefaultMessages == false ||
             room != null && room.membership.isJoin != true)

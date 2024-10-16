@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/minestrix_chat.dart';
-import 'package:piaf/partials/chat/message_composer/matrix_message_composer.dart';
+import 'package:piaf/partials/chat/message_composer/message_composer.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 
 import '../../../partials/utils/platform_infos.dart';
@@ -446,7 +446,7 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 2.0, horizontal: 4),
-                                        child: MatrixMessageComposer(
+                                        child: MessageComposer(
                                             client: event.room.client,
                                             room: event.room,
                                             onReplyTo: event,
