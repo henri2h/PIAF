@@ -187,6 +187,7 @@ class _SpacePageState extends State<SpacePage> {
                             ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: spaceChunks.length,
+                                physics: NeverScrollableScrollPhysics(),
                                 itemBuilder: (BuildContext context, int i) {
                                   final spaceChunk = spaceChunks[i];
                                   if (spaceChunk.roomId == space?.id) {
