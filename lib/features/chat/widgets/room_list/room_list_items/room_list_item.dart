@@ -1,7 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/partials/social/social_gallery_preview_widget.dart';
 import 'package:piaf/utils/date_time_extension.dart';
+import 'package:piaf/utils/extensions/matrix/room_extension.dart';
 
 import '../../../../../router.gr.dart';
 import '../../../../../partials/chat_components/shimmer_widget.dart';
@@ -100,7 +102,7 @@ class RoomListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                room.getLocalizedDisplayname(),
+                                room.getName(),
                                 maxLines: 1,
                                 style: Theme.of(context)
                                     .textTheme

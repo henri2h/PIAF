@@ -36,6 +36,15 @@ extension RoomExtension on Room {
     if (event is Event) return event;
     return null;
   }
+
+  String getName() {
+    String? text;
+    if (isDirectChat) {
+      text = unsafeGetUserFromMemoryOrFallback(directChatMatrixID!).displayName;
+    }
+    text ??= getLocalizedDisplayname();
+    return text;
+  }
 }
 
 extension RoomFeedExtension on Room {

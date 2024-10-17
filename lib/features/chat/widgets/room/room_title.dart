@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/social/social_gallery_preview_widget.dart';
 
 import '../../../../partials/style/constants.dart';
 import '../../../../utils/matrix_widget.dart';
@@ -46,7 +48,7 @@ class MatrixRoomTitle extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  room!.getLocalizedDisplayname(),
+                  room!.getName(),
                   style: Constants.kTextTitleStyle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

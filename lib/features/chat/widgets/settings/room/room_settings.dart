@@ -72,7 +72,7 @@ class _RoomSettingsState extends State<RoomSettings> {
                             url: widget.room.avatar,
                             width: 120,
                             height: 120,
-                            defaultText: widget.room.getLocalizedDisplayname(),
+                            defaultText: widget.room.name,
                           )),
                     ),
                     if (widget.room.canSendDefaultStates)
@@ -96,10 +96,10 @@ class _RoomSettingsState extends State<RoomSettings> {
         ),
         ListTile(
             title: const Text("Room name"),
-            subtitle: Text(widget.room.getLocalizedDisplayname().isEmpty &&
-                    widget.room.canSendDefaultStates
-                ? 'Set the room name'
-                : widget.room.getLocalizedDisplayname()),
+            subtitle: Text(
+                widget.room.name.isEmpty && widget.room.canSendDefaultStates
+                    ? 'Set the room name'
+                    : widget.room.name),
             leading: const Icon(Icons.title),
             trailing: widget.room.canSendDefaultStates
                 ? const Icon(Icons.edit)

@@ -90,7 +90,7 @@ class RoomSettingsPageState extends State<RoomSettingsPage> {
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 16.0),
-                      child: Text(room.getLocalizedDisplayname(),
+                      child: Text(room.getName(),
                           style: Theme.of(context).textTheme.titleLarge),
                     ),
                   ),
