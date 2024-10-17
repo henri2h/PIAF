@@ -3,7 +3,8 @@ import 'package:matrix/matrix.dart';
 
 import 'package:piaf/config/extensible_types.dart';
 import 'package:piaf/config/matrix_types.dart';
-import 'package:piaf/partials/utils/extensible_event/extensible_event_content.dart';
+
+import '../../extensible_event/extensible_event_content.dart';
 
 part 'event_poll_start.g.dart';
 

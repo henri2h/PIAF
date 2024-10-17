@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/app_config.dart';
 import '../config/settings_key.dart';
-import 'manager/client_manager.dart';
+import 'managers/client_manager.dart';
 
 Future<void> pushHelper(
   PushNotification notification, {
