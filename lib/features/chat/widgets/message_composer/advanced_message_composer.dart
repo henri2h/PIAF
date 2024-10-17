@@ -1,17 +1,25 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/features/chat/widgets/message_composer/message_composer.dart';
+import 'package:piaf/partials/dialogs/key_verification_dialogs.dart';
+import 'package:piaf/partials/matrix/matrix_room_avatar.dart';
+import 'package:piaf/partials/matrix/matrix_user_avatar.dart';
+import 'package:piaf/utils/managers/string_distance.dart';
+import 'package:piaf/utils/text.dart';
+
+import '../../../../utils/matrix_widget.dart';
 
 /// Allow the user to send a message in a room. If a userId is given, it will
 /// create a direct chat.
 class AdvancedMessageComposer extends StatefulWidget {
   final Room? room;
   final String? userId;
-  final Client client;
   final Event? reply;
   final VoidCallback removeReply;
   final void Function(Room)? onRoomCreate;
@@ -20,7 +28,6 @@ class AdvancedMessageComposer extends StatefulWidget {
   const AdvancedMessageComposer({
     super.key,
     required this.room,
-    required this.client,
     required this.reply,
     required this.removeReply,
     required this.isMobile,
@@ -34,17 +41,103 @@ class AdvancedMessageComposer extends StatefulWidget {
 
 class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
   bool joiningRoom = false;
+
+  final inputStream = StreamController<String>();
+  final controller = TextEditingController();
+  bool suggestionChosed = false;
+  @override
+  void initState() {
+    controller.addListener(onEdit);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.removeListener(onEdit);
+    super.dispose();
+  }
+
+  void onEdit() {
+    //if (controller.text == "/")
+    setState(() {});
+    suggestionChosed = false;
+  }
+
+  List<String> get commands {
+    // If the user has pressed space, the we shouldn't display the suggestions.
+    if (!controller.text.startsWith("/") ||
+        controller.text.contains(" ") ||
+        suggestionChosed) {
+      return [];
+    }
+
+    final client = Matrix.of(context).client;
+
+    final list = client.commands.keys.toList();
+    final text = controller.text.replaceFirst("/", "");
+
+    final map = <String, int>{};
+
+    int i = 0;
+    while (i < list.length) {
+      final command = list[i];
+
+      // Compare only the beggining of the text
+      final aName = command.substring(0, min(command.length, text.length));
+
+      final dist = levenstheinDistance(aName, text);
+
+      if (dist < 2) {
+        map[command] = dist;
+        i++;
+      } else {
+        list.removeAt(i);
+      }
+    }
+
+    list.sort((A, B) {
+      int aDist = map[A]!;
+      int bDist = map[B]!;
+
+      return aDist.compareTo(bDist);
+    });
+
+    return list;
+  }
+
+  /// WARNING: The list might not be complete
+  List<User> get usersList {
+    final name = controller.text.split("@").last.toLowerCase();
+
+    // Return the filtered participants list
+    return widget.room
+            ?.getParticipants()
+            .where((u) =>
+                u.id.startsWith("@$name") ||
+                u.displayName
+                        ?.toLowerCase()
+                        .removeDiacritics()
+                        .contains(name.removeDiacritics()) ==
+                    true)
+            .toList() ??
+        [];
+  }
+
+  bool get writingUsername => controller.text.contains("@");
+
   @override
   Widget build(BuildContext context) {
     final room = widget.room;
     Event? reply = widget.reply;
+    final client = Matrix.of(context).client;
 
     final matrixComposerWidget = MessageComposer(
-        client: widget.client,
         room: room,
         userId: widget.userId,
         onRoomCreate: widget.onRoomCreate,
-        onReplyTo: reply,
+        inReplyTo: reply,
+        inputStream: inputStream.stream,
+        controller: controller,
         onSend: () {
           widget.removeReply();
           setState(() {});
@@ -52,6 +145,38 @@ class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
 
     return Column(
       children: [
+        if (controller.text.startsWith("/") || writingUsername)
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 200),
+            child: ListView(shrinkWrap: true, children: [
+              for (final command in commands)
+                ListTile(
+                  leading: Icon(Icons.bolt),
+                  title: Text("/$command"),
+                  onTap: () {
+                    inputStream.add("/$command");
+                    setState(() {
+                      suggestionChosed = true;
+                    });
+                  },
+                ),
+              for (final user in usersList)
+                ListTile(
+                  leading: MatrixUserAvatar.fromUser(user, client: client),
+                  title: Text(user.calcDisplayname()),
+                  subtitle: Text(user.id,
+                      style: TextStyle(
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
+                  onTap: () {
+                    inputStream.add(user.id);
+                    setState(() {
+                      suggestionChosed = true;
+                    });
+                  },
+                )
+            ]),
+          ),
         if (room?.membership == Membership.invite)
           MaterialButton(
               color: Colors.green,

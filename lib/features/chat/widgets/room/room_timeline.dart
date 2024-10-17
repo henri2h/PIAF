@@ -296,7 +296,6 @@ class RoomTimelineState extends State<RoomTimeline> {
             room: room,
             isMobile: widget.isMobile,
             userId: widget.userId,
-            client: client,
             onRoomCreate: widget.onRoomCreate,
             reply: composerReplyToEvent,
             removeReply: () {

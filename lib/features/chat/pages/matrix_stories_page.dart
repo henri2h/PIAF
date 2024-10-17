@@ -447,9 +447,8 @@ class MatrixStoriesPageState extends State<MatrixStoriesPage> {
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 2.0, horizontal: 4),
                                         child: MessageComposer(
-                                            client: event.room.client,
                                             room: event.room,
-                                            onReplyTo: event,
+                                            inReplyTo: event,
                                             hintText: "Reply",
                                             allowSendingPictures: false,
                                             enableAutoFocusOnDesktop: false,

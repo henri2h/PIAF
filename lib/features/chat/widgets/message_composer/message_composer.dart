@@ -9,18 +9,25 @@ import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 import 'package:piaf/utils/client_information.dart';
 
 import '../../../../utils/files_picker.dart';
+import '../../../../utils/matrix_widget.dart';
 import '../../../../utils/platform_infos.dart';
 
+class MessageComposerController {
+  final TextEditingController text = TextEditingController();
+}
+
 class MessageComposer extends StatefulWidget {
-  final Client client;
   final Room? room;
   final String? userId;
-  final Event? onReplyTo;
+  final Event? inReplyTo;
   final VoidCallback? onSend;
   final String hintText;
 
   final bool allowSendingPictures;
   final bool enableAutoFocusOnDesktop;
+
+  final Stream<String>? inputStream;
+  final TextEditingController? controller;
 
   /// set to true if we define a custom logic to send a message
   final Future<void> Function(String text)? overrideSending;
@@ -32,25 +39,26 @@ class MessageComposer extends StatefulWidget {
 
   const MessageComposer(
       {super.key,
-      required this.client,
       this.userId,
       required this.room,
       this.hintText = "Send a message",
       this.allowSendingPictures = true,
       this.enableAutoFocusOnDesktop = true,
-      this.onReplyTo,
+      this.inReplyTo,
       this.onSend,
       this.overrideSending,
       this.onRoomCreate,
       this.onEdit,
-      this.loadSavedText = true});
+      this.loadSavedText = true,
+      this.inputStream,
+      this.controller});
 
   @override
   MessageComposerState createState() => MessageComposerState();
 }
 
 class MessageComposerState extends State<MessageComposer> {
-  final TextEditingController _sendController = TextEditingController();
+  late TextEditingController _sendController;
 
   Room? room;
 
@@ -67,10 +75,13 @@ class MessageComposerState extends State<MessageComposer> {
       PlatformInfos.isMobile ? false : widget.enableAutoFocusOnDesktop;
 
   Future<String?>? initialText;
+  StreamSubscription<String>? _streamSubscription;
 
   @override
   void initState() {
+    _sendController = widget.controller ?? TextEditingController();
     room = widget.room;
+
     focusNode.addListener(onFocusChanged);
     initialText = loadText();
 
@@ -81,8 +92,32 @@ class MessageComposerState extends State<MessageComposer> {
     }
 
     _sendController.addListener(onTextChanged);
+    _streamSubscription = widget.inputStream?.listen((String text) {
+      if (mounted) {
+        // In case it's a command
+        if (text.startsWith("/")) {
+          _sendController.text = text;
+        } else if (text.startsWith("@")) {
+          // In this case it's a username
 
+          // Replace the last mxid with the selected one
+          _sendController.text = _sendController.text
+                  .replaceAllMapped(RegExp(r'[@]\w*$'), (match) {
+                return "";
+              }) +
+              text;
+        }
+        setState(() {});
+      }
+    });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _sendController.removeListener(onTextChanged);
+    _streamSubscription?.cancel();
+    super.dispose();
   }
 
   // Refresh the widget when the user has written his first text
@@ -96,8 +131,10 @@ class MessageComposerState extends State<MessageComposer> {
   }
 
   Future<String?> loadText() async {
+    final client = Matrix.of(context).client;
+
     if (!widget.loadSavedText) return null;
-    final text = await widget.client.getDraft(room?.id ?? widget.userId ?? '');
+    final text = await client.getDraft(room?.id ?? widget.userId ?? '');
     if (text != null) {
       setState(() {
         _sendController.text = text;
@@ -133,7 +170,7 @@ class MessageComposerState extends State<MessageComposer> {
 
   Future<void> _sendMessage() async {
     final text = _sendController.text;
-    final onReplyTo = widget.onReplyTo;
+    final onReplyTo = widget.inReplyTo;
     // clear state
     setState(() {
       _isSending = true;
@@ -141,19 +178,27 @@ class MessageComposerState extends State<MessageComposer> {
       _isTyping = false;
     });
 
-    if (text != "") {
-      widget.onSend?.call();
+    // Test if the input is supposed to be a command
+    if (!text.replaceAll(" ", "").startsWith("/")) {
+      // Don't send if it's a command
+      if (text != "") {
+        widget.onSend?.call();
 
-      if (widget.overrideSending == null) {
-        room?.sendTextEvent(text, inReplyTo: onReplyTo);
-      } else {
-        await widget.overrideSending!(text);
+        if (widget.overrideSending == null) {
+          await room?.sendTextEvent(text, inReplyTo: onReplyTo);
+        } else {
+          await widget.overrideSending!(text);
+        }
       }
-    }
 
-    if (file?.bytes != null) {
-      sendImage();
-      file = null;
+      if (file?.bytes != null) {
+        sendImage();
+        file = null;
+      }
+    } else {
+      // In case it's a command
+      await room?.client
+          .parseAndRunCommand(room!, text, inReplyTo: widget.inReplyTo);
     }
 
     setState(() {
@@ -164,12 +209,14 @@ class MessageComposerState extends State<MessageComposer> {
   }
 
   Future<void> _sendMessageOrCreate() async {
+    final client = Matrix.of(context).client;
+
     if (room != null) return await _sendMessage();
 
     if (widget.userId?.isValidMatrixId == true &&
         widget.userId?.startsWith("@") == true) {
-      final roomId = await widget.client.startDirectChat(widget.userId!);
-      room = widget.client.getRoomById(roomId);
+      final roomId = await client.startDirectChat(widget.userId!);
+      room = client.getRoomById(roomId);
       if (room != null) {
         await _sendMessage();
 
@@ -180,7 +227,7 @@ class MessageComposerState extends State<MessageComposer> {
         }
 
         // remove message text from drafts. (As we change the roomId, the automatic cleaninup doesn't work)
-        widget.client.setDraft(message: '', roomId: widget.userId ?? '');
+        client.setDraft(message: '', roomId: widget.userId ?? '');
       }
     }
   }
@@ -188,10 +235,12 @@ class MessageComposerState extends State<MessageComposer> {
   Timer? editTimer;
 
   void setMessageDraft(String text) {
+    final client = Matrix.of(context).client;
+
     editTimer?.cancel();
     editTimer = Timer(const Duration(milliseconds: 600), () async {
-      await widget.client
-          .setDraft(message: text, roomId: room?.id ?? widget.userId ?? '');
+      await client.setDraft(
+          message: text, roomId: room?.id ?? widget.userId ?? '');
     });
   }
 
@@ -233,7 +282,7 @@ class MessageComposerState extends State<MessageComposer> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (constraints.maxWidth > 600)
-                  UserAvatar(defaultHeight: defaultHeight, widget: widget),
+                  UserAvatar(defaultHeight: defaultHeight),
                 Expanded(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minHeight: defaultHeight),
@@ -356,26 +405,26 @@ class UserAvatar extends StatelessWidget {
   const UserAvatar({
     super.key,
     required this.defaultHeight,
-    required this.widget,
   });
 
   final double defaultHeight;
-  final MessageComposer widget;
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
+
     return SizedBox(
       height: defaultHeight,
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: FutureBuilder(
-            future: widget.client.fetchOwnProfile(),
+            future: client.fetchOwnProfile(),
             builder: (BuildContext context, AsyncSnapshot<Profile> p) {
               return MatrixImageAvatar(
-                client: widget.client,
+                client: client,
                 url: p.data?.avatarUrl,
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                defaultText: p.data?.displayName ?? widget.client.userID,
+                defaultText: p.data?.displayName ?? client.userID,
                 fit: true,
                 height: MinestrixAvatarSizeConstants.small,
                 width: MinestrixAvatarSizeConstants.small,

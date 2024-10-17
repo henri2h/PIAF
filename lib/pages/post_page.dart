@@ -42,7 +42,6 @@ class _PostPageState extends State<PostPage> {
                       enableComment: false),
                   const Divider(),
                   MessageComposer(
-                    client: widget.event.room.client,
                     room: widget.event.room,
                     enableAutoFocusOnDesktop: false,
                     hintText: "Reply",
