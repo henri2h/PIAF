@@ -8,6 +8,7 @@ import 'package:pasteboard/pasteboard.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
 import 'package:piaf/utils/client_information.dart';
 
+import '../../../../config/app_config.dart';
 import '../../../../utils/files_picker.dart';
 import '../../../../utils/matrix_widget.dart';
 import '../../../../utils/platform_infos.dart';
@@ -32,7 +33,7 @@ class MessageComposer extends StatefulWidget {
   /// set to true if we define a custom logic to send a message
   final Future<void> Function(String text)? overrideSending;
   final void Function(String text)? onEdit;
-  final void Function(Room)? onRoomCreate;
+  final void Function(Room)? onRoomCreated;
 
   /// Save message draft
   final bool loadSavedText;
@@ -47,7 +48,7 @@ class MessageComposer extends StatefulWidget {
       this.inReplyTo,
       this.onSend,
       this.overrideSending,
-      this.onRoomCreate,
+      this.onRoomCreated,
       this.onEdit,
       this.loadSavedText = true,
       this.inputStream,
@@ -66,8 +67,42 @@ class MessageComposerState extends State<MessageComposer> {
   Uint8List? fileBytes;
   bool _isSending = false;
   bool _isTyping = false;
-  var focusNode = FocusNode();
-  var textFieldFocusNode = FocusNode();
+  late FocusNode textFieldFocusNode;
+
+  Future<void> pasteImage() async {
+    final imageBytes = await Pasteboard.image;
+    if (imageBytes != null) {
+      setState(() {
+        file = PlatformFile(
+            name: "clipboard", size: imageBytes.length, bytes: imageBytes);
+      });
+    }
+  }
+
+  KeyEventResult keyHandler(node, event) {
+    // Only listen when key is released. That's when the TextController is updated
+    // Send message on ctrl + enter if controlEnterToSend == true or on enter
+    if ((HardwareKeyboard.instance.isControlPressed ^
+            !AppConfig.controlEnterToSend) &&
+        event.logicalKey == LogicalKeyboardKey.enter) {
+      if (event is KeyUpEvent) {
+        _sendMessageOrCreate();
+      }
+      return KeyEventResult.handled;
+    }
+
+    // Paste image
+    if (HardwareKeyboard.instance.isControlPressed &&
+        event.logicalKey == LogicalKeyboardKey.keyV) {
+      if (event is KeyUpEvent) {
+        pasteImage();
+      }
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
+  }
+
   bool shouldResetView =
       false; // should we clear the text input on the next key press
 
@@ -82,7 +117,9 @@ class MessageComposerState extends State<MessageComposer> {
     _sendController = widget.controller ?? TextEditingController();
     room = widget.room;
 
-    focusNode.addListener(onFocusChanged);
+    textFieldFocusNode = FocusNode(onKeyEvent: keyHandler);
+
+    textFieldFocusNode.addListener(onFocusChanged);
     initialText = loadText();
 
     if (isAutoFocusEnabled) {
@@ -144,7 +181,7 @@ class MessageComposerState extends State<MessageComposer> {
   }
 
   void onFocusChanged() {
-    if (focusNode.hasFocus) {
+    if (textFieldFocusNode.hasFocus) {
       _isTyping = true;
     } else {
       _isTyping = false;
@@ -168,13 +205,13 @@ class MessageComposerState extends State<MessageComposer> {
     }
   }
 
-  Future<void> _sendMessage() async {
+  Future<void> _sendEventAndImage() async {
     final text = _sendController.text;
     final onReplyTo = widget.inReplyTo;
     // clear state
     setState(() {
       _isSending = true;
-      _sendController.clear();
+      _sendController.text = "";
       _isTyping = false;
     });
 
@@ -183,7 +220,6 @@ class MessageComposerState extends State<MessageComposer> {
       // Don't send if it's a command
       if (text != "") {
         widget.onSend?.call();
-
         if (widget.overrideSending == null) {
           await room?.sendTextEvent(text, inReplyTo: onReplyTo);
         } else {
@@ -211,16 +247,16 @@ class MessageComposerState extends State<MessageComposer> {
   Future<void> _sendMessageOrCreate() async {
     final client = Matrix.of(context).client;
 
-    if (room != null) return await _sendMessage();
+    if (room != null) return await _sendEventAndImage();
 
     if (widget.userId?.isValidMatrixId == true &&
         widget.userId?.startsWith("@") == true) {
-      final roomId = await client.startDirectChat(widget.userId!);
+      final roomId =
+          await client.startDirectChat(widget.userId!, waitForSync: true);
       room = client.getRoomById(roomId);
       if (room != null) {
-        await _sendMessage();
-
-        widget.onRoomCreate?.call(room!);
+        await _sendEventAndImage();
+        widget.onRoomCreated?.call(room!);
 
         if (mounted) {
           setState(() {});
@@ -289,82 +325,49 @@ class MessageComposerState extends State<MessageComposer> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Center(
-                        child: RawKeyboardListener(
-                            focusNode: focusNode,
-                            onKey: (event) async {
-                              if (shouldResetView) {
-                                setState(() {
-                                  _sendController.clear();
-                                  shouldResetView = false;
-                                  setMessageDraft("");
-                                });
-                              }
-
-                              if (event.isControlPressed) {
-                                if (event
-                                    .isKeyPressed(LogicalKeyboardKey.enter)) {
-                                  _sendMessageOrCreate();
-                                  shouldResetView = true;
-                                }
-
-                                if (event
-                                    .isKeyPressed(LogicalKeyboardKey.keyV)) {
-                                  final imageBytes = await Pasteboard.image;
-                                  if (imageBytes != null) {
-                                    setState(() {
-                                      file = PlatformFile(
-                                          name: "clipboard",
-                                          size: imageBytes.length,
-                                          bytes: imageBytes);
-                                    });
-                                  }
-                                }
-                              }
-                            },
-                            child: TextField(
-                                autofocus: isAutoFocusEnabled,
-                                focusNode: textFieldFocusNode,
-                                maxLines: 5,
-                                minLines: 1,
-                                controller: _sendController,
-                                onChanged: onEdit,
-                                keyboardType: TextInputType.multiline,
-                                textAlignVertical: TextAlignVertical.center,
-                                decoration: InputDecoration(
-                                    filled: true,
-                                    border: InputBorder.none,
-                                    prefixIcon: _isTyping
-                                        ? null
-                                        : const Icon(
-                                            Icons.message,
-                                          ),
-                                    enabledBorder: const OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(16),
-                                      ),
+                          child: TextField(
+                              autofocus: isAutoFocusEnabled,
+                              focusNode: textFieldFocusNode,
+                              maxLines: 5,
+                              minLines: 1,
+                              controller: _sendController,
+                              onChanged: onEdit,
+                              keyboardType: TextInputType.multiline,
+                              textAlignVertical: TextAlignVertical.center,
+                              decoration: InputDecoration(
+                                  filled: true,
+                                  border: InputBorder.none,
+                                  prefixIcon: _isTyping
+                                      ? null
+                                      : const Icon(
+                                          Icons.message,
+                                        ),
+                                  enabledBorder: const OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(16),
                                     ),
-                                    focusedBorder: const OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(16),
-                                      ),
+                                  ),
+                                  focusedBorder: const OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(16),
                                     ),
-                                    hintText: widget.hintText,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 12),
-                                    suffixIcon: widget.allowSendingPictures &&
-                                            room != null &&
-                                            (!_isTyping || isAutoFocusEnabled)
-                                        ? IconButton(
-                                            onPressed: () {
-                                              if (room != null) {
-                                                addImage(context, room!);
-                                              }
-                                            },
-                                            icon: Icon(Icons.image))
-                                        : null))),
-                      ),
+                                  ),
+                                  hintText: widget.hintText,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 12, horizontal: 12),
+                                  suffixIcon: widget.allowSendingPictures &&
+                                          room != null &&
+                                          (!_isTyping || isAutoFocusEnabled)
+                                      ? IconButton(
+                                          onPressed: () {
+                                            if (room != null) {
+                                              addImage(context, room!);
+                                            }
+                                          },
+                                          icon: Icon(Icons.image))
+                                      : null))),
                     ),
                   ),
                 ),

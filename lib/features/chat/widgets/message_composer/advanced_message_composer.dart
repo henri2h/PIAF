@@ -20,7 +20,7 @@ class AdvancedMessageComposer extends StatefulWidget {
   final String? userId;
   final Event? reply;
   final VoidCallback removeReply;
-  final void Function(Room)? onRoomCreate;
+  final void Function(Room)? onRoomCreated;
   final bool isMobile;
 
   const AdvancedMessageComposer({
@@ -30,7 +30,7 @@ class AdvancedMessageComposer extends StatefulWidget {
     required this.removeReply,
     required this.isMobile,
     this.userId,
-    required this.onRoomCreate,
+    required this.onRoomCreated,
   });
 
   @override
@@ -132,7 +132,7 @@ class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
     final matrixComposerWidget = MessageComposer(
         room: room,
         userId: widget.userId,
-        onRoomCreate: widget.onRoomCreate,
+        onRoomCreated: widget.onRoomCreated,
         inReplyTo: reply,
         inputStream: inputStream.stream,
         controller: controller,

@@ -18,7 +18,7 @@ class RoomTimeline extends StatefulWidget {
   final bool disableTimelinePadding;
   final bool isMobile;
 
-  final void Function(Room)? onRoomCreate;
+  final void Function(Room)? onRoomCreated;
 
   final bool updating;
   final Stream<int> streamTimelineRemove;
@@ -30,7 +30,7 @@ class RoomTimeline extends StatefulWidget {
       required this.isMobile,
       this.userId,
       this.disableTimelinePadding = false,
-      this.onRoomCreate,
+      this.onRoomCreated,
       required this.timeline,
       required this.updating,
       required this.setUpdating,
@@ -296,7 +296,7 @@ class RoomTimelineState extends State<RoomTimeline> {
             room: room,
             isMobile: widget.isMobile,
             userId: widget.userId,
-            onRoomCreate: widget.onRoomCreate,
+            onRoomCreated: widget.onRoomCreated,
             reply: composerReplyToEvent,
             removeReply: () {
               setState(() {

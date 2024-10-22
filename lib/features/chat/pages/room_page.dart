@@ -4,6 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
+import 'package:piaf/partials/social/social_gallery_preview_widget.dart';
 import 'package:piaf/utils/extensions/matrix/peeking_extension.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
@@ -146,7 +148,7 @@ class RoomPageState extends State<RoomPage> {
           }
 
           return StreamBuilder(
-              stream: room?.onUpdate.stream,
+              stream: room?.client.onRoomInSync(room?.id ?? ''),
               builder: (context, snap) {
                 timeline = snapshot.data;
                 return buildChatView(room);
@@ -225,7 +227,7 @@ class RoomPageState extends State<RoomPage> {
             updating: updating,
             streamTimelineRemove: streamTimelineRemove.stream,
             streamTimelineInsert: streamTimelineInsert.stream,
-            onRoomCreate: onRoomCreated,
+            onRoomCreated: onRoomCreated,
             setUpdating: (val) => mounted
                 ? setState(() {
                     updating = val;

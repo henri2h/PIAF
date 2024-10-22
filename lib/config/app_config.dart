@@ -12,4 +12,5 @@ abstract class AppConfig {
   static const String pushNotificationsAppId = 'fr.henri2h.minestrix';
   static bool enableSentry = true;
   static bool experimentalVoip = true;
+  static bool controlEnterToSend = false;
 }
