@@ -37,7 +37,7 @@ class PostEditorPage extends StatefulWidget {
   }) async {
     if (rooms.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           content: const ListTile(
             leading: Icon(Icons.error),
             title: Text("No room available to write a post."),

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
-import 'package:piaf/utils/extensions/matrix/event_extension.dart';
 import 'package:piaf/utils/date_time_extension.dart';
 
 import '../../../../partials/popup_route_wrapper.dart';

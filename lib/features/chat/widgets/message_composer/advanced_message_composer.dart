@@ -7,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/features/chat/widgets/message_composer/message_composer.dart';
-import 'package:piaf/partials/dialogs/key_verification_dialogs.dart';
-import 'package:piaf/partials/matrix/matrix_room_avatar.dart';
 import 'package:piaf/partials/matrix/matrix_user_avatar.dart';
 import 'package:piaf/utils/managers/string_distance.dart';
 import 'package:piaf/utils/text.dart';

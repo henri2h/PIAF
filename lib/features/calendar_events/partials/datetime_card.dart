@@ -21,7 +21,7 @@ class DateTimeCard extends StatelessWidget {
             child: MaterialButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               onPressed: () async {
                 final result = await showDatePicker(
                     context: context,
@@ -48,7 +48,7 @@ class DateTimeCard extends StatelessWidget {
             child: MaterialButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               onPressed: () async {
                 final result = await showTimePicker(
                     context: context, initialTime: startTime);

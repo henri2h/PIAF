@@ -11,7 +11,7 @@ class Community {
     List<Room> spaceChilds = [];
 
     for (var child in space.spaceChildren) {
-      if (child.roomId != null && (child.via?.isNotEmpty ?? false)) {
+      if (child.roomId != null && (child.via.isNotEmpty ?? false)) {
         final room = space.client.getRoomById(child.roomId!);
 
         if (room?.isSpace == false && room?.isFeed == true) {

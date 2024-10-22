@@ -31,7 +31,7 @@ class _TreeSpaceItem extends State<TreeSpaceItem> {
     List<Room> spaceChilds = [];
 
     for (var child in r.spaceChildren) {
-      if (child.roomId != null && (child.via?.isNotEmpty ?? false)) {
+      if (child.roomId != null && (child.via.isNotEmpty)) {
         final room = r.client.getRoomById(child.roomId!);
 
         if (room?.isSpace ?? false) {

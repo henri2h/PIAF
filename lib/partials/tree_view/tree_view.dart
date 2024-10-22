@@ -1,6 +1,3 @@
-/// Tree view widget library
-library tree_view;
-
 import 'package:flutter/material.dart';
 
 class TreeView extends InheritedWidget {

@@ -3,7 +3,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/partials/layouts/layout_view.dart';
-import 'package:piaf/features/feed/widgets/post/post_writer_modal.dart';
 import 'package:piaf/features/user/widgets/user_friends_card.dart';
 import 'package:piaf/features/user/widgets/user_profile_selection.dart';
 import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';

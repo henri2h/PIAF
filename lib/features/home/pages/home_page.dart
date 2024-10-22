@@ -5,7 +5,6 @@ import 'package:piaf/router.gr.dart';
 import '../../../partials/sync/sync_status_card.dart';
 import '../../../utils/matrix_widget.dart';
 import '../../../partials/account_selection_button.dart';
-import '../../../utils/matrix_widget.dart';
 import '../../feed/pages/feed_list_page.dart';
 
 @RoutePage()

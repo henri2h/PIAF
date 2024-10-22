@@ -19,9 +19,9 @@ class LargeIconButton extends StatelessWidget {
           child: FilledButton.tonal(
             onPressed: onPressed,
             style: const ButtonStyle(
-                padding: MaterialStatePropertyAll<EdgeInsetsGeometry?>(
+                padding: WidgetStatePropertyAll<EdgeInsetsGeometry?>(
                     EdgeInsets.all(8)),
-                shape: MaterialStatePropertyAll<OutlinedBorder?>(
+                shape: WidgetStatePropertyAll<OutlinedBorder?>(
                     RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(16))))),
             child: SizedBox(width: 48, height: 48, child: Icon(icon, size: 28)),

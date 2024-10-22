@@ -6,7 +6,6 @@ import 'package:matrix/matrix.dart';
 
 import '../../../../partials/style/constants.dart';
 import '../event/event_widget.dart';
-import 'room_event_item.dart';
 
 enum Selection { room, all }
 

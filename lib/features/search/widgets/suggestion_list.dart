@@ -5,7 +5,6 @@ import 'package:piaf/utils/minestrix/minestrix_client_extension.dart';
 import 'package:piaf/utils/matrix_widget.dart';
 import '../../../partials/typo/titles.dart';
 import '../../../partials/room_feed_tile_navigator.dart';
-import '../../../partials/typo/titles.dart';
 
 class SuggestionList extends StatelessWidget {
   const SuggestionList({super.key, required this.shouldPop});
