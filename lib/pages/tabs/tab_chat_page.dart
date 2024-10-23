@@ -41,53 +41,58 @@ class TabChatPageState extends State<TabChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Provider.value(
-      value: this,
-      child: ChatPageProvider(
-        client: Matrix.of(context).client,
+    return StreamBuilder(
+        stream: Matrix.of(context).onClientChange.stream,
+        builder: (context, snap) {
+          return Provider.value(
+            value: this,
+            child: ChatPageProvider(
+              key: Key("client_${snap.data}"),
+              client: Matrix.of(context).client,
 
-        // Open the explore view by default for guests
-        selectedSpace: Matrix.of(context).isGuest == true
-            ? CustomSpacesTypes.explore
-            : CustomSpacesTypes.home,
+              // Open the explore view by default for guests
+              selectedSpace: Matrix.of(context).isGuest == true
+                  ? CustomSpacesTypes.explore
+                  : CustomSpacesTypes.home,
 
-        onRoomSelection: onRoomSelected,
-        onSpaceSelection: (String spaceId) async {
-          if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
-            await context.navigateTo(RoomRoute(roomId: spaceId));
-          } else {
-            await context.navigateTo(const RoomListOrPlaceHolderRoute());
-          }
-        },
-        onLongPressedSpace: (String? id) async {
-          if (id != null) {
-            await context.navigateTo(SpaceRoute(spaceId: id));
-          }
-        },
+              onRoomSelection: onRoomSelected,
+              onSpaceSelection: (String spaceId) async {
+                if (spaceId.startsWith("#") || spaceId.startsWith("!")) {
+                  await context.navigateTo(RoomRoute(roomId: spaceId));
+                } else {
+                  await context.navigateTo(const RoomListOrPlaceHolderRoute());
+                }
+              },
+              onLongPressedSpace: (String? id) async {
+                if (id != null) {
+                  await context.navigateTo(SpaceRoute(spaceId: id));
+                }
+              },
 
-        child: Scaffold(
-          body: LayoutBuilder(builder: (context, constraints) {
-            mobile = constraints.maxWidth < 800;
-            return Row(
-              children: [
-                if (!mobile)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 400),
-                        child: const Card(
-                          child: SimpleRoomList(
-                            mobile: false,
-                          ),
-                        )),
-                  ),
-                const Expanded(
-                    child: AutoRouter(inheritNavigatorObservers: true)),
-              ],
-            );
-          }),
-        ),
-      ),
-    );
+              child: Scaffold(
+                body: LayoutBuilder(builder: (context, constraints) {
+                  mobile = constraints.maxWidth < 800;
+                  return Row(
+                    children: [
+                      if (!mobile)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 400),
+                              child: const Card(
+                                child: SimpleRoomList(
+                                  mobile: false,
+                                ),
+                              )),
+                        ),
+                      const Expanded(
+                          child: AutoRouter(inheritNavigatorObservers: true)),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          );
+        });
   }
 }
