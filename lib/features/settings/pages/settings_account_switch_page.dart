@@ -109,9 +109,9 @@ class SettingsAccountSwitchPageState extends State<SettingsAccountSwitchPage> {
                     onTap: () async {
                       m.setActiveClient(c);
                       if (widget.popOnUserSelected) {
-                        Navigator.of(context).pop();
+                        await context.maybePop();
                       } else {
-                        context.navigateTo(const FeedRoute());
+                        await context.navigateTo(TabChatRoute());
                       }
                     }),
             ],
