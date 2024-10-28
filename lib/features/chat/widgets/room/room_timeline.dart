@@ -66,7 +66,7 @@ class RoomTimelineState extends State<RoomTimeline> {
   late StreamSubscription<int>? onInsert;
   late StreamSubscription<int>? onRemove;
 
-  late bool isDirectChat;
+  bool get isDirectChat => room?.isDirectChat ?? false;
 
   @override
   void initState() {
@@ -114,8 +114,6 @@ class RoomTimelineState extends State<RoomTimeline> {
     onRemove = widget.streamTimelineRemove.listen((i) {
       chatObserver.standby(isRemove: true);
     });
-
-    isDirectChat = room?.isDirectChat ?? false;
   }
 
   @override
@@ -132,20 +130,24 @@ class RoomTimelineState extends State<RoomTimeline> {
               _scrollController.position.minScrollExtent <
           10;
 
+  bool get canRequestHistory =>
+      widget.timeline?.room.membership == Membership.join &&
+      (widget.timeline?.canRequestHistory ?? false);
+
   void scrollListener() async {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 600) {
-      if (widget.updating == false &&
-          (widget.timeline?.canRequestHistory ?? false)) {
-        widget.setUpdating(true);
-        await widget.timeline?.requestHistory();
-        widget.setUpdating(false);
-      }
+    if (widget.timeline == null || !canRequestHistory || widget.updating) {
+      return;
+    }
+
+    if (_scrollController.position.extentAfter < 600) {
+      widget.setUpdating(true);
+      await widget.timeline?.requestHistory();
+      widget.setUpdating(false);
     }
   }
 
   Future<void> requestHistoryIfNeeded() async {
-    while ((widget.timeline?.canRequestHistory ?? false) &&
+    while (canRequestHistory &&
         _scrollController.hasClients &&
         _scrollController.position.hasContentDimensions &&
         _scrollController.position.maxScrollExtent == 0) {
