@@ -6,7 +6,6 @@ class CustomHeader extends StatelessWidget {
       {super.key,
       this.actionButton,
       this.onBack,
-      this.drawerEnabled = false,
       this.overrideCanPop = false,
       this.child,
       this.title});
@@ -16,7 +15,6 @@ class CustomHeader extends StatelessWidget {
   final List<Widget>? actionButton;
   final Future<void> Function()? onBack;
   final bool overrideCanPop;
-  final bool drawerEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +35,10 @@ class CustomHeader extends StatelessWidget {
                           context.router.maybePop();
                         },
                         icon: const Icon(Icons.arrow_back)),
-                  if (context.router.canPop() == false && drawerEnabled)
+                  if (context.router.canPop() == false)
                     IconButton(
                         onPressed: () {
                           if (onBack != null) onBack!();
-                          Scaffold.of(context).openDrawer();
                         },
                         icon: const Icon(Icons.menu)),
                   if (child != null) Flexible(child: child!),

@@ -20,7 +20,6 @@ class TabChatPage extends StatefulWidget {
 
 class TabChatPageState extends State<TabChatPage> {
   final scrollControllerSpaces = ScrollController();
-  final scrollControllerDrawer = ScrollController();
   final scrollControllerRoomList = ScrollController();
 
   bool mobile = true;

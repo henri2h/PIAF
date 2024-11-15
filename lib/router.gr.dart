@@ -34,14 +34,13 @@ import 'package:piaf/features/chat/widgets/chat_page_items/provider/chat_page_pr
     as _i5;
 import 'package:piaf/features/chat/widgets/room_create/create_chat_page.dart'
     as _i10;
-import 'package:piaf/features/chat/widgets/room_create/create_group_page.dart'
-    as _i11;
 import 'package:piaf/features/communities/pages/community_detail_page.dart'
     as _i8;
 import 'package:piaf/features/communities/pages/community_page.dart' as _i9;
 import 'package:piaf/features/feed/pages/feed_creation_page.dart' as _i16;
 import 'package:piaf/features/feed/pages/feed_list_page.dart' as _i17;
 import 'package:piaf/features/feed/pages/feed_page.dart' as _i18;
+import 'package:piaf/features/groups/pages/create_group_page.dart' as _i11;
 import 'package:piaf/features/groups/pages/group_page.dart' as _i20;
 import 'package:piaf/features/home/pages/home_page.dart' as _i21;
 import 'package:piaf/features/image/pages/post_gallery_page.dart' as _i33;
@@ -497,19 +496,10 @@ class CreateChatRouteArgs {
 
 /// generated route for
 /// [_i11.CreateGroupPage]
-class CreateGroupRoute extends _i63.PageRouteInfo<CreateGroupRouteArgs> {
-  CreateGroupRoute({
-    _i64.Key? key,
-    required dynamic Function(String?) onRoomSelected,
-    required _i65.Client client,
-    List<_i63.PageRouteInfo>? children,
-  }) : super(
+class CreateGroupRoute extends _i63.PageRouteInfo<void> {
+  const CreateGroupRoute({List<_i63.PageRouteInfo>? children})
+      : super(
           CreateGroupRoute.name,
-          args: CreateGroupRouteArgs(
-            key: key,
-            onRoomSelected: onRoomSelected,
-            client: client,
-          ),
           initialChildren: children,
         );
 
@@ -518,33 +508,9 @@ class CreateGroupRoute extends _i63.PageRouteInfo<CreateGroupRouteArgs> {
   static _i63.PageInfo page = _i63.PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<CreateGroupRouteArgs>();
-      return _i11.CreateGroupPage(
-        key: args.key,
-        onRoomSelected: args.onRoomSelected,
-        client: args.client,
-      );
+      return const _i11.CreateGroupPage();
     },
   );
-}
-
-class CreateGroupRouteArgs {
-  const CreateGroupRouteArgs({
-    this.key,
-    required this.onRoomSelected,
-    required this.client,
-  });
-
-  final _i64.Key? key;
-
-  final dynamic Function(String?) onRoomSelected;
-
-  final _i65.Client client;
-
-  @override
-  String toString() {
-    return 'CreateGroupRouteArgs{key: $key, onRoomSelected: $onRoomSelected, client: $client}';
-  }
 }
 
 /// generated route for

@@ -152,7 +152,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                                 label: "Stories"),
                           ],
                         ),
-                  endDrawer: const NotificationView(),
                 );
               },
               routes: const [

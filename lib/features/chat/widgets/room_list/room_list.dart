@@ -58,7 +58,6 @@ class _RoomListState extends State<RoomList> {
   final scrollController =
       ScrollController(initialScrollOffset: roomListSelectorHeight);
   final spaceListScrollController = ScrollController();
-  final scrollControllerDrawer = ScrollController();
 
   bool get isHome => selectedSpace == CustomSpacesTypes.home;
 
