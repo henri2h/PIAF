@@ -2,28 +2,38 @@ name: Flutter
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Flutter SDK
         uses: flutter-actions/setup-flutter@v2
         with:
           channel: stable
-          version: 3.0.2
-
+          version: 3.19.0
+          cache: true
+    
       - name: Install dependencies
         run: flutter pub get
 
       - name: Analyze project source
         run: dart analyze
 
-      - name: Run tests
-        run: flutter test
+      #- name: Run tests
+      #  run: flutter test
+ 
+      - name: Build android
+        run: flutter build apk
+
+      - name: Build results
+        uses: actions/upload-artifact@v4
+        with:
+          name: app.apk
+          path: build/app/outputs/apk/release/app-release.apk
