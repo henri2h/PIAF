@@ -17,7 +17,7 @@ jobs:
         uses: flutter-actions/setup-flutter@v2
         with:
           channel: stable
-          version: 3.19.0
+          flutter-version: 3.24.5
           cache: true
     
       - name: Install dependencies
