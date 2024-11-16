@@ -311,32 +311,33 @@ class SettingsPageHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ],
               ),
             ),
-          SafeArea(
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 150),
-              opacity: 1 - progress,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 260,
-                      child: MatrixImageAvatar(
-                          url: room.avatar,
-                          client: room.client,
-                          defaultText: room.getLocalizedDisplayname(),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          thumnailOnly: false,
-                          unconstraigned: true,
-                          shape: MatrixImageAvatarShape.none,
-                          width: MinestrixAvatarSizeConstants.big,
-                          height: MinestrixAvatarSizeConstants.big),
+          if (progress != 1)
+            SafeArea(
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 150),
+                opacity: 1 - progress,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 260,
+                        child: MatrixImageAvatar(
+                            url: room.avatar,
+                            client: room.client,
+                            defaultText: room.getLocalizedDisplayname(),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            thumnailOnly: false,
+                            unconstraigned: true,
+                            shape: MatrixImageAvatarShape.none,
+                            width: MinestrixAvatarSizeConstants.big,
+                            height: MinestrixAvatarSizeConstants.big),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           if (progress != 1)
             AppBar(
               forceMaterialTransparency: true,
