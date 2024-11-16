@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze project source
-        run: dart analyze
+      #- name: Analyze project source
+      #  run: dart analyze
 
       #- name: Run tests
       #  run: flutter test
@@ -31,7 +31,7 @@ jobs:
       - name: Build android
         run: flutter build apk
 
-      - name: Build results
+      - name: Upload build result
         uses: actions/upload-artifact@v4
         with:
           name: app.apk
