@@ -10,8 +10,9 @@ class CustomSpacesTypes {
   static const String favorites = "Favorites";
   static const String unread = "Unreads";
   static const String active = "Active";
-  static const String dm = "Direct message";
+  static const String dm = "DMs";
   static const String explore = "Explore";
+  static const String todo = "Todo";
 }
 
 class MatrixSpacesList extends StatelessWidget {

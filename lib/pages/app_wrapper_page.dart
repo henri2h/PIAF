@@ -146,8 +146,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
                                     }),
                                 label: "Chats"),
                             const NavigationDestination(
-                                icon: Icon(Icons.list), label: "Todo"),
-                            const NavigationDestination(
                                 icon: Icon(Icons.web_stories),
                                 label: "Stories"),
                           ],
@@ -157,7 +155,6 @@ class _AppWrapperPageState extends State<AppWrapperPage> {
               routes: const [
                 TabHomeRoute(),
                 TabChatRoute(),
-                TabTodoRoute(),
                 TabStoriesRoute(),
               ],
             );

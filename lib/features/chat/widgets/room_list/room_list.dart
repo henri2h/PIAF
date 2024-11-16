@@ -60,6 +60,7 @@ class _RoomListState extends State<RoomList> {
   final spaceListScrollController = ScrollController();
 
   bool get isHome => selectedSpace == CustomSpacesTypes.home;
+  bool get isTodo => selectedSpace == CustomSpacesTypes.todo;
 
   void enableSelection() {
     if (!selectMode) {
@@ -117,12 +118,16 @@ class _RoomListState extends State<RoomList> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: isHome
+      floatingActionButton: isHome || isTodo
           ? FloatingActionButton(
               onPressed: () async {
-                await Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => CreateChatPage(
-                        client: client, onRoomSelected: onSelection)));
+                if (isTodo) {
+                  await context.pushRoute(TodoListAddRoute());
+                } else {
+                  await context
+                      .pushRoute(CreateChatRoute(onRoomSelected: onSelection));
+                }
+                
               },
               child: const Icon(Icons.message),
             )

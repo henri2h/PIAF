@@ -33,22 +33,22 @@ class FilterBar extends StatelessWidget {
                 ),
                 CustomFilter(
                   controller: controller,
-                  name: "Unreads",
                   spaceName: CustomSpacesTypes.unread,
                 ),
                 CustomFilter(
                   controller: controller,
-                  name: "Favorites",
                   spaceName: CustomSpacesTypes.favorites,
                 ),
                 CustomFilter(
                   controller: controller,
-                  name: "DMs",
+                  spaceName: CustomSpacesTypes.todo,
+                ),
+                CustomFilter(
+                  controller: controller,
                   spaceName: CustomSpacesTypes.dm,
                 ),
                 CustomFilter(
                   controller: controller,
-                  name: "Low priority",
                   spaceName: CustomSpacesTypes.lowPriority,
                 ),
               ],
@@ -65,12 +65,12 @@ class CustomFilter extends StatelessWidget {
   const CustomFilter({
     super.key,
     required this.controller,
-    required this.name,
+    this.name,
     required this.spaceName,
   });
 
   final ChatPageState controller;
-  final String name;
+  final String? name;
   final String spaceName;
 
   @override
@@ -80,7 +80,7 @@ class CustomFilter extends StatelessWidget {
       child: FilterChip(
         side: BorderSide.none,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        label: Text(name),
+        label: Text(name ?? spaceName),
         selected: controller.selectedSpace == spaceName,
         onSelected: (bool value) {
           controller.selectSpace(spaceName);

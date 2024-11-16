@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
+import 'package:piaf/router.gr.dart';
 import '../../../utils/extensions/matrix/room_extension.dart';
 
 import '../../../config/matrix_types.dart';
@@ -29,7 +30,7 @@ class _TodoRoomPageState extends State<TodoRoomPage> {
   void send() async {
     final text = textController.text;
     textController.clear();
-    await widget.room.sendEvent({"body": text}, type: MatrixTypes.todo);
+    await widget.room.sendEvent({"body": text}, type: EventTypes.Message);
     if (mounted) {
       setState(() {});
     }
@@ -40,6 +41,19 @@ class _TodoRoomPageState extends State<TodoRoomPage> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Todo"),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  await context.pushRoute(RoomSettingsRoute(
+                      room: widget.room,
+                      onLeave: () {
+                        if (context.mounted) {
+                          context.maybePop();
+                        }
+                      }));
+                },
+                icon: Icon(Icons.info))
+          ],
         ),
         body: FutureBuilder<Timeline>(
             future: _timeline,
@@ -53,7 +67,8 @@ class _TodoRoomPageState extends State<TodoRoomPage> {
                       builder: (context, snapshot) {
                         final events = (timeline?.events ?? [])
                             .where((event) =>
-                                event.type == MatrixTypes.todo &&
+                                (event.type == MatrixTypes.todo ||
+                                    event.type == EventTypes.Message) &&
                                 !event.redacted)
                             .toList();
 

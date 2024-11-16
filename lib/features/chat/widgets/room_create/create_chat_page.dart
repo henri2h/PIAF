@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Visibility;
 import 'package:matrix/matrix.dart';
 
+import '../../../../utils/matrix_widget.dart';
 import '../user/selector/user_selector.dart';
 import '../../../../partials/dialogs/adaptative_dialogs.dart';
 import '../../pages/matrix_create_group.dart';
@@ -9,10 +10,8 @@ import 'create_group_page.dart';
 
 @RoutePage()
 class CreateChatPage extends StatefulWidget {
-  const CreateChatPage(
-      {super.key, required this.onRoomSelected, required this.client});
+  const CreateChatPage({super.key, required this.onRoomSelected});
 
-  final Client client;
   final Function(String?) onRoomSelected;
 
   @override
@@ -21,24 +20,26 @@ class CreateChatPage extends StatefulWidget {
 
 class _CreateChatPageState extends State<CreateChatPage> {
   void startChat(String userId) {
-    widget.onRoomSelected(
-        widget.client.getDirectChatFromUserId(userId) ?? userId);
+    final client = Matrix.of(context).client;
+    widget.onRoomSelected(client.getDirectChatFromUserId(userId) ?? userId);
     Navigator.of(context).pop();
   }
 
   final controller = UserSelectorController();
 
   void advancedChatOption() {
+    final client = Matrix.of(context).client;
     Navigator.of(context).pop();
     AdaptativeDialogs.show(
         context: context,
         title: "Create group",
         builder: (_) => MatrixCreateGroup(
-            client: widget.client, onGroupCreated: widget.onRoomSelected));
+            client: client, onGroupCreated: widget.onRoomSelected));
   }
 
   @override
   Widget build(BuildContext context) {
+    final client = Matrix.of(context).client;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Create chat"),
@@ -47,7 +48,7 @@ class _CreateChatPageState extends State<CreateChatPage> {
         children: [
           Expanded(
             child: UserSelector(
-                client: widget.client,
+                client: client,
                 multipleUserSelectionEnabled: false,
                 onUserSelected: startChat,
                 appBarBuilder: (bool isSearching) => Column(children: [
@@ -60,7 +61,7 @@ class _CreateChatPageState extends State<CreateChatPage> {
                               await Navigator.of(context)
                                   .push(MaterialPageRoute(
                                       builder: (context) => CreateGroupPage(
-                                            client: widget.client,
+                                            client: client,
                                             onRoomSelected:
                                                 widget.onRoomSelected,
                                           )));

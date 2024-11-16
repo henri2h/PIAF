@@ -49,6 +49,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(path: 'space', page: RoomRoute.page),
     AutoRoute(path: 'space/:spaceId', page: SpaceRoute.page),
     AutoRoute(path: ':id', page: RoomRoute.page),
+    AutoRoute(path: 'settings', page: RoomSettingsRoute.page)
   ];
 
   static List<AutoRoute> todoRoutes = [
@@ -109,12 +110,6 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: '', page: RoomListOrPlaceHolderRoute.page),
           ...chatRoutes,
           ...settingsRoutes,
-          ...todoRoutes
-        ]),
-
-        AutoRoute(path: 'todo', page: TabTodoRoute.page, children: [
-          AutoRoute(path: '', page: TodoListRoute.page),
-          AutoRoute(path: 'add', page: TodoListAddRoute.page),
           ...todoRoutes
         ]),
 

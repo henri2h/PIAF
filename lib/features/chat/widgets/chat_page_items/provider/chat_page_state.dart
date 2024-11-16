@@ -149,6 +149,11 @@ class ChatPageState with ChangeNotifier {
         return false;
       }
 
+      if (selectedSpace == CustomSpacesTypes.todo &&
+          r.type != MatrixRoomTypes.todo) {
+        return false;
+      }
+
       if (ignoredRoomTypes.contains(r.type)) {
         return false;
       }
