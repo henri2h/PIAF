@@ -81,9 +81,8 @@ class EventWidgetState extends State<EventWidget> {
   Widget build(BuildContext context) {
     if (widget.ctx.event.messageType == MessageTypes.BadEncrypted) {
       return FutureBuilder<Event>(
-          future: widget.ctx.event.room.client.encryption!.decryptRoomEvent(
-              widget.ctx.event.roomId!, widget.ctx.event,
-              store: true),
+          future: widget.ctx.event.room.client.encryption!
+              .decryptRoomEvent(widget.ctx.event, store: true),
           builder: (BuildContext context, snapshot) {
             if (snapshot.hasError) {
               return const Row(

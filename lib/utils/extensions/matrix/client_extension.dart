@@ -59,7 +59,7 @@ extension ClientExtension on Client {
         Event.fromMatrixEvent(matrixEvent, Room(client: this, id: roomID));
     if (event.type == EventTypes.Encrypted && encryptionEnabled) {
       // attempt decryption
-      return await encryption?.decryptRoomEvent(roomID, event, store: false);
+      return await encryption?.decryptRoomEvent(event, store: false);
     }
     return event;
   }
