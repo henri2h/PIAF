@@ -1,4 +1,4 @@
-package com.example.piaf
+package fr.henri2h.piaf
 
 import io.flutter.embedding.android.FlutterActivity
 

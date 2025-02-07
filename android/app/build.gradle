@@ -7,16 +7,22 @@ plugins {
 
 android {
     namespace = "fr.henri2h.piaf"
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        
+        coreLibraryDesugaringEnabled true
     }
 
+    dependencies {
+      coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    }
+    
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8" // JavaVersion.VERSION_1_8
     }
 
     defaultConfig {
@@ -25,7 +31,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 31
-        targetSdk = 34
+        targetSdk = 33
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

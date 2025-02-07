@@ -3,7 +3,7 @@ description: A privacy focused social media based on matrix
 
 publish_to: "none"
 
-version: 2.0.0+15
+version: 2.0.2+16
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -41,17 +41,18 @@ dependencies:
 
   # Post formating
   flutter_markdown:
-  emoji_picker_flutter: ^2.0.0-dev.5
+  emoji_picker_flutter: ^4.3.0
 
   # images
   image_picker:
   file_picker: ^8.0.3
   path_provider: ^2.0.5
   native_imaging:
-    git: https://github.com/famedly/dart_native_imaging.git
-
+    git:
+      url: git@github.com:henri2h/dart_native_imaging.git
+      ref: henri2h/v1_removal
   # Intl
-  intl: ^0.19.0
+  intl: ^0.20.2
   timeago: ^3.0.2
 
   # Cache
@@ -65,11 +66,18 @@ dependencies:
 
   # Calls
   callkeep: # need a new release after https://github.com/flutter-webrtc/callkeep/pull/190
-    git: https://github.com/flutter-webrtc/callkeep.git
-  flutter_webrtc: ^0.11.1
-  flutter_ringtone_player: ^4.0.0
-
-  
+    #git: https://github.com/flutter-webrtc/callkeep.git
+    git:
+      url: https://github.com/henri2h/callkeep
+      ref: henri2h/v1_removal
+  flutter_webrtc:
+    git:
+      url: git@github.com:henri2h/flutter-webrtc.git
+      ref: henri2h/v1_removal
+  flutter_ringtone_player:
+    git: 
+      url: https://github.com/yaakovschectman/flutter_ringtone_player.git
+      ref: v1_removal
   # Lists
   scrollview_observer: ^1.19.0
 
@@ -79,7 +87,9 @@ dependencies:
   photo_manager: ^3.0.0-dev.4
   photo_manager_image_provider: ^2.1.0
   video_player: ^2.5.3
-  video_compress: ^3.1.2
+  video_compress:
+    git: https://github.com/jonataslaw/VideoCompress.git
+    # Wating for V1 removal commit to be released
   just_audio: ^0.9.20
   media_kit: ^1.1.10
   media_kit_video: ^1.2.4
@@ -111,12 +121,12 @@ dependencies:
 # Override due to https://github.com/mogol/flutter_secure_storage/issues/616
   audio_session: any
 
-  flutter_slidable: ^3.0.1
+  flutter_slidable: ^4.0.0
   wakelock_plus: ^1.1.4
   flutter_blurhash: ^0.8.1
 
   multi_split_view: ^3.0.1
-  pasteboard: ^0.2.0
+  pasteboard: ^0.3.0
   flutter_highlighter: ^0.1.1
   flutter_foreground_task: ^8.10.4
   share_plus: ^10.0.0
@@ -133,7 +143,6 @@ dependencies:
   blurhash_dart: ^1.2.1
   path: ^1.9.0
   sqlcipher_flutter_libs: ^0.6.4
-
 
 dev_dependencies:
   flutter_test:
