@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -10,9 +11,10 @@ class MinestrixEmojiPicker extends StatefulWidget {
   final String? selectedEmoji;
   final EdgeInsets? selectedEdge;
 
-  final bool enableReply;
-  final bool enableEdit;
-  final bool enableDelete;
+  final void Function()? onReply;
+  final void Function()? onEdit;
+  final void Function()? onCopy;
+  final void Function()? onDelete;
 
   const MinestrixEmojiPicker(
       {super.key,
@@ -20,9 +22,10 @@ class MinestrixEmojiPicker extends StatefulWidget {
       required this.width,
       required this.selectedEmoji,
       required this.selectedEdge,
-      this.enableReply = false,
-      this.enableEdit = false,
-      this.enableDelete = false});
+      this.onReply,
+      this.onEdit,
+      this.onCopy,
+      this.onDelete});
 
   @override
   MinestrixEmojiPickerState createState() => MinestrixEmojiPickerState();
@@ -58,7 +61,7 @@ class MinestrixEmojiPickerState extends State<MinestrixEmojiPicker> {
                 ],
               ),
             ),
-          if (!_open && widget.enableReply)
+          if (!_open)
             Card(
                 child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -66,30 +69,45 @@ class MinestrixEmojiPickerState extends State<MinestrixEmojiPicker> {
                 constraints: const BoxConstraints(maxWidth: 160),
                 child: Column(
                   children: [
-                    if (widget.enableReply)
-                      const ListTile(
+                    if (widget.onReply != null)
+                      ListTile(
                         leading: Icon(Icons.reply),
                         title: Text("Reply"),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          widget.onReply?.call();
+                        },
                       ),
-                    if (widget.enableEdit)
+                    if (widget.onEdit != null)
                       ListTile(
                         leading: const Icon(Icons.edit),
                         title: const Text("Edit"),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          widget.onEdit?.call();
+                        },
                       ),
-                    ListTile(
-                      leading: const Icon(Icons.copy),
-                      title: const Text("Copy"),
-                      onTap: () {},
-                    ),
-                    if (widget.enableDelete)
+                    if (widget.onCopy != null)
+                      ListTile(
+                        leading: const Icon(Icons.copy),
+                        title: const Text("Copy"),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          widget.onCopy?.call();
+                        },
+                      ),
+                    if (widget.onDelete != null)
                       ListTile(
                         leading: const Icon(Icons.delete, color: Colors.red),
                         title: const Text(
                           "Delete",
                           style: TextStyle(color: Colors.red),
                         ),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.of(context).pop();
+
+                          widget.onDelete?.call();
+                        },
                       ),
                   ],
                 ),

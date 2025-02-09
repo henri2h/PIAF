@@ -18,16 +18,23 @@ import '../../../../utils/matrix_widget.dart';
 class AdvancedMessageComposer extends StatefulWidget {
   final Room? room;
   final String? userId;
-  final Event? reply;
-  final VoidCallback removeReply;
+  final Event? replyEvent;
+  // The original event that we want to edit
+  final Event? editEvent;
+  // The last modification of the event which we want to edit. This is used to get the latest edit text
+  final Event? editDisplayEvent;
+
+  final VoidCallback cancelEditAndReply;
   final void Function(Room)? onRoomCreated;
   final bool isMobile;
 
   const AdvancedMessageComposer({
     super.key,
     required this.room,
-    required this.reply,
-    required this.removeReply,
+    required this.replyEvent,
+    required this.editEvent,
+    required this.editDisplayEvent,
+    required this.cancelEditAndReply,
     required this.isMobile,
     this.userId,
     required this.onRoomCreated,
@@ -123,10 +130,20 @@ class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
 
   bool get writingUsername => controller.text.contains("@");
 
+  Event? _cachedEditEvent;
   @override
   Widget build(BuildContext context) {
+    // See if a new edit event has been set. If yes, then use it to populate the messeage composer field
+    if (_cachedEditEvent != widget.editEvent) {
+      _cachedEditEvent = widget.editEvent;
+      if (widget.editEvent != null) {
+        controller.text = (widget.editDisplayEvent ?? widget.editEvent)!
+            .calcUnlocalizedBody(hideEdit: true, hideReply: true);
+      }
+    }
+
     final room = widget.room;
-    Event? reply = widget.reply;
+    Event? reply = widget.replyEvent;
     final client = Matrix.of(context).client;
 
     final matrixComposerWidget = MessageComposer(
@@ -134,10 +151,11 @@ class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
         userId: widget.userId,
         onRoomCreated: widget.onRoomCreated,
         inReplyTo: reply,
+        editEvent: widget.editEvent,
         inputStream: inputStream.stream,
         controller: controller,
         onSend: () {
-          widget.removeReply();
+          widget.cancelEditAndReply();
           setState(() {});
         });
 
@@ -204,6 +222,23 @@ class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
                   });
                 }
               }),
+        if (_cachedEditEvent != null)
+          Card(
+            child: Row(
+              children: [
+                Expanded(
+                    child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Text("Edit message"),
+                )),
+                IconButton(
+                    onPressed: () {
+                      widget.cancelEditAndReply();
+                    },
+                    icon: Icon(Icons.close))
+              ],
+            ),
+          ),
         if (reply != null)
           Padding(
             padding: const EdgeInsets.all(4.0),
@@ -246,7 +281,7 @@ class AdvancedMessageComposerState extends State<AdvancedMessageComposer> {
                     IconButton(
                         icon: const Icon(Icons.cancel),
                         onPressed: () {
-                          widget.removeReply();
+                          widget.cancelEditAndReply();
                           setState(() {});
                         })
                   ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:matrix/matrix.dart';
 import 'package:piaf/features/chat/widgets/message_composer/advanced_message_composer.dart';
 import 'package:piaf/partials/matrix/matrix_image_avatar.dart';
+import 'package:piaf/partials/minestrix_chat.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 import '../../../../utils/matrix_widget.dart';
@@ -49,6 +50,8 @@ class RoomTimelineState extends State<RoomTimeline> {
   StreamController<String> eventsToAnimate = StreamController.broadcast();
 
   Event? composerReplyToEvent;
+  Event? composerEditEvent;
+  Event? composerEditDisplayEvent;
   Room? room;
   List<Event> filteredEvents = [];
 
@@ -217,7 +220,7 @@ class RoomTimelineState extends State<RoomTimeline> {
                               filteredEvents: filteredEvents,
                               t: widget.timeline,
                               i: index,
-                              onReplyEventPressed: (event) async {
+                              onJumpToReplyCallback: (event) async {
                                 // Jump to index
                                 final index = filteredEvents.indexOf(
                                     event.getDisplayEvent(widget.timeline!));
@@ -239,8 +242,21 @@ class RoomTimelineState extends State<RoomTimeline> {
                                 }
                               },
                               eventsToAnimateStream: eventsToAnimate.stream,
+                              onEdit: (Event event) {
+                                setState(() {
+                                  // Update the edit event and remove the reply reference if existing
+                                  composerReplyToEvent = null;
+                                  composerEditEvent = filteredEvents[
+                                      index]; // Get the original event
+                                  composerEditDisplayEvent =
+                                      event; // The last edit version of the event
+                                });
+                              },
                               onReply: (Event event) => setState(() {
+                                // update the reply event reference and remove the edit event if existing
                                 composerReplyToEvent = event;
+                                composerEditDisplayEvent = null;
+                                composerEditEvent = null;
                               }),
                               fullyReadEventId: initialFullyReadEventId,
                             );
@@ -299,9 +315,13 @@ class RoomTimelineState extends State<RoomTimeline> {
             isMobile: widget.isMobile,
             userId: widget.userId,
             onRoomCreated: widget.onRoomCreated,
-            reply: composerReplyToEvent,
-            removeReply: () {
+            replyEvent: composerReplyToEvent,
+            editEvent: composerEditEvent,
+            editDisplayEvent: composerEditDisplayEvent,
+            cancelEditAndReply: () {
               setState(() {
+                composerEditEvent = null;
+                composerEditDisplayEvent = null;
                 composerReplyToEvent = null;
               });
             }),

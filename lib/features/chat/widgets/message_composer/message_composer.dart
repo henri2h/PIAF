@@ -21,6 +21,7 @@ class MessageComposer extends StatefulWidget {
   final Room? room;
   final String? userId;
   final Event? inReplyTo;
+  final Event? editEvent;
   final VoidCallback? onSend;
   final String hintText;
   // Allows showing a progress indicator when sending a message. This will prevent sending other messages when the previous message hasn't been sent.
@@ -52,6 +53,7 @@ class MessageComposer extends StatefulWidget {
       this.overrideSending,
       this.onRoomCreated,
       this.onEdit,
+      this.editEvent,
       this.loadSavedText = true,
       this.inputStream,
       this.controller,
@@ -219,13 +221,15 @@ class MessageComposerState extends State<MessageComposer> {
       _isTyping = false;
     });
 
+    await setMessageDraftImmediate("");
     // Test if the input is supposed to be a command
     if (!text.replaceAll(" ", "").startsWith("/")) {
       // Don't send if it's a command
       if (text != "") {
         widget.onSend?.call();
         if (widget.overrideSending == null) {
-          await room?.sendTextEvent(text, inReplyTo: onReplyTo);
+          await room?.sendTextEvent(text,
+              inReplyTo: onReplyTo, editEventId: widget.editEvent?.eventId);
         } else {
           await widget.overrideSending!(text);
         }
@@ -244,8 +248,6 @@ class MessageComposerState extends State<MessageComposer> {
     setState(() {
       _isSending = false;
     });
-
-    setMessageDraft("");
   }
 
   Future<void> _sendMessageOrCreate() async {
@@ -274,18 +276,26 @@ class MessageComposerState extends State<MessageComposer> {
 
   Timer? editTimer;
 
-  void setMessageDraft(String text) {
+  Future<void> _setMessageDraft(String text) async {
     final client = Matrix.of(context).client;
+    await client.setDraft(
+        message: text, roomId: room?.id ?? widget.userId ?? '');
+  }
 
+  Future<void> setMessageDraftImmediate(String text) async {
+    editTimer?.cancel();
+    await _setMessageDraft(text);
+  }
+
+  void setMessageDraftTimer(String text) {
     editTimer?.cancel();
     editTimer = Timer(const Duration(milliseconds: 600), () async {
-      await client.setDraft(
-          message: text, roomId: room?.id ?? widget.userId ?? '');
+      await _setMessageDraft(text);
     });
   }
 
   void onEdit(String text) {
-    setMessageDraft(text);
+    setMessageDraftTimer(text);
 
     widget.onEdit?.call(text);
   }

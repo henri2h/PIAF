@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:matrix/matrix.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:piaf/utils/date_time_extension.dart';
 
 import '../../../../partials/popup_route_wrapper.dart';
@@ -41,8 +42,9 @@ class RoomEventItem extends StatelessWidget {
       required this.t,
       required this.filteredEvents,
       required this.i,
-      required this.onReplyEventPressed,
+      required this.onJumpToReplyCallback,
       required this.onReply,
+      this.onEdit,
       this.eventsToAnimateStream,
       this.fullyReadEventId,
       required this.isDirectChat});
@@ -55,8 +57,10 @@ class RoomEventItem extends StatelessWidget {
   final bool displayTime;
   final bool displayPadding;
   final int i;
-  final void Function(Event) onReplyEventPressed;
+  final void Function(Event) onJumpToReplyCallback;
   final void Function(Event) onReply;
+  final void Function(Event)? onEdit;
+
   // To display an annimation when this event is selected
   final Stream<String>? eventsToAnimateStream;
   final String? fullyReadEventId;
@@ -168,12 +172,17 @@ class RoomEventItem extends StatelessWidget {
                   anchorKeyContext: context,
                   useAnimation: false,
                   offset: offset,
-                  maxHeight: 150,
+                  maxHeight: 350,
                   builder: (rect) {
-                    return ReactionBox(rect, event: event);
+                    return ReactionBox(
+                      rect,
+                      event: event,
+                      onEdit: onEdit != null ? () => onEdit!(event) : null,
+                      onReply: () => onReply(oldEvent),
+                    );
                   }));
             },
-            onReplyEventPressed: onReplyEventPressed,
+            onReplyEventPressed: onJumpToReplyCallback,
             onReply: (_) => onReply(oldEvent)),
 
         // Disable read receipts in large group as it's quit costly
@@ -219,9 +228,12 @@ class RoomEventItem extends StatelessWidget {
 }
 
 class ReactionBox extends StatefulWidget {
-  const ReactionBox(this.rect, {super.key, required this.event});
+  const ReactionBox(this.rect,
+      {super.key, required this.event, this.onEdit, this.onReply});
   final Rect rect;
   final Event event;
+  final void Function()? onEdit;
+  final void Function()? onReply;
 
   @override
   State<ReactionBox> createState() => _ReactionBoxState();
@@ -252,8 +264,37 @@ class _ReactionBoxState extends State<ReactionBox> {
                       height: 100,
                       selectedEmoji: _selectedEmoji,
                       selectedEdge: _emojiPickerEdge,
-                      enableDelete:
-                          widget.event.canRedact && !widget.event.redacted,
+                      onReply: widget.onReply,
+                      onCopy: () {
+                        Pasteboard.writeText(widget.event.body);
+                      },
+                      onEdit: widget.event.senderId ==
+                              widget.event.room.client.userID
+                          ? widget.onEdit
+                          : null,
+                      onDelete: widget.event.canRedact && !widget.event.redacted
+                          ? () async {
+                              if (mounted) {
+                                final result = await showTextInputDialog(
+                                  useRootNavigator: false,
+                                  context: context,
+                                  title: "Confirm removal",
+                                  message:
+                                      "Are you sure you wish to remove this event? This cannot be undone.",
+                                  okLabel: "Remove",
+                                  textFields: [
+                                    const DialogTextField(
+                                        hintText: "Reason (optional)",
+                                        initialText: "")
+                                  ],
+                                );
+                                if (result?.isNotEmpty ?? false) {
+                                  await widget.event
+                                      .redactEvent(reason: result?.first);
+                                }
+                              }
+                            }
+                          : null,
                       //enableEdit: _selectedEvent?.canRedact ?? false,
                       //enableReply: true,
                     )))));
@@ -335,34 +376,8 @@ class _ReactionBoxState extends State<ReactionBox> {
       }
 
       if (_selectedEmoji != null) {
-        switch (_selectedEmoji) {
-          case "reply":
-          case "edit":
-            break;
-          case "delete":
-            if (mounted) {
-              final result = await showTextInputDialog(
-                useRootNavigator: false,
-                context: context,
-                title: "Confirm removal",
-                message:
-                    "Are you sure you wish to remove this event? This cannot be undone.",
-                okLabel: "Remove",
-                textFields: [
-                  const DialogTextField(
-                      hintText: "Reason (optional)", initialText: "")
-                ],
-              );
-              if (result?.isNotEmpty ?? false) {
-                await widget.event.redactEvent(reason: result?.first);
-              }
-            }
-
-            break;
-          default:
-            await widget.event.room
-                .sendReaction(widget.event.eventId, _selectedEmoji!);
-        }
+        await widget.event.room
+            .sendReaction(widget.event.eventId, _selectedEmoji!);
       }
     }
   }
