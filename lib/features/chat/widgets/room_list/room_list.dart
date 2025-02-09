@@ -127,9 +127,8 @@ class _RoomListState extends State<RoomList> {
                   await context
                       .pushRoute(CreateChatRoute(onRoomSelected: onSelection));
                 }
-                
               },
-              child: const Icon(Icons.message),
+              child: Icon(isTodo ? Icons.task : Icons.message),
             )
           : null,
       appBar: selectMode == true
