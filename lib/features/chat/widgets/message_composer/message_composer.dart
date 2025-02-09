@@ -23,6 +23,8 @@ class MessageComposer extends StatefulWidget {
   final Event? inReplyTo;
   final VoidCallback? onSend;
   final String hintText;
+  // Allows showing a progress indicator when sending a message. This will prevent sending other messages when the previous message hasn't been sent.
+  final bool isSendingEnabled;
 
   final bool allowSendingPictures;
   final bool enableAutoFocusOnDesktop;
@@ -52,7 +54,8 @@ class MessageComposer extends StatefulWidget {
       this.onEdit,
       this.loadSavedText = true,
       this.inputStream,
-      this.controller});
+      this.controller,
+      this.isSendingEnabled = false});
 
   @override
   MessageComposerState createState() => MessageComposerState();
@@ -66,6 +69,7 @@ class MessageComposerState extends State<MessageComposer> {
   PlatformFile? file;
   Uint8List? fileBytes;
   bool _isSending = false;
+  bool get isSending => widget.isSendingEnabled && _isSending;
   bool _isTyping = false;
   late FocusNode textFieldFocusNode;
 
@@ -379,13 +383,13 @@ class MessageComposerState extends State<MessageComposer> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _isSending
+                        isSending
                             ? const CircularProgressIndicator()
                             : IconButton.filled(
                                 icon: Icon(
                                   Icons.send,
                                 ),
-                                onPressed: !_isSending &&
+                                onPressed: !isSending &&
                                         (_sendController.text.isNotEmpty ||
                                             file != null)
                                     ? _sendMessageOrCreate
