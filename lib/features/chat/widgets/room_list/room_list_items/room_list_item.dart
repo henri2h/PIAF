@@ -37,7 +37,7 @@ class RoomListItem extends StatelessWidget {
     final color = isUnread
         ? Theme.of(context).colorScheme.primary
         : Theme.of(context).colorScheme.outline;
-    final fontWeight = isUnread ? FontWeight.bold : null;
+    final fontWeight = isUnread ? FontWeight.w700 : null;
     final lastEvent = room.lastEvent;
     final directChatMatrixID = room.directChatMatrixID;
 
@@ -65,9 +65,10 @@ class RoomListItem extends StatelessWidget {
               padding:
                   const EdgeInsets.only(left: 0, right: 16, top: 8, bottom: 10),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.only(left: 8, right: 20.0),
                     child: SizedBox(
                       height: MinestrixAvatarSizeConstants.roomListAvatar,
                       width: MinestrixAvatarSizeConstants.roomListAvatar,
@@ -100,66 +101,76 @@ class RoomListItem extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                room.getName(),
-                                maxLines: 1,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                        fontWeight: fontWeight,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      room.getName(),
+                                      maxLines: 1,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                              fontWeight: fontWeight,
+                                              fontSize: 17,
+                                              color: Colors.white),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 34),
+                                  if (isUnread)
+                                    NotificationCountDot(room: room),
+                                ],
                               ),
                               if (room.membership == Membership.invite)
                                 const Text(
                                   "Invited",
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                              Text(
-                                lastEvent?.getLocalizedBody(
-                                        const MatrixDefaultLocalizations(),
-                                        hideReply: true,
-                                        hideEdit: true,
-                                        withSenderNamePrefix:
-                                            !room.isDirectChat ||
-                                                room.lastEvent?.senderId ==
-                                                    room.client.userID) ??
-                                    '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                        fontWeight: fontWeight,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .outline),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      lastEvent?.getLocalizedBody(
+                                              const MatrixDefaultLocalizations(),
+                                              hideReply: true,
+                                              hideEdit: true,
+                                              withSenderNamePrefix: !room
+                                                      .isDirectChat ||
+                                                  room.lastEvent?.senderId ==
+                                                      room.client.userID) ??
+                                          '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                              fontWeight: fontWeight,
+                                              fontSize: 15,
+                                              color: isUnread
+                                                  ? Colors.white
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .outline),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  Text(
+                                      lastEvent?.originServerTs != null
+                                          ? lastEvent!
+                                              .originServerTs.simpleFormatTime
+                                          : "Invalid time",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium
+                                          ?.copyWith(
+                                            color: color,
+                                            fontWeight: fontWeight,
+                                          )),
+                                ],
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                                lastEvent?.originServerTs != null
-                                    ? lastEvent!.originServerTs.simpleFormatTime
-                                    : "Invalid time",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelMedium
-                                    ?.copyWith(
-                                      color: color,
-                                      fontWeight: fontWeight,
-                                    )),
-                            if (isUnread) NotificationCountDot(room: room),
-                            if (room.pushRuleState == PushRuleState.dontNotify)
-                              const Icon(Icons.volume_mute)
-                          ],
                         ),
                       ],
                     ),

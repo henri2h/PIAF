@@ -138,7 +138,10 @@ class _RoomListState extends State<RoomList> {
             ], automaticallyImplyLeading: false, title: const Text("Edit"))
           : AppBar(
               forceMaterialTransparency: true,
-              title: Text(title),
+              title: Text(
+                title,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
               leading: AccountButton(
                 client: client,
                 onPressed: () async {
@@ -226,24 +229,29 @@ class _RoomListState extends State<RoomList> {
                                                       (BuildContext context,
                                                           int i) {
                                             Room r = widget.sortedRooms![i];
-                                            return RoomListItem(
-                                              key: Key("room_${r.id}"),
-                                              room: r,
-                                              opened: !isMobile &&
-                                                  r.id == selectedRoomId,
-                                              selected:
-                                                  selectedRooms.contains(r.id),
-                                              onSelection: (String text) {
-                                                if (selectMode) {
-                                                  toggleElement(r.id);
-                                                } else {
-                                                  onSelection(text);
-                                                }
-                                              },
-                                              onLongPress: () {
-                                                selectedRooms.add(r.id);
-                                                enableSelection();
-                                              },
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 2.0),
+                                              child: RoomListItem(
+                                                key: Key("room_${r.id}"),
+                                                room: r,
+                                                opened: !isMobile &&
+                                                    r.id == selectedRoomId,
+                                                selected: selectedRooms
+                                                    .contains(r.id),
+                                                onSelection: (String text) {
+                                                  if (selectMode) {
+                                                    toggleElement(r.id);
+                                                  } else {
+                                                    onSelection(text);
+                                                  }
+                                                },
+                                                onLongPress: () {
+                                                  selectedRooms.add(r.id);
+                                                  enableSelection();
+                                                },
+                                              ),
                                             );
                                           },
                                                       childCount: widget

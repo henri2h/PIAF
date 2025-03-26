@@ -55,8 +55,8 @@ class AccountButton extends StatelessWidget {
             return MatrixImageAvatar(
               url: snap.data?.avatarUrl,
               client: client,
-              width: 34,
-              height: 34,
+              width: 46,
+              height: 46,
               defaultText: snap.data?.displayName ?? client.userID!,
             );
           }),
