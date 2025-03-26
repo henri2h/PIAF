@@ -26,7 +26,7 @@ dependencies:
   # Storage and database
   sqflite_common_ffi: ^2.3.2+1
   sqflite_sqlcipher: ^3.0.0
-  localstorage: ^5.0.0
+  localstorage: ^6.0.0
   flutter_secure_storage: ^9.0.0
 
   provider: ^6.0.1
@@ -45,7 +45,7 @@ dependencies:
 
   # images
   image_picker:
-  file_picker: ^8.0.3
+  file_picker: ^9.2.2
   path_provider: ^2.0.5
   native_imaging:
     git:
