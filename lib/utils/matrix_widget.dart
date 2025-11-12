@@ -23,7 +23,6 @@ import 'l10n/default_localization.dart';
 import 'managers/client_manager.dart';
 import 'platform_infos.dart';
 import 'uia_request_handler.dart';
-import 'voip_plugin.dart';
 
 class Matrix extends StatefulWidget {
   final Widget? child;
@@ -67,9 +66,6 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
   final StreamController<String> onClientChange = StreamController.broadcast();
 
   Client get client {
-    if (widget.clients.isEmpty) {
-      widget.clients.add(getLoginClient());
-    }
     if (_activeClient < 0 || _activeClient >= widget.clients.length) {
       return currentBundle!.first!;
     }
@@ -91,8 +87,6 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
       PlatformInfos.isLinux ||
       PlatformInfos.isMacOS;
 
-  VoipPlugin? voipPlugin;
-
   bool get isMultiAccount => widget.clients.length > 1;
 
   int getClientIndexByMatrixId(String matrixId) =>
@@ -105,8 +99,6 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
     final i = widget.clients.indexWhere((c) => c == cl);
     if (i != -1) {
       _activeClient = i;
-      // TODO: Multi-client VoiP support
-      createVoipPlugin();
       onClientChange.add(client.clientName);
     } else {
       Logs().w('Tried to set an unknown client ${cl!.userID} as active');
@@ -154,11 +146,11 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
 
   Client? _loginClientCandidate;
 
-  Client getLoginClient() {
+  Future<Client> getLoginClient() async {
     if (widget.clients.isNotEmpty && !client.isLogged()) {
       return client;
     }
-    final candidate = _loginClientCandidate ??= ClientManager.createClient(
+    final candidate = _loginClientCandidate ??= await ClientManager.createClient(
         '${AppConfig.applicationName}-${DateTime.now().millisecondsSinceEpoch}')
       ..onLoginStateChanged
           .stream
@@ -369,14 +361,6 @@ class MatrixState extends State<Matrix> with WidgetsBindingObserver {
           },
         ),
       );
-    }
-
-    createVoipPlugin();
-  }
-
-  void createVoipPlugin() async {
-    if (AppConfig.experimentalVoip) {
-      voipPlugin = webrtcIsSupported ? VoipPlugin(this) : null;
     }
   }
 

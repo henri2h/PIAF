@@ -56,9 +56,6 @@ class MessageStatus extends StatelessWidget {
                   text = "Synced";
                   icon = Icons.check_circle;
                   break;
-                case EventStatus.roomState:
-                  // TODO: Handle this case.
-                  break;
               }
               return Row(
                 mainAxisSize: MainAxisSize.min,

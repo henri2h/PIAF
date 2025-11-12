@@ -11,7 +11,6 @@ import 'package:piaf/features/chat/widgets/user/selector/user_selector_dialog.da
 import 'package:piaf/features/chat/widgets/user/user_item.dart';
 import 'package:piaf/partials/social/social_gallery_preview_widget.dart';
 import 'package:piaf/utils/extensions/minestrix/model/calendar_event_model.dart';
-import 'package:piaf/utils/poll/poll.dart';
 
 import '../partials/datetime_tile.dart';
 import '../partials/duration_widget.dart';
@@ -228,11 +227,12 @@ class AttendancePollCard extends StatelessWidget {
                   if (snapshot.hasData == false) {
                     return Container();
                   }
+                  var event = snapshot.data!;
 
-                  Poll p = Poll(e: snapshot.data!, t: snapT.data!);
                   return SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: CalendarEventWidget(p: p),
+                    child:
+                        CalendarEventWidget(poll: event, timeline: snapT.data!),
                   );
                 })
             : ListTile(

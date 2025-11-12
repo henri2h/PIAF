@@ -14,6 +14,8 @@ class CreateAccountCard extends StatefulWidget {
 }
 
 class _CreateAccountCardState extends State<CreateAccountCard> {
+  Future<Client>? futureClient;
+
   final TextEditingController _usernameController = TextEditingController(),
       _passwordController = TextEditingController();
 
@@ -100,64 +102,74 @@ class _CreateAccountCardState extends State<CreateAccountCard> {
 
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).getLoginClient();
+    futureClient ??= Matrix.of(context).getLoginClient();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        MatrixServerChooser(
-            controller: domainController,
-            client: client,
-            onChanged: (value) {
-              setState(() {
-                _passwordController.clear();
-                _usernameController.clear();
-              });
-            }),
-        const SizedBox(height: 25),
-        if (passwordLogin)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Credentials",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
-        if (passwordLogin)
-          Row(
+    return FutureBuilder(
+        future: futureClient,
+        builder: (context, snap) {
+          final client = snap.data;
+
+          if (client == null) {
+            return CircularProgressIndicator();
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Flexible(
-                child: LoginInput(
-                    name: "username",
-                    hintText: "@john.doe:example.com",
-                    icon: Icons.account_circle,
-                    tController: _usernameController,
-                    onChanged: (_) => onTextChanged()),
-              ),
+              MatrixServerChooser(
+                  controller: domainController,
+                  client: client,
+                  onChanged: (value) {
+                    setState(() {
+                      _passwordController.clear();
+                      _usernameController.clear();
+                    });
+                  }),
+              const SizedBox(height: 25),
+              if (passwordLogin)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Credentials",
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+              if (passwordLogin)
+                Row(
+                  children: [
+                    Flexible(
+                      child: LoginInput(
+                          name: "username",
+                          hintText: "@john.doe:example.com",
+                          icon: Icons.account_circle,
+                          tController: _usernameController,
+                          onChanged: (_) => onTextChanged()),
+                    ),
+                  ],
+                ),
+              if (passwordLogin)
+                LoginInput(
+                    name: "password",
+                    icon: Icons.lock_outline,
+                    tController: _passwordController,
+                    onChanged: (_) => onTextChanged(),
+                    obscureText: true),
+              if (_registerErrorText != null)
+                ListTile(
+                  title: Text("$_registerErrorText"),
+                  leading: const CircleAvatar(child: Icon(Icons.bug_report)),
+                ),
+              if (passwordLogin && _credentialsEdited)
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: LoginButton(
+                      icon: Icons.login,
+                      onPressed: () async => await createAccount(client),
+                      text: "Create account",
+                      filled: true),
+                ),
             ],
-          ),
-        if (passwordLogin)
-          LoginInput(
-              name: "password",
-              icon: Icons.lock_outline,
-              tController: _passwordController,
-              onChanged: (_) => onTextChanged(),
-              obscureText: true),
-        if (_registerErrorText != null)
-          ListTile(
-            title: Text("$_registerErrorText"),
-            leading: const CircleAvatar(child: Icon(Icons.bug_report)),
-          ),
-        if (passwordLogin && _credentialsEdited)
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: LoginButton(
-                icon: Icons.login,
-                onPressed: () async => await createAccount(client),
-                text: "Create account",
-                filled: true),
-          ),
-      ],
-    );
+          );
+        });
   }
 }

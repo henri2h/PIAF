@@ -36,7 +36,12 @@ class SettingsAccountPageState extends State<SettingsAccountPage> {
       setState(() {
         savingDisplayName = true;
       });
-      await client.setDisplayName(client.userID!, results![0]);
+      await client.setProfileField(
+        client.userID!,
+        'displayname',
+        {'displayname': results![0]},
+      );
+
       setState(() {
         savingDisplayName = false;
       });

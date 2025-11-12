@@ -47,7 +47,8 @@ class MatrixServerChooserController extends ChangeNotifier {
           ? Uri.parse(serverUrl)
           : Uri.https(serverUrl, "");
 
-      var (homeserver, _, loginFlow) = await client.checkHomeserver(address);
+      var (homeserver, _, loginFlow, meta) =
+          await client.checkHomeserver(address);
 
       // check  if info is not null and
       // if we are the last try (prevent an old request to modify the results)

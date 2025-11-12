@@ -1,28 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:matrix/matrix.dart';
 
 import '../../../utils/extensions/minestrix/calendar_extension.dart';
-import '../../../utils/poll/poll.dart';
 import 'calendar_attendance_button.dart';
 
 /// A class to let the user indicate if he will come or not
 
 class CalendarEventWidget extends StatefulWidget {
-  final Poll p;
-  const CalendarEventWidget({super.key, required this.p});
+  final Event poll;
+  final Timeline timeline;
+  const CalendarEventWidget(
+      {super.key, required this.poll, required this.timeline});
 
   @override
   CalendarEventWidgetState createState() => CalendarEventWidgetState();
 }
 
 class CalendarEventWidgetState extends State<CalendarEventWidget> {
+  late PollEventContent content;
+
+  @override
+  void initState() {
+    content = widget.poll.parsedPollEventContent;
+    super.initState();
+  }
+
   Future<void> check(String? value) async {
-    await widget.p.answer(value);
+    // TODO: add logic
   }
 
   @override
   Widget build(BuildContext context) {
-    Map<String, int> resp = widget.p.responsesMap;
-    List<String> data = widget.p.userResponse?.answers ?? [];
+    var room = widget.timeline.room;
+    var responses = widget.poll.getPollResponses(widget.timeline);
+
+    Map<String, int> resp = {};
+    List<String> data = [];
+
     String userResponse = "";
     if (data.isNotEmpty) {
       userResponse = data.first;

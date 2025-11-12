@@ -12,17 +12,17 @@ import 'package:universal_html/html.dart' as html;
 import '../platform_infos.dart';
 import 'cipher.dart';
 
-Future<DatabaseApi> flutterMatrixSdkDatabaseBuilder(Client client) async {
+Future<DatabaseApi> flutterMatrixSdkDatabaseBuilder(String clientName) async {
   MatrixSdkDatabase? database;
-  database = await _constructDatabase(client);
+  database = await _constructDatabase(clientName);
   await database.open();
   return database;
 }
 
-Future<MatrixSdkDatabase> _constructDatabase(Client client) async {
+Future<MatrixSdkDatabase> _constructDatabase(String clientName) async {
   if (kIsWeb) {
     html.window.navigator.storage?.persist();
-    return MatrixSdkDatabase(client.clientName);
+    return MatrixSdkDatabase.init(clientName);
   }
 
   Directory? fileStorageLocation;
@@ -35,14 +35,14 @@ Future<MatrixSdkDatabase> _constructDatabase(Client client) async {
   }
 
   final cipher = await getDatabaseCipher();
-  final path = await _getDatabasePath(client.clientName);
+  final path = await _getDatabasePath(clientName);
 
   // import the SQLite / SQLCipher shared objects / dynamic libraries
   final factory =
       createDatabaseFactoryFfi(ffiInit: SQfLiteEncryptionHelper.ffiInit);
 
   // migrate from potential previous SQLite database path to current one
-  await _migrateLegacyLocation(path, client.clientName);
+  await _migrateLegacyLocation(path, clientName);
 
   // in case we got a cipher, we use the encryption helper
   // to manage SQLite encryption
@@ -64,9 +64,8 @@ Future<MatrixSdkDatabase> _constructDatabase(Client client) async {
       onConfigure: helper?.applyPragmaKey,
     ),
   );
-
-  return MatrixSdkDatabase(
-    client.clientName,
+  return MatrixSdkDatabase.init(
+    clientName,
     database: database,
     maxFileSize: 1024 * 1024 * 10,
     fileStorageLocation: fileStorageLocation?.uri,

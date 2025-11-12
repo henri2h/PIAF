@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:matrix/matrix.dart';
 
-import 'package:piaf/utils/poll/json/event_poll_start.dart';
-import 'package:piaf/utils/poll/poll.dart';
-
 class PollWidget extends StatefulWidget {
   final Event event;
   final Timeline timeline;
@@ -15,34 +12,21 @@ class PollWidget extends StatefulWidget {
 }
 
 class PollWidgetState extends State<PollWidget> {
-  late Poll poll;
+  late PollEventContent poll;
   @override
   void initState() {
     super.initState();
-    poll = Poll(e: widget.event, t: widget.timeline);
+    poll = widget.event.parsedPollEventContent;
   }
 
   @override
   Widget build(BuildContext context) {
-    EventPollStart start = poll.poll;
-    bool isEnded = poll.isEnded;
-    Map<String, int> responses = poll.responsesMap;
+    var start = poll.pollStartContent;
+    var isEnded = widget.event.getPollHasBeenEnded(widget.timeline);
+    var responses = widget.event.getPollResponses(widget.timeline);
 
     // get the value wich get the max of responses
-    int max = 0;
     List<String> maxValues = [];
-
-    // get the max value only on poll end
-    if (isEnded && responses.isNotEmpty) {
-      for (var entry in responses.entries) {
-        if (entry.value > max) {
-          max = entry.value;
-          maxValues = [entry.key];
-        } else if (entry.value == max) {
-          maxValues.add(entry.key);
-        }
-      }
-    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,12 +38,11 @@ class PollWidgetState extends State<PollWidget> {
             children: [
               const Icon(Icons.poll, size: 24),
               const SizedBox(width: 6),
-              Text(start.question?.text ?? "",
-                  style: const TextStyle(fontSize: 16)),
+              Text(start.question.mText, style: const TextStyle(fontSize: 16)),
             ],
           ),
         ),
-        for (PollAnswer answer in start.answers ?? [])
+        for (var answer in start.answers)
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 400),
             child: Card(
@@ -69,17 +52,14 @@ class PollWidgetState extends State<PollWidget> {
                       ? const BorderSide(color: Colors.green)
                       : BorderSide.none),
               child: RadioListTile<String>(
-                  groupValue: poll.userResponse?.answers?.isNotEmpty == true
-                      ? poll.userResponse?.answers?.first
-                      : "",
                   value: answer.id,
                   onChanged: (value) async {
-                    await poll.answer(value);
+                    // await poll.answer(value);
                   },
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(answer.text ?? ""),
+                      Text(answer.mText),
                       Row(
                         children: [
                           if (isEnded && maxValues.contains(answer.id))
@@ -88,11 +68,7 @@ class PollWidgetState extends State<PollWidget> {
                               child: Icon(Icons.celebration,
                                   color: Colors.green, size: 18),
                             ),
-                          Text(
-                              (responses[answer.id] ?? 0).toString() +
-                                  ((responses[answer.id] ?? 0) < 2
-                                      ? " vote"
-                                      : " votes"),
+                          Text("${responses[answer.id] ?? 0} votes",
                               style: const TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.normal)),
                         ],
@@ -107,10 +83,8 @@ class PollWidgetState extends State<PollWidget> {
                         child: LinearProgressIndicator(
                             color: Colors.green,
                             minHeight: 6,
-                            value: (responses[answer.id] ?? 0) /
-                                (responses.isNotEmpty
-                                    ? responses.length
-                                    : 1)), // prevent division by zero
+                            value: ((responses[answer.id]?.length ?? 0) *
+                                1.0)), // prevent division by zero
                       )
                     ],
                   )),

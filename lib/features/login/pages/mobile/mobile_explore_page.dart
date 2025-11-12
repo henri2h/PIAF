@@ -15,6 +15,7 @@ class MobileExplorePage extends StatefulWidget {
 
 class _MobileExplorePageState extends State<MobileExplorePage> {
   final domainController = MatrixServerChooserController();
+  Future<Client>? futureClient;
 
   bool get passwordLogin => domainController.loginFlowsSupported
       .contains(AuthenticationTypes.password);
@@ -39,29 +40,39 @@ class _MobileExplorePageState extends State<MobileExplorePage> {
 
   @override
   Widget build(BuildContext context) {
-    final client = Matrix.of(context).getLoginClient();
+    futureClient ??= Matrix.of(context).getLoginClient();
 
-    return Scaffold(
-        appBar: AppBar(forceMaterialTransparency: true),
-        body: Column(
-          children: [
-            MatrixServerChooser(
-                controller: domainController,
-                client: client,
-                onChanged: (value) {
-                  setState(() {});
-                }),
-            const SizedBox(height: 20),
-            if (passwordLogin)
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: LoginButton(
-                    icon: Icons.explore,
-                    onPressed: () async => await createGuestAccount(client),
-                    text: "Explore",
-                    filled: true),
-              )
-          ],
-        ));
+    return FutureBuilder(
+        future: futureClient,
+        builder: (context, snap) {
+          final client = snap.data;
+          if (client == null) {
+            return CircularProgressIndicator();
+          }
+
+          return Scaffold(
+              appBar: AppBar(forceMaterialTransparency: true),
+              body: Column(
+                children: [
+                  MatrixServerChooser(
+                      controller: domainController,
+                      client: client,
+                      onChanged: (value) {
+                        setState(() {});
+                      }),
+                  const SizedBox(height: 20),
+                  if (passwordLogin)
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: LoginButton(
+                          icon: Icons.explore,
+                          onPressed: () async =>
+                              await createGuestAccount(client),
+                          text: "Explore",
+                          filled: true),
+                    )
+                ],
+              ));
+        });
   }
 }

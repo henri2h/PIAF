@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'package:matrix/encryption/utils/key_verification.dart';
+import 'package:flutter_vodozemac/flutter_vodozemac.dart' as vod;
 import 'package:matrix/matrix.dart';
 
 import '../custom_image_resizer.dart';
@@ -32,7 +33,8 @@ abstract class ClientManager {
       clientNames.add(PlatformInfos.firstClientName);
       await Store().setItem(clientNamespace, jsonEncode(clientNames.toList()));
     }
-    final clients = clientNames.map(createClient).toList();
+    final clients =
+        await Future.wait(clientNames.map((name) => createClient(name)));
     if (initialize) {
       await Future.wait(clients.map((client) => client
           .init(
@@ -52,6 +54,7 @@ abstract class ClientManager {
       }
       await Store().setItem(clientNamespace, jsonEncode(clientNames.toList()));
     }
+
     return clients;
   }
 
@@ -80,7 +83,14 @@ abstract class ClientManager {
   /// When creating a new client, we will use thoose to add to the importantStateEvents of Client()
   static Set<String> importantStateEventsOverrides = {};
 
-  static Client createClient(String clientName) => Client(
+  static NativeImplementations get nativeImplementations => kIsWeb
+      ? const NativeImplementationsDummy()
+      : NativeImplementationsIsolate(
+          compute,
+          vodozemacInit: () => vod.init(wasmPath: './assets/assets/vodozemac/'),
+        );
+
+  static Future<Client> createClient(String clientName) async => Client(
         clientName,
         verificationMethods: {
           KeyVerificationMethod.numbers,
@@ -93,7 +103,7 @@ abstract class ClientManager {
           // To check which story room we can post in
           EventTypes.RoomPowerLevels,
         }..addAll(importantStateEventsOverrides),
-        databaseBuilder: flutterMatrixSdkDatabaseBuilder,
+        database: await flutterMatrixSdkDatabaseBuilder(clientName),
         supportedLoginTypes: {
           AuthenticationTypes.password,
           if (PlatformInfos.isMobile ||
@@ -102,7 +112,6 @@ abstract class ClientManager {
               PlatformInfos.isLinux)
             AuthenticationTypes.sso
         },
-        compute: compute,
         customImageResizer: PlatformInfos.isMobile ? customImageResizer : null,
       );
 }

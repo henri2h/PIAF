@@ -2,9 +2,6 @@ import 'package:matrix/matrix.dart';
 import 'package:piaf/utils/extensions/matrix/client_extension.dart';
 
 import '../../../config/matrix_types.dart';
-import '../../extensible_event/extensible_event_content.dart';
-import '../../poll/json/event_poll_start.dart';
-import '../../poll/poll.dart';
 import 'model/calendar_event_model.dart';
 
 extension CalendarExtension on Client {
@@ -36,24 +33,18 @@ extension CalendarExtension on Client {
 extension CalendarRoomExtension on Room {
   /// Send the poll to get the attendance and update the poll attendance state
   Future<String?> setPollAttendance(CalendarEvent e) async {
-    EventPollStart pollAttendance = EventPollStart();
-    pollAttendance.kind = PollKindEnum.disclosed;
-    pollAttendance.answers = [
-      PollAnswer()
-        ..id = CalendarAttendanceResponses.going
-        ..text = "Going",
-      PollAnswer()
-        ..id = CalendarAttendanceResponses.interested
-        ..text = "Interested",
-      PollAnswer()
-        ..id = CalendarAttendanceResponses.declined
-        ..text = "Declined"
-    ];
+    var room = e.e?.room;
 
-    pollAttendance.question = ExtensibleEventContent()..text = "Viens tu ?";
-    pollAttendance.maxSelections = 1;
-
-    String? eventId = await Poll.sendPollStart(this, pollAttendance);
+    var eventId = await room?.startPoll(
+        question: "Coming?",
+        answers: [
+          PollAnswer(id: CalendarAttendanceResponses.going, mText: "Going"),
+          PollAnswer(
+              id: CalendarAttendanceResponses.interested, mText: "Interested"),
+          PollAnswer(
+              id: CalendarAttendanceResponses.declined, mText: "Declined")
+        ],
+        maxSelections: 1);
 
     if (eventId != null) {
       e.pollId = eventId;
