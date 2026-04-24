@@ -1,38 +1,63 @@
-name: Flutter
+name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
-  build:
+  build-linux:
+    name: Build (Linux)
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Flutter SDK
-        uses: flutter-actions/setup-flutter@v2
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxdo-dev
+
+      - name: Build
+        run: cargo build
+
+  build-android:
+    name: Build (Android)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          channel: stable
-          cache: true
-    
-      - name: Install dependencies
-        run: flutter pub get
+          targets: aarch64-linux-android
 
-      #- name: Analyze project source
-      #  run: dart analyze
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
 
-      #- name: Run tests
-      #  run: flutter test
- 
-      - name: Build android
-        run: flutter build apk
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
 
-      - name: Upload build result
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK
+        run: sdkmanager "ndk;27.0.12077973"
+
+      - name: Build APK
+        working-directory: AndroidApp
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk/27.0.12077973
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app.apk
-          path: build/app/outputs/apk/release/app-release.apk
+          name: app-debug
+          path: AndroidApp/app/build/outputs/apk/debug/app-debug.apk
