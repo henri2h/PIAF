@@ -1,0 +1,8 @@
+build:
+  ./gradlew assembleDebug
+
+install:
+  adb install app/build/outputs/apk/debug/app-debug.apk
+
+logcat:
+  adb shell run-as dev.piaf.app logcat
