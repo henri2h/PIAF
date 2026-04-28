@@ -8,7 +8,7 @@ use freya_components::{
 };
 use freya_core::elements::image::ImageHolder;
 
-use crate::utils::queries::fetch_room_avatar_direct;
+use crate::utils::queries::fetch_avatar_for_key;
 
 /// Pick a deterministic color from a fixed palette based on a string (e.g. user ID).
 pub fn user_color(id: &str) -> (u8, u8, u8) {
@@ -122,7 +122,7 @@ impl Component for Avatar {
                             futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
                         let key2 = key.clone();
                         tokio::spawn(async move {
-                            let _ = tx.send(fetch_room_avatar_direct(&key2).await);
+                            let _ = tx.send(fetch_avatar_for_key(&key2).await);
                         });
 
                         let Ok(Ok(bytes_vec)) = rx.await else {

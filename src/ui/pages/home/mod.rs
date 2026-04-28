@@ -38,24 +38,6 @@ impl Component for HomePage {
         let mut search: State<String> = use_state(String::new);
         let filter: State<RoomFilter> = use_state(|| RoomFilter::All);
 
-        let user_avatar: State<Option<Vec<u8>>> = use_state(|| None);
-        use_hook(|| {
-            let mut user_avatar = user_avatar;
-            spawn(async move {
-                let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
-                tokio::spawn(async move {
-                    let result = (|| async {
-                        crate::REQUESTER.get().ok_or(())?.fetch_user_avatar().await
-                    })()
-                    .await;
-                    let _ = tx.send(result);
-                });
-                if let Ok(Ok(bytes)) = rx.await {
-                    *user_avatar.write() = Some(bytes);
-                }
-            });
-        });
-        let avatar_bytes = user_avatar.read().clone();
 
         let name_query =
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
@@ -101,7 +83,6 @@ impl Component for HomePage {
         // ── App bar ────────────────────────────────────────────────────────────
         // Custom bar: avatar on the left, title center, search + (pencil on wide) right.
         let app_bar = {
-            let avatar_bytes_bar = avatar_bytes.clone();
             let initial_bar = initial.clone();
             rect()
                 .vertical()
@@ -132,11 +113,11 @@ impl Component for HomePage {
                                 })
                                 .child(Avatar {
                                     size: 36.,
-                                    bytes: avatar_bytes_bar,
+                                    bytes: None,
+                                    fetch_key: Some("__self__".to_string()),
                                     initial: initial_bar,
                                     color: c.primary,
-                                    image_key: "home-avatar".to_string(),
-                                    fetch_key: None,
+                                    image_key: "__self__".to_string(),
                                 }),
                         )
                         // Title

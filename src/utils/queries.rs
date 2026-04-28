@@ -27,6 +27,16 @@ fn media_semaphore() -> Arc<tokio::sync::Semaphore> {
 // worker, so many rooms can load their avatars/names concurrently.
 // ---------------------------------------------------------------------------
 
+/// Fetches the avatar for a given key.
+/// Use `"__self__"` to fetch the current user's own avatar; any other value is
+/// treated as a Matrix room ID.
+pub(crate) async fn fetch_avatar_for_key(key: &str) -> Result<Vec<u8>, ()> {
+    if key == "__self__" {
+        return REQUESTER.get().ok_or(())?.fetch_user_avatar().await;
+    }
+    fetch_room_avatar_direct(key).await
+}
+
 pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, ()> {
     use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
     use matrix_sdk::ruma::events::direct::DirectEventContent;
