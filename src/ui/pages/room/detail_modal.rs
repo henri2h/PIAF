@@ -110,6 +110,7 @@ fn seen_by_section(msg: &MessageItem, c: AppColors) -> Element {
                             .to_string(),
                         color: sender_color(uid),
                         image_key: uid.clone(),
+                        fetch_key: None,
                     })
                     .child(
                         rect()
@@ -183,6 +184,7 @@ fn reaction_sender_row(sender: &ReactionSender, c: AppColors) -> Element {
                 .to_string(),
             color: sender_color(&sender.user_id),
             image_key: sender.user_id.clone(),
+            fetch_key: None,
         })
         .child(
             rect()

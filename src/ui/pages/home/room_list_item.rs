@@ -14,10 +14,7 @@ use std::time::Duration;
 use crate::Route;
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
 use crate::utils::use_app_colors;
-use crate::utils::{
-    format_timestamp,
-    queries::{FetchRoomAvatar, FetchSenderName},
-};
+use crate::utils::{format_timestamp, queries::FetchSenderName};
 
 /// Parsed info about the latest message in a room.
 enum SenderPrefix {
@@ -86,7 +83,6 @@ impl PartialEq for RoomListItem {
         if self.room.room_id() != other.room.room_id() {
             return false;
         }
-        // Re-render when the room's observable state changes.
         self.room.recency_stamp() == other.room.recency_stamp()
             && self.room.num_unread_messages() == other.room.num_unread_messages()
             && self.room.num_unread_notifications() == other.room.num_unread_notifications()
@@ -116,7 +112,7 @@ impl Component for RoomListItem {
                 let Some(client) = crate::utils::matrix::CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) = tokio::sync::oneshot::channel::<bool>();
+                let (tx, rx) = futures::channel::oneshot::channel::<bool>();
                 tokio::task::spawn(async move {
                     let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id) else {
                         let _ = tx.send(false);
@@ -134,11 +130,7 @@ impl Component for RoomListItem {
             });
         });
 
-        let avatar_query = use_query(
-            Query::new(room_id.clone(), FetchRoomAvatar).stale_time(Duration::from_secs(3600)),
-        );
-        let avatar_reader = avatar_query.read();
-        let avatar_bytes = avatar_reader.state().ok().cloned();
+        let fetch_key = room_id.clone();
 
         let my_user_id = crate::utils::matrix::CLIENT
             .get()
@@ -255,7 +247,8 @@ impl Component for RoomListItem {
                 } else {
                     Avatar {
                         size: 48.,
-                        bytes: avatar_bytes,
+                        bytes: None,
+                        fetch_key: Some(fetch_key.clone()),
                         initial,
                         color: c.primary,
                         image_key: room_id.clone(),

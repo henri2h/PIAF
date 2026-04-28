@@ -40,6 +40,7 @@ impl Component for RoomStartBanner {
                 initial,
                 color: c.primary,
                 image_key: format!("room-start-{}", self.room_id),
+                fetch_key: None,
             })
             .child(
                 label()

@@ -198,6 +198,7 @@ impl Component for TopAppBar {
                         initial,
                         color,
                         image_key: "appbar-avatar".to_string(),
+                        fetch_key: None,
                     }
                     .into();
                     rect()

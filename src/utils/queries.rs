@@ -27,7 +27,7 @@ fn media_semaphore() -> Arc<tokio::sync::Semaphore> {
 // worker, so many rooms can load their avatars/names concurrently.
 // ---------------------------------------------------------------------------
 
-async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, ()> {
+pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, ()> {
     use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
     use matrix_sdk::ruma::events::direct::DirectEventContent;
     use matrix_sdk::ruma::events::room::MediaSource;
@@ -133,28 +133,15 @@ impl QueryCapability for FetchRoomAvatar {
     type Err = ();
     type Keys = String;
 
-    async fn run(&self, room_id: &String) -> Result<Vec<u8>, ()> {
+    async fn run(&self, key: &String) -> Result<Vec<u8>, ()> {
         // Spawn a real tokio task so many rooms can load concurrently without
         // going through the sequential worker.
         let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
-        let room_id = room_id.clone();
+        let key = key.clone();
         tokio::spawn(async move {
-            let _ = tx.send(fetch_room_avatar_direct(&room_id).await);
+            let _ = tx.send(fetch_room_avatar_direct(&key).await);
         });
         rx.await.map_err(|_| ())?
-    }
-}
-
-#[derive(Clone, PartialEq, Hash, Eq)]
-pub struct FetchUserAvatar;
-
-impl QueryCapability for FetchUserAvatar {
-    type Ok = Vec<u8>;
-    type Err = ();
-    type Keys = ();
-
-    async fn run(&self, _: &()) -> Result<Vec<u8>, ()> {
-        REQUESTER.get().ok_or(())?.fetch_user_avatar().await
     }
 }
 

@@ -8,21 +8,21 @@ name = "piaf"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-freya = { version = "0.4.0-rc.18", features = [
+freya = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
   "sdk",
   "devtools",
   "router",
-] } # { path = "../freya/crates/freya", features = ["sdk", "devtools"] }
-freya-components = "0.4.0-rc.18"
-freya-core = "0.4.0-rc.18"
-freya-engine = "0.4.0-rc.18"
-freya-material-design = "0.4.0-rc.18" # { path = "../freya/crates/freya-material-design" }
-freya-icons = { version = "0.4.0-rc.18", features = [
+] }
+freya-components = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-core = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-engine = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-material-design = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-icons = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
   "lucide",
-] } # { path = "../freya/crates/freya-icons", features = ["lucide"] }
-freya-router = "0.4.0-rc.18" # { path = "../freya/crates/freya-router" }
-freya-query = "0.4.0-rc.18" # { path = "../freya/crates/freya-query" }
-freya-radio = "0.4.0-rc.18" # { path = "../freya/crates/freya-radio" }
+] }
+freya-router = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-query = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-radio = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 matrix-sdk = { version = "0.16.0", default-features = false, features = [
   "e2e-encryption",
   "automatic-room-key-forwarding",
@@ -51,8 +51,8 @@ console-subscriber = "0.5.0"
 rfd = "0.15"
 
 [target.'cfg(target_os="android")'.dependencies]
-freya-android = { version = "0.4.0-rc.18", features = ["skia-engine"] }
-freya-winit = "0.4.0-rc.18"
+freya-android = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = ["skia-engine"] }
+freya-winit = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 android_logger = "0.15"
 log = "0.4"
 winit = { version = "0.30", features = ["android-native-activity", "rwh_06"] }

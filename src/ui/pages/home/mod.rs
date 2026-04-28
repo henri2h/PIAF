@@ -12,7 +12,7 @@ use room_list_item::RoomListItem;
 use std::time::Duration;
 
 use crate::ui::components::Avatar;
-use crate::utils::queries::{FetchUserAvatar, FetchUserDisplayName};
+use crate::utils::queries::FetchUserDisplayName;
 use crate::utils::{use_app_colors, use_tokio_track_watcher};
 use crate::{Route, SYNC_RX, WIDE_MODE, utils::matrix::CLIENT};
 
@@ -38,13 +38,27 @@ impl Component for HomePage {
         let mut search: State<String> = use_state(String::new);
         let filter: State<RoomFilter> = use_state(|| RoomFilter::All);
 
-        let avatar_query =
-            use_query(Query::new((), FetchUserAvatar).stale_time(Duration::from_secs(3600)));
+        let user_avatar: State<Option<Vec<u8>>> = use_state(|| None);
+        use_hook(|| {
+            let mut user_avatar = user_avatar;
+            spawn(async move {
+                let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
+                tokio::spawn(async move {
+                    let result = (|| async {
+                        crate::REQUESTER.get().ok_or(())?.fetch_user_avatar().await
+                    })()
+                    .await;
+                    let _ = tx.send(result);
+                });
+                if let Ok(Ok(bytes)) = rx.await {
+                    *user_avatar.write() = Some(bytes);
+                }
+            });
+        });
+        let avatar_bytes = user_avatar.read().clone();
+
         let name_query =
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
-
-        let avatar_reader = avatar_query.read();
-        let avatar_bytes = avatar_reader.state().ok().cloned();
 
         let name_reader = name_query.read();
         let initial = name_reader
@@ -122,6 +136,7 @@ impl Component for HomePage {
                                     initial: initial_bar,
                                     color: c.primary,
                                     image_key: "home-avatar".to_string(),
+                                    fetch_key: None,
                                 }),
                         )
                         // Title
@@ -318,7 +333,9 @@ impl Component for HomePage {
                             let Some(room) = filtered_rooms.get(i) else {
                                 return rect().into_element();
                             };
+                            let room_id = room.room_id().to_string();
                             rect()
+                                .key(room_id)
                                 .width(Size::fill())
                                 .child(RoomListItem { room: room.clone() })
                                 .into()

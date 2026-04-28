@@ -33,6 +33,7 @@ impl Component for SearchResultRow {
                 initial: item.sender_initial.to_string(),
                 color: item.sender_color,
                 image_key: String::new(),
+                fetch_key: None,
             })
             .child(
                 rect()

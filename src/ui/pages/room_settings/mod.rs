@@ -199,6 +199,7 @@ impl Component for RoomSettings {
                                         initial,
                                         color: c.primary,
                                         image_key: "room-settings-avatar".to_string(),
+                                        fetch_key: None,
                                     })
                                     .child(
                                         label()
@@ -438,6 +439,7 @@ impl Component for RoomSettings {
                                                     initial: m.initial.to_string(),
                                                     color: m.color,
                                                     image_key: m.user_id.clone(),
+                                                    fetch_key: None,
                                                 })
                                                 .child(
                                                     rect()

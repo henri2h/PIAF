@@ -322,6 +322,7 @@ impl Component for MessageRow {
                 initial: msg.sender_initial.to_string(),
                 color: msg.sender_color,
                 image_key: String::new(),
+                fetch_key: None,
             })
         } else {
             row
@@ -350,6 +351,7 @@ impl Component for MessageRow {
                     initial: initial.to_string(),
                     color,
                     image_key: uid.clone(),
+                    fetch_key: None,
                 });
             }
             if msg.read_receipts.len() > 5 {

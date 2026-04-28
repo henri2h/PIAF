@@ -106,6 +106,7 @@ impl Component for SettingsProfile {
                                             .unwrap_or_else(|| "?".to_string()),
                                         color: c.primary,
                                         image_key: "settings-avatar".to_string(),
+                                        fetch_key: None,
                                     })
                                     .child({
                                         #[cfg(not(target_os = "android"))]

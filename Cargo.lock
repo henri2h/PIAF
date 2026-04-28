@@ -2079,8 +2079,7 @@ dependencies = [
 [[package]]
 name = "freya"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f245220ba270fd9a856bd8b09b80ce9f135b756efb51ff6efdbfb6e395382148"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "cfg-if",
  "freya-android",
@@ -2101,8 +2100,7 @@ dependencies = [
 [[package]]
 name = "freya-android"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "765cfeaa319c669fc43894ba84d8d13990ca4ed8cb2f5acac6442aa33259887a"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "freya-components",
  "freya-core",
@@ -2115,8 +2113,7 @@ dependencies = [
 [[package]]
 name = "freya-animation"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffc8a3a652a1cd2460a7647b57f9a432470e85df29c3ac079858193b8ed6fc7f"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "async-io",
  "easer",
@@ -2126,8 +2123,7 @@ dependencies = [
 [[package]]
 name = "freya-clipboard"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e22501b58c4cfd6903e8275305eaaf23dce6719f9a2b0dd17a6000c17837eca5"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "copypasta",
  "freya-core",
@@ -2136,8 +2132,7 @@ dependencies = [
 [[package]]
 name = "freya-components"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ee685da41b6a8354886d18dba6087d66bde79078789e84cc8698a8002895f86"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -2161,8 +2156,7 @@ dependencies = [
 [[package]]
 name = "freya-core"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cec71c46732f3a824d0c38d776fcaa1e50236b4425aeddbafa692f47c7fe8c1c"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "accesskit",
  "async-broadcast",
@@ -2190,8 +2184,7 @@ dependencies = [
 [[package]]
 name = "freya-devtools"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a6eb6cfae08172b09aed803cff12d770bdcc2bfc1f577ac7364e40b8eba0663"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -2216,8 +2209,7 @@ dependencies = [
 [[package]]
 name = "freya-edit"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "844274b5ea9669af68f278dad209a6c59914b99b9a4f21e399567467391eed1b"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "bitflags 2.11.1",
  "freya-clipboard",
@@ -2231,8 +2223,7 @@ dependencies = [
 [[package]]
 name = "freya-engine"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee1a2d02143cd29330d52992332594d11fc8aba807cc79ab9610fc6b87790d8e"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "bitflags 2.11.1",
  "freya-skia-safe",
@@ -2241,8 +2232,7 @@ dependencies = [
 [[package]]
 name = "freya-icons"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "303fa888a1e2f5883d4a291e581213fdde29a1636f4b45943cd1bc5596032311"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "bytes",
 ]
@@ -2250,8 +2240,7 @@ dependencies = [
 [[package]]
 name = "freya-material-design"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfc2acec2bdcd3227a18f2be9ce6a0bb1eb35fc44ef0a10e7175f7dc1b921770"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "freya-animation",
  "freya-components",
@@ -2263,8 +2252,7 @@ dependencies = [
 [[package]]
 name = "freya-performance-plugin"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0694955cd60135af7544c9f534041785ec379173049093ca93a5365a3392a1e"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "freya-core",
  "freya-engine",
@@ -2274,8 +2262,7 @@ dependencies = [
 [[package]]
 name = "freya-query"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "963961492a8582d33fd42f9756a9836ebf0e28a23fda8ed79e9b03458a636708"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2285,8 +2272,7 @@ dependencies = [
 [[package]]
 name = "freya-radio"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53fd1a245c755816628c685eb766a50d50829d84d81dc9281b60b20c264059e4"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "freya-core",
 ]
@@ -2294,8 +2280,7 @@ dependencies = [
 [[package]]
 name = "freya-router"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a23492c8b1a79e2d77ed788ca75b2582a06fceeac0f7708266009c13525d908d"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "freya-core",
  "freya-router-macro",
@@ -2307,8 +2292,7 @@ dependencies = [
 [[package]]
 name = "freya-router-macro"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd7bb741c53529b7d0ec581a04c618f1864bc9c24390f9b4af09bdc4e720f227"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2319,8 +2303,7 @@ dependencies = [
 [[package]]
 name = "freya-sdk"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea8dd6ed28d96c8863f1d18f07eef21810931cc1750222979be905ab8af60a63"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2371,8 +2354,7 @@ dependencies = [
 [[package]]
 name = "freya-winit"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6cbc7fc22360b1467b7772f3732759d554adf18837e20108f3ef5f5bd2ba9938"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -4886,8 +4868,7 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 [[package]]
 name = "pathgraph"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c4a232e64934690f30acfa5fbfab99c3a39e534e76fb719ba83cccfeedaea37"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 
 [[package]]
 name = "pbkdf2"
@@ -5399,8 +5380,7 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 [[package]]
 name = "ragnarok"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0450022d94d9634cd307b21e9ab0aed30ea627d3bfe164ac25948f6ab150678e"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "euclid",
  "hotpath",
@@ -6925,8 +6905,7 @@ dependencies = [
 [[package]]
 name = "torin"
 version = "0.4.0-rc.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "305efbb76daca214639f903ad17430b5052fc45989372063f4a77afdeb386c39"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
 dependencies = [
  "euclid",
  "itertools 0.14.0",
