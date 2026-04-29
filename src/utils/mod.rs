@@ -5,7 +5,7 @@ pub mod push;
 pub mod queries;
 pub mod worker;
 
-use chrono::{DateTime, Local, NaiveDate, TimeZone, Utc};
+use chrono::{DateTime, Datelike, Local, NaiveDate, TimeZone, Utc};
 use freya::prelude::*;
 use futures::StreamExt;
 use tokio::sync::watch;
@@ -95,10 +95,12 @@ pub fn format_timestamp(ts: MilliSecondsSinceUnixEpoch) -> String {
         format!("{}m", age.num_minutes().max(0))
     } else if age.num_hours() < 24 {
         dt_local.format("%H:%M").to_string()
-    } else if age.num_days() < 30 {
-        format!("{}d", age.num_days())
+    } else if age.num_days() < 7 {
+        dt_local.format("%a").to_string()
+    } else if dt_local.year() == now.year() {
+        dt_local.format("%b %-d").to_string()
     } else {
-        format!("{}w", age.num_weeks())
+        dt_local.format("%b %-d, %Y").to_string()
     }
 }
 

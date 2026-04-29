@@ -146,6 +146,7 @@ impl Component for Layout {
             colors.set(utils::const_values::AppColors::for_theme_pref(pref, system));
         });
 
+        let c = utils::use_app_colors();
         let mut width: State<f32> = use_state(|| 0.0f32);
         let w = *width.read();
         let is_wide = w >= 800.0;
@@ -198,7 +199,7 @@ impl Component for Layout {
                         rect()
                             .width(Size::px(1.))
                             .height(Size::fill())
-                            .background((220, 222, 226)),
+                            .background(c.outline_variant),
                     )
                     .child(
                         rect()
@@ -213,7 +214,7 @@ impl Component for Layout {
                         rect()
                             .width(Size::px(1.))
                             .height(Size::fill())
-                            .background((220, 222, 226)),
+                            .background(c.outline_variant),
                     )
                     .child(
                         rect()
@@ -239,7 +240,7 @@ impl Component for Layout {
                         rect()
                             .width(Size::px(1.))
                             .height(Size::fill())
-                            .background((220, 222, 226)),
+                            .background(c.outline_variant),
                     )
                     .child(
                         rect()

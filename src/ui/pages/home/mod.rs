@@ -14,7 +14,15 @@ use std::time::Duration;
 use crate::ui::components::Avatar;
 use crate::utils::queries::FetchUserDisplayName;
 use crate::utils::{use_app_colors, use_tokio_track_watcher};
-use crate::{Route, SYNC_RX, WIDE_MODE, utils::matrix::CLIENT};
+use crate::{ACTIVE_ROOM_RX, Route, SYNC_RX, WIDE_MODE, utils::matrix::CLIENT};
+
+// ---------------------------------------------------------------------------
+// Shared context for the currently active room ID
+// ---------------------------------------------------------------------------
+
+/// Provided by HomePage; consumed by RoomListItem to highlight the active room.
+#[derive(Clone, Copy)]
+pub(super) struct ActiveRoomCtx(pub State<Option<String>>);
 
 // ---------------------------------------------------------------------------
 // HomePage
@@ -27,17 +35,42 @@ impl Component for HomePage {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
 
-        let mut search_open: State<bool> = use_state(|| false);
         let mut chips_visible: State<bool> = use_state(|| false);
         let sync_tick: State<u64> = use_state(|| 0u64);
-
         if let Some(rx) = SYNC_RX.get() {
             use_tokio_track_watcher(rx, sync_tick);
         }
 
-        let mut search: State<String> = use_state(String::new);
-        let filter: State<RoomFilter> = use_state(|| RoomFilter::All);
+        // Active room: drive via context so RoomListItem re-renders in-place
+        // without remounting VirtualScrollView (which would reset scroll position).
+        let active_room: State<Option<String>> = use_state(|| {
+            ACTIVE_ROOM_RX.get().and_then(|rx| rx.borrow().clone())
+        });
+        use_hook(|| {
+            let mut active_room = active_room;
+            if let Some(rx) = ACTIVE_ROOM_RX.get() {
+                let (tx, mut chan) = futures::channel::mpsc::unbounded::<Option<String>>();
+                let mut rx = rx.clone();
+                tokio::task::spawn(async move {
+                    while rx.changed().await.is_ok() {
+                        let val = rx.borrow().clone();
+                        if tx.unbounded_send(val).is_err() { break; }
+                    }
+                });
+                spawn(async move {
+                    use futures::StreamExt;
+                    while let Some(val) = chan.next().await {
+                        *active_room.write() = val;
+                    }
+                });
+            }
+        });
+        use_provide_context(|| ActiveRoomCtx(active_room));
 
+        let mut search: State<String> = use_state(String::new);
+        // Narrow mode: search toggle
+        let mut search_open: State<bool> = use_state(|| false);
+        let filter: State<RoomFilter> = use_state(|| RoomFilter::All);
 
         let name_query =
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
@@ -80,8 +113,32 @@ impl Component for HomePage {
         let is_search_open = *search_open.read();
         let show_chips = *chips_visible.read();
 
+        // ── Search input builder ───────────────────────────────────────────────
+        let mk_search = || {
+            rect()
+                .horizontal()
+                .width(Size::fill())
+                .height(Size::px(36.))
+                .corner_radius(8.)
+                .background(c.surface_container)
+                .padding(Gaps::new(0., 10., 0., 10.))
+                .cross_align(Alignment::Center)
+                .spacing(6.)
+                .child(
+                    svg(freya_icons::lucide::search())
+                        .color(c.on_surface_variant)
+                        .width(Size::px(15.))
+                        .height(Size::px(15.)),
+                )
+                .child(
+                    Input::new(search)
+                        .flat()
+                        .placeholder("Search conversations…")
+                        .width(Size::fill()),
+                )
+        };
+
         // ── App bar ────────────────────────────────────────────────────────────
-        // Custom bar: avatar on the left, title center, search + (pencil on wide) right.
         let app_bar = {
             let initial_bar = initial.clone();
             rect()
@@ -101,7 +158,7 @@ impl Component for HomePage {
                         .content(Content::Flex)
                         .cross_align(Alignment::Center)
                         .padding(Gaps::new(0., 8., 0., 8.))
-                        // Avatar on the left — taps to Settings
+                        // Avatar — taps to Settings
                         .child(
                             rect()
                                 .width(Size::px(48.))
@@ -120,62 +177,69 @@ impl Component for HomePage {
                                     image_key: "__self__".to_string(),
                                 }),
                         )
-                        // Title
-                        .child(
+                        // Wide: inline search input; narrow: "Chats" title
+                        .child(if is_wide {
+                            rect()
+                                .width(Size::flex(1.0))
+                                .padding(Gaps::new(0., 8., 0., 8.))
+                                .child(mk_search())
+                                .into_element()
+                        } else {
                             label()
                                 .text("Chats")
                                 .font_size(22.)
                                 .font_weight(FontWeight::MEDIUM)
                                 .color(c.on_surface)
                                 .width(Size::flex(1.0))
-                                .padding(Gaps::new(0., 8., 0., 8.)),
-                        )
-                        // Search toggle
-                        .child(
-                            rect()
-                                .width(Size::px(48.))
-                                .height(Size::px(48.))
-                                .corner_radius(24.)
-                                .center()
-                                .on_press(move |_| {
-                                    let new_val = !*search_open.read();
-                                    if !new_val {
-                                        *search.write() = String::new();
-                                    }
-                                    *search_open.write() = new_val;
-                                })
-                                .child(
-                                    svg(if is_search_open {
-                                        freya_icons::lucide::x()
-                                    } else {
-                                        freya_icons::lucide::search()
-                                    })
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(22.))
-                                    .height(Size::px(22.)),
-                                ),
-                        )
-                        // Wide mode: pencil button for new chat
-                        .maybe_child(if is_wide {
+                                .padding(Gaps::new(0., 8., 0., 8.))
+                                .into_element()
+                        })
+                        // Narrow: search toggle icon
+                        .maybe_child(if !is_wide {
                             Some(
                                 rect()
                                     .width(Size::px(48.))
                                     .height(Size::px(48.))
                                     .corner_radius(24.)
                                     .center()
-                                    .on_press(|_| {
-                                        let _ = RouterContext::get().push(crate::Route::NewChat);
+                                    .on_press(move |_| {
+                                        let new_val = !*search_open.read();
+                                        if !new_val {
+                                            *search.write() = String::new();
+                                        }
+                                        *search_open.write() = new_val;
                                     })
                                     .child(
-                                        svg(freya_icons::lucide::pencil())
-                                            .color(c.on_surface_variant)
-                                            .width(Size::px(22.))
-                                            .height(Size::px(22.)),
+                                        svg(if is_search_open {
+                                            freya_icons::lucide::x()
+                                        } else {
+                                            freya_icons::lucide::search()
+                                        })
+                                        .color(c.on_surface_variant)
+                                        .width(Size::px(22.))
+                                        .height(Size::px(22.)),
                                     ),
                             )
                         } else {
                             None
-                        }),
+                        })
+                        // Pencil button (both modes)
+                        .child(
+                            rect()
+                                .width(Size::px(48.))
+                                .height(Size::px(48.))
+                                .corner_radius(24.)
+                                .center()
+                                .on_press(|_| {
+                                    let _ = RouterContext::get().push(crate::Route::NewChat);
+                                })
+                                .child(
+                                    svg(freya_icons::lucide::pencil())
+                                        .color(c.on_surface_variant)
+                                        .width(Size::px(22.))
+                                        .height(Size::px(22.)),
+                                ),
+                        ),
                 )
         };
 
@@ -212,44 +276,23 @@ impl Component for HomePage {
             .content(Content::Flex)
             .background(c.surface)
             .child(app_bar)
-            // Filter chips — hidden by default, shown when chips_visible
-            .child(if show_chips {
+            // Filter chips — hidden by default on narrow (shown on scroll-up), always visible on wide
+            .child(if show_chips || is_wide {
                 filter_bar.into_element()
             } else {
                 rect().into_element()
             })
-            // Inline search bar — shown when search is active
-            .child(if is_search_open {
-                rect()
-                    .width(Size::fill())
-                    .padding(Gaps::new(6., 16., 6., 16.))
-                    .background(c.surface)
-                    .child(
-                        rect()
-                            .horizontal()
-                            .width(Size::fill())
-                            .height(Size::px(40.))
-                            .corner_radius(20.)
-                            .background(c.surface_container)
-                            .padding(Gaps::new(0., 12., 0., 12.))
-                            .cross_align(Alignment::Center)
-                            .spacing(6.)
-                            .child(
-                                svg(freya_icons::lucide::search())
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(16.))
-                                    .height(Size::px(16.)),
-                            )
-                            .child(
-                                Input::new(search)
-                                    .flat()
-                                    .placeholder("Search conversations…")
-                                    .width(Size::fill()),
-                            ),
-                    )
-                    .into_element()
+            // Narrow: inline search bar below app bar when toggled
+            .maybe_child(if !is_wide && is_search_open {
+                Some(
+                    rect()
+                        .width(Size::fill())
+                        .padding(Gaps::new(6., 16., 6., 16.))
+                        .background(c.surface)
+                        .child(mk_search()),
+                )
             } else {
-                rect().into_element()
+                None
             })
             // Main content: loading / empty / room list
             .child(if initial_loading && rooms_len == 0 {
@@ -292,9 +335,6 @@ impl Component for HomePage {
                     )
                     .into_element()
             } else {
-                // Key on the top-room's recency stamp: any new message moves its room
-                // to position 0 (list is sorted by stamp), changing this value and
-                // forcing VirtualScrollView to remount with fresh data.
                 let list_key: u64 = filtered_rooms
                     .first()
                     .and_then(|r| r.recency_stamp().map(u64::from))
@@ -329,7 +369,7 @@ impl Component for HomePage {
                     )
                     .into_element()
             })
-            // New chat button — rounded-rect pill, narrow mode only
+            // New chat FAB — narrow mode only (wide has pencil in app bar)
             .child(if !is_wide {
                 rect()
                     .position(Position::new_global().right(16.).bottom(16.))

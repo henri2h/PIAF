@@ -13,43 +13,66 @@ use std::time::Duration;
 
 use crate::Route;
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
+use crate::ui::pages::home::ActiveRoomCtx;
 use crate::utils::use_app_colors;
 use crate::utils::{format_timestamp, queries::FetchSenderName};
 
-/// Parsed info about the latest message in a room.
 enum SenderPrefix {
-    /// DM room — no sender prefix
     None,
-    /// Current user sent the message
     Me,
-    /// Another user; contains the Matrix user ID for display name lookup
     Other(String),
 }
 
-/// Returns (body, sender_prefix) for the room's latest message.
 fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix) {
     let Some(latest) = room.latest_event() else {
         return (String::new(), SenderPrefix::None);
     };
-    let Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
-        SyncMessageLikeEvent::Original(msg),
-    ))) = latest.event().raw().deserialize()
-    else {
-        return (String::new(), SenderPrefix::None);
+
+    let (body, sender_id) = match latest.event().raw().deserialize() {
+        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
+            SyncMessageLikeEvent::Original(msg),
+        ))) => {
+            let body = match msg.content.msgtype {
+                MessageType::Text(t) => t.body,
+                MessageType::Image(_) => "📷 Image".to_string(),
+                MessageType::File(_) => "📎 File".to_string(),
+                MessageType::Audio(_) => "🎵 Audio".to_string(),
+                MessageType::Video(_) => "🎬 Video".to_string(),
+                _ => return (String::new(), SenderPrefix::None),
+            };
+            (body, msg.sender.to_string())
+        }
+        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
+            SyncMessageLikeEvent::Redacted(r),
+        ))) => ("🗑 Message deleted".to_string(), r.sender.to_string()),
+        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomEncrypted(
+            SyncMessageLikeEvent::Original(r),
+        ))) => ("🔐 Encrypted message".to_string(), r.sender.to_string()),
+        _ => {
+            // Fallback: read sender + event type from raw JSON for unhandled events
+            // (state events, call events, etc.) so old rooms show something.
+            let Ok(val) = latest.event().raw().deserialize_as::<matrix_sdk::ruma::exports::serde_json::Value>() else {
+                return (String::new(), SenderPrefix::None);
+            };
+            let sender = val
+                .get("sender")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            let event_type = val.get("type").and_then(|v| v.as_str()).unwrap_or("");
+            let body = match event_type {
+                "m.call.invite" | "m.call.answer" | "m.call.hangup" => "📞 Call".to_string(),
+                "m.room.member" => "Activity".to_string(),
+                _ => return (String::new(), SenderPrefix::None),
+            };
+            if sender.is_empty() {
+                return (String::new(), SenderPrefix::None);
+            }
+            (body, sender)
+        }
     };
 
-    let body = match msg.content.msgtype {
-        MessageType::Text(t) => t.body,
-        MessageType::Image(_) => "📷 Image".to_string(),
-        MessageType::File(_) => "📎 File".to_string(),
-        MessageType::Audio(_) => "🎵 Audio".to_string(),
-        MessageType::Video(_) => "🎬 Video".to_string(),
-        _ => return (String::new(), SenderPrefix::None),
-    };
-
-    // Only prefix in group rooms
     if room.direct_targets().is_empty() {
-        let sender_id = msg.sender.to_string();
         if my_user_id == Some(sender_id.as_str()) {
             (body, SenderPrefix::Me)
         } else {
@@ -97,9 +120,9 @@ impl Component for RoomListItem {
         let room_id = room.room_id().to_string();
         let mut hovered: State<bool> = use_state(|| false);
         let is_muted: State<bool> = use_state(|| false);
+        let active_room_ctx = use_consume::<ActiveRoomCtx>();
+        let is_active = active_room_ctx.0.read().as_deref() == Some(room_id.as_str());
 
-        // Android: long-press shimmer — activates after 350 ms hold without
-        // finger movement, so scroll gestures never trigger the highlight.
         #[cfg(target_os = "android")]
         let mut press_gen: State<u64> = use_state(|| 0u64);
         #[cfg(target_os = "android")]
@@ -172,9 +195,6 @@ impl Component for RoomListItem {
         };
 
         let heroes = room.heroes();
-        // Only show stacked avatars for group rooms where at least 2 heroes have an
-        // avatar_url set — heroes without one are excluded to avoid meaningless placeholder
-        // circles appearing in the stack.
         let is_dm = !room.direct_targets().is_empty();
         let heroes_with_avatar: Vec<_> = heroes.iter().filter(|h| h.avatar_url.is_some()).collect();
         let show_stacked = !is_dm && heroes_with_avatar.len() >= 2;
@@ -209,26 +229,28 @@ impl Component for RoomListItem {
         let room_is_muted = *is_muted.read();
         let room_id_nav = room_id.clone();
 
-        // Background: hover on desktop, long-press highlight on Android.
         #[cfg(not(target_os = "android"))]
-        let bg = if *hovered.read() {
+        let bg = if is_active {
             c.surface_container_high
+        } else if *hovered.read() {
+            c.surface_container
         } else {
             c.surface
         };
         #[cfg(target_os = "android")]
-        let bg = if *long_pressed.read() {
+        let bg = if is_active {
             c.surface_container_high
+        } else if *long_pressed.read() {
+            c.surface_container
         } else {
             c.surface
         };
 
-        // Inner content (shared between platforms)
         let inner = rect()
             .horizontal()
             .width(Size::fill())
             .height(Size::fill())
-            .padding(Gaps::new(8., 16., 8., 16.))
+            .padding(Gaps::new(8., 12., 8., 12.))
             .spacing(14.)
             .cross_align(Alignment::Center)
             .child({
@@ -241,7 +263,7 @@ impl Component for RoomListItem {
                         color1: user_color(&h1.user_id.to_string()),
                         initial2: hero_initial(h2),
                         color2: user_color(&h2.user_id.to_string()),
-                        border_color: c.surface,
+                        border_color: bg,
                     }
                     .into()
                 } else {
@@ -287,7 +309,6 @@ impl Component for RoomListItem {
                                     .cross_align(Alignment::End)
                                     .spacing(4.)
                                     .child(
-                                        // Timestamp + optional muted icon on the same row.
                                         rect()
                                             .horizontal()
                                             .spacing(4.)
@@ -355,9 +376,6 @@ impl Component for RoomListItem {
                     ),
             );
 
-        // Desktop: wrap with Ripple (fires on pointer_down — fine for mouse).
-        // Android: plain inner rect; the background of the outer rect changes
-        //          on long press via the touch handlers below.
         #[cfg(not(target_os = "android"))]
         let feedback: Element = Ripple::new()
             .width(Size::fill())
@@ -367,11 +385,21 @@ impl Component for RoomListItem {
         #[cfg(target_os = "android")]
         let feedback: Element = inner.into();
 
+        // Highlight rect: rounded background inside the outer padding gap.
+        let highlighted: Element = rect()
+            .width(Size::fill())
+            .height(Size::fill())
+            .background(bg)
+            .corner_radius(12.)
+            .overflow(Overflow::Clip)
+            .child(feedback)
+            .into();
+
         let outer = rect()
             .key(room_id.clone())
             .height(Size::px(80.))
             .width(Size::fill())
-            .background(bg)
+            .padding(Gaps::new(2., 8., 2., 8.))
             .on_pointer_enter(move |e: Event<PointerEventData>| {
                 if matches!(e.data(), PointerEventData::Mouse(_)) {
                     *hovered.write() = true;
@@ -393,11 +421,8 @@ impl Component for RoomListItem {
                 });
             });
 
-        // Android: attach touch handlers that detect long press vs scroll.
-        // touch_move and touch_end/cancel bump the generation counter to abort
-        // any in-flight long-press timer.
         #[cfg(not(target_os = "android"))]
-        return outer.child(feedback);
+        return outer.child(highlighted);
 
         #[cfg(target_os = "android")]
         return outer
@@ -427,6 +452,6 @@ impl Component for RoomListItem {
                 *press_gen.write() += 1;
                 *long_pressed.write() = false;
             })
-            .child(feedback);
+            .child(highlighted);
     }
 }

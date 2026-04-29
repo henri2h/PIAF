@@ -268,6 +268,7 @@ impl Component for StackedAvatar {
                     .width(Size::fill())
                     .height(Size::px(ring_size))
                     .content(Content::Flex)
+                    .layer(1)
                     .child(rect().width(Size::flex(1.0)).height(Size::px(1.)))
                     .child(mk_circle(self.color2, self.initial2.clone(), true)),
             )
