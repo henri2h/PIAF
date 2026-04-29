@@ -50,6 +50,13 @@ impl Requester {
         });
     }
 
+    pub fn fetch_room_previews(&self, room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {
+        if room_ids.is_empty() {
+            return;
+        }
+        self.tx.send(WorkerTask::FetchRoomPreviews(room_ids)).ok();
+    }
+
     pub async fn fetch_room_avatar(&self, room_id: String) -> Result<Vec<u8>, ()> {
         let (tx, rx) = oneshot::channel();
         self.tx
@@ -144,6 +151,9 @@ impl ClientWorker {
                 let result = do_fetch_user_display_name().await;
                 let _ = reply.send(result);
             }
+            WorkerTask::FetchRoomPreviews(room_ids) => {
+                do_fetch_room_previews(room_ids).await;
+            }
         }
     }
 }
@@ -189,6 +199,7 @@ pub enum WorkerTask {
     FetchUserAvatar(oneshot::Sender<Result<Vec<u8>, ()>>),
     FetchSenderName(String, oneshot::Sender<Result<String, ()>>),
     FetchUserDisplayName(oneshot::Sender<Result<String, ()>>),
+    FetchRoomPreviews(Vec<matrix_sdk::ruma::OwnedRoomId>),
 }
 
 pub enum SyncTask {
@@ -288,6 +299,14 @@ async fn do_fetch_sender_name(key: &str) -> Result<String, ()> {
                 .to_string()
         });
     Ok(name)
+}
+
+async fn do_fetch_room_previews(room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {
+    let Some(service) = ROOM_LIST_SERVICE.get() else {
+        return;
+    };
+    let refs: Vec<&matrix_sdk::ruma::RoomId> = room_ids.iter().map(|id| id.as_ref()).collect();
+    service.subscribe_to_rooms(&refs).await;
 }
 
 async fn do_fetch_user_display_name() -> Result<String, ()> {

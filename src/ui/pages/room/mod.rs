@@ -53,7 +53,7 @@ pub(super) struct Reaction {
 #[derive(Debug, Clone, PartialEq)]
 pub(super) enum MessageContent {
     Text(String),
-    Image { key: String, bytes: Vec<u8> },
+    Image { key: String, bytes: Vec<u8>, caption: Option<String> },
     Notice(String),
 }
 

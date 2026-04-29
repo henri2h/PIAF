@@ -195,10 +195,16 @@ pub(super) async fn item_to_message(
             let key = event_id
                 .clone()
                 .unwrap_or_else(|| "img-unknown".to_string());
+            let caption = if img.body.starts_with("image") || img.body.ends_with(".jpg") || img.body.ends_with(".jpeg") || img.body.ends_with(".png") || img.body.ends_with(".gif") || img.body.ends_with(".webp") {
+                None
+            } else {
+                Some(img.body.clone()).filter(|s| !s.is_empty())
+            };
             if let Some(cached) = img_cache.get(&key) {
                 MessageContent::Image {
                     key,
                     bytes: cached.clone(),
+                    caption,
                 }
             } else {
                 let request = MediaRequestParameters {
@@ -209,7 +215,7 @@ pub(super) async fn item_to_message(
                     Ok(bytes) => {
                         let bytes = bytes.to_vec();
                         img_cache.insert(key.clone(), bytes.clone());
-                        MessageContent::Image { key, bytes }
+                        MessageContent::Image { key, bytes, caption }
                     }
                     Err(_) => MessageContent::Text("[Image]".to_string()),
                 }

@@ -25,6 +25,12 @@ enum SenderPrefix {
 
 fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix) {
     let Some(latest) = room.latest_event() else {
+        println!(
+            "[{}] {}",
+            room.name().unwrap_or("oups".to_string()),
+            "No latest event"
+        );
+
         return (String::new(), SenderPrefix::None);
     };
 
@@ -34,11 +40,19 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
         ))) => {
             let body = match msg.content.msgtype {
                 MessageType::Text(t) => t.body,
+                MessageType::Notice(n) => n.body,
                 MessageType::Image(_) => "📷 Image".to_string(),
                 MessageType::File(_) => "📎 File".to_string(),
                 MessageType::Audio(_) => "🎵 Audio".to_string(),
                 MessageType::Video(_) => "🎬 Video".to_string(),
-                _ => return (String::new(), SenderPrefix::None),
+                ref other => {
+                    println!(
+                        "[piaf] unhandled MessageType in room {}: {:?}",
+                        room.room_id(),
+                        other.msgtype()
+                    );
+                    return (String::new(), SenderPrefix::None);
+                }
             };
             (body, msg.sender.to_string())
         }
@@ -49,9 +63,23 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
             SyncMessageLikeEvent::Original(r),
         ))) => ("🔐 Encrypted message".to_string(), r.sender.to_string()),
         _ => {
+            println!(
+                "[{}] {}",
+                room.name().unwrap_or_default(),
+                latest.event().raw().json().to_string()
+            );
+
             // Fallback: read sender + event type from raw JSON for unhandled events
             // (state events, call events, etc.) so old rooms show something.
-            let Ok(val) = latest.event().raw().deserialize_as::<matrix_sdk::ruma::exports::serde_json::Value>() else {
+            let Ok(val) = latest
+                .event()
+                .raw()
+                .deserialize_as::<matrix_sdk::ruma::exports::serde_json::Value>()
+            else {
+                println!(
+                    "[piaf] failed to deserialize last event as JSON in room {}",
+                    room.room_id()
+                );
                 return (String::new(), SenderPrefix::None);
             };
             let sender = val
@@ -61,9 +89,16 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
                 .to_string();
             let event_type = val.get("type").and_then(|v| v.as_str()).unwrap_or("");
             let body = match event_type {
+                "m.sticker" => "🎉 Sticker".to_string(),
                 "m.call.invite" | "m.call.answer" | "m.call.hangup" => "📞 Call".to_string(),
                 "m.room.member" => "Activity".to_string(),
-                _ => return (String::new(), SenderPrefix::None),
+                _ => {
+                    println!(
+                        "[piaf] unhandled last event type: {event_type:?} in room {}",
+                        room.room_id()
+                    );
+                    return (String::new(), SenderPrefix::None);
+                }
             };
             if sender.is_empty() {
                 return (String::new(), SenderPrefix::None);
@@ -109,6 +144,7 @@ impl PartialEq for RoomListItem {
         self.room.recency_stamp() == other.room.recency_stamp()
             && self.room.num_unread_messages() == other.room.num_unread_messages()
             && self.room.num_unread_notifications() == other.room.num_unread_notifications()
+            && self.room.latest_event().is_some() == other.room.latest_event().is_some()
     }
 }
 
@@ -127,6 +163,17 @@ impl Component for RoomListItem {
         let mut press_gen: State<u64> = use_state(|| 0u64);
         #[cfg(target_os = "android")]
         let mut long_pressed: State<bool> = use_state(|| false);
+
+        use_hook(|| {
+            if room.latest_event().is_none() {
+                let room_id = room.room_id().to_owned();
+                tokio::task::spawn(async move {
+                    if let Some(rq) = crate::REQUESTER.get() {
+                        rq.fetch_room_previews(vec![room_id]);
+                    }
+                });
+            }
+        });
 
         use_hook(|| {
             let room_id = room_id.clone();

@@ -150,23 +150,36 @@ impl Component for MessageRow {
                     c.bubble_other_text
                 })
                 .into_element(),
-            MessageContent::Image { key, bytes } => {
+            MessageContent::Image { key, bytes, caption } => {
                 let key_view = key.clone();
                 let bytes_view = bytes.clone();
+                let caption_text = caption.clone();
+                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
                 rect()
-                    .width(Size::px(200.))
-                    .height(Size::px(150.))
-                    .corner_radius(8.)
-                    .on_press(move |_| {
-                        *image_viewer.write() = Some((key_view.clone(), bytes_view.clone()));
-                    })
+                    .vertical()
+                    .spacing(6.)
                     .child(
-                        ImageViewer::new((key.clone(), Bytes::from(bytes.clone())))
-                            .width(Size::fill())
-                            .height(Size::fill())
+                        rect()
+                            .width(Size::px(200.))
+                            .height(Size::px(150.))
                             .corner_radius(8.)
-                            .image_cover(ImageCover::Center),
+                            .on_press(move |_| {
+                                *image_viewer.write() = Some((key_view.clone(), bytes_view.clone()));
+                            })
+                            .child(
+                                ImageViewer::new((key.clone(), Bytes::from(bytes.clone())))
+                                    .width(Size::fill())
+                                    .height(Size::fill())
+                                    .corner_radius(8.)
+                                    .image_cover(ImageCover::Center),
+                            ),
                     )
+                    .maybe_child(caption_text.map(|cap| {
+                        label()
+                            .text(cap)
+                            .color(text_color)
+                            .into_element()
+                    }))
                     .into_element()
             }
         };

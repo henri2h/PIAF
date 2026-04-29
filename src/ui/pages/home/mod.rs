@@ -115,27 +115,28 @@ impl Component for HomePage {
 
         // ── Search input builder ───────────────────────────────────────────────
         let mk_search = || {
-            rect()
-                .horizontal()
-                .width(Size::fill())
-                .height(Size::px(36.))
-                .corner_radius(8.)
-                .background(c.surface_container)
-                .padding(Gaps::new(0., 10., 0., 10.))
-                .cross_align(Alignment::Center)
-                .spacing(6.)
-                .child(
+            Input::new(search)
+                .leading(
                     svg(freya_icons::lucide::search())
                         .color(c.on_surface_variant)
                         .width(Size::px(15.))
                         .height(Size::px(15.)),
                 )
-                .child(
-                    Input::new(search)
-                        .flat()
-                        .placeholder("Search conversations…")
-                        .width(Size::fill()),
-                )
+                .placeholder("Search conversations…")
+                .width(Size::fill())
+                .theme_colors(InputColorsThemePartial {
+                    background: Some(Preference::Specific(Color::from(c.surface_container))),
+                    hover_background: Some(Preference::Specific(Color::from(
+                        c.surface_container,
+                    ))),
+                    border_fill: Some(Preference::Specific(Color::TRANSPARENT)),
+                    focus_border_fill: Some(Preference::Specific(Color::from(c.primary))),
+                    ..Default::default()
+                })
+                .theme_layout(InputLayoutThemePartial {
+                    corner_radius: Some(Preference::Specific(CornerRadius::new_all(8.))),
+                    inner_margin: Some(Preference::Specific(Gaps::new(10., 10., 10., 10.))),
+                })
         };
 
         // ── App bar ────────────────────────────────────────────────────────────
