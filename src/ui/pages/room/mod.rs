@@ -55,6 +55,7 @@ pub(super) enum MessageContent {
     Text(String),
     Image { key: String, bytes: Vec<u8>, caption: Option<String> },
     Notice(String),
+    ReadMarker,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -71,6 +72,7 @@ pub(super) struct MessageItem {
     pub timestamp: String,
     pub is_me: bool,
     pub read_receipts: Vec<(String, String)>,
+    pub seen_by: Vec<(String, String)>,
     pub fully_read: bool,
     pub reactions: Vec<Reaction>,
 }
@@ -202,7 +204,7 @@ impl Component for RoomPage {
                                 biased;
                                 page_opt = page_rx.recv() => {
                                     if page_opt.is_none() { break; }
-                                    if let Ok(false) = timeline.paginate_backwards(20).await {
+                                    if timeline.paginate_backwards(20).await.unwrap_or(false) {
                                         let _ = reached_start_tx.send(());
                                     }
                                 }
@@ -345,7 +347,7 @@ impl Component for RoomPage {
                 detail_modal
                     .read()
                     .clone()
-                    .map(|msg| detail_modal::detail_modal_overlay(msg, detail_modal, c)),
+                    .map(|msg| detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)),
             )
             .maybe_child(action_popup_state.read().clone().map(|(area, msg)| {
                 action_popup_overlay(
@@ -509,10 +511,12 @@ impl Component for RoomPage {
                                                 }
                                             })
                                             .child(MessageRow {
+                                                room_id: room_id.clone(),
                                                 msg,
                                                 action_tx: msg_action_tx.clone(),
                                                 image_viewer,
                                                 action_popup: action_popup_state,
+                                                detail_modal,
                                             })
                                             .into()
                                     })),

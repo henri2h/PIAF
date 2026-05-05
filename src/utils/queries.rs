@@ -28,13 +28,47 @@ fn media_semaphore() -> Arc<tokio::sync::Semaphore> {
 // ---------------------------------------------------------------------------
 
 /// Fetches the avatar for a given key.
-/// Use `"__self__"` to fetch the current user's own avatar; any other value is
-/// treated as a Matrix room ID.
+/// - `"__self__"` → current user's own avatar
+/// - `"room_id\x00user_id"` → room member avatar
+/// - anything else → room avatar
 pub(crate) async fn fetch_avatar_for_key(key: &str) -> Result<Vec<u8>, ()> {
     if key == "__self__" {
         return REQUESTER.get().ok_or(())?.fetch_user_avatar().await;
     }
+    if key.contains('\x00') {
+        return fetch_member_avatar_direct(key).await;
+    }
     fetch_room_avatar_direct(key).await
+}
+
+async fn fetch_member_avatar_direct(key: &str) -> Result<Vec<u8>, ()> {
+    use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
+    use matrix_sdk::ruma::events::room::MediaSource;
+
+    let mut parts = key.splitn(2, '\x00');
+    let room_id = parts.next().unwrap_or("");
+    let user_id = parts.next().unwrap_or("");
+    let client = CLIENT.get().cloned().ok_or(())?;
+    let parsed_room = matrix_sdk::ruma::RoomId::parse(room_id).map_err(|_| ())?;
+    let parsed_user = matrix_sdk::ruma::UserId::parse(user_id).map_err(|_| ())?;
+    let room = client.get_room(&parsed_room).ok_or(())?;
+    let member = room
+        .get_member_no_sync(&parsed_user)
+        .await
+        .ok()
+        .flatten()
+        .ok_or(())?;
+    let avatar_url = member.avatar_url().ok_or(())?;
+    let request = MediaRequestParameters {
+        source: MediaSource::Plain(avatar_url.to_owned()),
+        format: MediaFormat::File,
+    };
+    client
+        .media()
+        .get_media_content(&request, true)
+        .await
+        .map(|b| b.to_vec())
+        .map_err(|_| ())
 }
 
 pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, ()> {

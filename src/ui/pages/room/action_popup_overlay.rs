@@ -39,7 +39,7 @@ pub(super) fn action_popup_overlay(
     let reply_body = match &popup_msg.content {
         MessageContent::Text(t) => t.clone(),
         MessageContent::Image { .. } => "[Image]".to_string(),
-        MessageContent::Notice(_) => "[Notice]".to_string(),
+        MessageContent::Notice(_) | MessageContent::ReadMarker => return rect().into(),
     };
 
     let mut actions: Vec<PopupAction> = vec![

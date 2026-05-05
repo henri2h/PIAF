@@ -1,13 +1,17 @@
 use freya::prelude::*;
+use freya_query::prelude::*;
+use std::time::Duration;
 
 use crate::ui::components::Avatar;
 use crate::utils::const_values::AppColors;
+use crate::utils::queries::FetchSenderName;
 use crate::utils::sender_color;
 
 use super::{MessageItem, Reaction, ReactionSender};
 
 pub(super) fn detail_modal_overlay(
     msg: MessageItem,
+    room_id: String,
     mut modal: State<Option<MessageItem>>,
     c: AppColors,
 ) -> Element {
@@ -52,8 +56,8 @@ pub(super) fn detail_modal_overlay(
                                 .width(Size::fill())
                                 .padding(Gaps::new(0., 16., 24., 16.))
                                 .spacing(16.)
-                                .child(seen_by_section(&msg, c))
-                                .child(reactions_section(&msg, c)),
+                                .child(seen_by_section(&msg, &room_id, c))
+                                .child(reactions_section(&msg, &room_id, c)),
                         ),
                 ),
         )
@@ -69,14 +73,14 @@ fn section_title(text: &str, c: AppColors) -> Element {
         .into()
 }
 
-fn seen_by_section(msg: &MessageItem, c: AppColors) -> Element {
+fn seen_by_section(msg: &MessageItem, room_id: &str, c: AppColors) -> Element {
     let mut col = rect()
         .vertical()
         .width(Size::fill())
         .spacing(4.)
         .child(section_title("Seen by", c));
 
-    if msg.read_receipts.is_empty() {
+    if msg.seen_by.is_empty() {
         col = col.child(
             label()
                 .text("No read receipts yet")
@@ -84,48 +88,65 @@ fn seen_by_section(msg: &MessageItem, c: AppColors) -> Element {
                 .color(c.on_surface_muted),
         );
     } else {
-        for (uid, ts) in &msg.read_receipts {
-            let display = uid
-                .trim_start_matches('@')
-                .split(':')
-                .next()
-                .unwrap_or(uid)
-                .to_string();
-            let ts = ts.clone();
-            col = col.child(
-                rect()
-                    .horizontal()
-                    .width(Size::fill())
-                    .cross_align(Alignment::Center)
-                    .padding(Gaps::new(6., 0., 6., 0.))
-                    .spacing(10.)
-                    .child(Avatar {
-                        size: 28.,
-                        bytes: None,
-                        initial: display
-                            .chars()
-                            .next()
-                            .unwrap_or('?')
-                            .to_uppercase()
-                            .to_string(),
-                        color: sender_color(uid),
-                        image_key: uid.clone(),
-                        fetch_key: None,
-                    })
-                    .child(
-                        rect()
-                            .vertical()
-                            .spacing(1.)
-                            .child(label().text(display).font_size(13.).color(c.on_surface))
-                            .child(label().text(ts).font_size(11.).color(c.on_surface_muted)),
-                    ),
-            );
+        for (uid, display_fallback) in &msg.seen_by {
+            col = col.child(SeenByRow {
+                room_id: room_id.to_string(),
+                uid: uid.clone(),
+                display_fallback: display_fallback.clone(),
+                c,
+            });
         }
     }
     col.into()
 }
 
-fn reactions_section(msg: &MessageItem, c: AppColors) -> Element {
+#[derive(PartialEq, Clone)]
+struct SeenByRow {
+    room_id: String,
+    uid: String,
+    display_fallback: String,
+    c: AppColors,
+}
+
+impl Component for SeenByRow {
+    fn render(&self) -> impl IntoElement {
+        let c = self.c;
+        let uid = self.uid.clone();
+        let room_id = self.room_id.clone();
+        let display_fallback = self.display_fallback.clone();
+
+        let member_key = format!("{}\x00{}", room_id, uid);
+        let name_query = use_query(
+            Query::new(member_key.clone(), FetchSenderName)
+                .stale_time(Duration::from_secs(3600)),
+        );
+        let name = name_query
+            .read()
+            .state()
+            .ok()
+            .cloned()
+            .unwrap_or_else(|| display_fallback.clone());
+
+        let avatar_key = member_key;
+        rect()
+            .horizontal()
+            .width(Size::fill())
+            .cross_align(Alignment::Center)
+            .padding(Gaps::new(6., 0., 6., 0.))
+            .spacing(10.)
+            .child(Avatar {
+                size: 28.,
+                bytes: None,
+                initial: name.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                color: sender_color(&uid),
+                image_key: avatar_key.clone(),
+                fetch_key: Some(avatar_key),
+            })
+            .child(label().text(name).font_size(13.).color(c.on_surface))
+    }
+}
+
+fn reactions_section(msg: &MessageItem, room_id: &str, c: AppColors) -> Element {
     if msg.reactions.is_empty() {
         return rect().into();
     }
@@ -137,35 +158,32 @@ fn reactions_section(msg: &MessageItem, c: AppColors) -> Element {
         .child(section_title("Reactions", c));
 
     for reaction in &msg.reactions {
-        col = col.child(reaction_group(reaction, c));
+        col = col.child(reaction_group(reaction, room_id, c));
     }
     col.into()
 }
 
-fn reaction_group(reaction: &Reaction, c: AppColors) -> Element {
+fn reaction_group(reaction: &Reaction, room_id: &str, c: AppColors) -> Element {
     let mut group = rect().vertical().width(Size::fill()).spacing(4.).child(
         label()
             .text(format!(
                 "{} · {} {}",
                 reaction.key,
                 reaction.count,
-                if reaction.count == 1 {
-                    "person"
-                } else {
-                    "people"
-                }
+                if reaction.count == 1 { "person" } else { "people" }
             ))
             .font_size(13.)
             .color(c.on_surface),
     );
 
     for sender in &reaction.senders {
-        group = group.child(reaction_sender_row(sender, c));
+        group = group.child(reaction_sender_row(sender, room_id, c));
     }
     group.into()
 }
 
-fn reaction_sender_row(sender: &ReactionSender, c: AppColors) -> Element {
+fn reaction_sender_row(sender: &ReactionSender, room_id: &str, c: AppColors) -> Element {
+    let avatar_key = format!("{}\x00{}", room_id, sender.user_id);
     rect()
         .horizontal()
         .width(Size::fill())
@@ -175,27 +193,16 @@ fn reaction_sender_row(sender: &ReactionSender, c: AppColors) -> Element {
         .child(Avatar {
             size: 24.,
             bytes: None,
-            initial: sender
-                .display
-                .chars()
-                .next()
-                .unwrap_or('?')
-                .to_uppercase()
-                .to_string(),
+            initial: sender.display.chars().next().unwrap_or('?').to_uppercase().to_string(),
             color: sender_color(&sender.user_id),
-            image_key: sender.user_id.clone(),
-            fetch_key: None,
+            image_key: avatar_key.clone(),
+            fetch_key: Some(avatar_key),
         })
         .child(
             rect()
                 .vertical()
                 .spacing(1.)
-                .child(
-                    label()
-                        .text(sender.display.clone())
-                        .font_size(12.)
-                        .color(c.on_surface),
-                )
+                .child(label().text(sender.display.clone()).font_size(12.).color(c.on_surface))
                 .child(
                     label()
                         .text(sender.timestamp.clone())

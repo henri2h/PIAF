@@ -285,7 +285,7 @@ impl Component for RoomMediaPage {
         let vp_h = *viewport_height.read();
         let cw = *container_width.read();
         let cell_size = if cw > 0.0 {
-            ((cw - 8.) / 3. - 2.).max(60.)
+            ((cw - 8.) / 3. - 2.).max(60.).min(180.)
         } else {
             120.
         };

@@ -4,5 +4,11 @@ build:
 install:
   adb install app/build/outputs/apk/debug/app-debug.apk
 
+release:
+  ./gradlew assembleRelease
+
+install-release:
+  adb install app/build/outputs/apk/release/app-release.apk
+
 logcat:
   adb shell run-as dev.piaf.app logcat

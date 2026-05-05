@@ -17,6 +17,26 @@ pub(super) async fn item_to_message(
     client: &matrix_sdk::Client,
     img_cache: &mut HashMap<String, Vec<u8>>,
 ) -> Option<MessageItem> {
+    if let Some(matrix_sdk_ui::timeline::VirtualTimelineItem::ReadMarker) = item.as_virtual() {
+        return Some(MessageItem {
+            event_id: None,
+            date_key: String::new(),
+            date_label: None,
+            reply_to: None,
+            sender: String::new(),
+            sender_name: String::new(),
+            sender_initial: '?',
+            sender_color: (128, 128, 128),
+            content: MessageContent::ReadMarker,
+            timestamp: String::new(),
+            is_me: false,
+            read_receipts: vec![],
+            seen_by: vec![],
+            fully_read: false,
+            reactions: vec![],
+        });
+    }
+
     let event = item.as_event()?;
 
     if let TimelineItemContent::MembershipChange(m) = event.content() {
@@ -48,6 +68,7 @@ pub(super) async fn item_to_message(
             timestamp: format_timestamp(event.timestamp()),
             is_me: false,
             read_receipts: vec![],
+            seen_by: vec![],
             fully_read: false,
             reactions: vec![],
         });
@@ -237,6 +258,7 @@ pub(super) async fn item_to_message(
         timestamp,
         is_me,
         read_receipts,
+        seen_by: vec![],
         fully_read: false,
         reactions,
     })
@@ -270,6 +292,7 @@ pub(super) fn assign_read_receipts(msgs: &mut Vec<MessageItem>, my_user_id: Opti
 
     for msg in msgs.iter_mut() {
         msg.read_receipts.clear();
+        msg.seen_by.clear();
         msg.fully_read = false;
     }
 
@@ -278,12 +301,23 @@ pub(super) fn assign_read_receipts(msgs: &mut Vec<MessageItem>, my_user_id: Opti
     }
 
     for (uid, (latest_idx, ts)) in &user_latest {
-        if let Some(target) = msgs[..=*latest_idx].iter().rposition(|m| m.is_me) {
-            msgs[target].read_receipts.push((uid.clone(), ts.clone()));
-        }
+        msgs[*latest_idx].read_receipts.push((uid.clone(), ts.clone()));
     }
 
     for (idx, msg) in msgs.iter_mut().enumerate() {
+        msg.seen_by = user_latest
+            .iter()
+            .filter(|(_, (pos, _))| *pos >= idx)
+            .map(|(uid, _)| {
+                let display = uid
+                    .trim_start_matches('@')
+                    .split(':')
+                    .next()
+                    .unwrap_or(uid)
+                    .to_string();
+                (uid.clone(), display)
+            })
+            .collect();
         if msg.is_me {
             msg.fully_read = user_latest.values().all(|(pos, _)| *pos >= idx);
         }

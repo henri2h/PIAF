@@ -73,7 +73,7 @@ impl Component for MyComponent {
 
 Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use_track_watcher` (re-renders on watch channel change).
 
-When working with `Size::Flex()` don't forget to set `.content(Content::Flex)` on parent.
+**`Size::flex()` requires `.content(Content::Flex)` on the parent** — any rect whose children use `Size::flex(n)` must have `.content(Content::Flex)`, or the flex sizing is silently ignored. This applies to both horizontal and vertical rects, including divider rows with flex spacers.
 
 #### File layout rules
 

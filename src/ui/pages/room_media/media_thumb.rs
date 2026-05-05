@@ -56,7 +56,6 @@ impl Component for MediaThumb {
                 Some(b) => ImageViewer::new((item_key, Bytes::from(b)))
                     .width(Size::fill())
                     .height(Size::fill())
-                    .aspect_ratio(AspectRatio::Max)
                     .image_cover(ImageCover::Center)
                     .into_element(),
                 None => rect()

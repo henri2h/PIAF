@@ -8,17 +8,20 @@ use crate::ui::components::Avatar;
 use crate::utils::use_app_colors;
 
 pub struct MessageRow {
+    pub room_id: String,
     pub msg: MessageItem,
     pub action_tx: Arc<UnboundedSender<MsgAction>>,
     pub image_viewer: State<Option<(String, Vec<u8>)>>,
-    /// Shared state written to when the action popup is triggered.
-    /// The room page renders the actual popup overlay from this state.
     pub action_popup: State<Option<(Area, MessageItem)>>,
+    pub detail_modal: State<Option<MessageItem>>,
 }
 
 impl PartialEq for MessageRow {
     fn eq(&self, other: &Self) -> bool {
-        self.msg == other.msg && Arc::ptr_eq(&self.action_tx, &other.action_tx)
+        self.room_id == other.room_id
+            && self.msg == other.msg
+            && Arc::ptr_eq(&self.action_tx, &other.action_tx)
+            && self.detail_modal == other.detail_modal
     }
 }
 
@@ -26,11 +29,13 @@ impl Component for MessageRow {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
 
+        let room_id = self.room_id.clone();
         let msg = self.msg.clone();
         let action_tx = self.action_tx.clone();
         let mut image_viewer = self.image_viewer;
         let is_me = msg.is_me;
         let mut action_popup = self.action_popup;
+        let mut detail_modal = self.detail_modal;
 
         // Tracks this row's screen position so the popup can be positioned near it.
         let mut row_area: State<Option<Area>> = use_state(|| None);
@@ -69,6 +74,35 @@ impl Component for MessageRow {
         } else {
             rect().into_element()
         };
+
+        // ── Read marker divider ───────────────────────────────────────────
+        if let super::MessageContent::ReadMarker = &msg.content {
+            return rect()
+                .horizontal()
+                .width(Size::fill())
+                .content(Content::Flex)
+                .cross_align(Alignment::Center)
+                .padding(Gaps::new(8., 16., 8., 16.))
+                .spacing(8.)
+                .child(
+                    rect()
+                        .width(Size::flex(1.0))
+                        .height(Size::px(1.))
+                        .background(c.primary),
+                )
+                .child(
+                    label()
+                        .text("New messages")
+                        .font_size(12.)
+                        .color(c.primary),
+                )
+                .child(
+                    rect()
+                        .width(Size::flex(1.0))
+                        .height(Size::px(1.))
+                        .background(c.primary),
+                );
+        }
 
         // ── Notice (state events: join, leave, ban, etc.) ─────────────────
         if let super::MessageContent::Notice(text) = &msg.content {
@@ -141,7 +175,9 @@ impl Component for MessageRow {
         // ── Main content ──────────────────────────────────────────────────
         let _is_image = matches!(&msg.content, MessageContent::Image { .. });
         let content_el = match &msg.content {
-            MessageContent::Notice(_) => unreachable!("notices are handled above"),
+            MessageContent::Notice(_) | MessageContent::ReadMarker => {
+                unreachable!("handled above")
+            }
             MessageContent::Text(body) => label()
                 .text(body.clone())
                 .color(if is_me {
@@ -329,26 +365,31 @@ impl Component for MessageRow {
             });
 
         let row = if !is_me {
+            let avatar_key = format!("{}\x00{}", room_id, msg.sender);
             row.child(Avatar {
                 size: 36.,
                 bytes: None,
                 initial: msg.sender_initial.to_string(),
                 color: msg.sender_color,
-                image_key: String::new(),
-                fetch_key: None,
+                image_key: avatar_key.clone(),
+                fetch_key: Some(avatar_key),
             })
         } else {
             row
         };
 
         // ── Read receipt avatars ──────────────────────────────────────────
-        let read_receipt_row = if is_me && !msg.read_receipts.is_empty() {
+        let read_receipt_row = if !msg.read_receipts.is_empty() {
+            let msg_for_modal = msg.clone();
             let mut row = rect()
                 .horizontal()
                 .width(Size::fill())
                 .main_align(Alignment::End)
                 .padding(Gaps::new(1., 12., 1., 12.))
-                .spacing(2.);
+                .spacing(2.)
+                .on_press(move |_| {
+                    *detail_modal.write() = Some(msg_for_modal.clone());
+                });
             for (uid, _ts) in msg.read_receipts.iter().take(5) {
                 let initial = uid
                     .chars()
