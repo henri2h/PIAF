@@ -122,26 +122,22 @@ impl Component for Layout {
         if let Some(rx) = THEME_PREF_RX.get() {
             use_tokio_track_watcher(rx, _tpt);
         }
-        let mut theme = use_init_root_theme(|| {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
+        let current_pref = || {
+            utils::const_values::ThemePref::from_u8(
                 THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            effective_theme(pref, system)
-        });
+            )
+        };
+        let system_theme = || *Platform::get().preferred_theme.read();
+
+        let mut theme = use_init_theme(|| effective_theme(current_pref(), system_theme()));
         let mut colors = utils::use_init_app_colors(|| {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            utils::const_values::AppColors::for_theme_pref(pref, system)
+            utils::const_values::AppColors::for_theme_pref(current_pref(), system_theme())
         });
+
         use_side_effect(move || {
-            let _ = *_tpt.read(); // subscribe so effect re-runs on theme pref change
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
+            let _ = *_tpt.read();
+            let pref = current_pref();
+            let system = system_theme();
             theme.set(effective_theme(pref, system));
             colors.set(utils::const_values::AppColors::for_theme_pref(pref, system));
         });
