@@ -258,24 +258,37 @@ impl Component for ComposeBar {
                         ),
                     )
                     .child(
-                        rect()
+                        Input::new(compose_text)
+                            .placeholder(if is_editing {
+                                "Edit message…"
+                            } else if is_replying {
+                                "Reply…"
+                            } else {
+                                "Message…"
+                            })
                             .width(Size::flex(1.0))
-                            .corner_radius(20.)
-                            .background(c.surface_container)
-                            .padding(Gaps::new(0., 4., 0., 12.))
-                            .child(
-                                Input::new(compose_text)
-                                    .flat()
-                                    .placeholder(if is_editing {
-                                        "Edit message…"
-                                    } else if is_replying {
-                                        "Reply…"
-                                    } else {
-                                        "Message…"
-                                    })
-                                    .width(Size::fill())
-                                    .on_submit(on_submit_enter),
-                            ),
+                            .theme_colors(InputColorsThemePartial {
+                                background: Some(Preference::Specific(Color::from(
+                                    c.surface_container,
+                                ))),
+                                hover_background: Some(Preference::Specific(Color::from(
+                                    c.surface_container,
+                                ))),
+                                border_fill: Some(Preference::Specific(Color::TRANSPARENT)),
+                                focus_border_fill: Some(Preference::Specific(Color::from(
+                                    c.primary,
+                                ))),
+                                ..Default::default()
+                            })
+                            .theme_layout(InputLayoutThemePartial {
+                                corner_radius: Some(Preference::Specific(CornerRadius::new_all(
+                                    20.,
+                                ))),
+                                inner_margin: Some(Preference::Specific(Gaps::new(
+                                    10., 4., 10., 16.,
+                                ))),
+                            })
+                            .on_submit(on_submit_enter),
                     )
                     .child(
                         Button::new().on_press(move |_| on_submit_btn()).child(
