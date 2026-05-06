@@ -14,12 +14,14 @@ pub struct MessageRow {
     pub image_viewer: State<Option<(String, Vec<u8>)>>,
     pub action_popup: State<Option<(Area, MessageItem)>>,
     pub detail_modal: State<Option<MessageItem>>,
+    pub is_dm: bool,
 }
 
 impl PartialEq for MessageRow {
     fn eq(&self, other: &Self) -> bool {
         self.room_id == other.room_id
             && self.msg == other.msg
+            && self.is_dm == other.is_dm
             && Arc::ptr_eq(&self.action_tx, &other.action_tx)
             && self.detail_modal == other.detail_modal
     }
@@ -34,6 +36,7 @@ impl Component for MessageRow {
         let action_tx = self.action_tx.clone();
         let mut image_viewer = self.image_viewer;
         let is_me = msg.is_me;
+        let is_dm = self.is_dm;
         let mut action_popup = self.action_popup;
         let mut detail_modal = self.detail_modal;
 
@@ -231,13 +234,15 @@ impl Component for MessageRow {
 
         let bubble_inner = if !is_me {
             bubble_inner
-                .child(
-                    label()
-                        .text(msg.sender_name.clone())
-                        .font_size(12.)
-                        .font_weight(FontWeight::BOLD)
-                        .color(msg.sender_color),
-                )
+                .maybe(!is_dm, |b| {
+                    b.child(
+                        label()
+                            .text(msg.sender_name.clone())
+                            .font_size(12.)
+                            .font_weight(FontWeight::BOLD)
+                            .color(msg.sender_color),
+                    )
+                })
                 .child(reply_el)
                 .child(content_el)
                 .child(
@@ -364,7 +369,7 @@ impl Component for MessageRow {
                 Alignment::Start
             });
 
-        let row = if !is_me {
+        let row = if !is_me && !is_dm {
             let avatar_key = format!("{}\x00{}", room_id, msg.sender);
             row.child(Avatar {
                 size: 36.,

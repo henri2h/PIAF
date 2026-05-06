@@ -109,6 +109,7 @@ impl Component for RoomPage {
 
         let mut messages: State<Vec<MessageItem>> = use_state(|| vec![]);
         let mut room_name: State<String> = use_state(|| room_id.clone());
+        let mut is_dm: State<bool> = use_state(|| false);
         let mut loading: State<bool> = use_state(|| true);
         let mut paginating: State<bool> = use_state(|| false);
         let mut at_start: State<bool> = use_state(|| false);
@@ -150,6 +151,7 @@ impl Component for RoomPage {
             spawn(async move {
                 let (init_tx, init_rx) = tokio::sync::oneshot::channel::<(
                     String,
+                    bool,
                     Vec<MessageItem>,
                     Option<Arc<matrix_sdk_ui::timeline::Timeline>>,
                 )>();
@@ -168,11 +170,12 @@ impl Component for RoomPage {
                             .await
                             .map(|n| n.to_string())
                             .unwrap_or_else(|_| room_id2.clone());
+                        let dm = room.is_direct().await.unwrap_or(false);
 
                         let my_user_id = client.user_id().map(|id| id.to_string());
 
                         let Ok(timeline) = room.timeline_builder().build().await else {
-                            let _ = init_tx.send((name, vec![], None));
+                            let _ = init_tx.send((name, dm, vec![], None));
                             return;
                         };
                         let timeline = Arc::new(timeline);
@@ -193,7 +196,7 @@ impl Component for RoomPage {
                         }
                         timeline::assign_date_labels(&mut msgs);
                         timeline::assign_read_receipts(&mut msgs, my_id);
-                        let _ = init_tx.send((name, msgs, Some(timeline.clone())));
+                        let _ = init_tx.send((name, dm, msgs, Some(timeline.clone())));
 
                         use matrix_sdk::ruma::api::client::receipt::create_receipt::v3::ReceiptType;
                         let _ = timeline.mark_as_read(ReceiptType::Read).await;
@@ -256,8 +259,9 @@ impl Component for RoomPage {
                     });
                 }
 
-                if let Ok((name, msgs, tl)) = init_rx.await {
+                if let Ok((name, dm, msgs, tl)) = init_rx.await {
                     *room_name.write() = name;
+                    *is_dm.write() = dm;
                     *messages.write() = msgs;
                     *timeline_handle.write() = tl.map(TimelineHandle);
                 }
@@ -328,6 +332,7 @@ impl Component for RoomPage {
 
         let msgs = messages.read().clone();
         let name = room_name.read().clone();
+        let room_is_dm = *is_dm.read();
         let is_at_start = *at_start.read();
         let viewer_state = image_viewer.read().clone();
         let is_loading = *loading.read();
@@ -523,6 +528,7 @@ impl Component for RoomPage {
                                                 image_viewer,
                                                 action_popup: action_popup_state,
                                                 detail_modal,
+                                                is_dm: room_is_dm,
                                             })
                                             .into()
                                     })),
