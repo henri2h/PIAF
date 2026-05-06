@@ -45,6 +45,8 @@ bytes = "1"
 chrono = { version = "0.4", features = ["clock"] }
 eyeball-im = "0.8"
 mime = "0.3"
+blurhash = "0.2.3"
+png = "0.18.1"
 
 [target.'cfg(not(target_os="android"))'.dependencies]
 console-subscriber = "0.5.0"

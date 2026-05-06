@@ -20,6 +20,7 @@ use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 use futures::StreamExt;
 use matrix_sdk::ruma::{OwnedEventId, RoomId};
+use matrix_sdk::ruma::events::room::MediaSource;
 use matrix_sdk_ui::timeline::{RoomExt, TimelineEventItemId};
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -48,12 +49,30 @@ pub(super) struct Reaction {
     pub senders: Vec<ReactionSender>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub(super) enum MessageContent {
     Text(String),
-    Image { key: String, bytes: Vec<u8>, caption: Option<String> },
+    Image {
+        key: String,
+        source: MediaSource,
+        caption: Option<String>,
+        blurhash: Option<String>,
+        thumbnail_source: Option<MediaSource>,
+    },
     Notice(String),
     ReadMarker,
+}
+
+impl PartialEq for MessageContent {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Text(a), Self::Text(b)) => a == b,
+            (Self::Image { key: a, .. }, Self::Image { key: b, .. }) => a == b,
+            (Self::Notice(a), Self::Notice(b)) => a == b,
+            (Self::ReadMarker, Self::ReadMarker) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -182,13 +201,9 @@ impl Component for RoomPage {
                             room.subscribe_to_typing_notifications();
 
                         let my_id = my_user_id.as_deref();
-                        let mut img_cache: HashMap<String, Vec<u8>> = HashMap::new();
                         let mut msgs = Vec::new();
                         for item in items.iter() {
-                            if let Some(m) =
-                                timeline::item_to_message(item, my_id, &client, &mut img_cache)
-                                    .await
-                            {
+                            if let Some(m) = timeline::item_to_message(item, my_id) {
                                 msgs.push(m);
                             }
                         }
@@ -242,9 +257,7 @@ impl Component for RoomPage {
                                     let items = timeline.items().await;
                                     let mut msgs = Vec::new();
                                     for item in items.iter() {
-                                        if let Some(m) = timeline::item_to_message(
-                                            item, my_id, &client, &mut img_cache,
-                                        ).await {
+                                        if let Some(m) = timeline::item_to_message(item, my_id) {
                                             msgs.push(m);
                                         }
                                     }
@@ -332,22 +345,36 @@ impl Component for RoomPage {
         let name = room_name.read().clone();
         let room_is_dm = *is_dm.read();
         let is_at_start = *at_start.read();
-        let viewer_key = image_viewer.read().clone();
         let media_items: Vec<MediaViewerItem> = msgs
             .iter()
             .filter_map(|m| {
-                if let MessageContent::Image { key, bytes, caption } = &m.content {
+                if let MessageContent::Image { key, source, caption, blurhash, thumbnail_source } = &m.content {
                     Some(MediaViewerItem {
                         key: key.clone(),
-                        source: ViewerSource::Bytes(bytes.clone()),
+                        source: ViewerSource::Remote(source.clone()),
                         info: Some((m.sender_name.clone(), m.timestamp.clone())),
                         caption: caption.clone(),
+                        blurhash: blurhash.clone(),
+                        thumbnail_source: thumbnail_source.as_ref().map(|s| ViewerSource::Remote(s.clone())),
                     })
                 } else {
                     None
                 }
             })
             .collect();
+
+        if image_viewer.read().is_some() {
+            let paginate_tx_viewer = paginate_tx.clone();
+            return MediaViewer {
+                items: media_items,
+                selected_key: image_viewer,
+                on_load_more: Some(std::rc::Rc::new(move || {
+                    let _ = paginate_tx_viewer.send(());
+                })),
+            }
+            .into_element();
+        }
+
         let is_loading = *loading.read();
         let is_paginating = *paginating.read();
         let tl = timeline_handle.read().clone();
@@ -383,17 +410,6 @@ impl Component for RoomPage {
                     detail_modal,
                     c,
                 )
-            }))
-            .maybe_child(viewer_key.is_some().then(|| {
-                let paginate_tx_viewer = paginate_tx.clone();
-                MediaViewer {
-                    items: media_items.clone(),
-                    selected_key: image_viewer,
-                    on_load_more: Some(std::rc::Rc::new(move || {
-                        let _ = paginate_tx_viewer.send(());
-                    })),
-                }
-                .into_element()
             }))
             .child({
                 let room_id_search = room_id.clone();
@@ -586,5 +602,6 @@ impl Component for RoomPage {
                     )
                     .into_element(),
             )
+            .into_element()
     }
 }

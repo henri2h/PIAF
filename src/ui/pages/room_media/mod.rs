@@ -26,6 +26,8 @@ pub(super) struct MediaItem {
     pub sender_name: String,
     pub timestamp: String,
     pub date_key: String,
+    pub blurhash: Option<String>,
+    pub thumbnail_source: Option<MediaSource>,
 }
 
 impl PartialEq for MediaItem {
@@ -116,7 +118,8 @@ pub(super) fn render_row(
             for item in cells {
                 row_el = row_el.child(MediaThumb {
                     item_key: item.key.clone(),
-                    source: item.source.clone(),
+                    blurhash: item.blurhash.clone(),
+                    thumbnail_source: item.thumbnail_source.clone(),
                     cell_size,
                     selected_key,
                 });
@@ -159,12 +162,17 @@ pub(super) fn extract_media_meta(
     };
     let timestamp = event.timestamp();
 
+    let blurhash = img.info.as_ref().and_then(|i| i.blurhash.clone());
+    let thumbnail_source = img.info.as_ref().and_then(|i| i.thumbnail_source.clone());
+
     Some(MediaItem {
         key,
         source: img.source.clone(),
         sender_name,
         timestamp: format_timestamp(timestamp),
         date_key: format_date_key(timestamp),
+        blurhash,
+        thumbnail_source,
     })
 }
 
@@ -366,6 +374,11 @@ impl Component for RoomMediaPage {
                 source: ViewerSource::Remote(item.source.clone()),
                 info: Some((item.sender_name.clone(), item.timestamp.clone())),
                 caption: None,
+                blurhash: item.blurhash.clone(),
+                thumbnail_source: item
+                    .thumbnail_source
+                    .as_ref()
+                    .map(|s| ViewerSource::Remote(s.clone())),
             })
             .collect();
 

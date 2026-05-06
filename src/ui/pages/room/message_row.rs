@@ -4,7 +4,7 @@ use freya::prelude::*;
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::{MessageContent, MessageItem, MsgAction};
-use crate::ui::components::Avatar;
+use crate::ui::components::{Avatar, MediaThumbnail, ViewerSource};
 use crate::utils::use_app_colors;
 
 pub struct MessageRow {
@@ -189,7 +189,7 @@ impl Component for MessageRow {
                     c.bubble_other_text
                 })
                 .into_element(),
-            MessageContent::Image { key, bytes, caption } => {
+            MessageContent::Image { key, caption, blurhash, thumbnail_source, .. } => {
                 let key_view = key.clone();
                 let caption_text = caption.clone();
                 let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
@@ -198,19 +198,21 @@ impl Component for MessageRow {
                     .spacing(6.)
                     .child(
                         rect()
+                            .key(key.clone())
                             .width(Size::px(200.))
                             .height(Size::px(150.))
                             .corner_radius(8.)
+                            .overflow(Overflow::Clip)
                             .on_press(move |_| {
                                 *image_viewer.write() = Some(key_view.clone());
                             })
-                            .child(
-                                ImageViewer::new((key.clone(), Bytes::from(bytes.clone())))
-                                    .width(Size::fill())
-                                    .height(Size::fill())
-                                    .corner_radius(8.)
-                                    .image_cover(ImageCover::Center),
-                            ),
+                            .child(MediaThumbnail {
+                                item_key: key.clone(),
+                                blurhash: blurhash.clone(),
+                                thumbnail_source: thumbnail_source
+                                    .as_ref()
+                                    .map(|s| ViewerSource::Remote(s.clone())),
+                            }),
                     )
                     .maybe_child(caption_text.map(|cap| {
                         label()

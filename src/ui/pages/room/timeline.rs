@@ -1,21 +1,16 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use matrix_sdk::{
-    media::{MediaFormat, MediaRequestParameters},
-    ruma::events::room::message::MessageType,
-};
+use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk_ui::timeline::{MembershipChange, TimelineDetails, TimelineItemContent};
 
 use crate::utils::{format_date_key, format_date_label, format_timestamp, sender_color};
 
 use super::{MessageContent, MessageItem, Reaction, ReactionSender};
 
-pub(super) async fn item_to_message(
+pub(super) fn item_to_message(
     item: &Arc<matrix_sdk_ui::timeline::TimelineItem>,
     my_user_id: Option<&str>,
-    client: &matrix_sdk::Client,
-    img_cache: &mut HashMap<String, Vec<u8>>,
 ) -> Option<MessageItem> {
     if let Some(matrix_sdk_ui::timeline::VirtualTimelineItem::ReadMarker) = item.as_virtual() {
         return Some(MessageItem {
@@ -216,30 +211,25 @@ pub(super) async fn item_to_message(
             let key = event_id
                 .clone()
                 .unwrap_or_else(|| "img-unknown".to_string());
-            let caption = if img.body.starts_with("image") || img.body.ends_with(".jpg") || img.body.ends_with(".jpeg") || img.body.ends_with(".png") || img.body.ends_with(".gif") || img.body.ends_with(".webp") {
+            let caption = if img.body.starts_with("image")
+                || img.body.ends_with(".jpg")
+                || img.body.ends_with(".jpeg")
+                || img.body.ends_with(".png")
+                || img.body.ends_with(".gif")
+                || img.body.ends_with(".webp")
+            {
                 None
             } else {
                 Some(img.body.clone()).filter(|s| !s.is_empty())
             };
-            if let Some(cached) = img_cache.get(&key) {
-                MessageContent::Image {
-                    key,
-                    bytes: cached.clone(),
-                    caption,
-                }
-            } else {
-                let request = MediaRequestParameters {
-                    source: img.source.clone(),
-                    format: MediaFormat::File,
-                };
-                match client.media().get_media_content(&request, true).await {
-                    Ok(bytes) => {
-                        let bytes = bytes.to_vec();
-                        img_cache.insert(key.clone(), bytes.clone());
-                        MessageContent::Image { key, bytes, caption }
-                    }
-                    Err(_) => MessageContent::Text("[Image]".to_string()),
-                }
+            let blurhash = img.info.as_ref().and_then(|i| i.blurhash.clone());
+            let thumbnail_source = img.info.as_ref().and_then(|i| i.thumbnail_source.clone());
+            MessageContent::Image {
+                key,
+                source: img.source.clone(),
+                caption,
+                blurhash,
+                thumbnail_source,
             }
         }
         _ => return None,
