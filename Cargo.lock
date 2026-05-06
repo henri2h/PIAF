@@ -844,9 +844,9 @@ dependencies = [
 
 [[package]]
 name = "blake3"
-version = "1.8.4"
+version = "1.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d2d5991425dfd0785aed03aedcf0b321d61975c9b5b3689c774a2610ae0b51e"
+checksum = "0aa83c34e62843d924f905e0f5c866eb1dd6545fc4d719e803d9ba6030371fce"
 dependencies = [
  "arrayref",
  "arrayvec",
@@ -1968,23 +1968,9 @@ checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 
 [[package]]
 name = "fax"
-version = "0.2.6"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f05de7d48f37cd6730705cbca900770cab77a89f413d23e100ad7fad7795a0ab"
-dependencies = [
- "fax_derive",
-]
-
-[[package]]
-name = "fax_derive"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0aca10fb742cb43f9e7bb8467c91aa9bcb8e3ffbc6a6f7389bb93ffc920577d"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
+checksum = "caf1079563223d5d59d83c85886a56e586cfd5c1a26292e971a0fa266531ac5a"
 
 [[package]]
 name = "fdeflate"
@@ -2085,7 +2071,7 @@ dependencies = [
 [[package]]
 name = "freya"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "cfg-if",
  "freya-android",
@@ -2106,7 +2092,7 @@ dependencies = [
 [[package]]
 name = "freya-android"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "freya-components",
  "freya-core",
@@ -2119,7 +2105,7 @@ dependencies = [
 [[package]]
 name = "freya-animation"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "async-io",
  "easer",
@@ -2129,7 +2115,7 @@ dependencies = [
 [[package]]
 name = "freya-clipboard"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "copypasta",
  "freya-core",
@@ -2138,7 +2124,7 @@ dependencies = [
 [[package]]
 name = "freya-components"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -2162,7 +2148,7 @@ dependencies = [
 [[package]]
 name = "freya-core"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "accesskit",
  "async-broadcast",
@@ -2190,7 +2176,7 @@ dependencies = [
 [[package]]
 name = "freya-devtools"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -2215,7 +2201,7 @@ dependencies = [
 [[package]]
 name = "freya-edit"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "bitflags 2.11.1",
  "freya-clipboard",
@@ -2229,7 +2215,7 @@ dependencies = [
 [[package]]
 name = "freya-engine"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "bitflags 2.11.1",
  "freya-skia-safe",
@@ -2238,7 +2224,7 @@ dependencies = [
 [[package]]
 name = "freya-icons"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "bytes",
 ]
@@ -2246,7 +2232,7 @@ dependencies = [
 [[package]]
 name = "freya-material-design"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "freya-animation",
  "freya-components",
@@ -2258,7 +2244,7 @@ dependencies = [
 [[package]]
 name = "freya-performance-plugin"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "freya-core",
  "freya-engine",
@@ -2268,7 +2254,7 @@ dependencies = [
 [[package]]
 name = "freya-query"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2278,7 +2264,7 @@ dependencies = [
 [[package]]
 name = "freya-radio"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "freya-core",
 ]
@@ -2286,7 +2272,7 @@ dependencies = [
 [[package]]
 name = "freya-router"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "freya-core",
  "freya-router-macro",
@@ -2298,7 +2284,7 @@ dependencies = [
 [[package]]
 name = "freya-router-macro"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2309,7 +2295,7 @@ dependencies = [
 [[package]]
 name = "freya-sdk"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2360,7 +2346,7 @@ dependencies = [
 [[package]]
 name = "freya-winit"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -2516,9 +2502,9 @@ dependencies = [
 
 [[package]]
 name = "generational-box"
-version = "0.7.6"
+version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c68d74be1fbe3bba37604bdfd61403f26af9f6324cf325053abd89d60c22e799"
+checksum = "155c81d7c7cae205289a26248ede524fdb1b7266b1fdb0a479b57bd3a6db2235"
 dependencies = [
  "parking_lot",
  "tracing",
@@ -2746,9 +2732,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.4.13"
+version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f44da3a8150a6703ed5d34e164b875fd14c2cdab9af1252a9a1020bde2bdc54"
+checksum = "171fefbc92fe4a4de27e0698d6a5b392d6a0e333506bc49133760b3bcf948733"
 dependencies = [
  "atomic-waker",
  "bytes",
@@ -2882,18 +2868,18 @@ dependencies = [
 
 [[package]]
 name = "hotpath"
-version = "0.14.1"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7d9982fcb4356a5260502f0e646411ec1feb2962cc98c230777104a8d1c5ed3"
+checksum = "fdb7d0713302f121f02d93290b6303b320e886f462d2cde84146ce9f9e28f1f0"
 dependencies = [
  "hotpath-macros",
 ]
 
 [[package]]
 name = "hotpath-macros"
-version = "0.14.1"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4398eddb78466298f1ddcc739abbbd8a942e541d1972c7590bd83de364e626e0"
+checksum = "51066092dc750f8cbcac4afa04592377bf7463a911d1beca430ddd788deb0757"
 
 [[package]]
 name = "html5ever"
@@ -3165,9 +3151,9 @@ dependencies = [
 
 [[package]]
 name = "idna_adapter"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
+checksum = "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
@@ -3233,9 +3219,9 @@ dependencies = [
 
 [[package]]
 name = "imgref"
-version = "1.12.0"
+version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7c5cedc30da3a610cac6b4ba17597bdf7152cf974e8aab3afb3d54455e371c8"
+checksum = "40fac9d56ed6437b198fddba683305e8e2d651aa42647f00f5ae542e7f5c94a2"
 
 [[package]]
 name = "impartial-ord"
@@ -3311,16 +3297,6 @@ name = "ipnet"
 version = "2.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d98f6fed1fde3f8c21bc40a1abb88dd75e67924f9cffc3ef95607bad8017f8e2"
-
-[[package]]
-name = "iri-string"
-version = "0.7.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25e659a4bb38e810ebc252e53b5814ff908a8c58c2a9ce2fae1bbec24cbf4e20"
-dependencies = [
- "memchr",
- "serde",
-]
 
 [[package]]
 name = "is-docker"
@@ -3460,9 +3436,9 @@ dependencies = [
 
 [[package]]
 name = "js-sys"
-version = "0.3.95"
+version = "0.3.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2964e92d1d9dc3364cae4d718d93f227e3abb088e747d92e0395bfdedf1c12ca"
+checksum = "a1840c94c045fbcf8ba2812c95db44499f7c64910a912551aaaa541decebcacf"
 dependencies = [
  "cfg-if",
  "futures-util",
@@ -3589,7 +3565,7 @@ dependencies = [
  "bitflags 2.11.1",
  "libc",
  "plain",
- "redox_syscall 0.7.4",
+ "redox_syscall 0.7.5",
 ]
 
 [[package]]
@@ -4223,9 +4199,9 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "no_std_io2"
-version = "0.9.3"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b51ed7824b6e07d354605f4abb3d9d300350701299da96642ee084f5ce631550"
+checksum = "418abd1b6d34fbf6cae440dc874771b0525a604428704c76e48b29a5e67b8003"
 dependencies = [
  "memchr",
 ]
@@ -4791,9 +4767,9 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
 name = "orbclient"
-version = "0.3.53"
+version = "0.3.54"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12c6933ddbbd16539a7672e697bb8d41ac3a4e99ac43eeb40c07236bd7fcb2dd"
+checksum = "a570f6bca41d29acb2139229a7c873ec99bc9a313bd10804081d89bfac8ff329"
 dependencies = [
  "libc",
  "libredox",
@@ -4874,7 +4850,7 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 [[package]]
 name = "pathgraph"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 
 [[package]]
 name = "pbkdf2"
@@ -5015,18 +4991,18 @@ dependencies = [
 
 [[package]]
 name = "pin-project"
-version = "1.1.11"
+version = "1.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1749c7ed4bcaf4c3d0a3efc28538844fb29bcdd7d2b67b2be7e20ba861ff517"
+checksum = "cbf0d9e68100b3a7989b4901972f265cd542e560a3a8a724e1e20322f4d06ce9"
 dependencies = [
  "pin-project-internal",
 ]
 
 [[package]]
 name = "pin-project-internal"
-version = "1.1.11"
+version = "1.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9b20ed30f105399776b9c883e68e536ef602a16ae6f596d2c473591d6ad64c6"
+checksum = "a990e22f43e84855daf260dded30524ef4a9021cc7541c26540500a50b624389"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5197,18 +5173,18 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3eb8486b569e12e2c32ad3e204dbaba5e4b5b216e9367044f25f1dba42341773"
+checksum = "3d595e54a326bc53c1c197b32d295e14b169e3cfeaa8dc82b529f947fba6bcf5"
 dependencies = [
  "profiling-procmacros",
 ]
 
 [[package]]
 name = "profiling-procmacros"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52717f9a02b6965224f95ca2a81e2e0c5c43baacd28ca057577988930b6c3d5b"
+checksum = "4488a4a36b9a4ba6b9334a32a39971f77c1436ec82c38707bce707699cc3bbcb"
 dependencies = [
  "quote",
  "syn 2.0.117",
@@ -5292,21 +5268,12 @@ checksum = "a993555f31e5a609f617c12db6250dedcac1b0a85076912c436e6fc9b2c8e6a3"
 
 [[package]]
 name = "quick-xml"
-version = "0.38.4"
+version = "0.39.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b66c2058c55a409d601666cffe35f04333cf1013010882cec174a7467cd4e21c"
+checksum = "721da970c312655cde9b4ffe0547f20a8494866a4af5ff51f18b7c633d0c870b"
 dependencies = [
  "memchr",
  "serde",
-]
-
-[[package]]
-name = "quick-xml"
-version = "0.39.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "958f21e8e7ceb5a1aa7fa87fab28e7c75976e0bfe7e23ff069e0a260f894067d"
-dependencies = [
- "memchr",
 ]
 
 [[package]]
@@ -5388,7 +5355,7 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 [[package]]
 name = "ragnarok"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "euclid",
  "hotpath",
@@ -5598,9 +5565,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.7.4"
+version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f450ad9c3b1da563fb6948a8e0fb0fb9269711c9c73d9ea1de5058c79c8d643a"
+checksum = "4666a1a60d8412eab19d94f6d13dcc9cea0a5ef4fdf6a5db306537413c661b1b"
 dependencies = [
  "bitflags 2.11.1",
 ]
@@ -5922,9 +5889,9 @@ dependencies = [
 
 [[package]]
 name = "ruma-identifiers-validation"
-version = "0.12.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9c6b5643060beec0fc9d7acfb41d2c5d91e1591db440ff62361d178e77c35fe"
+checksum = "9d6cff00317675f487c4e7ccfb18875a14c5a14867b51d13f2a826053f03c432"
 dependencies = [
  "js_int",
  "thiserror 2.0.18",
@@ -6026,9 +5993,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.39"
+version = "0.23.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c2c118cb077cca2822033836dfb1b975355dfb784b5e8da48f7b6c5db74e60e"
+checksum = "ef86cd5876211988985292b91c96a8f2d298df24e75989a43a3c73f2d4d8168b"
 dependencies = [
  "once_cell",
  "ring",
@@ -6331,9 +6298,9 @@ checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
 
 [[package]]
 name = "siphasher"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2aa850e253778c88a04c3d7323b043aeda9d3e30d5971937c1855769763678e"
+checksum = "8ee5873ec9cce0195efcb7a4e9507a04cd49aec9c83d0389df45b1ef7ba2e649"
 
 [[package]]
 name = "slab"
@@ -6737,9 +6704,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.52.1"
+version = "1.52.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b67dee974fe86fd92cc45b7a95fdd2f99a36a6d7b0d431a231178d3d670bbcc6"
+checksum = "110a78583f19d5cdb2c5ccf321d1290344e71313c6c37d43520d386027d18386"
 dependencies = [
  "bytes",
  "libc",
@@ -6913,7 +6880,7 @@ dependencies = [
 [[package]]
 name = "torin"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b6588ddc20c7642f006624528b98c08977b86cfc"
+source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#621ac08790645d8aec8f13db08c187ef75e3556a"
 dependencies = [
  "euclid",
  "itertools 0.14.0",
@@ -6943,9 +6910,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.8"
+version = "0.6.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4e6559d53cc268e5031cd8429d05415bc4cb4aefc4aa5d6cc35fbf5b924a1f8"
+checksum = "68d6fdd9f81c2819c9a8b0e0cd91660e7746a8e6ea2ba7c6b2b057985f6bcb51"
 dependencies = [
  "async-compression",
  "bitflags 2.11.1",
@@ -6955,13 +6922,13 @@ dependencies = [
  "http",
  "http-body",
  "http-body-util",
- "iri-string",
  "pin-project-lite",
  "tokio",
  "tokio-util",
  "tower",
  "tower-layer",
  "tower-service",
+ "url",
 ]
 
 [[package]]
@@ -7309,9 +7276,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bf938a0bacb0469e83c1e148908bd7d5a6010354cf4fb73279b7447422e3a89"
+checksum = "df52b6d9b87e0c74c9edfa1eb2d9bf85e5d63515474513aa50fa181b3c4f5db1"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -7322,9 +7289,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.68"
+version = "0.4.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f371d383f2fb139252e0bfac3b81b265689bf45b6874af544ffa4c975ac1ebf8"
+checksum = "af934872acec734c2d80e6617bbb5ff4f12b052dd8e6332b0817bce889516084"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -7332,9 +7299,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eeff24f84126c0ec2db7a449f0c2ec963c6a49efe0698c4242929da037ca28ed"
+checksum = "78b1041f495fb322e64aca85f5756b2172e35cd459376e67f2a6c9dffcedb103"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -7342,9 +7309,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d08065faf983b2b80a79fd87d8254c409281cf7de75fc4b773019824196c904"
+checksum = "9dcd0ff20416988a18ac686d4d4d0f6aae9ebf08a389ff5d29012b05af2a1b41"
 dependencies = [
  "bumpalo",
  "proc-macro2",
@@ -7355,9 +7322,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fd04d9e306f1907bd13c6361b5c6bfc7b3b3c095ed3f8a9246390f8dbdee129"
+checksum = "49757b3c82ebf16c57d69365a142940b384176c24df52a087fb748e2085359ea"
 dependencies = [
  "unicode-ident",
 ]
@@ -7546,7 +7513,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c324a910fd86ebdc364a3e61ec1f11737d3b1d6c273c0239ee8ff4bc0d24b4a"
 dependencies = [
  "proc-macro2",
- "quick-xml 0.39.2",
+ "quick-xml",
  "quote",
 ]
 
@@ -7564,9 +7531,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.95"
+version = "0.3.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f2dfbb17949fa2088e5d39408c48368947b86f7834484e87b73de55bc14d97d"
+checksum = "2eadbac71025cd7b0834f20d1fe8472e8495821b4e9801eb0a60bd1f19827602"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -8023,9 +7990,6 @@ name = "winnow"
 version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df79d97927682d2fd8adb29682d1140b343be4ac0f08fd68b7765d9c059d3945"
-dependencies = [
- "memchr",
-]
 
 [[package]]
 name = "winnow"
@@ -8268,9 +8232,9 @@ dependencies = [
 
 [[package]]
 name = "zbus"
-version = "5.14.0"
+version = "5.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca82f95dbd3943a40a53cfded6c2d0a2ca26192011846a1810c4256ef92c60bc"
+checksum = "c3bcbf15c8708d7fc1be0c993622e0a5cbd5e8b52bfa40afa4c3e0cd8d724ac1"
 dependencies = [
  "async-broadcast",
  "async-executor",
@@ -8295,7 +8259,7 @@ dependencies = [
  "uds_windows",
  "uuid",
  "windows-sys 0.61.2",
- "winnow 0.7.15",
+ "winnow 1.0.2",
  "zbus_macros",
  "zbus_names",
  "zvariant",
@@ -8327,9 +8291,9 @@ dependencies = [
 
 [[package]]
 name = "zbus_macros"
-version = "5.14.0"
+version = "5.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "897e79616e84aac4b2c46e9132a4f63b93105d54fe8c0e8f6bffc21fa8d49222"
+checksum = "51fa5406ad9175a8c825a931f8cf347116b531b3634fcb0b627c290f1f2516ff"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -8342,22 +8306,22 @@ dependencies = [
 
 [[package]]
 name = "zbus_names"
-version = "4.3.1"
+version = "4.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffd8af6d5b78619bab301ff3c560a5bd22426150253db278f164d6cf3b72c50f"
+checksum = "7074f3e50b894eac91750142016d30d0a89be8e67dbfd9704fb875825760e52d"
 dependencies = [
  "serde",
- "winnow 0.7.15",
+ "winnow 1.0.2",
  "zvariant",
 ]
 
 [[package]]
 name = "zbus_xml"
-version = "5.1.0"
+version = "5.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "441a0064125265655bccc3a6af6bef56814d9277ac83fce48b1cd7e160b80eac"
+checksum = "a8067892e940ed1727dea64690378601603b31d62dfde019a5335fbb7c0e0ed9"
 dependencies = [
- "quick-xml 0.38.4",
+ "quick-xml",
  "serde",
  "zbus_names",
  "zvariant",
@@ -8489,24 +8453,24 @@ dependencies = [
 
 [[package]]
 name = "zvariant"
-version = "5.10.0"
+version = "5.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5708299b21903bbe348e94729f22c49c55d04720a004aa350f1f9c122fd2540b"
+checksum = "1c1567a6ec68df868cbbfde844cfc6d81649fe5109a62b116b19fabd53e618ee"
 dependencies = [
  "endi",
  "enumflags2",
  "serde",
  "url",
- "winnow 0.7.15",
+ "winnow 1.0.2",
  "zvariant_derive",
  "zvariant_utils",
 ]
 
 [[package]]
 name = "zvariant_derive"
-version = "5.10.0"
+version = "5.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b59b012ebe9c46656f9cc08d8da8b4c726510aef12559da3e5f1bf72780752c"
+checksum = "c7d5b780599bbde114e39d9a0799577fad1ced5105d38515745f7b3099d8ceda"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -8517,13 +8481,13 @@ dependencies = [
 
 [[package]]
 name = "zvariant_utils"
-version = "3.3.0"
+version = "3.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f75c23a64ef8f40f13a6989991e643554d9bef1d682a281160cf0c1bc389c5e9"
+checksum = "6d464f5733ffa07a3164d656f18533caace9d0638596721355d73256a410d691"
 dependencies = [
  "proc-macro2",
  "quote",
  "serde",
  "syn 2.0.117",
- "winnow 0.7.15",
+ "winnow 1.0.2",
 ]
