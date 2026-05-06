@@ -14,6 +14,7 @@ pub(super) fn action_popup_overlay(
     mut popup_state: State<Option<(Area, MessageItem)>>,
     action_tx: Arc<UnboundedSender<MsgAction>>,
     mut reply_info: State<Option<(String, String, String)>>,
+    mut edit_info: State<Option<(String, String)>>,
     mut detail_modal: State<Option<MessageItem>>,
     c: AppColors,
 ) -> Element {
@@ -36,9 +37,9 @@ pub(super) fn action_popup_overlay(
         }))
     };
 
-    let reply_body = match &popup_msg.content {
-        MessageContent::Text(t) => t.clone(),
-        MessageContent::Image { .. } => "[Image]".to_string(),
+    let (reply_body, edit_body) = match &popup_msg.content {
+        MessageContent::Text(t) => (t.clone(), Some(t.clone())),
+        MessageContent::Image { .. } => ("[Image]".to_string(), None),
         MessageContent::Notice(_) | MessageContent::ReadMarker => return rect().into(),
     };
 
@@ -75,6 +76,17 @@ pub(super) fn action_popup_overlay(
     ];
 
     if is_me {
+        if let (Some(eid), Some(body)) = (event_id.clone(), edit_body) {
+            actions.push(PopupAction {
+                icon: freya_icons::lucide::pencil(),
+                label: "Edit",
+                color: c.on_surface,
+                on_press: Box::new(move || {
+                    *edit_info.write() = Some((eid.clone(), body.clone()));
+                    *popup_state.write() = None;
+                }),
+            });
+        }
         if let Some(eid) = event_id.clone() {
             let tx = action_tx.clone();
             actions.push(PopupAction {

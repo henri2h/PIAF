@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use freya::prelude::*;
+use freya::text_edit::*;
 use matrix_sdk::room::edit::EditedContent;
 use matrix_sdk::ruma::OwnedEventId;
 use matrix_sdk::ruma::events::room::message::{
@@ -6,15 +9,75 @@ use matrix_sdk::ruma::events::room::message::{
 };
 use matrix_sdk_ui::timeline::TimelineEventItemId;
 
+use crate::utils::const_values::AppColors;
+use crate::utils::matrix::{clear_draft, load_draft, save_draft};
 use crate::utils::use_app_colors;
 
 use super::TimelineHandle;
 
+#[derive(PartialEq)]
+struct ComposeLine {
+    line_index: usize,
+    editable: UseEditable,
+    c: AppColors,
+}
+
+impl Component for ComposeLine {
+    fn render_key(&self) -> DiffKey {
+        (&self.line_index).into()
+    }
+
+    fn render(&self) -> impl IntoElement {
+        let line_index = self.line_index;
+        let mut editable = self.editable;
+        let c = self.c;
+        let holder = use_state(ParagraphHolder::default);
+
+        let editor = editable.editor().read();
+        let text = editor.line(line_index).map(|l| l.text.to_string()).unwrap_or_default();
+        let is_active = editor.cursor_row() == line_index;
+        let cursor_index = if is_active { Some(editor.cursor_col()) } else { None };
+        let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
+        drop(editor);
+
+        let on_mouse_down = move |e: Event<MouseEventData>| {
+            editable.process_event(EditableEvent::Down {
+                location: e.element_location,
+                editor_line: EditorLine::Paragraph(line_index),
+                holder: &holder.read(),
+            });
+        };
+
+        let on_mouse_move = move |e: Event<MouseEventData>| {
+            editable.process_event(EditableEvent::Move {
+                location: e.element_location,
+                editor_line: EditorLine::Paragraph(line_index),
+                holder: &holder.read(),
+            });
+        };
+
+        paragraph()
+            .holder(holder.read().clone())
+            .on_mouse_down(on_mouse_down)
+            .on_mouse_move(on_mouse_move)
+            .cursor_index(cursor_index)
+            .highlights(highlights.map(|h| vec![h]))
+            .width(Size::fill())
+            .font_size(14.)
+            .color(c.compose_edit_text)
+            .max_lines(1)
+            .span(text)
+    }
+}
+
+const LINE_H: f32 = 22.;
+const MAX_LINES: usize = 5;
+const V_PAD: f32 = 10.;
+
 #[derive(Clone)]
 pub struct ComposeBar {
-    pub compose_text: State<String>,
+    pub initial_text: String,
     pub edit_info: State<Option<(String, String)>>,
-    /// (event_id, sender_name, body_preview)
     pub reply_info: State<Option<(String, String, String)>>,
     pub room_id: String,
     pub timeline: Option<TimelineHandle>,
@@ -30,11 +93,33 @@ impl Component for ComposeBar {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
 
-        let mut compose_text = self.compose_text;
+        let initial_text = self.initial_text.clone();
         let mut edit_info = self.edit_info;
         let mut reply_info = self.reply_info;
         let tl = self.timeline.clone();
         let room_id = self.room_id.clone();
+
+        let focus = use_hook(|| Focus::new_for_id(Focus::new_id()));
+        let focus_status = use_focus_status(focus);
+        let mut editable = use_editable(|| initial_text.clone(), EditableConfig::new);
+        let mut editor_state = *editable.editor();
+
+        // Load draft on mount (skip if we're in edit mode with pre-filled text).
+        let room_id_draft = room_id.clone();
+        use_hook(move || {
+            if initial_text.is_empty() {
+                spawn(async move {
+                    if let Some(text) = load_draft(&room_id_draft).await {
+                        *editor_state.write() = RopeEditor::new(
+                            text,
+                            TextSelection::new_cursor(0),
+                            0,
+                            EditorHistory::new(Duration::from_millis(10)),
+                        );
+                    }
+                });
+            }
+        });
 
         let is_editing = edit_info.read().is_some();
         let is_replying = reply_info.read().is_some();
@@ -42,9 +127,11 @@ impl Component for ComposeBar {
         let tl_send = tl.clone();
         let tl_edit = tl.clone();
         let room_id_attach = room_id.clone();
+        let room_id_send = room_id.clone();
 
         let mut do_send = move || {
-            let text = compose_text.read().clone();
+            let text = editable.editor().read().rope().to_string();
+            let text = text.trim().to_string();
             if text.is_empty() {
                 return;
             }
@@ -52,7 +139,6 @@ impl Component for ComposeBar {
             let reply = reply_info.read().clone();
 
             if let Some((event_id, _)) = edit {
-                // Edit mode
                 if let Some(TimelineHandle(timeline)) = tl_edit.clone() {
                     tokio::task::spawn(async move {
                         if let Ok(eid) = OwnedEventId::try_from(event_id.as_str()) {
@@ -67,7 +153,6 @@ impl Component for ComposeBar {
                 }
                 *edit_info.write() = None;
             } else if let Some((reply_event_id, _, _)) = reply {
-                // Reply mode
                 if let Some(TimelineHandle(timeline)) = tl_send.clone() {
                     tokio::task::spawn(async move {
                         if let Ok(eid) = OwnedEventId::try_from(reply_event_id.as_str()) {
@@ -79,7 +164,6 @@ impl Component for ComposeBar {
                 }
                 *reply_info.write() = None;
             } else {
-                // New message
                 if let Some(TimelineHandle(timeline)) = tl_send.clone() {
                     tokio::task::spawn(async move {
                         use matrix_sdk::ruma::events::AnyMessageLikeEventContent;
@@ -90,17 +174,56 @@ impl Component for ComposeBar {
                         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
                     });
                 }
+                let room_id_clear = room_id_send.clone();
+                tokio::task::spawn(async move { clear_draft(&room_id_clear).await; });
             }
-            *compose_text.write() = String::new();
+
+            // Clear the editable content.
+            editable.process_event(EditableEvent::KeyDown {
+                key: &Key::Character("a".into()),
+                modifiers: Modifiers::CONTROL,
+            });
+            editable.process_event(EditableEvent::KeyDown {
+                key: &Key::Named(NamedKey::Delete),
+                modifiers: Modifiers::empty(),
+            });
         };
 
+        // Save draft on each content change (debounced).
+        use_side_effect(move || {
+            if is_editing { return; }
+            let text = editable.editor().read().rope().to_string();
+            let room_id = room_id.clone();
+            tokio::task::spawn(async move {
+                tokio::time::sleep(Duration::from_millis(500)).await;
+                save_draft(&room_id, &text).await;
+            });
+        });
+
         let mut on_submit_btn = do_send.clone();
-        let on_submit_enter = move |_| do_send();
+
+        let on_key_down = move |e: Event<KeyboardEventData>| {
+            if e.key == Key::Named(NamedKey::Enter) && !e.modifiers.shift() {
+                do_send();
+            } else {
+                editable.process_event(EditableEvent::KeyDown {
+                    key: &e.key,
+                    modifiers: e.modifiers,
+                });
+            }
+        };
+
+        let on_key_up = move |e: Event<KeyboardEventData>| {
+            editable.process_event(EditableEvent::KeyUp { key: &e.key });
+        };
+
+        let on_global_pointer_press = move |_: Event<PointerEventData>| {
+            editable.process_event(EditableEvent::Release);
+        };
 
         let on_cancel = move |_| {
             if edit_info.read().is_some() {
                 *edit_info.write() = None;
-                *compose_text.write() = String::new();
             } else {
                 *reply_info.write() = None;
             }
@@ -155,8 +278,13 @@ impl Component for ComposeBar {
                         .await;
                     let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
                 });
-            } // cfg(not(target_os = "android"))
+            }
         };
+
+        let line_count = editable.editor().read().len_lines().max(1);
+        let inner_h = (line_count as f32 * LINE_H).min(MAX_LINES as f32 * LINE_H);
+        let is_empty = editable.editor().read().rope().len_chars() == 0;
+        let is_focused = focus_status().is_focused();
 
         let bar = rect().vertical().width(Size::fill()).background(c.surface);
         #[cfg(target_os = "android")]
@@ -165,20 +293,10 @@ impl Component for ComposeBar {
             // ── Context banner: editing or replying ───────────────────────
             .child(if is_editing || is_replying {
                 let (icon, label_text, label_color, preview) = if is_editing {
-                    (
-                        freya_icons::lucide::pencil(),
-                        "Editing message",
-                        c.primary,
-                        None,
-                    )
+                    (freya_icons::lucide::pencil(), "Editing message", c.primary, None)
                 } else {
                     let (_, sender, body) = reply_info.read().clone().unwrap();
-                    (
-                        freya_icons::lucide::reply(),
-                        "Replying to",
-                        c.primary,
-                        Some((sender, body)),
-                    )
+                    (freya_icons::lucide::reply(), "Replying to", c.primary, Some((sender, body)))
                 };
                 rect()
                     .horizontal()
@@ -258,37 +376,59 @@ impl Component for ComposeBar {
                         ),
                     )
                     .child(
-                        Input::new(compose_text)
-                            .placeholder(if is_editing {
-                                "Edit message…"
-                            } else if is_replying {
-                                "Reply…"
-                            } else {
-                                "Message…"
-                            })
+                        rect()
+                            .a11y_id(focus.a11y_id())
+                            .a11y_focusable(true)
+                            .a11y_role(AccessibilityRole::TextInput)
+                            .on_key_down(on_key_down)
+                            .on_key_up(on_key_up)
+                            .on_global_pointer_press(on_global_pointer_press)
+                            .on_pointer_down(move |_| focus.request_focus())
                             .width(Size::flex(1.0))
-                            .theme_colors(InputColorsThemePartial {
-                                background: Some(Preference::Specific(Color::from(
-                                    c.surface_container,
-                                ))),
-                                hover_background: Some(Preference::Specific(Color::from(
-                                    c.surface_container,
-                                ))),
-                                border_fill: Some(Preference::Specific(Color::TRANSPARENT)),
-                                focus_border_fill: Some(Preference::Specific(Color::from(
-                                    c.primary,
-                                ))),
-                                ..Default::default()
+                            .height(Size::px(inner_h + V_PAD * 2.))
+                            .corner_radius(20.)
+                            .background(c.surface_container)
+                            .maybe(is_focused, |el| {
+                                el.border(
+                                    Border::new()
+                                        .fill(c.primary)
+                                        .width(2.)
+                                        .alignment(BorderAlignment::Outer),
+                                )
                             })
-                            .theme_layout(InputLayoutThemePartial {
-                                corner_radius: Some(Preference::Specific(CornerRadius::new_all(
-                                    20.,
-                                ))),
-                                inner_margin: Some(Preference::Specific(Gaps::new(
-                                    10., 4., 10., 16.,
-                                ))),
-                            })
-                            .on_submit(on_submit_enter),
+                            .overflow(Overflow::Clip)
+                            .child(
+                                ScrollView::new()
+                                    .width(Size::fill())
+                                    .height(Size::fill())
+                                    .child(
+                                        rect()
+                                            .vertical()
+                                            .width(Size::fill())
+                                            .padding(Gaps::new(V_PAD, 16., V_PAD, 16.))
+                                            .maybe_child(is_empty.then(|| {
+                                                label()
+                                                    .text(if is_editing {
+                                                        "Edit message…"
+                                                    } else if is_replying {
+                                                        "Reply…"
+                                                    } else {
+                                                        "Message…"
+                                                    })
+                                                    .font_size(14.)
+                                                    .color(c.on_surface_muted)
+                                                    .into_element()
+                                            }))
+                                            .children((0..line_count).map(|i| {
+                                                ComposeLine {
+                                                    line_index: i,
+                                                    editable,
+                                                    c,
+                                                }
+                                                .into()
+                                            })),
+                                    ),
+                            ),
                     )
                     .child(
                         Button::new().on_press(move |_| on_submit_btn()).child(
@@ -297,11 +437,7 @@ impl Component for ComposeBar {
                             } else {
                                 freya_icons::lucide::send_horizontal()
                             })
-                            .color(if is_editing {
-                                c.primary
-                            } else {
-                                c.compose_text
-                            })
+                            .color(if is_editing { c.primary } else { c.compose_text })
                             .width(Size::px(18.))
                             .height(Size::px(18.)),
                         ),

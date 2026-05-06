@@ -308,14 +308,14 @@ pub(super) fn assign_read_receipts(msgs: &mut Vec<MessageItem>, my_user_id: Opti
         msg.seen_by = user_latest
             .iter()
             .filter(|(_, (pos, _))| *pos >= idx)
-            .map(|(uid, _)| {
+            .map(|(uid, (_, ts))| {
                 let display = uid
                     .trim_start_matches('@')
                     .split(':')
                     .next()
                     .unwrap_or(uid)
                     .to_string();
-                (uid.clone(), display)
+                (uid.clone(), display, ts.clone())
             })
             .collect();
         if msg.is_me {

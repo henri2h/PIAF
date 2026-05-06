@@ -384,6 +384,53 @@ pub async fn save_theme_pref(pref: u8) {
     let _ = fs::write(&path, pref.to_string()).await;
 }
 
+// ── Draft persistence ─────────────────────────────────────────────────────────
+
+fn drafts_file() -> Option<std::path::PathBuf> {
+    DATA_DIR
+        .get()
+        .and_then(|d| d.parent())
+        .map(|p| p.join("drafts.json"))
+}
+
+async fn read_drafts() -> std::collections::HashMap<String, String> {
+    let Some(path) = drafts_file() else { return Default::default() };
+    fs::read_to_string(&path)
+        .await
+        .ok()
+        .and_then(|s| serde_json::from_str(&s).ok())
+        .unwrap_or_default()
+}
+
+async fn write_drafts(map: &std::collections::HashMap<String, String>) {
+    let Some(path) = drafts_file() else { return };
+    if let Ok(json) = serde_json::to_string(map) {
+        let _ = fs::write(&path, json).await;
+    }
+}
+
+pub async fn load_draft(room_id: &str) -> Option<String> {
+    let s = read_drafts().await.remove(room_id)?;
+    if s.trim().is_empty() { None } else { Some(s) }
+}
+
+pub async fn save_draft(room_id: &str, text: &str) {
+    let mut map = read_drafts().await;
+    if text.trim().is_empty() {
+        map.remove(room_id);
+    } else {
+        map.insert(room_id.to_string(), text.to_string());
+    }
+    write_drafts(&map).await;
+}
+
+pub async fn clear_draft(room_id: &str) {
+    let mut map = read_drafts().await;
+    if map.remove(room_id).is_some() {
+        write_drafts(&map).await;
+    }
+}
+
 /// Persist the sync token for a future session.
 /// Note that this is needed only when using `sync_once`. Other sync methods get
 /// the sync token from the store.

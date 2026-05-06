@@ -72,7 +72,8 @@ pub(super) struct MessageItem {
     pub timestamp: String,
     pub is_me: bool,
     pub read_receipts: Vec<(String, String)>,
-    pub seen_by: Vec<(String, String)>,
+    /// (user_id, display_fallback, timestamp)
+    pub seen_by: Vec<(String, String, String)>,
     pub fully_read: bool,
     pub reactions: Vec<Reaction>,
 }
@@ -113,7 +114,6 @@ impl Component for RoomPage {
         let mut at_start: State<bool> = use_state(|| false);
         let mut pinned_to_bottom: State<bool> = use_state(|| true);
         let mut timeline_handle: State<Option<TimelineHandle>> = use_state(|| None);
-        let compose_text: State<String> = use_state(String::new);
         let edit_info: State<Option<(String, String)>> = use_state(|| None);
         let reply_info: State<Option<(String, String, String)>> = use_state(|| None);
         let image_viewer: State<Option<(String, Vec<u8>)>> = use_state(|| None);
@@ -321,6 +321,11 @@ impl Component for RoomPage {
         let paginate_tx_fill = paginate_tx.clone();
         let paginate_tx_inner = paginate_tx.clone();
 
+        let (compose_key, initial_text) = match edit_info.read().as_ref() {
+            Some((eid, body)) => (format!("edit-{eid}"), body.clone()),
+            None => ("normal".to_string(), String::new()),
+        };
+
         let msgs = messages.read().clone();
         let name = room_name.read().clone();
         let is_at_start = *at_start.read();
@@ -356,6 +361,7 @@ impl Component for RoomPage {
                     action_popup_state,
                     msg_action_tx.clone(),
                     reply_info,
+                    edit_info,
                     detail_modal,
                     c,
                 )
@@ -539,13 +545,18 @@ impl Component for RoomPage {
                                     .color(c.on_surface_variant),
                             )
                     }))
-                    .child(ComposeBar {
-                        compose_text,
-                        edit_info,
-                        reply_info,
-                        room_id: room_id.clone(),
-                        timeline: tl,
-                    })
+                    .child(
+                        rect()
+                            .key(compose_key)
+                            .width(Size::fill())
+                            .child(ComposeBar {
+                                initial_text,
+                                edit_info,
+                                reply_info,
+                                room_id: room_id.clone(),
+                                timeline: tl,
+                            }),
+                    )
                     .into_element(),
             )
     }

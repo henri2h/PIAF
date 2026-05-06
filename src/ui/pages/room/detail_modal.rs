@@ -88,11 +88,12 @@ fn seen_by_section(msg: &MessageItem, room_id: &str, c: AppColors) -> Element {
                 .color(c.on_surface_muted),
         );
     } else {
-        for (uid, display_fallback) in &msg.seen_by {
+        for (uid, display_fallback, timestamp) in &msg.seen_by {
             col = col.child(SeenByRow {
                 room_id: room_id.to_string(),
                 uid: uid.clone(),
                 display_fallback: display_fallback.clone(),
+                timestamp: timestamp.clone(),
                 c,
             });
         }
@@ -105,6 +106,7 @@ struct SeenByRow {
     room_id: String,
     uid: String,
     display_fallback: String,
+    timestamp: String,
     c: AppColors,
 }
 
@@ -114,11 +116,11 @@ impl Component for SeenByRow {
         let uid = self.uid.clone();
         let room_id = self.room_id.clone();
         let display_fallback = self.display_fallback.clone();
+        let timestamp = self.timestamp.clone();
 
         let member_key = format!("{}\x00{}", room_id, uid);
         let name_query = use_query(
-            Query::new(member_key.clone(), FetchSenderName)
-                .stale_time(Duration::from_secs(3600)),
+            Query::new(member_key.clone(), FetchSenderName).stale_time(Duration::from_secs(3600)),
         );
         let name = name_query
             .read()
@@ -142,7 +144,18 @@ impl Component for SeenByRow {
                 image_key: avatar_key.clone(),
                 fetch_key: Some(avatar_key),
             })
-            .child(label().text(name).font_size(13.).color(c.on_surface))
+            .child(
+                rect()
+                    .vertical()
+                    .spacing(1.)
+                    .child(label().text(name).font_size(13.).color(c.on_surface))
+                    .child(
+                        label()
+                            .text(timestamp)
+                            .font_size(11.)
+                            .color(c.on_surface_muted),
+                    ),
+            )
     }
 }
 
@@ -170,45 +183,77 @@ fn reaction_group(reaction: &Reaction, room_id: &str, c: AppColors) -> Element {
                 "{} · {} {}",
                 reaction.key,
                 reaction.count,
-                if reaction.count == 1 { "person" } else { "people" }
+                if reaction.count == 1 {
+                    "person"
+                } else {
+                    "people"
+                }
             ))
             .font_size(13.)
             .color(c.on_surface),
     );
 
     for sender in &reaction.senders {
-        group = group.child(reaction_sender_row(sender, room_id, c));
+        group = group.child(ReactionSenderRow {
+            room_id: room_id.to_string(),
+            sender: sender.clone(),
+            c,
+        });
     }
     group.into()
 }
 
-fn reaction_sender_row(sender: &ReactionSender, room_id: &str, c: AppColors) -> Element {
-    let avatar_key = format!("{}\x00{}", room_id, sender.user_id);
-    rect()
-        .horizontal()
-        .width(Size::fill())
-        .cross_align(Alignment::Center)
-        .padding(Gaps::new(4., 8., 4., 0.))
-        .spacing(8.)
-        .child(Avatar {
-            size: 24.,
-            bytes: None,
-            initial: sender.display.chars().next().unwrap_or('?').to_uppercase().to_string(),
-            color: sender_color(&sender.user_id),
-            image_key: avatar_key.clone(),
-            fetch_key: Some(avatar_key),
-        })
-        .child(
-            rect()
-                .vertical()
-                .spacing(1.)
-                .child(label().text(sender.display.clone()).font_size(12.).color(c.on_surface))
-                .child(
-                    label()
-                        .text(sender.timestamp.clone())
-                        .font_size(11.)
-                        .color(c.on_surface_muted),
-                ),
-        )
-        .into()
+#[derive(PartialEq, Clone)]
+struct ReactionSenderRow {
+    room_id: String,
+    sender: ReactionSender,
+    c: AppColors,
+}
+
+impl Component for ReactionSenderRow {
+    fn render(&self) -> impl IntoElement {
+        let c = self.c;
+        let uid = self.sender.user_id.clone();
+        let timestamp = self.sender.timestamp.clone();
+        let display_fallback = self.sender.display.clone();
+
+        let member_key = format!("{}\x00{}", self.room_id, uid);
+        let name_query = use_query(
+            Query::new(member_key.clone(), FetchSenderName).stale_time(Duration::from_secs(3600)),
+        );
+        let name = name_query
+            .read()
+            .state()
+            .ok()
+            .cloned()
+            .unwrap_or_else(|| display_fallback.clone());
+
+        let avatar_key = member_key;
+        rect()
+            .horizontal()
+            .width(Size::fill())
+            .cross_align(Alignment::Center)
+            .padding(Gaps::new(4., 8., 4., 0.))
+            .spacing(8.)
+            .child(Avatar {
+                size: 24.,
+                bytes: None,
+                initial: name.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                color: sender_color(&uid),
+                image_key: avatar_key.clone(),
+                fetch_key: Some(avatar_key),
+            })
+            .child(
+                rect()
+                    .vertical()
+                    .spacing(1.)
+                    .child(label().text(name).font_size(12.).color(c.on_surface))
+                    .child(
+                        label()
+                            .text(timestamp)
+                            .font_size(11.)
+                            .color(c.on_surface_muted),
+                    ),
+            )
+    }
 }
