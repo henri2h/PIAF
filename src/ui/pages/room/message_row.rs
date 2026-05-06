@@ -189,7 +189,7 @@ impl Component for MessageRow {
                     c.bubble_other_text
                 })
                 .into_element(),
-            MessageContent::Image { key, caption, blurhash, thumbnail_source, .. } => {
+            MessageContent::Image { key, source, caption, blurhash, thumbnail_source } => {
                 let key_view = key.clone();
                 let caption_text = caption.clone();
                 let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
@@ -212,6 +212,7 @@ impl Component for MessageRow {
                                 thumbnail_source: thumbnail_source
                                     .as_ref()
                                     .map(|s| ViewerSource::Remote(s.clone())),
+                                fallback_source: Some(ViewerSource::Remote(source.clone())),
                             }),
                     )
                     .maybe_child(caption_text.map(|cap| {

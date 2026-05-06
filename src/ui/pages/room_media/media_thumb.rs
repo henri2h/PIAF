@@ -6,6 +6,7 @@ use crate::ui::components::{MediaThumbnail, ViewerSource};
 #[derive(Clone)]
 pub(super) struct MediaThumb {
     pub item_key: String,
+    pub source: MediaSource,
     pub blurhash: Option<String>,
     pub thumbnail_source: Option<MediaSource>,
     pub cell_size: f32,
@@ -30,6 +31,7 @@ impl Component for MediaThumb {
             .thumbnail_source
             .as_ref()
             .map(|s| ViewerSource::Remote(s.clone()));
+        let fallback_source = Some(ViewerSource::Remote(self.source.clone()));
 
         rect()
             .key(item_key.clone())
@@ -43,6 +45,7 @@ impl Component for MediaThumb {
                 item_key: self.item_key.clone(),
                 blurhash,
                 thumbnail_source,
+                fallback_source,
             })
     }
 }

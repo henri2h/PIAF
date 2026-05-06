@@ -118,6 +118,7 @@ pub(super) fn render_row(
             for item in cells {
                 row_el = row_el.child(MediaThumb {
                     item_key: item.key.clone(),
+                    source: item.source.clone(),
                     blurhash: item.blurhash.clone(),
                     thumbnail_source: item.thumbnail_source.clone(),
                     cell_size,

@@ -18,12 +18,14 @@ pub fn decode_blurhash_to_png(hash: &str, width: u32, height: u32) -> Option<Vec
     Some(bytes)
 }
 
-/// Displays a thumbnail preview: blurhash → fetched thumbnail → spinner.
-/// Never downloads the full-resolution image.
+/// Displays a thumbnail: blurhash → thumbnail → fallback (full image) → spinner.
+/// The caller provides the keyed parent rect; use_hook fires on each mount.
 pub struct MediaThumbnail {
     pub item_key: String,
     pub blurhash: Option<String>,
     pub thumbnail_source: Option<ViewerSource>,
+    /// Full-image source used as a last resort when no thumbnail is available.
+    pub fallback_source: Option<ViewerSource>,
 }
 
 impl PartialEq for MediaThumbnail {
@@ -35,40 +37,32 @@ impl PartialEq for MediaThumbnail {
 impl Component for MediaThumbnail {
     fn render(&self) -> impl IntoElement {
         let mut thumb_bytes: State<Option<Vec<u8>>> = use_state(|| None);
-        // Track which item_key the current thumb_bytes belongs to so we can
-        // reset and re-fetch whenever the component is reused for a new image.
-        let mut tracked_key: State<String> = use_state(|| String::new());
 
-        let item_key = self.item_key.clone();
-        let fetch_thumb = match &self.thumbnail_source {
+        // Prefer thumbnail; fall back to full image when thumbnail absent.
+        let fetch_source = match &self.thumbnail_source {
             Some(ViewerSource::Remote(s)) => Some(s.clone()),
-            _ => None,
+            _ => match &self.fallback_source {
+                Some(ViewerSource::Remote(s)) => Some(s.clone()),
+                _ => None,
+            },
         };
-        let local_thumb = match &self.thumbnail_source {
+        let local_bytes = match &self.thumbnail_source {
             Some(ViewerSource::Bytes(b)) => Some(b.clone()),
-            _ => None,
+            _ => match &self.fallback_source {
+                Some(ViewerSource::Bytes(b)) => Some(b.clone()),
+                _ => None,
+            },
         };
 
-        // Runs whenever tracked_key changes. On first render tracked_key is ""
-        // which differs from item_key, so the fetch starts immediately.
-        // On navigation (same component position, new item_key) tracked_key is
-        // still the old key, so the effect fires again and re-fetches.
-        use_side_effect(move || {
-            let prev = tracked_key.read().clone();
-            if prev == item_key {
-                return;
-            }
-            *tracked_key.write() = item_key.clone();
-            *thumb_bytes.write() = None;
-
-            if let Some(source) = fetch_thumb.clone() {
+        use_hook(move || {
+            if let Some(source) = fetch_source {
                 let key = media_source_key(&source);
                 spawn(async move {
                     if let Ok(b) = FetchMediaContent.run(&key).await {
                         *thumb_bytes.write() = Some(b);
                     }
                 });
-            } else if let Some(b) = local_thumb.clone() {
+            } else if let Some(b) = local_bytes {
                 *thumb_bytes.write() = Some(b);
             }
         });
