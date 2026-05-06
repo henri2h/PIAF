@@ -9,14 +9,11 @@ use matrix_sdk_ui::timeline::{RoomExt, TimelineDetails, TimelineItemContent};
 
 use tokio::sync::mpsc::unbounded_channel;
 
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::{MediaViewer, MediaViewerItem, TopAppBar, TopAppBarTitle, ViewerSource};
 use crate::utils::{format_date_key, format_date_label, format_timestamp, matrix::CLIENT};
 
 mod media_thumb;
-mod media_viewer;
-mod viewer_image;
 use media_thumb::MediaThumb;
-use media_viewer::MediaViewer;
 
 const HEADER_H: f32 = 36.0;
 const ROW_PAD: f32 = 2.0;
@@ -40,7 +37,7 @@ impl PartialEq for MediaItem {
 #[derive(Clone)]
 pub(super) enum GridRow {
     DateHeader(String),
-    Images(Vec<(usize, MediaItem)>),
+    Images(Vec<MediaItem>),
 }
 
 pub(super) fn row_height(row: &GridRow, cell_size: f32) -> f32 {
@@ -50,25 +47,29 @@ pub(super) fn row_height(row: &GridRow, cell_size: f32) -> f32 {
     }
 }
 
-pub(super) fn build_rows(display_items: &[MediaItem]) -> Vec<GridRow> {
+pub(super) fn cols_for_width(width: f32) -> usize {
+    ((width / 140.).floor() as usize).max(3)
+}
+
+pub(super) fn build_rows(display_items: &[MediaItem], cols: usize) -> Vec<GridRow> {
     let mut rows: Vec<GridRow> = Vec::new();
     let mut group_date = String::new();
-    let mut group_buf: Vec<(usize, MediaItem)> = Vec::new();
+    let mut group_buf: Vec<MediaItem> = Vec::new();
 
-    fn flush(rows: &mut Vec<GridRow>, group_buf: &mut Vec<(usize, MediaItem)>) {
-        for chunk in group_buf.chunks(3) {
+    let flush = |rows: &mut Vec<GridRow>, group_buf: &mut Vec<MediaItem>| {
+        for chunk in group_buf.chunks(cols) {
             rows.push(GridRow::Images(chunk.to_vec()));
         }
         group_buf.clear();
-    }
+    };
 
-    for (display_idx, item) in display_items.iter().enumerate() {
+    for item in display_items.iter() {
         if item.date_key != group_date {
             flush(&mut rows, &mut group_buf);
             group_date = item.date_key.clone();
             rows.push(GridRow::DateHeader(item.date_key.clone()));
         }
-        group_buf.push((display_idx, item.clone()));
+        group_buf.push(item.clone());
     }
     flush(&mut rows, &mut group_buf);
     rows
@@ -77,7 +78,8 @@ pub(super) fn build_rows(display_items: &[MediaItem]) -> Vec<GridRow> {
 pub(super) fn render_row(
     row: &GridRow,
     cell_size: f32,
-    selected_idx: State<Option<usize>>,
+    cols: usize,
+    selected_key: State<Option<String>>,
 ) -> Element {
     match row {
         GridRow::DateHeader(date_key) => {
@@ -100,7 +102,7 @@ pub(super) fn render_row(
         GridRow::Images(cells) => {
             let row_key = cells
                 .first()
-                .map(|(_, item)| format!("row-{}", item.key))
+                .map(|item| format!("row-{}", item.key))
                 .unwrap_or_else(|| "row-empty".to_string());
             let mut row_el = rect()
                 .key(row_key)
@@ -111,17 +113,16 @@ pub(super) fn render_row(
                 .spacing(2.)
                 .padding(Gaps::new(1., 4., 1., 4.));
 
-            for (display_idx, item) in cells {
+            for item in cells {
                 row_el = row_el.child(MediaThumb {
                     item_key: item.key.clone(),
                     source: item.source.clone(),
                     cell_size,
-                    display_idx: *display_idx,
-                    selected_idx,
+                    selected_key,
                 });
             }
 
-            for _ in cells.len()..3 {
+            for _ in cells.len()..cols {
                 row_el = row_el.child(rect().width(Size::flex(1.0)));
             }
 
@@ -183,7 +184,7 @@ impl Component for RoomMediaPage {
         let mut auto_fill: State<bool> = use_state(|| false);
         let mut viewport_height: State<f32> = use_state(|| 0.0f32);
         let mut container_width: State<f32> = use_state(|| 0.0f32);
-        let selected_idx: State<Option<usize>> = use_state(|| None);
+        let selected_key: State<Option<String>> = use_state(|| None);
 
         let scroll_controller = use_scroll_controller(|| ScrollConfig {
             default_vertical_position: ScrollPosition::Start,
@@ -284,13 +285,14 @@ impl Component for RoomMediaPage {
 
         let vp_h = *viewport_height.read();
         let cw = *container_width.read();
+        let cols = cols_for_width(cw);
         let cell_size = if cw > 0.0 {
-            ((cw - 8.) / 3. - 2.).max(60.).min(180.)
+            ((cw - 8.) / cols as f32 - 2.).max(60.).min(300.)
         } else {
             120.
         };
 
-        let rows = build_rows(&display_items);
+        let rows = build_rows(&display_items, cols);
         let mut offsets = Vec::with_capacity(rows.len());
         let mut cum = 0.0f32;
         for row in &rows {
@@ -325,7 +327,7 @@ impl Component for RoomMediaPage {
         let is_loading = *loading.read();
         let is_paging = *paginating.read();
         let should_fill = *auto_fill.read();
-        let selected = selected_idx.read().clone();
+        let selected = selected_key.read().clone();
         let room_id_back = room_id.clone();
 
         let vis_top = (scroll_offset - OVERDRAW).max(0.0);
@@ -352,10 +354,20 @@ impl Component for RoomMediaPage {
         let vis_rows: Vec<Element> = match (first_vis, last_vis) {
             (Some(f), Some(l)) => rows[f..=l]
                 .iter()
-                .map(|row| render_row(row, cell_size, selected_idx))
+                .map(|row| render_row(row, cell_size, cols, selected_key))
                 .collect(),
             _ => vec![],
         };
+
+        let viewer_items: Vec<MediaViewerItem> = display_items
+            .iter()
+            .map(|item| MediaViewerItem {
+                key: item.key.clone(),
+                source: ViewerSource::Remote(item.source.clone()),
+                info: Some((item.sender_name.clone(), item.timestamp.clone())),
+                caption: None,
+            })
+            .collect();
 
         rect()
             .expanded()
@@ -376,11 +388,11 @@ impl Component for RoomMediaPage {
             } else {
                 rect().height(Size::px(0.)).into_element()
             })
-            .child(if let Some(idx) = selected {
+            .child(if selected.is_some() {
                 MediaViewer {
-                    items: display_items,
-                    idx,
-                    selected_idx,
+                    items: viewer_items,
+                    selected_key,
+                    on_load_more: None,
                 }
                 .into_element()
             } else if is_loading {

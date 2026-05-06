@@ -12,16 +12,14 @@ pub(super) struct MediaThumb {
     pub item_key: String,
     pub source: MediaSource,
     pub cell_size: f32,
-    pub display_idx: usize,
-    pub selected_idx: State<Option<usize>>,
+    pub selected_key: State<Option<String>>,
 }
 
 impl PartialEq for MediaThumb {
     fn eq(&self, other: &Self) -> bool {
         self.item_key == other.item_key
             && self.cell_size == other.cell_size
-            && self.display_idx == other.display_idx
-            && self.selected_idx == other.selected_idx
+            && self.selected_key == other.selected_key
     }
 }
 
@@ -39,8 +37,7 @@ impl Component for MediaThumb {
             });
         });
 
-        let idx = self.display_idx;
-        let mut selected_idx = self.selected_idx;
+        let mut selected_key = self.selected_key;
         let cell_size = self.cell_size;
         let item_key = self.item_key.clone();
 
@@ -50,10 +47,10 @@ impl Component for MediaThumb {
             .height(Size::px(cell_size))
             .overflow(Overflow::Clip)
             .on_press(move |_| {
-                *selected_idx.write() = Some(idx);
+                *selected_key.write() = Some(item_key.clone());
             })
             .child(match bytes_data.read().clone() {
-                Some(b) => ImageViewer::new((item_key, Bytes::from(b)))
+                Some(b) => ImageViewer::new((self.item_key.clone(), Bytes::from(b)))
                     .width(Size::fill())
                     .height(Size::fill())
                     .image_cover(ImageCover::Center)

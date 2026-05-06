@@ -1,7 +1,6 @@
 mod action_popup_overlay;
 mod compose_bar;
 mod detail_modal;
-mod image_viewer_overlay;
 mod message_action_popup;
 mod message_row;
 mod room_start_banner;
@@ -9,7 +8,6 @@ mod timeline;
 
 use action_popup_overlay::action_popup_overlay;
 use compose_bar::ComposeBar;
-use image_viewer_overlay::image_viewer_overlay;
 use message_row::MessageRow;
 
 use std::collections::HashMap;
@@ -27,7 +25,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::matrix::CLIENT;
 use crate::{
-    ui::components::{TopAppBar, TopAppBarAction, TopAppBarTitle},
+    ui::components::{MediaViewer, MediaViewerItem, TopAppBar, TopAppBarAction, TopAppBarTitle, ViewerSource},
     utils::use_app_colors,
 };
 
@@ -117,7 +115,7 @@ impl Component for RoomPage {
         let mut timeline_handle: State<Option<TimelineHandle>> = use_state(|| None);
         let edit_info: State<Option<(String, String)>> = use_state(|| None);
         let reply_info: State<Option<(String, String, String)>> = use_state(|| None);
-        let image_viewer: State<Option<(String, Vec<u8>)>> = use_state(|| None);
+        let image_viewer: State<Option<String>> = use_state(|| None);
         let detail_modal: State<Option<MessageItem>> = use_state(|| None);
         let action_popup_state: State<Option<(Area, MessageItem)>> = use_state(|| None);
         let mut content_height: State<f32> = use_state(|| 0.0f32);
@@ -334,7 +332,22 @@ impl Component for RoomPage {
         let name = room_name.read().clone();
         let room_is_dm = *is_dm.read();
         let is_at_start = *at_start.read();
-        let viewer_state = image_viewer.read().clone();
+        let viewer_key = image_viewer.read().clone();
+        let media_items: Vec<MediaViewerItem> = msgs
+            .iter()
+            .filter_map(|m| {
+                if let MessageContent::Image { key, bytes, caption } = &m.content {
+                    Some(MediaViewerItem {
+                        key: key.clone(),
+                        source: ViewerSource::Bytes(bytes.clone()),
+                        info: Some((m.sender_name.clone(), m.timestamp.clone())),
+                        caption: caption.clone(),
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect();
         let is_loading = *loading.read();
         let is_paginating = *paginating.read();
         let tl = timeline_handle.read().clone();
@@ -371,9 +384,17 @@ impl Component for RoomPage {
                     c,
                 )
             }))
-            .maybe_child(
-                viewer_state.map(|(key, bytes)| image_viewer_overlay(key, bytes, image_viewer)),
-            )
+            .maybe_child(viewer_key.is_some().then(|| {
+                let paginate_tx_viewer = paginate_tx.clone();
+                MediaViewer {
+                    items: media_items.clone(),
+                    selected_key: image_viewer,
+                    on_load_more: Some(std::rc::Rc::new(move || {
+                        let _ = paginate_tx_viewer.send(());
+                    })),
+                }
+                .into_element()
+            }))
             .child({
                 let room_id_search = room_id.clone();
                 let room_id_settings = room_id.clone();

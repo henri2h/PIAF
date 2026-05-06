@@ -11,7 +11,7 @@ pub struct MessageRow {
     pub room_id: String,
     pub msg: MessageItem,
     pub action_tx: Arc<UnboundedSender<MsgAction>>,
-    pub image_viewer: State<Option<(String, Vec<u8>)>>,
+    pub image_viewer: State<Option<String>>,
     pub action_popup: State<Option<(Area, MessageItem)>>,
     pub detail_modal: State<Option<MessageItem>>,
     pub is_dm: bool,
@@ -191,7 +191,6 @@ impl Component for MessageRow {
                 .into_element(),
             MessageContent::Image { key, bytes, caption } => {
                 let key_view = key.clone();
-                let bytes_view = bytes.clone();
                 let caption_text = caption.clone();
                 let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
                 rect()
@@ -203,7 +202,7 @@ impl Component for MessageRow {
                             .height(Size::px(150.))
                             .corner_radius(8.)
                             .on_press(move |_| {
-                                *image_viewer.write() = Some((key_view.clone(), bytes_view.clone()));
+                                *image_viewer.write() = Some(key_view.clone());
                             })
                             .child(
                                 ImageViewer::new((key.clone(), Bytes::from(bytes.clone())))

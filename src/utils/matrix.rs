@@ -431,6 +431,20 @@ pub async fn clear_draft(room_id: &str) {
     }
 }
 
+// ── Image download ────────────────────────────────────────────────────────────
+
+pub async fn save_image_to_downloads(bytes: &[u8]) {
+    let Some(data_dir) = DATA_DIR.get() else { return };
+    let downloads_dir = data_dir.join("downloads");
+    let _ = fs::create_dir_all(&downloads_dir).await;
+    let ts = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
+    let path = downloads_dir.join(format!("image_{}.jpg", ts));
+    let _ = fs::write(&path, bytes).await;
+}
+
 /// Persist the sync token for a future session.
 /// Note that this is needed only when using `sync_once`. Other sync methods get
 /// the sync token from the store.
