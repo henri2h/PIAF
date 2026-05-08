@@ -17,6 +17,13 @@ const BTN_SIZE: f32 = 48.;
 
 pub enum TopAppBarTitle {
     Text(String),
+    /// Avatar + name — shares fetch logic with RoomListItem via `fetch_key`.
+    Room {
+        name: String,
+        room_id: String,
+        initial: String,
+        color: (u8, u8, u8),
+    },
     /// Replaces the title with an inline search input (MD3 search bar).
     SearchInput {
         state: State<String>,
@@ -28,6 +35,12 @@ impl Clone for TopAppBarTitle {
     fn clone(&self) -> Self {
         match self {
             Self::Text(t) => Self::Text(t.clone()),
+            Self::Room { name, room_id, initial, color } => Self::Room {
+                name: name.clone(),
+                room_id: room_id.clone(),
+                initial: initial.clone(),
+                color: *color,
+            },
             Self::SearchInput { state, placeholder } => Self::SearchInput {
                 state: *state,
                 placeholder,
@@ -40,6 +53,9 @@ impl PartialEq for TopAppBarTitle {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Self::Text(a), Self::Text(b)) => a == b,
+            (Self::Room { name: a, room_id: ra, .. }, Self::Room { name: b, room_id: rb, .. }) => {
+                a == b && ra == rb
+            }
             _ => false,
         }
     }
@@ -143,6 +159,26 @@ impl Component for TopAppBar {
                 .font_size(22.)
                 .font_weight(FontWeight::MEDIUM)
                 .color(c.on_surface)
+                .into_element(),
+            TopAppBarTitle::Room { name, room_id, initial, color } => rect()
+                .horizontal()
+                .spacing(10.)
+                .cross_align(Alignment::Center)
+                .child(Avatar {
+                    size: 36.,
+                    bytes: None,
+                    fetch_key: Some(room_id.clone()),
+                    initial,
+                    color,
+                    image_key: room_id,
+                })
+                .child(
+                    label()
+                        .text(name)
+                        .font_size(18.)
+                        .font_weight(FontWeight::MEDIUM)
+                        .color(c.on_surface),
+                )
                 .into_element(),
             TopAppBarTitle::SearchInput { state, placeholder } => rect()
                 .horizontal()

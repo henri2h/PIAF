@@ -35,10 +35,25 @@ pub(crate) async fn fetch_avatar_for_key(key: &str) -> Result<Vec<u8>, ()> {
     if key == "__self__" {
         return REQUESTER.get().ok_or(())?.fetch_user_avatar().await;
     }
+    if let Some(mxc_uri) = key.strip_prefix("mxc:") {
+        return fetch_mxc_direct(mxc_uri).await;
+    }
     if key.contains('\x00') {
         return fetch_member_avatar_direct(key).await;
     }
     fetch_room_avatar_direct(key).await
+}
+
+async fn fetch_mxc_direct(mxc_uri: &str) -> Result<Vec<u8>, ()> {
+    use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
+    use matrix_sdk::ruma::events::room::MediaSource;
+    let mxc: matrix_sdk::ruma::OwnedMxcUri = mxc_uri.try_into().map_err(|_| ())?;
+    let client = CLIENT.get().cloned().ok_or(())?;
+    let request = MediaRequestParameters {
+        source: MediaSource::Plain(mxc),
+        format: MediaFormat::File,
+    };
+    client.media().get_media_content(&request, true).await.map(|b| b.to_vec()).map_err(|_| ())
 }
 
 async fn fetch_member_avatar_direct(key: &str) -> Result<Vec<u8>, ()> {
@@ -259,6 +274,66 @@ impl QueryCapability for FetchMediaContent {
     }
 }
 
+/// Key format: `"WxH:{json_media_source}"` — encodes requested size + source.
+pub fn media_thumbnail_key(source: &MediaSource, width: u32, height: u32) -> String {
+    format!("{}x{}:{}", width, height, media_source_key(source))
+}
+
+/// Fetch a server-side scaled thumbnail for a Matrix media item.
+/// Uses `MediaFormat::Thumbnail` so the server returns a small image.
+#[derive(Clone, PartialEq, Hash, Eq)]
+pub struct FetchMediaThumbnail;
+
+impl QueryCapability for FetchMediaThumbnail {
+    type Ok = Vec<u8>;
+    type Err = ();
+    type Keys = String; // output of `media_thumbnail_key()`
+
+    async fn run(&self, key: &String) -> Result<Vec<u8>, ()> {
+        use matrix_sdk::media::{MediaFormat, MediaRequestParameters, MediaThumbnailSettings};
+        use matrix_sdk::ruma::UInt;
+
+        // Parse "WxH:{json_source}"
+        let (dims, json) = key.split_once(':').ok_or(())?;
+        let (w_str, h_str) = dims.split_once('x').ok_or(())?;
+        let width: u32 = w_str.parse().map_err(|_| ())?;
+        let height: u32 = h_str.parse().map_err(|_| ())?;
+
+        let source: MediaSource =
+            matrix_sdk::ruma::exports::serde_json::from_str(json).map_err(|_| ())?;
+        let client = CLIENT.get().cloned().ok_or(())?;
+
+        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
+        tokio::spawn(async move {
+            let permit = match media_semaphore().acquire_owned().await {
+                Ok(p) => p,
+                Err(_) => {
+                    let _ = tx.send(Err(()));
+                    return;
+                }
+            };
+            let _permit = permit;
+            let settings = MediaThumbnailSettings::new(
+                UInt::new(width as u64).unwrap_or(UInt::MAX),
+                UInt::new(height as u64).unwrap_or(UInt::MAX),
+            );
+            let request = MediaRequestParameters {
+                source,
+                format: MediaFormat::Thumbnail(settings),
+            };
+            let result = client
+                .media()
+                .get_media_content(&request, true)
+                .await
+                .map(|b| b.to_vec())
+                .map_err(|_| ());
+            let _ = tx.send(result);
+        });
+
+        rx.await.map_err(|_| ())?
+    }
+}
+
 #[derive(Clone, PartialEq, Hash, Eq)]
 pub struct FetchUserDisplayName;
 
@@ -269,5 +344,44 @@ impl QueryCapability for FetchUserDisplayName {
 
     async fn run(&self, _: &()) -> Result<String, ()> {
         REQUESTER.get().ok_or(())?.fetch_user_display_name().await
+    }
+}
+
+/// Fetches rooms shared with a given user ID.
+/// Uses MSC2666 first, falls back to iterating locally cached rooms.
+#[derive(Clone, PartialEq, Hash, Eq)]
+pub struct FetchMutualRooms;
+
+impl QueryCapability for FetchMutualRooms {
+    type Ok = Vec<String>;
+    type Err = ();
+    type Keys = String; // user_id
+
+    async fn run(&self, user_id: &String) -> Result<Vec<String>, ()> {
+        use ruma::api::client::membership::mutual_rooms::unstable::Request as MutualRoomsRequest;
+
+        let client = CLIENT.get().cloned().ok_or(())?;
+        let parsed = ruma::UserId::parse(user_id.as_str()).map_err(|_| ())?;
+
+        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<String>, ()>>();
+        tokio::spawn(async move {
+            // Try MSC2666 via the native ruma request.
+            if let Ok(resp) = client.send(MutualRoomsRequest::new(parsed.to_owned())).await {
+                let _ = tx.send(Ok(resp.joined.into_iter().map(|r| r.to_string()).collect()));
+                return;
+            }
+
+            // Fallback: iterate locally cached joined rooms.
+            let mut result = vec![];
+            for room in client.rooms() {
+                if room.direct_targets().is_empty() {
+                    if let Ok(Some(_)) = room.get_member_no_sync(&parsed).await {
+                        result.push(room.room_id().to_string());
+                    }
+                }
+            }
+            let _ = tx.send(Ok(result));
+        });
+        rx.await.unwrap_or(Err(()))
     }
 }

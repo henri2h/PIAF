@@ -302,6 +302,7 @@ impl Component for MediaViewer {
                     blurhash: item.blurhash.clone(),
                     thumbnail_source: item.thumbnail_source.clone(),
                     fallback_source: None,
+                    thumb_size: None,
                 })
                 .into_element()
         };

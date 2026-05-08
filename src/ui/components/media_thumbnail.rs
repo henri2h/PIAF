@@ -2,7 +2,7 @@ use bytes::Bytes;
 use freya::prelude::*;
 use freya_query::prelude::QueryCapability;
 
-use crate::utils::queries::{FetchMediaContent, media_source_key};
+use crate::utils::queries::{FetchMediaContent, FetchMediaThumbnail, media_source_key, media_thumbnail_key};
 
 use super::ViewerSource;
 
@@ -20,12 +20,17 @@ pub fn decode_blurhash_to_png(hash: &str, width: u32, height: u32) -> Option<Vec
 
 /// Displays a thumbnail: blurhash → thumbnail → fallback (full image) → spinner.
 /// The caller provides the keyed parent rect; use_hook fires on each mount.
+///
+/// `thumb_size`: when `Some((w, h))`, uses `MediaFormat::Thumbnail` (server-side
+/// scaling) for the fallback source instead of downloading the full image.
 pub struct MediaThumbnail {
     pub item_key: String,
     pub blurhash: Option<String>,
     pub thumbnail_source: Option<ViewerSource>,
     /// Full-image source used as a last resort when no thumbnail is available.
     pub fallback_source: Option<ViewerSource>,
+    /// Requested thumbnail pixel dimensions for server-side scaling of fallback.
+    pub thumb_size: Option<(u32, u32)>,
 }
 
 impl PartialEq for MediaThumbnail {
@@ -38,11 +43,13 @@ impl Component for MediaThumbnail {
     fn render(&self) -> impl IntoElement {
         let mut thumb_bytes: State<Option<Vec<u8>>> = use_state(|| None);
 
-        // Prefer thumbnail; fall back to full image when thumbnail absent.
-        let fetch_source = match &self.thumbnail_source {
-            Some(ViewerSource::Remote(s)) => Some(s.clone()),
+        // Prefer thumbnail_source (already server-scaled); fall back to fallback_source.
+        // For fallback remote sources, use FetchMediaThumbnail if thumb_size is given.
+        let thumb_size = self.thumb_size;
+        let remote_thumb = match &self.thumbnail_source {
+            Some(ViewerSource::Remote(s)) => Some((s.clone(), false)),
             _ => match &self.fallback_source {
-                Some(ViewerSource::Remote(s)) => Some(s.clone()),
+                Some(ViewerSource::Remote(s)) => Some((s.clone(), true)),
                 _ => None,
             },
         };
@@ -55,10 +62,21 @@ impl Component for MediaThumbnail {
         };
 
         use_hook(move || {
-            if let Some(source) = fetch_source {
-                let key = media_source_key(&source);
+            if let Some((source, is_fallback)) = remote_thumb {
                 spawn(async move {
-                    if let Ok(b) = FetchMediaContent.run(&key).await {
+                    let result = if is_fallback {
+                        if let Some((w, h)) = thumb_size {
+                            let key = media_thumbnail_key(&source, w, h);
+                            FetchMediaThumbnail.run(&key).await
+                        } else {
+                            let key = media_source_key(&source);
+                            FetchMediaContent.run(&key).await
+                        }
+                    } else {
+                        let key = media_source_key(&source);
+                        FetchMediaContent.run(&key).await
+                    };
+                    if let Ok(b) = result {
                         *thumb_bytes.write() = Some(b);
                     }
                 });

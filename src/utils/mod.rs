@@ -104,6 +104,19 @@ pub fn format_timestamp(ts: MilliSecondsSinceUnixEpoch) -> String {
     }
 }
 
+pub fn extract_urls(text: &str) -> Vec<String> {
+    text.split_whitespace()
+        .filter_map(|word| {
+            let trimmed = word.trim_end_matches(|c: char| ".,;:!?)>]\"'".contains(c));
+            if trimmed.starts_with("http://") || trimmed.starts_with("https://") {
+                Some(trimmed.to_string())
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 /// Returns a sortable "YYYY-MM-DD" string for the given timestamp (local time).
 pub fn format_date_key(ts: MilliSecondsSinceUnixEpoch) -> String {
     let millis = u64::from(ts.get()) as i64;

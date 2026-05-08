@@ -1,5 +1,5 @@
 mod filter_chip;
-mod room_list_item;
+pub mod room_list_item;
 
 use std::sync::atomic::Ordering;
 
@@ -22,7 +22,7 @@ use crate::{ACTIVE_ROOM_RX, Route, SYNC_RX, WIDE_MODE, utils::matrix::CLIENT};
 
 /// Provided by HomePage; consumed by RoomListItem to highlight the active room.
 #[derive(Clone, Copy)]
-pub(super) struct ActiveRoomCtx(pub State<Option<String>>);
+pub struct ActiveRoomCtx(pub State<Option<String>>);
 
 // ---------------------------------------------------------------------------
 // HomePage

@@ -363,17 +363,7 @@ impl Component for RoomPage {
             })
             .collect();
 
-        if image_viewer.read().is_some() {
-            let paginate_tx_viewer = paginate_tx.clone();
-            return MediaViewer {
-                items: media_items,
-                selected_key: image_viewer,
-                on_load_more: Some(std::rc::Rc::new(move || {
-                    let _ = paginate_tx_viewer.send(());
-                })),
-            }
-            .into_element();
-        }
+        let viewer_active = image_viewer.read().is_some();
 
         let is_loading = *loading.read();
         let is_paginating = *paginating.read();
@@ -388,34 +378,57 @@ impl Component for RoomPage {
             }
         };
 
+        // Always return the same outer structure so Freya's reconciler stays stable.
+        // When the viewer is active it occupies the whole inner area; otherwise the
+        // normal layout (app bar + timeline + compose bar) is shown.
         rect()
             .expanded()
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .maybe_child(
-                detail_modal
-                    .read()
-                    .clone()
-                    .map(|msg| detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)),
-            )
-            .maybe_child(action_popup_state.read().clone().map(|(area, msg)| {
-                action_popup_overlay(
-                    area,
-                    msg,
-                    action_popup_state,
-                    msg_action_tx.clone(),
-                    reply_info,
-                    edit_info,
-                    detail_modal,
-                    c,
-                )
-            }))
+            .child(if viewer_active {
+                let paginate_tx_viewer = paginate_tx.clone();
+                MediaViewer {
+                    items: media_items,
+                    selected_key: image_viewer,
+                    on_load_more: Some(std::rc::Rc::new(move || {
+                        let _ = paginate_tx_viewer.send(());
+                    })),
+                }
+                .into_element()
+            } else {
+                rect()
+                    .expanded()
+                    .vertical()
+                    .content(Content::Flex)
+                    .maybe_child(
+                        detail_modal
+                            .read()
+                            .clone()
+                            .map(|msg| detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)),
+                    )
+                    .maybe_child(action_popup_state.read().clone().map(|(area, msg)| {
+                        action_popup_overlay(
+                            area,
+                            msg,
+                            action_popup_state,
+                            msg_action_tx.clone(),
+                            reply_info,
+                            edit_info,
+                            detail_modal,
+                            c,
+                        )
+                    }))
             .child({
                 let room_id_search = room_id.clone();
                 let room_id_settings = room_id.clone();
                 TopAppBar {
-                    title: TopAppBarTitle::Text(name.clone()),
+                    title: TopAppBarTitle::Room {
+                        initial: name.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                        color: crate::utils::use_app_colors().primary,
+                        room_id: room_id.clone(),
+                        name: name.clone(),
+                    },
                     on_back: if crate::WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed) {
                         None
                     } else {
@@ -577,7 +590,7 @@ impl Component for RoomPage {
                 rect()
                     .vertical()
                     .width(Size::fill())
-                    .maybe_child(typing_label.map(|text| {
+                    .maybe_child(if viewer_active { None } else { typing_label }.map(|text| {
                         rect()
                             .width(Size::fill())
                             .padding(Gaps::new(2., 16., 2., 16.))
@@ -588,20 +601,25 @@ impl Component for RoomPage {
                                     .color(c.on_surface_variant),
                             )
                     }))
-                    .child(
-                        rect()
-                            .key(compose_key)
-                            .width(Size::fill())
-                            .child(ComposeBar {
-                                initial_text,
-                                edit_info,
-                                reply_info,
-                                room_id: room_id.clone(),
-                                timeline: tl,
-                            }),
-                    )
-                    .into_element(),
+                    .maybe_child(if viewer_active {
+                        None
+                    } else {
+                        Some(
+                            rect()
+                                .key(compose_key)
+                                .width(Size::fill())
+                                .child(ComposeBar {
+                                    initial_text,
+                                    edit_info,
+                                    reply_info,
+                                    room_id: room_id.clone(),
+                                    timeline: tl,
+                                }),
+                        )
+                    })
+                    .into_element()
             )
             .into_element()
+    })
     }
 }

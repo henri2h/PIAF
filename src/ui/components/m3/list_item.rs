@@ -3,24 +3,10 @@ use freya_material_design::prelude::Ripple;
 
 use crate::utils::use_app_colors;
 
-pub(super) fn extract_urls(text: &str) -> Vec<String> {
-    text.split_whitespace()
-        .filter_map(|word| {
-            let trimmed = word.trim_end_matches(|c: char| ".,;:!?)>]\"'".contains(c));
-            if trimmed.starts_with("http://") || trimmed.starts_with("https://") {
-                Some(trimmed.to_string())
-            } else {
-                None
-            }
-        })
-        .collect()
-}
-
 /// A Material Design 3 list item with leading icon, label, optional sub-label,
-/// and a trailing chevron. The caller passes a container that owns the press
-/// handler; `overflow(Overflow::Clip)` is applied internally so the Ripple
-/// animation is clipped without affecting adjacent dividers.
-pub(super) fn m3_list_item(
+/// and a trailing chevron. `overflow(Overflow::Clip)` is applied internally so
+/// the Ripple animation is clipped without affecting adjacent dividers.
+pub fn m3_list_item(
     icon: bytes::Bytes,
     item_label: impl Into<String>,
     sublabel: Option<String>,
@@ -59,17 +45,15 @@ pub(super) fn m3_list_item(
                             rect()
                                 .vertical()
                                 .width(Size::flex(1.0))
+                                .main_align(Alignment::Center)
                                 .spacing(2.)
                                 .child(label().text(item_label).font_size(16.).color(text_color))
-                                .child(if let Some(sub) = sublabel {
+                                .maybe_child(sublabel.map(|sub| {
                                     label()
                                         .text(sub)
                                         .font_size(14.)
                                         .color(c.on_surface_variant)
-                                        .into_element()
-                                } else {
-                                    rect().into_element()
-                                }),
+                                })),
                         )
                         .child(
                             svg(freya_icons::lucide::chevron_right())

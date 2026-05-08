@@ -4,8 +4,8 @@ use freya::prelude::*;
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::{MessageContent, MessageItem, MsgAction};
-use crate::ui::components::{Avatar, MediaThumbnail, ViewerSource};
-use crate::utils::use_app_colors;
+use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, UserPopupOverlay, ViewerSource};
+use crate::utils::{extract_urls, sender_color, use_app_colors};
 
 pub struct MessageRow {
     pub room_id: String,
@@ -42,6 +42,7 @@ impl Component for MessageRow {
 
         // Tracks this row's screen position so the popup can be positioned near it.
         let mut row_area: State<Option<Area>> = use_state(|| None);
+        let mut user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
         // Long-press detection for Android (generation counter aborts in-flight timers).
         #[cfg(target_os = "android")]
         let mut press_gen: State<u32> = use_state(|| 0u32);
@@ -181,14 +182,38 @@ impl Component for MessageRow {
             MessageContent::Notice(_) | MessageContent::ReadMarker => {
                 unreachable!("handled above")
             }
-            MessageContent::Text(body) => label()
-                .text(body.clone())
-                .color(if is_me {
-                    c.bubble_me_text
-                } else {
-                    c.bubble_other_text
-                })
-                .into_element(),
+            MessageContent::Text(body) => {
+                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
+                let urls = extract_urls(body);
+                let link_color = if is_me { c.bubble_me_text } else { c.primary };
+                rect()
+                    .vertical()
+                    .spacing(4.)
+                    .child(label().text(body.clone()).color(text_color))
+                    .children(urls.into_iter().map(|url| {
+                        let url_open = url.clone();
+                        rect()
+                            .horizontal()
+                            .spacing(4.)
+                            .cross_align(Alignment::Center)
+                            .on_press(move |_| {
+                                #[cfg(not(target_os = "android"))]
+                                std::process::Command::new("xdg-open")
+                                    .arg(url_open.clone())
+                                    .spawn()
+                                    .ok();
+                            })
+                            .child(
+                                svg(freya_icons::lucide::external_link())
+                                    .color(link_color)
+                                    .width(Size::px(11.))
+                                    .height(Size::px(11.)),
+                            )
+                            .child(label().text(url).font_size(13.).color(link_color))
+                            .into_element()
+                    }))
+                    .into_element()
+            }
             MessageContent::Image { key, source, caption, blurhash, thumbnail_source } => {
                 let key_view = key.clone();
                 let caption_text = caption.clone();
@@ -213,6 +238,7 @@ impl Component for MessageRow {
                                     .as_ref()
                                     .map(|s| ViewerSource::Remote(s.clone())),
                                 fallback_source: Some(ViewerSource::Remote(source.clone())),
+                                thumb_size: Some((400, 300)),
                             }),
                     )
                     .maybe_child(caption_text.map(|cap| {
@@ -373,14 +399,32 @@ impl Component for MessageRow {
 
         let row = if !is_me && !is_dm {
             let avatar_key = format!("{}\x00{}", room_id, msg.sender);
-            row.child(Avatar {
-                size: 36.,
-                bytes: None,
-                initial: msg.sender_initial.to_string(),
-                color: msg.sender_color,
-                image_key: avatar_key.clone(),
-                fetch_key: Some(avatar_key),
-            })
+            let sender_name = msg.sender_name.clone();
+            let sender_uid = msg.sender.clone();
+            let sender_color = sender_color(&sender_uid);
+            let sender_initial = msg.sender_initial.to_string();
+            row.child(
+                rect()
+                    .overflow(Overflow::Clip)
+                    .corner_radius(18.)
+                    .on_press(move |_| {
+                        *user_popup.write() = Some(UserPopupInfo {
+                            user_id: sender_uid.clone(),
+                            display_name: sender_name.clone(),
+                            initial: sender_initial.clone(),
+                            color: sender_color,
+                            avatar_url: None,
+                        });
+                    })
+                    .child(Avatar {
+                        size: 36.,
+                        bytes: None,
+                        initial: msg.sender_initial.to_string(),
+                        color: msg.sender_color,
+                        image_key: avatar_key.clone(),
+                        fetch_key: Some(avatar_key),
+                    }),
+            )
         } else {
             row
         };
@@ -436,6 +480,10 @@ impl Component for MessageRow {
             rect().into_element()
         };
 
+        let popup_overlay = user_popup.read().clone().map(|info| {
+            UserPopupOverlay { info, open: user_popup }.into_element()
+        });
+
         #[cfg(not(target_os = "android"))]
         return rect()
             .vertical()
@@ -445,7 +493,8 @@ impl Component for MessageRow {
             })
             .child(date_separator)
             .child(row.child(bubble_col))
-            .child(read_receipt_row);
+            .child(read_receipt_row)
+            .maybe_child(popup_overlay);
 
         #[cfg(target_os = "android")]
         return rect()
@@ -478,6 +527,7 @@ impl Component for MessageRow {
             })
             .child(date_separator)
             .child(row.child(bubble_col))
-            .child(read_receipt_row);
+            .child(read_receipt_row)
+            .maybe_child(popup_overlay);
     }
 }

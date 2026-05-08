@@ -46,6 +46,7 @@ impl Component for MediaThumb {
                 blurhash,
                 thumbnail_source,
                 fallback_source,
+                thumb_size: Some((240, 240)),
             })
     }
 }

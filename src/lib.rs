@@ -21,6 +21,7 @@ use ui::pages::{
     new_chat::NewChat,
     room::RoomPage,
     room_media::RoomMediaPage,
+    room_members::RoomMembers,
     room_search::RoomSearch,
     room_settings::RoomSettings,
     settings::{
@@ -83,6 +84,8 @@ pub enum Route {
         RoomSettings { room_id: String },
         #[route("/room/:room_id/media")]
         RoomMediaPage { room_id: String },
+        #[route("/room/:room_id/members")]
+        RoomMembers { room_id: String },
 }
 
 #[derive(PartialEq)]
@@ -266,6 +269,7 @@ impl Component for Layout {
                 | Route::RoomSearch { .. }
                 | Route::RoomSettings { .. }
                 | Route::RoomMediaPage { .. }
+                | Route::RoomMembers { .. }
         );
 
         NativeRouter::new().child(
@@ -343,6 +347,7 @@ impl Component for ActiveRoomPanel {
         // Derive active room from route first, fall back to ACTIVE_ROOM_RX
         let route_room_id = match &route {
             Route::RoomSettings { room_id } => Some(room_id.clone()),
+            Route::RoomMembers { room_id } => Some(room_id.clone()),
             Route::RoomPage { room_id } => Some(room_id.clone()),
             Route::RoomSearch { room_id } => Some(room_id.clone()),
             _ => None,
@@ -354,6 +359,17 @@ impl Component for ActiveRoomPanel {
                 .key(format!("settings-{room_id}"))
                 .expanded()
                 .child(RoomSettings {
+                    room_id: room_id.clone(),
+                })
+                .into_element();
+        }
+
+        // Room members: render members panel
+        if let Route::RoomMembers { room_id } = &route {
+            return rect()
+                .key(format!("members-{room_id}"))
+                .expanded()
+                .child(RoomMembers {
                     room_id: room_id.clone(),
                 })
                 .into_element();

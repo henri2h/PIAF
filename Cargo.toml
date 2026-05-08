@@ -23,6 +23,7 @@ freya-icons = { git = "https://github.com/henri2h/freya", branch = "henri2h/mome
 freya-router = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-query = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-radio = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+ruma = { version = "0.14", features = ["client-api-c", "unstable-msc2666"] }
 matrix-sdk = { version = "0.16.0", default-features = false, features = [
   "e2e-encryption",
   "automatic-room-key-forwarding",

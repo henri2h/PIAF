@@ -156,8 +156,9 @@ impl Component for RoomListItem {
         let room_id = room.room_id().to_string();
         let mut hovered: State<bool> = use_state(|| false);
         let is_muted: State<bool> = use_state(|| false);
-        let active_room_ctx = use_consume::<ActiveRoomCtx>();
-        let is_active = active_room_ctx.0.read().as_deref() == Some(room_id.as_str());
+        let is_active = try_consume_context::<ActiveRoomCtx>()
+            .map(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()))
+            .unwrap_or(false);
 
         #[cfg(target_os = "android")]
         let mut press_gen: State<u64> = use_state(|| 0u64);
@@ -331,6 +332,7 @@ impl Component for RoomListItem {
                     .vertical()
                     .spacing(2.)
                     .width(Size::fill())
+                    .main_align(Alignment::Center)
                     .child(
                         rect()
                             .horizontal()
@@ -447,16 +449,8 @@ impl Component for RoomListItem {
             .height(Size::px(80.))
             .width(Size::fill())
             .padding(Gaps::new(2., 8., 2., 8.))
-            .on_pointer_enter(move |e: Event<PointerEventData>| {
-                if matches!(e.data(), PointerEventData::Mouse(_)) {
-                    *hovered.write() = true;
-                }
-            })
-            .on_pointer_leave(move |e: Event<PointerEventData>| {
-                if matches!(e.data(), PointerEventData::Mouse(_)) {
-                    *hovered.write() = false;
-                }
-            })
+            .on_pointer_enter(move |_| *hovered.write() = true)
+            .on_pointer_leave(move |_| *hovered.write() = false)
             .on_press(move |_| {
                 if crate::WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed) {
                     if let Some(tx) = crate::ACTIVE_ROOM_TX.get() {
