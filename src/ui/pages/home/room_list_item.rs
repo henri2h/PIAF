@@ -170,7 +170,7 @@ impl PartialEq for RoomListItem {
         self.room.recency_stamp() == other.room.recency_stamp()
             && self.room.num_unread_messages() == other.room.num_unread_messages()
             && self.room.num_unread_notifications() == other.room.num_unread_notifications()
-            && self.room.latest_event().is_none() == other.room.latest_event().is_none()
+            && self.room.latest_event().timestamp() == other.room.latest_event().timestamp()
     }
 }
 
