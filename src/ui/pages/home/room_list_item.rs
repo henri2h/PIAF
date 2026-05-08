@@ -4,6 +4,7 @@ use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 use matrix_sdk::{
     Room, RoomHero,
+    latest_events::LatestEventValue,
     ruma::events::{
         AnySyncMessageLikeEvent, AnySyncTimelineEvent, SyncMessageLikeEvent,
         room::message::MessageType,
@@ -24,7 +25,7 @@ enum SenderPrefix {
 }
 
 fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix) {
-    let Some(latest) = room.latest_event() else {
+    let LatestEventValue::Remote(latest) = room.latest_event() else {
         println!(
             "[{}] {}",
             room.name().unwrap_or("oups".to_string()),
@@ -34,7 +35,7 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
         return (String::new(), SenderPrefix::None);
     };
 
-    let (body, sender_id) = match latest.event().raw().deserialize() {
+    let (body, sender_id) = match latest.raw().deserialize() {
         Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
             SyncMessageLikeEvent::Original(msg),
         ))) => {
@@ -66,13 +67,12 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
             println!(
                 "[{}] {}",
                 room.name().unwrap_or_default(),
-                latest.event().raw().json().to_string()
+                latest.raw().json().to_string()
             );
 
             // Fallback: read sender + event type from raw JSON for unhandled events
             // (state events, call events, etc.) so old rooms show something.
             let Ok(val) = latest
-                .event()
                 .raw()
                 .deserialize_as::<matrix_sdk::ruma::exports::serde_json::Value>()
             else {
@@ -144,7 +144,7 @@ impl PartialEq for RoomListItem {
         self.room.recency_stamp() == other.room.recency_stamp()
             && self.room.num_unread_messages() == other.room.num_unread_messages()
             && self.room.num_unread_notifications() == other.room.num_unread_notifications()
-            && self.room.latest_event().is_some() == other.room.latest_event().is_some()
+            && self.room.latest_event().is_none() == other.room.latest_event().is_none()
     }
 }
 
@@ -258,7 +258,8 @@ impl Component for RoomListItem {
             .to_uppercase()
             .to_string();
         let timestamp = room
-            .new_latest_event_timestamp()
+            .latest_event()
+            .timestamp()
             .map(format_timestamp)
             .unwrap_or_default();
         let notif_count = room.num_unread_notifications();

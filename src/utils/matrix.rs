@@ -8,7 +8,7 @@ use matrix_sdk::{
     ruma::{UserId, api::client::filter::FilterDefinition, exports::serde_json},
 };
 use matrix_sdk_ui::RoomListService;
-use rand::{Rng, rng};
+use rand::{RngExt, rng};
 use rand_distr::Alphanumeric;
 use serde::{Deserialize, Serialize};
 use std::{
