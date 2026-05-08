@@ -1,18 +1,21 @@
+use std::sync::Arc;
+use std::time::Duration;
+
 use freya::prelude::*;
 use freya_query::prelude::*;
-use std::time::Duration;
+use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
 use crate::ui::components::Avatar;
 use crate::utils::const_values::AppColors;
 use crate::utils::queries::FetchSenderName;
-use crate::utils::sender_color;
+use crate::utils::{format_timestamp, sender_color};
 
-use super::{MessageItem, Reaction, ReactionSender};
+use super::{Reaction, ReactionSender};
 
 pub(super) fn detail_modal_overlay(
-    msg: MessageItem,
+    item: Arc<TimelineItem>,
     room_id: String,
-    mut modal: State<Option<MessageItem>>,
+    mut modal: State<Option<Arc<TimelineItem>>>,
     c: AppColors,
 ) -> Element {
     rect()
@@ -56,8 +59,8 @@ pub(super) fn detail_modal_overlay(
                                 .width(Size::fill())
                                 .padding(Gaps::new(0., 16., 24., 16.))
                                 .spacing(16.)
-                                .child(seen_by_section(&msg, &room_id, c))
-                                .child(reactions_section(&msg, &room_id, c)),
+                                .child(seen_by_section(&item, &room_id, c))
+                                .child(reactions_section(&item, &room_id, c)),
                         ),
                 ),
         )
@@ -73,14 +76,28 @@ fn section_title(text: &str, c: AppColors) -> Element {
         .into()
 }
 
-fn seen_by_section(msg: &MessageItem, room_id: &str, c: AppColors) -> Element {
+fn seen_by_section(item: &Arc<TimelineItem>, room_id: &str, c: AppColors) -> Element {
     let mut col = rect()
         .vertical()
         .width(Size::fill())
         .spacing(4.)
         .child(section_title("Seen by", c));
 
-    if msg.seen_by.is_empty() {
+    let receipts: Vec<(String, String, String)> = item
+        .as_event()
+        .map(|e| {
+            e.read_receipts()
+                .iter()
+                .map(|(uid, receipt)| {
+                    let ts = receipt.ts.map(format_timestamp).unwrap_or_default();
+                    let display = uid.localpart().to_string();
+                    (uid.to_string(), display, ts)
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+
+    if receipts.is_empty() {
         col = col.child(
             label()
                 .text("No read receipts yet")
@@ -88,7 +105,7 @@ fn seen_by_section(msg: &MessageItem, room_id: &str, c: AppColors) -> Element {
                 .color(c.on_surface_muted),
         );
     } else {
-        for (uid, display_fallback, timestamp) in &msg.seen_by {
+        for (uid, display_fallback, timestamp) in &receipts {
             col = col.child(SeenByRow {
                 room_id: room_id.to_string(),
                 uid: uid.clone(),
@@ -159,8 +176,40 @@ impl Component for SeenByRow {
     }
 }
 
-fn reactions_section(msg: &MessageItem, room_id: &str, c: AppColors) -> Element {
-    if msg.reactions.is_empty() {
+fn reactions_section(item: &Arc<TimelineItem>, room_id: &str, c: AppColors) -> Element {
+    let reactions: Vec<Reaction> = item
+        .as_event()
+        .and_then(|e| {
+            if let TimelineItemContent::MsgLike(m) = e.content() {
+                let r: Vec<Reaction> = m
+                    .reactions
+                    .iter()
+                    .map(|(key, senders)| {
+                        let count = senders.len();
+                        let sender_list: Vec<ReactionSender> = senders
+                            .iter()
+                            .map(|(uid, info)| ReactionSender {
+                                display: uid.localpart().to_string(),
+                                user_id: uid.to_string(),
+                                timestamp: format_timestamp(info.timestamp),
+                            })
+                            .collect();
+                        Reaction {
+                            key: key.clone(),
+                            count,
+                            reacted_by_me: false,
+                            senders: sender_list,
+                        }
+                    })
+                    .collect();
+                Some(r)
+            } else {
+                None
+            }
+        })
+        .unwrap_or_default();
+
+    if reactions.is_empty() {
         return rect().into();
     }
 
@@ -170,7 +219,7 @@ fn reactions_section(msg: &MessageItem, room_id: &str, c: AppColors) -> Element 
         .spacing(12.)
         .child(section_title("Reactions", c));
 
-    for reaction in &msg.reactions {
+    for reaction in &reactions {
         col = col.child(reaction_group(reaction, room_id, c));
     }
     col.into()

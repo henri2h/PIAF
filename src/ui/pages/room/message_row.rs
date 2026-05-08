@@ -1,61 +1,56 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
+use matrix_sdk::ruma::events::room::message::MessageType;
+use matrix_sdk_ui::timeline::{
+    MembershipChange, TimelineDetails, TimelineItem, TimelineItemContent, VirtualTimelineItem,
+};
 use tokio::sync::mpsc::UnboundedSender;
 
-use super::{MessageContent, MessageItem, MsgAction};
+use super::{MsgAction, Reaction, ReactionSender};
 use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, UserPopupOverlay, ViewerSource};
-use crate::utils::{extract_urls, sender_color, use_app_colors};
+use crate::utils::{extract_urls, format_timestamp, sender_color, use_app_colors};
 
 pub struct MessageRow {
     pub room_id: String,
-    pub msg: MessageItem,
+    pub item: Arc<TimelineItem>,
+    pub date_label: Option<String>,
+    pub my_user_id: Option<String>,
     pub action_tx: Arc<UnboundedSender<MsgAction>>,
     pub image_viewer: State<Option<String>>,
-    pub action_popup: State<Option<(Area, MessageItem)>>,
-    pub detail_modal: State<Option<MessageItem>>,
+    pub action_popup: State<Option<(Area, Arc<TimelineItem>)>>,
+    pub detail_modal: State<Option<Arc<TimelineItem>>>,
     pub is_dm: bool,
 }
 
 impl PartialEq for MessageRow {
     fn eq(&self, other: &Self) -> bool {
-        self.room_id == other.room_id
-            && self.msg == other.msg
+        Arc::ptr_eq(&self.item, &other.item)
+            && self.date_label == other.date_label
             && self.is_dm == other.is_dm
             && Arc::ptr_eq(&self.action_tx, &other.action_tx)
-            && self.detail_modal == other.detail_modal
     }
 }
 
 impl Component for MessageRow {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-
-        let room_id = self.room_id.clone();
-        let msg = self.msg.clone();
+        let item = self.item.clone();
         let action_tx = self.action_tx.clone();
         let mut image_viewer = self.image_viewer;
-        let is_me = msg.is_me;
         let is_dm = self.is_dm;
+        let my_user_id = self.my_user_id.clone();
         let mut action_popup = self.action_popup;
         let mut detail_modal = self.detail_modal;
+        let date_label = self.date_label.clone();
 
-        // Tracks this row's screen position so the popup can be positioned near it.
         let mut row_area: State<Option<Area>> = use_state(|| None);
         let mut user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
-        // Long-press detection for Android (generation counter aborts in-flight timers).
         #[cfg(target_os = "android")]
         let mut press_gen: State<u32> = use_state(|| 0u32);
 
-        let bubble_bg: (u8, u8, u8) = if is_me {
-            c.primary
-        } else {
-            c.surface_container
-        };
-
         // ── Date separator ────────────────────────────────────────────────
-        // Computed before the notice early-return so both paths can include it.
-        let date_separator = if let Some(date_lbl) = &msg.date_label {
+        let date_separator = if let Some(lbl) = &date_label {
             rect()
                 .horizontal()
                 .width(Size::fill())
@@ -67,20 +62,15 @@ impl Component for MessageRow {
                         .padding(Gaps::new(3., 12., 3., 12.))
                         .corner_radius(12.)
                         .background(c.date_separator_bg)
-                        .child(
-                            label()
-                                .text(date_lbl.clone())
-                                .font_size(12.)
-                                .color(c.on_surface),
-                        ),
+                        .child(label().text(lbl.clone()).font_size(12.).color(c.on_surface)),
                 )
                 .into_element()
         } else {
             rect().into_element()
         };
 
-        // ── Read marker divider ───────────────────────────────────────────
-        if let super::MessageContent::ReadMarker = &msg.content {
+        // ── Read marker ───────────────────────────────────────────────────
+        if let Some(VirtualTimelineItem::ReadMarker) = item.as_virtual() {
             return rect()
                 .horizontal()
                 .width(Size::fill())
@@ -88,28 +78,32 @@ impl Component for MessageRow {
                 .cross_align(Alignment::Center)
                 .padding(Gaps::new(8., 16., 8., 16.))
                 .spacing(8.)
-                .child(
-                    rect()
-                        .width(Size::flex(1.0))
-                        .height(Size::px(1.))
-                        .background(c.primary),
-                )
-                .child(
-                    label()
-                        .text("New messages")
-                        .font_size(12.)
-                        .color(c.primary),
-                )
-                .child(
-                    rect()
-                        .width(Size::flex(1.0))
-                        .height(Size::px(1.))
-                        .background(c.primary),
-                );
+                .child(rect().width(Size::flex(1.0)).height(Size::px(1.)).background(c.primary))
+                .child(label().text("New messages").font_size(12.).color(c.primary))
+                .child(rect().width(Size::flex(1.0)).height(Size::px(1.)).background(c.primary));
         }
 
-        // ── Notice (state events: join, leave, ban, etc.) ─────────────────
-        if let super::MessageContent::Notice(text) = &msg.content {
+        let Some(event) = item.as_event() else {
+            return rect();
+        };
+
+        // ── Membership notice ─────────────────────────────────────────────
+        if let TimelineItemContent::MembershipChange(m) = event.content() {
+            let name = m
+                .display_name()
+                .unwrap_or_else(|| m.user_id().localpart().to_string());
+            let text = match m.change() {
+                Some(MembershipChange::Joined) | Some(MembershipChange::InvitationAccepted) => {
+                    format!("{name} joined the room")
+                }
+                Some(MembershipChange::Left) => format!("{name} left the room"),
+                Some(MembershipChange::Banned) | Some(MembershipChange::KickedAndBanned) => {
+                    format!("{name} was banned")
+                }
+                Some(MembershipChange::Kicked) => format!("{name} was removed from the room"),
+                Some(MembershipChange::Invited) => format!("{name} was invited"),
+                _ => return rect(),
+            };
             return rect()
                 .vertical()
                 .width(Size::fill())
@@ -127,7 +121,7 @@ impl Component for MessageRow {
                                 .background(c.surface_container)
                                 .child(
                                     label()
-                                        .text(text.clone())
+                                        .text(text)
                                         .font_size(12.)
                                         .color(c.on_surface_muted),
                                 ),
@@ -135,61 +129,161 @@ impl Component for MessageRow {
                 );
         }
 
-        // ── Reply quote ───────────────────────────────────────────────────
-        let reply_el =
-            if let Some((reply_sender, reply_body)) = &msg.reply_to {
-                rect()
-                    .vertical()
-                    .padding(Gaps::new(0., 0., 6., 0.))
-                    .child(
-                        rect()
-                            .vertical()
-                            .padding(Gaps::new(4., 8., 4., 8.))
-                            .corner_radius(8.)
-                            .background(if is_me {
-                                c.reply_me_bg
-                            } else {
-                                c.reply_other_bg
-                            })
-                            .spacing(2.)
-                            .child(
-                                label()
-                                    .text(reply_sender.clone())
-                                    .font_size(11.)
-                                    .font_weight(FontWeight::BOLD)
-                                    .color(if is_me {
-                                        c.reply_me_sender
-                                    } else {
-                                        c.reply_other_sender
-                                    }),
-                            )
-                            .child(label().text(reply_body.clone()).font_size(12.).color(
-                                if is_me {
-                                    c.reply_me_text
-                                } else {
-                                    c.reply_other_text
-                                },
-                            )),
-                    )
-                    .into_element()
-            } else {
-                rect().into_element()
-            };
+        // ── Require a message-like event ──────────────────────────────────
+        let TimelineItemContent::MsgLike(msg_like) = event.content() else {
+            return rect();
+        };
+        let Some(message) = msg_like.as_message() else {
+            return rect();
+        };
 
-        // ── Main content ──────────────────────────────────────────────────
-        let _is_image = matches!(&msg.content, MessageContent::Image { .. });
-        let content_el = match &msg.content {
-            MessageContent::Notice(_) | MessageContent::ReadMarker => {
-                unreachable!("handled above")
+        // ── Derived fields ────────────────────────────────────────────────
+        let sender_str = event.sender().to_string();
+        let is_me = my_user_id.as_deref() == Some(sender_str.as_str());
+        let event_id = event.event_id().map(|id| id.to_string());
+        let timestamp = format_timestamp(event.timestamp());
+
+        let (sender_name, sender_initial) = match event.sender_profile() {
+            TimelineDetails::Ready(profile) => {
+                let name = profile
+                    .display_name
+                    .clone()
+                    .unwrap_or_else(|| sender_str.clone());
+                let initial = name
+                    .chars()
+                    .next()
+                    .unwrap_or('?')
+                    .to_uppercase()
+                    .next()
+                    .unwrap_or('?');
+                (name, initial)
             }
-            MessageContent::Text(body) => {
+            _ => {
+                let initial = sender_str
+                    .chars()
+                    .nth(1)
+                    .unwrap_or('?')
+                    .to_uppercase()
+                    .next()
+                    .unwrap_or('?');
+                (sender_str.clone(), initial)
+            }
+        };
+        let sender_color_val = sender_color(&sender_str);
+
+        let read_receipts: Vec<(String, String)> = event
+            .read_receipts()
+            .iter()
+            .filter(|(uid, _)| uid.as_str() != sender_str.as_str())
+            .map(|(uid, receipt)| {
+                let ts = receipt.ts.map(format_timestamp).unwrap_or_default();
+                (uid.to_string(), ts)
+            })
+            .collect();
+        let fully_read = !read_receipts.is_empty();
+
+        let reactions: Vec<Reaction> = msg_like
+            .reactions
+            .iter()
+            .map(|(key, senders)| {
+                let count = senders.len();
+                let reacted_by_me = my_user_id
+                    .as_deref()
+                    .map(|me| senders.iter().any(|(uid, _)| uid.as_str() == me))
+                    .unwrap_or(false);
+                let sender_list = senders
+                    .iter()
+                    .map(|(uid, info)| ReactionSender {
+                        display: uid.localpart().to_string(),
+                        user_id: uid.to_string(),
+                        timestamp: format_timestamp(info.timestamp),
+                    })
+                    .collect();
+                Reaction {
+                    key: key.clone(),
+                    count,
+                    reacted_by_me,
+                    senders: sender_list,
+                }
+            })
+            .collect();
+
+        let reply_to: Option<(String, String)> = if let Some(reply) = &msg_like.in_reply_to {
+            if let TimelineDetails::Ready(embedded) = &reply.event {
+                let sname = match &embedded.sender_profile {
+                    TimelineDetails::Ready(p) => p
+                        .display_name
+                        .clone()
+                        .unwrap_or_else(|| embedded.sender.to_string()),
+                    _ => embedded.sender.to_string(),
+                };
+                let body = match &embedded.content {
+                    TimelineItemContent::MsgLike(m) => m
+                        .as_message()
+                        .map(|msg| {
+                            let b = msg.body();
+                            if b.len() > 120 {
+                                format!("{}…", &b[..120])
+                            } else {
+                                b.to_string()
+                            }
+                        })
+                        .unwrap_or_else(|| "[message]".to_string()),
+                    _ => "[message]".to_string(),
+                };
+                Some((sname, body))
+            } else {
+                Some((reply.event_id.to_string(), "[Loading…]".to_string()))
+            }
+        } else {
+            None
+        };
+
+        let bubble_bg: (u8, u8, u8) = if is_me { c.primary } else { c.surface_container };
+
+        // ── Reply quote ───────────────────────────────────────────────────
+        let reply_el = if let Some((reply_sender, reply_body)) = &reply_to {
+            rect()
+                .vertical()
+                .padding(Gaps::new(0., 0., 6., 0.))
+                .child(
+                    rect()
+                        .vertical()
+                        .padding(Gaps::new(4., 8., 4., 8.))
+                        .corner_radius(8.)
+                        .background(if is_me { c.reply_me_bg } else { c.reply_other_bg })
+                        .spacing(2.)
+                        .child(
+                            label()
+                                .text(reply_sender.clone())
+                                .font_size(11.)
+                                .font_weight(FontWeight::BOLD)
+                                .color(if is_me {
+                                    c.reply_me_sender
+                                } else {
+                                    c.reply_other_sender
+                                }),
+                        )
+                        .child(label().text(reply_body.clone()).font_size(12.).color(
+                            if is_me { c.reply_me_text } else { c.reply_other_text },
+                        )),
+                )
+                .into_element()
+        } else {
+            rect().into_element()
+        };
+
+        // ── Content ───────────────────────────────────────────────────────
+        let content_el = match message.msgtype() {
+            MessageType::Text(t) => {
                 let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
-                let urls = extract_urls(body);
+                let body = t.body.clone();
+                let urls = extract_urls(&body);
                 let link_color = if is_me { c.bubble_me_text } else { c.primary };
                 rect()
                     .vertical()
                     .spacing(4.)
-                    .child(label().text(body.clone()).color(text_color))
+                    .child(label().text(body).color(text_color))
                     .children(urls.into_iter().map(|url| {
                         let url_open = url.clone();
                         rect()
@@ -214,9 +308,26 @@ impl Component for MessageRow {
                     }))
                     .into_element()
             }
-            MessageContent::Image { key, source, caption, blurhash, thumbnail_source } => {
+            MessageType::Image(img) => {
+                let key = event_id.clone().unwrap_or_else(|| "img-unknown".to_string());
                 let key_view = key.clone();
-                let caption_text = caption.clone();
+                let source = img.source.clone();
+                let caption = {
+                    let b = &img.body;
+                    if b.starts_with("image")
+                        || b.ends_with(".jpg")
+                        || b.ends_with(".jpeg")
+                        || b.ends_with(".png")
+                        || b.ends_with(".gif")
+                        || b.ends_with(".webp")
+                    {
+                        None
+                    } else {
+                        Some(b.clone()).filter(|s| !s.is_empty())
+                    }
+                };
+                let blurhash = img.info.as_ref().and_then(|i| i.blurhash.clone());
+                let thumbnail_source = img.info.as_ref().and_then(|i| i.thumbnail_source.clone());
                 let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
                 rect()
                     .vertical()
@@ -232,23 +343,21 @@ impl Component for MessageRow {
                                 *image_viewer.write() = Some(key_view.clone());
                             })
                             .child(MediaThumbnail {
-                                item_key: key.clone(),
-                                blurhash: blurhash.clone(),
+                                item_key: key,
+                                blurhash,
                                 thumbnail_source: thumbnail_source
                                     .as_ref()
                                     .map(|s| ViewerSource::Remote(s.clone())),
-                                fallback_source: Some(ViewerSource::Remote(source.clone())),
+                                fallback_source: Some(ViewerSource::Remote(source)),
                                 thumb_size: Some((400, 300)),
                             }),
                     )
-                    .maybe_child(caption_text.map(|cap| {
-                        label()
-                            .text(cap)
-                            .color(text_color)
-                            .into_element()
+                    .maybe_child(caption.map(|cap| {
+                        label().text(cap).color(text_color).into_element()
                     }))
                     .into_element()
             }
+            _ => return rect(),
         };
 
         // ── Bubble ────────────────────────────────────────────────────────
@@ -265,31 +374,28 @@ impl Component for MessageRow {
                 .maybe(!is_dm, |b| {
                     b.child(
                         label()
-                            .text(msg.sender_name.clone())
+                            .text(sender_name.clone())
                             .font_size(12.)
                             .font_weight(FontWeight::BOLD)
-                            .color(msg.sender_color),
+                            .color(sender_color_val),
                     )
                 })
                 .child(reply_el)
                 .child(content_el)
                 .child(
                     label()
-                        .text(msg.timestamp.clone())
+                        .text(timestamp.clone())
                         .font_size(11.)
                         .color(c.on_surface_faint),
                 )
         } else {
-            let receipt_icon = if !msg.read_receipts.is_empty() || msg.fully_read {
+            let receipt_icon = if fully_read {
                 freya_icons::lucide::check_check()
             } else {
                 freya_icons::lucide::check()
             };
-            let receipt_color: (u8, u8, u8) = if msg.fully_read {
-                c.receipt_read
-            } else {
-                c.receipt_default
-            };
+            let receipt_color: (u8, u8, u8) =
+                if fully_read { c.receipt_read } else { c.receipt_default };
             bubble_inner.child(reply_el).child(content_el).child(
                 rect()
                     .horizontal()
@@ -297,7 +403,7 @@ impl Component for MessageRow {
                     .spacing(4.)
                     .child(
                         label()
-                            .text(msg.timestamp.clone())
+                            .text(timestamp)
                             .font_size(11.)
                             .color(c.timestamp_me),
                     )
@@ -310,20 +416,16 @@ impl Component for MessageRow {
             )
         };
 
-        // The action popup is rendered at the room-page level (outside the
-        // VirtualScrollView) to avoid scroll-clipping the overlay.
-        // MessageRow only records which row was triggered and its screen area.
-
-        // ── Reactions pills (persistent, below bubble) ────────────────────
+        // ── Reactions pills ───────────────────────────────────────────────
         let reactions_section = {
-            let msg_eid = msg.event_id.clone();
+            let msg_eid = event_id.clone();
             let action_tx_r = action_tx.clone();
             let mut pills_row = rect()
                 .horizontal()
                 .spacing(4.)
                 .padding(Gaps::new(4., 0., 0., 0.))
                 .cross_align(Alignment::Center);
-            for reaction in &msg.reactions {
+            for reaction in &reactions {
                 let key = reaction.key.clone();
                 let count = reaction.count;
                 let reacted = reaction.reacted_by_me;
@@ -368,41 +470,35 @@ impl Component for MessageRow {
             pills_row
         };
 
-        // ── Bubble column ──────────────────────────────────────────────────
-        // Right-click (desktop) / long-press (Android, handled on outer row)
-        // writes to the shared action_popup state; the room page renders the overlay.
+        // ── Bubble column ─────────────────────────────────────────────────
+        let item_for_popup = item.clone();
+        let item_for_detail = item.clone();
         let bubble_col = rect()
             .vertical()
-            .on_secondary_down({
-                let msg = msg.clone();
-                move |_| {
-                    if let Some(area) = *row_area.read() {
-                        *action_popup.write() = Some((area, msg.clone()));
-                    }
+            .on_secondary_down(move |_| {
+                if let Some(area) = *row_area.read() {
+                    *action_popup.write() = Some((area, item_for_popup.clone()));
                 }
             })
             .child(bubble_inner)
             .child(reactions_section);
 
-        // ── Row (with avatar for others) ──────────────────────────────────
+        // ── Row with avatar ───────────────────────────────────────────────
         let row = rect()
             .horizontal()
             .width(Size::fill())
             .padding(Gaps::new(2., 12., 2., 12.))
             .spacing(10.)
             .cross_align(Alignment::End)
-            .main_align(if is_me {
-                Alignment::End
-            } else {
-                Alignment::Start
-            });
+            .main_align(if is_me { Alignment::End } else { Alignment::Start });
 
+        let room_id = self.room_id.clone();
         let row = if !is_me && !is_dm {
-            let avatar_key = format!("{}\x00{}", room_id, msg.sender);
-            let sender_name = msg.sender_name.clone();
-            let sender_uid = msg.sender.clone();
-            let sender_color = sender_color(&sender_uid);
-            let sender_initial = msg.sender_initial.to_string();
+            let avatar_key = format!("{}\x00{}", room_id, sender_str);
+            let sender_name_c = sender_name.clone();
+            let sender_uid = sender_str.clone();
+            let s_color = sender_color_val;
+            let s_initial = sender_initial.to_string();
             row.child(
                 rect()
                     .overflow(Overflow::Clip)
@@ -410,17 +506,17 @@ impl Component for MessageRow {
                     .on_press(move |_| {
                         *user_popup.write() = Some(UserPopupInfo {
                             user_id: sender_uid.clone(),
-                            display_name: sender_name.clone(),
-                            initial: sender_initial.clone(),
-                            color: sender_color,
+                            display_name: sender_name_c.clone(),
+                            initial: s_initial.clone(),
+                            color: s_color,
                             avatar_url: None,
                         });
                     })
                     .child(Avatar {
                         size: 36.,
                         bytes: None,
-                        initial: msg.sender_initial.to_string(),
-                        color: msg.sender_color,
+                        initial: sender_initial.to_string(),
+                        color: sender_color_val,
                         image_key: avatar_key.clone(),
                         fetch_key: Some(avatar_key),
                     }),
@@ -430,18 +526,18 @@ impl Component for MessageRow {
         };
 
         // ── Read receipt avatars ──────────────────────────────────────────
-        let read_receipt_row = if !msg.read_receipts.is_empty() {
-            let msg_for_modal = msg.clone();
-            let mut row = rect()
+        let read_receipt_row = if !read_receipts.is_empty() {
+            let item_modal = item_for_detail.clone();
+            let mut r = rect()
                 .horizontal()
                 .width(Size::fill())
                 .main_align(Alignment::End)
                 .padding(Gaps::new(1., 12., 1., 12.))
                 .spacing(2.)
                 .on_press(move |_| {
-                    *detail_modal.write() = Some(msg_for_modal.clone());
+                    *detail_modal.write() = Some(item_modal.clone());
                 });
-            for (uid, _ts) in msg.read_receipts.iter().take(5) {
+            for (uid, _ts) in read_receipts.iter().take(5) {
                 let initial = uid
                     .chars()
                     .nth(1)
@@ -449,8 +545,8 @@ impl Component for MessageRow {
                     .to_uppercase()
                     .next()
                     .unwrap_or('?');
-                let color = crate::utils::sender_color(uid);
-                row = row.child(Avatar {
+                let color = sender_color(uid);
+                r = r.child(Avatar {
                     size: 16.,
                     bytes: None,
                     initial: initial.to_string(),
@@ -459,8 +555,8 @@ impl Component for MessageRow {
                     fetch_key: None,
                 });
             }
-            if msg.read_receipts.len() > 5 {
-                row = row.child(
+            if read_receipts.len() > 5 {
+                r = r.child(
                     rect()
                         .center()
                         .width(Size::px(16.))
@@ -469,13 +565,13 @@ impl Component for MessageRow {
                         .background(c.overflow_badge_bg)
                         .child(
                             label()
-                                .text(format!("+{}", msg.read_receipts.len() - 5))
+                                .text(format!("+{}", read_receipts.len() - 5))
                                 .font_size(8.)
                                 .color(c.on_primary),
                         ),
                 );
             }
-            row.into_element()
+            r.into_element()
         } else {
             rect().into_element()
         };
@@ -506,12 +602,12 @@ impl Component for MessageRow {
             .on_touch_start(move |_: Event<TouchEventData>| {
                 let next_gen = *press_gen.read() + 1;
                 *press_gen.write() = next_gen;
-                let msg = msg.clone();
+                let item_p = item.clone();
                 spawn(async move {
                     tokio::time::sleep(std::time::Duration::from_millis(350)).await;
                     if *press_gen.read() == next_gen {
                         if let Some(area) = *row_area.read() {
-                            *action_popup.write() = Some((area, msg));
+                            *action_popup.write() = Some((area, item_p));
                         }
                     }
                 });

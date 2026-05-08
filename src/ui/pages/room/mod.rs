@@ -20,11 +20,15 @@ use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 use futures::StreamExt;
 use matrix_sdk::ruma::{OwnedEventId, RoomId};
-use matrix_sdk::ruma::events::room::MediaSource;
-use matrix_sdk_ui::timeline::{RoomExt, TimelineEventItemId};
+use matrix_sdk::ruma::events::room::message::MessageType;
+use matrix_sdk_ui::timeline::{
+    RoomExt, TimelineDetails, TimelineEventItemId, TimelineItem, TimelineItemContent,
+    TimelineReadReceiptTracking,
+};
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::matrix::CLIENT;
+use crate::utils::format_timestamp;
 use crate::{
     ui::components::{MediaViewer, MediaViewerItem, TopAppBar, TopAppBarAction, TopAppBarTitle, ViewerSource},
     utils::use_app_colors,
@@ -47,52 +51,6 @@ pub(super) struct Reaction {
     pub count: usize,
     pub reacted_by_me: bool,
     pub senders: Vec<ReactionSender>,
-}
-
-#[derive(Debug, Clone)]
-pub(super) enum MessageContent {
-    Text(String),
-    Image {
-        key: String,
-        source: MediaSource,
-        caption: Option<String>,
-        blurhash: Option<String>,
-        thumbnail_source: Option<MediaSource>,
-    },
-    Notice(String),
-    ReadMarker,
-}
-
-impl PartialEq for MessageContent {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Text(a), Self::Text(b)) => a == b,
-            (Self::Image { key: a, .. }, Self::Image { key: b, .. }) => a == b,
-            (Self::Notice(a), Self::Notice(b)) => a == b,
-            (Self::ReadMarker, Self::ReadMarker) => true,
-            _ => false,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub(super) struct MessageItem {
-    pub event_id: Option<String>,
-    pub date_key: String,
-    pub date_label: Option<String>,
-    pub reply_to: Option<(String, String)>,
-    pub sender: String,
-    pub sender_name: String,
-    pub sender_initial: char,
-    pub sender_color: (u8, u8, u8),
-    pub content: MessageContent,
-    pub timestamp: String,
-    pub is_me: bool,
-    pub read_receipts: Vec<(String, String)>,
-    /// (user_id, display_fallback, timestamp)
-    pub seen_by: Vec<(String, String, String)>,
-    pub fully_read: bool,
-    pub reactions: Vec<Reaction>,
 }
 
 #[derive(Clone)]
@@ -124,7 +82,7 @@ impl Component for RoomPage {
         let c = use_app_colors();
         let room_id = self.room_id.clone();
 
-        let mut messages: State<Vec<MessageItem>> = use_state(|| vec![]);
+        let mut messages: State<Vec<Arc<TimelineItem>>> = use_state(|| vec![]);
         let mut room_name: State<String> = use_state(|| room_id.clone());
         let mut is_dm: State<bool> = use_state(|| false);
         let mut loading: State<bool> = use_state(|| true);
@@ -135,8 +93,8 @@ impl Component for RoomPage {
         let edit_info: State<Option<(String, String)>> = use_state(|| None);
         let reply_info: State<Option<(String, String, String)>> = use_state(|| None);
         let image_viewer: State<Option<String>> = use_state(|| None);
-        let detail_modal: State<Option<MessageItem>> = use_state(|| None);
-        let action_popup_state: State<Option<(Area, MessageItem)>> = use_state(|| None);
+        let detail_modal: State<Option<Arc<TimelineItem>>> = use_state(|| None);
+        let action_popup_state: State<Option<(Area, Arc<TimelineItem>)>> = use_state(|| None);
         let mut content_height: State<f32> = use_state(|| 0.0f32);
         let mut anchor_info: State<Option<(i32, f32)>> = use_state(|| None);
         let mut auto_fill: State<bool> = use_state(|| false);
@@ -160,16 +118,16 @@ impl Component for RoomPage {
             let (page_tx, mut page_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
             let (action_tx, mut action_rx) = tokio::sync::mpsc::unbounded_channel::<MsgAction>();
             let (update_tx, mut update_rx) =
-                tokio::sync::mpsc::unbounded_channel::<(Vec<MessageItem>, bool)>();
+                tokio::sync::mpsc::unbounded_channel::<(Vec<Arc<TimelineItem>>, bool)>();
             let (typing_tx, mut typing_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<String>>();
             let (reached_start_tx, mut reached_start_rx) =
                 tokio::sync::mpsc::unbounded_channel::<()>();
 
             spawn(async move {
-                let (init_tx, init_rx) = tokio::sync::oneshot::channel::<(
+                let (init_tx, init_rx) = futures::channel::oneshot::channel::<(
                     String,
                     bool,
-                    Vec<MessageItem>,
+                    Vec<Arc<TimelineItem>>,
                     Option<Arc<matrix_sdk_ui::timeline::Timeline>>,
                 )>();
 
@@ -189,9 +147,14 @@ impl Component for RoomPage {
                             .unwrap_or_else(|_| room_id2.clone());
                         let dm = room.is_direct().await.unwrap_or(false);
 
-                        let my_user_id = client.user_id().map(|id| id.to_string());
-
-                        let Ok(timeline) = room.timeline_builder().build().await else {
+                        let Ok(timeline) = room
+                            .timeline_builder()
+                            .track_read_marker_and_receipts(
+                                TimelineReadReceiptTracking::MessageLikeEvents,
+                            )
+                            .build()
+                            .await
+                        else {
                             let _ = init_tx.send((name, dm, vec![], None));
                             return;
                         };
@@ -200,16 +163,9 @@ impl Component for RoomPage {
                         let (_typing_guard, mut typing_broadcast) =
                             room.subscribe_to_typing_notifications();
 
-                        let my_id = my_user_id.as_deref();
-                        let mut msgs = Vec::new();
-                        for item in items.iter() {
-                            if let Some(m) = timeline::item_to_message(item, my_id) {
-                                msgs.push(m);
-                            }
-                        }
-                        timeline::assign_date_labels(&mut msgs);
-                        timeline::assign_read_receipts(&mut msgs, my_id);
-                        let _ = init_tx.send((name, dm, msgs, Some(timeline.clone())));
+                        let mut tl_items: Vec<Arc<TimelineItem>> =
+                            items.iter().cloned().collect();
+                        let _ = init_tx.send((name, dm, tl_items.clone(), Some(timeline.clone())));
 
                         use matrix_sdk::ruma::api::client::receipt::create_receipt::v3::ReceiptType;
                         let _ = timeline.mark_as_read(ReceiptType::Read).await;
@@ -254,16 +210,10 @@ impl Component for RoomPage {
                                     let has_new = diffs
                                         .iter()
                                         .any(|d| matches!(d, VectorDiff::PushBack { .. }));
-                                    let items = timeline.items().await;
-                                    let mut msgs = Vec::new();
-                                    for item in items.iter() {
-                                        if let Some(m) = timeline::item_to_message(item, my_id) {
-                                            msgs.push(m);
-                                        }
+                                    for diff in diffs {
+                                        timeline::apply_diff(&mut tl_items, diff);
                                     }
-                                    timeline::assign_date_labels(&mut msgs);
-                                    timeline::assign_read_receipts(&mut msgs, my_id);
-                                    let _ = update_tx.send((msgs, has_new));
+                                    let _ = update_tx.send((tl_items.clone(), has_new));
                                 }
                             }
                         }
@@ -295,10 +245,11 @@ impl Component for RoomPage {
                                     let h = heights.read();
                                     msgs[..prepend_count]
                                         .iter()
-                                        .map(|m| {
-                                            m.event_id
-                                                .as_ref()
-                                                .and_then(|id| h.get(id))
+                                        .map(|item| {
+                                            item.as_event()
+                                                .and_then(|e| e.event_id())
+                                                .map(|id| id.to_string())
+                                                .and_then(|id| h.get(&id))
                                                 .copied()
                                                 .unwrap_or(DEFAULT_MSG_HEIGHT)
                                         })
@@ -347,19 +298,49 @@ impl Component for RoomPage {
         let is_at_start = *at_start.read();
         let media_items: Vec<MediaViewerItem> = msgs
             .iter()
-            .filter_map(|m| {
-                if let MessageContent::Image { key, source, caption, blurhash, thumbnail_source } = &m.content {
-                    Some(MediaViewerItem {
-                        key: key.clone(),
-                        source: ViewerSource::Remote(source.clone()),
-                        info: Some((m.sender_name.clone(), m.timestamp.clone())),
-                        caption: caption.clone(),
-                        blurhash: blurhash.clone(),
-                        thumbnail_source: thumbnail_source.as_ref().map(|s| ViewerSource::Remote(s.clone())),
-                    })
-                } else {
-                    None
-                }
+            .filter_map(|item| {
+                let event = item.as_event()?;
+                let event_id = event.event_id()?.to_string();
+                let TimelineItemContent::MsgLike(msg_like) = event.content() else {
+                    return None;
+                };
+                let msg = msg_like.as_message()?;
+                let MessageType::Image(img) = msg.msgtype() else {
+                    return None;
+                };
+                let sender = match event.sender_profile() {
+                    TimelineDetails::Ready(p) => {
+                        p.display_name.clone().unwrap_or_else(|| event.sender().to_string())
+                    }
+                    _ => event.sender().to_string(),
+                };
+                let ts = format_timestamp(event.timestamp());
+                let caption = {
+                    let b = &img.body;
+                    if b.starts_with("image")
+                        || b.ends_with(".jpg")
+                        || b.ends_with(".jpeg")
+                        || b.ends_with(".png")
+                        || b.ends_with(".gif")
+                        || b.ends_with(".webp")
+                    {
+                        None
+                    } else {
+                        Some(b.clone()).filter(|s| !s.is_empty())
+                    }
+                };
+                Some(MediaViewerItem {
+                    key: event_id,
+                    source: ViewerSource::Remote(img.source.clone()),
+                    info: Some((sender, ts)),
+                    caption,
+                    blurhash: img.info.as_ref().and_then(|i| i.blurhash.clone()),
+                    thumbnail_source: img.info.as_ref().and_then(|i| {
+                        i.thumbnail_source
+                            .as_ref()
+                            .map(|s| ViewerSource::Remote(s.clone()))
+                    }),
+                })
             })
             .collect();
 
@@ -407,10 +388,11 @@ impl Component for RoomPage {
                             .clone()
                             .map(|msg| detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)),
                     )
-                    .maybe_child(action_popup_state.read().clone().map(|(area, msg)| {
+                    .maybe_child(action_popup_state.read().clone().map(|(area, item)| {
                         action_popup_overlay(
                             area,
-                            msg,
+                            item,
+                            CLIENT.get().and_then(|cl| cl.user_id()).map(|id| id.to_string()),
                             action_popup_state,
                             msg_action_tx.clone(),
                             reply_info,
@@ -557,31 +539,52 @@ impl Component for RoomPage {
                                             let _ = paginate_tx_inner.send(());
                                         }
                                     })
-                                    .children(msgs.into_iter().map(|msg| {
-                                        let key = msg.event_id.clone().unwrap_or_else(|| {
-                                            format!("{}:{}", msg.sender, msg.timestamp)
-                                        });
-                                        rect()
-                                            .key(key.clone())
-                                            .width(Size::fill())
-                                            .on_sized(move |e: Event<SizedEventData>| {
-                                                let h = e.area.height();
-                                                let old = heights.read().get(&key).copied();
-                                                if old != Some(h) {
-                                                    heights.write().insert(key.clone(), h);
-                                                }
+                                    .children({
+                                        let date_labels: Vec<Option<String>> = (0..msgs.len())
+                                            .map(|i| timeline::date_label_for(&msgs, i))
+                                            .collect();
+                                        let my_uid = CLIENT
+                                            .get()
+                                            .and_then(|cl| cl.user_id())
+                                            .map(|id| id.to_string());
+                                        let room_id_rows = room_id.clone();
+                                        msgs.into_iter()
+                                            .zip(date_labels.into_iter())
+                                            .enumerate()
+                                            .map(move |(idx, (item, date_label))| {
+                                                let key = item
+                                                    .as_event()
+                                                    .and_then(|e| e.event_id())
+                                                    .map(|id| id.to_string())
+                                                    .unwrap_or_else(|| format!("virtual-{}", idx));
+                                                let my_uid = my_uid.clone();
+                                                rect()
+                                                    .key(key.clone())
+                                                    .width(Size::fill())
+                                                    .on_sized(move |e: Event<SizedEventData>| {
+                                                        let h = e.area.height();
+                                                        let old =
+                                                            heights.read().get(&key).copied();
+                                                        if old != Some(h) {
+                                                            heights
+                                                                .write()
+                                                                .insert(key.clone(), h);
+                                                        }
+                                                    })
+                                                    .child(MessageRow {
+                                                        room_id: room_id_rows.clone(),
+                                                        item,
+                                                        date_label,
+                                                        my_user_id: my_uid,
+                                                        action_tx: msg_action_tx.clone(),
+                                                        image_viewer,
+                                                        action_popup: action_popup_state,
+                                                        detail_modal,
+                                                        is_dm: room_is_dm,
+                                                    })
+                                                    .into()
                                             })
-                                            .child(MessageRow {
-                                                room_id: room_id.clone(),
-                                                msg,
-                                                action_tx: msg_action_tx.clone(),
-                                                image_viewer,
-                                                action_popup: action_popup_state,
-                                                detail_modal,
-                                                is_dm: room_is_dm,
-                                            })
-                                            .into()
-                                    })),
+                                    }),
                             ),
                     )
                     .into_element()

@@ -43,8 +43,6 @@ pub static SYNCING: AtomicBool = AtomicBool::new(true);
 #[tokio::main]
 async fn main() {
     println!("Starting PIAF client");
-    #[cfg(not(target_os = "android"))]
-    console_subscriber::init();
 
     let requester = ClientWorker::spawn().await;
     REQUESTER.set(requester).unwrap();

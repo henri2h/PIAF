@@ -1,27 +1,55 @@
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use freya::prelude::*;
+use matrix_sdk::ruma::events::room::message::MessageType;
+use matrix_sdk_ui::timeline::{TimelineDetails, TimelineItem, TimelineItemContent};
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::const_values::AppColors;
 
-use super::{MessageContent, MessageItem, MsgAction, message_action_popup};
+use super::{MsgAction, message_action_popup};
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn action_popup_overlay(
     area: Area,
-    popup_msg: MessageItem,
-    mut popup_state: State<Option<(Area, MessageItem)>>,
+    popup_item: Arc<TimelineItem>,
+    my_user_id: Option<String>,
+    mut popup_state: State<Option<(Area, Arc<TimelineItem>)>>,
     action_tx: Arc<UnboundedSender<MsgAction>>,
     mut reply_info: State<Option<(String, String, String)>>,
     mut edit_info: State<Option<(String, String)>>,
-    mut detail_modal: State<Option<MessageItem>>,
+    mut detail_modal: State<Option<Arc<TimelineItem>>>,
     c: AppColors,
 ) -> Element {
     use message_action_popup::PopupAction;
 
-    let event_id = popup_msg.event_id.clone();
-    let is_me = popup_msg.is_me;
+    let Some(event) = popup_item.as_event() else {
+        return rect().into();
+    };
+
+    let event_id = event.event_id().map(|id| id.to_string());
+    let is_me = my_user_id.as_deref() == Some(event.sender().as_str());
+
+    let (reply_body, edit_body): (String, Option<String>) =
+        if let TimelineItemContent::MsgLike(m) = event.content() {
+            if let Some(msg) = m.as_message() {
+                match msg.msgtype() {
+                    MessageType::Text(t) => (t.body.clone(), Some(t.body.clone())),
+                    _ => ("[Message]".to_string(), None),
+                }
+            } else {
+                return rect().into();
+            }
+        } else {
+            return rect().into();
+        };
+
+    let sender_name: String = match event.sender_profile() {
+        TimelineDetails::Ready(p) => {
+            p.display_name.clone().unwrap_or_else(|| event.sender().to_string())
+        }
+        _ => event.sender().to_string(),
+    };
 
     let on_react: Rc<RefCell<dyn FnMut(String)>> = {
         let eid = event_id.clone();
@@ -37,12 +65,6 @@ pub(super) fn action_popup_overlay(
         }))
     };
 
-    let (reply_body, edit_body) = match &popup_msg.content {
-        MessageContent::Text(t) => (t.clone(), Some(t.clone())),
-        MessageContent::Image { .. } => ("[Image]".to_string(), None),
-        MessageContent::Notice(_) | MessageContent::ReadMarker => return rect().into(),
-    };
-
     let mut actions: Vec<PopupAction> = vec![
         PopupAction {
             icon: freya_icons::lucide::reply(),
@@ -50,7 +72,7 @@ pub(super) fn action_popup_overlay(
             color: c.on_surface,
             on_press: Box::new({
                 let eid = event_id.clone();
-                let sender = popup_msg.sender_name.clone();
+                let sender = sender_name;
                 let body = reply_body;
                 move || {
                     if let Some(event_id) = &eid {
@@ -66,9 +88,9 @@ pub(super) fn action_popup_overlay(
             label: "Details",
             color: c.on_surface,
             on_press: Box::new({
-                let msg_clone = popup_msg.clone();
+                let item_clone = popup_item.clone();
                 move || {
-                    *detail_modal.write() = Some(msg_clone.clone());
+                    *detail_modal.write() = Some(item_clone.clone());
                     *popup_state.write() = None;
                 }
             }),
@@ -87,7 +109,7 @@ pub(super) fn action_popup_overlay(
                 }),
             });
         }
-        if let Some(eid) = event_id.clone() {
+        if let Some(eid) = event_id {
             let tx = action_tx.clone();
             actions.push(PopupAction {
                 icon: freya_icons::lucide::trash_2(),
