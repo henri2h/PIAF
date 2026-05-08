@@ -25,13 +25,21 @@ enum SenderPrefix {
 }
 
 fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix) {
+    match room.latest_event() {
+        LatestEventValue::RemoteInvite { inviter, .. } => {
+            let body = if let Some(ref inviter_id) = inviter {
+                format!("You were invited by {}", inviter_id.localpart())
+            } else {
+                "You were invited".to_string()
+            };
+            return (body, SenderPrefix::None);
+        }
+        LatestEventValue::Remote(_) => {}
+        _ => {
+            return (String::new(), SenderPrefix::None);
+        }
+    }
     let LatestEventValue::Remote(latest) = room.latest_event() else {
-        println!(
-            "[{}] {}",
-            room.name().unwrap_or("oups".to_string()),
-            "No latest event"
-        );
-
         return (String::new(), SenderPrefix::None);
     };
 
@@ -46,6 +54,9 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
                 MessageType::File(_) => "📎 File".to_string(),
                 MessageType::Audio(_) => "🎵 Audio".to_string(),
                 MessageType::Video(_) => "🎬 Video".to_string(),
+                MessageType::Emote(e) => format!("* {}", e.body),
+                MessageType::Location(_) => "📍 Location".to_string(),
+                MessageType::VerificationRequest(_) => "🔐 Verification request".to_string(),
                 ref other => {
                     println!(
                         "[piaf] unhandled MessageType in room {}: {:?}",
@@ -63,6 +74,9 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
         Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomEncrypted(
             SyncMessageLikeEvent::Original(r),
         ))) => ("🔐 Encrypted message".to_string(), r.sender.to_string()),
+        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomEncrypted(
+            SyncMessageLikeEvent::Redacted(r),
+        ))) => ("🗑 Message deleted".to_string(), r.sender.to_string()),
         _ => {
             println!(
                 "[{}] {}",
@@ -92,6 +106,20 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
                 "m.sticker" => "🎉 Sticker".to_string(),
                 "m.call.invite" | "m.call.answer" | "m.call.hangup" => "📞 Call".to_string(),
                 "m.room.member" => "Activity".to_string(),
+                "m.poll.start" | "org.matrix.msc3381.poll.start" => "📊 Poll".to_string(),
+                "m.location" | "org.matrix.msc3488.location" => "📍 Location".to_string(),
+                "m.room.tombstone" => "🚪 Room upgraded".to_string(),
+                "m.room.name"
+                | "m.room.topic"
+                | "m.room.avatar"
+                | "m.room.canonical_alias"
+                | "m.room.power_levels"
+                | "m.room.join_rules"
+                | "m.room.guest_access"
+                | "m.room.history_visibility"
+                | "m.room.server_acl"
+                | "m.room.create" => "Room settings updated".to_string(),
+                "m.reaction" => return (String::new(), SenderPrefix::None),
                 _ => {
                     println!(
                         "[piaf] unhandled last event type: {event_type:?} in room {}",
@@ -107,14 +135,12 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
         }
     };
 
-    if room.direct_targets().is_empty() {
-        if my_user_id == Some(sender_id.as_str()) {
-            (body, SenderPrefix::Me)
-        } else {
-            (body, SenderPrefix::Other(sender_id))
-        }
-    } else {
+    if my_user_id == Some(sender_id.as_str()) {
+        (body, SenderPrefix::Me)
+    } else if room.is_dm() {
         (body, SenderPrefix::None)
+    } else {
+        (body, SenderPrefix::Other(sender_id))
     }
 }
 
@@ -243,7 +269,7 @@ impl Component for RoomListItem {
         };
 
         let heroes = room.heroes();
-        let is_dm = !room.direct_targets().is_empty();
+        let is_dm = room.is_dm();
         let heroes_with_avatar: Vec<_> = heroes.iter().filter(|h| h.avatar_url.is_some()).collect();
         let show_stacked = !is_dm && heroes_with_avatar.len() >= 2;
 
@@ -419,7 +445,7 @@ impl Component for RoomListItem {
                         label()
                             .text(msg)
                             .width(Size::fill())
-                            .max_lines(2)
+                            .max_lines(1)
                             .color(c.on_surface_variant)
                             .font_size(13.5)
                             .font_weight(FontWeight::NORMAL),

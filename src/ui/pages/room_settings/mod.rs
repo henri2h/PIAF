@@ -50,6 +50,7 @@ impl Component for RoomSettings {
         let mut member_count: State<u64> = use_state(|| 0u64);
         let mut members: State<Vec<MemberItem>> = use_state(|| vec![]);
         let mut room_topic: State<Option<String>> = use_state(|| None);
+        let mut room_version: State<Option<String>> = use_state(|| None);
         let notif_mode: State<Option<u8>> = use_state(|| None);
         let mut notif_open: State<bool> = use_state(|| false);
         let mut confirm_leave: State<bool> = use_state(|| false);
@@ -93,19 +94,21 @@ impl Component for RoomSettings {
                     u64,
                     Vec<MemberItem>,
                     Option<String>,
+                    Option<String>,
                 )>();
                 tokio::task::spawn(async move {
                     let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id) else {
-                        let _ = tx.send((room_id, 0, vec![], None));
+                        let _ = tx.send((room_id, 0, vec![], None, None));
                         return;
                     };
                     let Some(room) = client.get_room(&parsed_id) else {
-                        let _ = tx.send((String::new(), 0, vec![], None));
+                        let _ = tx.send((String::new(), 0, vec![], None, None));
                         return;
                     };
                     let name = room.display_name().await.map(|n| n.to_string()).unwrap_or_default();
                     let count = room.joined_members_count();
                     let topic = room.topic();
+                    let version = room.version().map(|v| v.as_str().to_string());
 
                     let mut member_list: Vec<MemberItem> = room
                         .members(RoomMemberships::JOIN)
@@ -125,13 +128,14 @@ impl Component for RoomSettings {
 
                     member_list.sort_by(|a, b| b.power_level.cmp(&a.power_level).then(a.display_name.cmp(&b.display_name)));
 
-                    let _ = tx.send((name, count, member_list, topic));
+                    let _ = tx.send((name, count, member_list, topic, version));
                 });
-                if let Ok((name, count, member_list, topic)) = rx.await {
+                if let Ok((name, count, member_list, topic, version)) = rx.await {
                     *room_name.write() = name;
                     *member_count.write() = count;
                     *members.write() = member_list;
                     *room_topic.write() = topic;
+                    *room_version.write() = version;
                 }
             });
         });
@@ -140,6 +144,7 @@ impl Component for RoomSettings {
         let count = *member_count.read();
         let member_list = members.read().clone();
         let topic = room_topic.read().clone();
+        let version = room_version.read().clone();
         let is_leaving = *leaving.read();
         let current_notif = *notif_mode.read();
         let adm_level = ADMIN_THRESHOLD;
@@ -273,6 +278,16 @@ impl Component for RoomSettings {
                                         *copied.write() = false;
                                     });
                                 },
+                            ))
+                            .child(divider(c))
+                            // ── Room version list item ────────────────────────
+                            .child(m3_list_item(
+                                freya_icons::lucide::info(),
+                                "Room version",
+                                version,
+                                c.on_surface_variant,
+                                false,
+                                |_| {},
                             ))
                             .child(divider(c))
                             // ── Media ─────────────────────────────────────────

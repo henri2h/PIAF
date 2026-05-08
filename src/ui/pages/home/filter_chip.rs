@@ -29,8 +29,8 @@ impl RoomFilter {
     pub fn matches(&self, room: &Room) -> bool {
         match self {
             Self::All => true,
-            Self::Groups => room.direct_targets().is_empty(),
-            Self::Dms => !room.direct_targets().is_empty(),
+            Self::Groups => !room.is_dm(),
+            Self::Dms => room.is_dm(),
             Self::Unread => room.num_unread_messages() > 0 || room.num_unread_notifications() > 0,
         }
     }

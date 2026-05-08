@@ -374,10 +374,8 @@ impl QueryCapability for FetchMutualRooms {
             // Fallback: iterate locally cached joined rooms.
             let mut result = vec![];
             for room in client.rooms() {
-                if room.direct_targets().is_empty() {
-                    if let Ok(Some(_)) = room.get_member_no_sync(&parsed).await {
-                        result.push(room.room_id().to_string());
-                    }
+                if let Ok(Some(_)) = room.get_member_no_sync(&parsed).await {
+                    result.push(room.room_id().to_string());
                 }
             }
             let _ = tx.send(Ok(result));

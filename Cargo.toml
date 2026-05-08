@@ -10,8 +10,8 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 freya = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
   "sdk",
-  "devtools",
   "router",
+  "markdown",
 ] }
 freya-components = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-core = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }

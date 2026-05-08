@@ -83,7 +83,14 @@ impl Component for HomePage {
             .map(|c| c.to_uppercase().to_string())
             .unwrap_or_else(|| "?".to_string());
 
-        let mut rooms = CLIENT.get().map(|c| c.joined_rooms()).unwrap_or_default();
+        let mut rooms: Vec<matrix_sdk::Room> = CLIENT
+            .get()
+            .map(|c| {
+                let mut r = c.joined_rooms();
+                r.extend(c.invited_rooms());
+                r
+            })
+            .unwrap_or_default();
         rooms.sort_unstable_by(|a, b| {
             let a_stamp = a.recency_stamp().map(u64::from).unwrap_or(0);
             let b_stamp = b.recency_stamp().map(u64::from).unwrap_or(0);

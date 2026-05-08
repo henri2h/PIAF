@@ -17,15 +17,20 @@ pub fn m3_list_item(
     let c = use_app_colors();
     let text_color = if destructive { c.error } else { c.on_surface };
     let item_label = item_label.into();
+    let mut hovered: State<bool> = use_state(|| false);
+    let bg = if *hovered.read() { c.surface_container } else { c.surface };
 
     rect()
         .width(Size::fill())
         .overflow(Overflow::Clip)
+        .background(bg)
+        .on_pointer_enter(move |_| *hovered.write() = true)
+        .on_pointer_leave(move |_| *hovered.write() = false)
         .on_press(on_press)
         .child(
             Ripple::new()
                 .color(if destructive { c.error } else { c.primary })
-                .width(Size::fill())
+                .width(Size::fill_minimum())
                 .child(
                     rect()
                         .horizontal()

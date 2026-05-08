@@ -145,7 +145,7 @@ impl Component for RoomPage {
                             .await
                             .map(|n| n.to_string())
                             .unwrap_or_else(|_| room_id2.clone());
-                        let dm = room.is_direct().await.unwrap_or(false);
+                        let dm = room.is_dm();
 
                         let Ok(timeline) = room
                             .timeline_builder()
@@ -283,7 +283,6 @@ impl Component for RoomPage {
         });
 
         let paginate_tx_wheel = paginate_tx.clone();
-        let paginate_tx_btn = paginate_tx.clone();
         let paginate_tx_fill = paginate_tx.clone();
         let paginate_tx_inner = paginate_tx.clone();
 
@@ -496,19 +495,7 @@ impl Component for RoomPage {
                                             .child(if is_paginating {
                                                 CircularLoader::new().into_element()
                                             } else {
-                                                Button::new()
-                                                    .on_press(move |_| {
-                                                        let (_, y) = Into::<(i32, i32)>::into(
-                                                            scroll_controller,
-                                                        );
-                                                        *paginating.write() = true;
-                                                        *pinned_to_bottom.write() = false;
-                                                        *anchor_info.write() =
-                                                            Some((y, *content_height.read()));
-                                                        let _ = paginate_tx_btn.send(());
-                                                    })
-                                                    .child("Load older messages")
-                                                    .into_element()
+                                                rect().into_element()
                                             })
                                             .into_element()
                                     })

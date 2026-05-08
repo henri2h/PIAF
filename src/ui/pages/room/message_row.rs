@@ -9,7 +9,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use super::{MsgAction, Reaction, ReactionSender};
 use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, UserPopupOverlay, ViewerSource};
-use crate::utils::{extract_urls, format_timestamp, sender_color, use_app_colors};
+use crate::utils::{format_timestamp, sender_color, use_app_colors};
 
 pub struct MessageRow {
     pub room_id: String,
@@ -277,35 +277,9 @@ impl Component for MessageRow {
         let content_el = match message.msgtype() {
             MessageType::Text(t) => {
                 let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
-                let body = t.body.clone();
-                let urls = extract_urls(&body);
-                let link_color = if is_me { c.bubble_me_text } else { c.primary };
                 rect()
-                    .vertical()
-                    .spacing(4.)
-                    .child(label().text(body).color(text_color))
-                    .children(urls.into_iter().map(|url| {
-                        let url_open = url.clone();
-                        rect()
-                            .horizontal()
-                            .spacing(4.)
-                            .cross_align(Alignment::Center)
-                            .on_press(move |_| {
-                                #[cfg(not(target_os = "android"))]
-                                std::process::Command::new("xdg-open")
-                                    .arg(url_open.clone())
-                                    .spawn()
-                                    .ok();
-                            })
-                            .child(
-                                svg(freya_icons::lucide::external_link())
-                                    .color(link_color)
-                                    .width(Size::px(11.))
-                                    .height(Size::px(11.)),
-                            )
-                            .child(label().text(url).font_size(13.).color(link_color))
-                            .into_element()
-                    }))
+                    .color(text_color)
+                    .child(MarkdownViewer::new(t.body.clone()).color(text_color))
                     .into_element()
             }
             MessageType::Image(img) => {
