@@ -18,7 +18,11 @@ pub fn m3_list_item(
     let text_color = if destructive { c.error } else { c.on_surface };
     let item_label = item_label.into();
     let mut hovered: State<bool> = use_state(|| false);
-    let bg = if *hovered.read() { c.surface_container } else { c.surface };
+    let bg = if *hovered.read() {
+        c.surface_container
+    } else {
+        c.surface
+    };
 
     rect()
         .width(Size::fill())
@@ -35,7 +39,7 @@ pub fn m3_list_item(
                     rect()
                         .horizontal()
                         .width(Size::fill())
-                        .min_height(Size::px(56.))
+                        .height(Size::px(56.))
                         .padding(Gaps::new(0., 24., 0., 16.))
                         .spacing(16.)
                         .cross_align(Alignment::Center)
@@ -50,14 +54,10 @@ pub fn m3_list_item(
                             rect()
                                 .vertical()
                                 .width(Size::flex(1.0))
-                                .main_align(Alignment::Center)
                                 .spacing(2.)
                                 .child(label().text(item_label).font_size(16.).color(text_color))
                                 .maybe_child(sublabel.map(|sub| {
-                                    label()
-                                        .text(sub)
-                                        .font_size(14.)
-                                        .color(c.on_surface_variant)
+                                    label().text(sub).font_size(14.).color(c.on_surface_variant)
                                 })),
                         )
                         .child(
