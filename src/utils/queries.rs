@@ -53,7 +53,12 @@ async fn fetch_mxc_direct(mxc_uri: &str) -> Result<Vec<u8>, ()> {
         source: MediaSource::Plain(mxc),
         format: MediaFormat::File,
     };
-    client.media().get_media_content(&request, true).await.map(|b| b.to_vec()).map_err(|_| ())
+    client
+        .media()
+        .get_media_content(&request, true)
+        .await
+        .map(|b| b.to_vec())
+        .map_err(|_| ())
 }
 
 async fn fetch_member_avatar_direct(key: &str) -> Result<Vec<u8>, ()> {
@@ -366,7 +371,10 @@ impl QueryCapability for FetchMutualRooms {
         let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<String>, ()>>();
         tokio::spawn(async move {
             // Try MSC2666 via the native ruma request.
-            if let Ok(resp) = client.send(MutualRoomsRequest::new(parsed.to_owned())).await {
+            if let Ok(resp) = client
+                .send(MutualRoomsRequest::new(parsed.to_owned()))
+                .await
+            {
                 let _ = tx.send(Ok(resp.joined.into_iter().map(|r| r.to_string()).collect()));
                 return;
             }

@@ -118,8 +118,7 @@ impl Component for Avatar {
                     // updated and the next remount hits the cache immediately.
                     let asset_config = asset_config.clone();
                     spawn_forever(async move {
-                        let (tx, rx) =
-                            futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
+                        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
                         let key2 = key.clone();
                         tokio::spawn(async move {
                             let _ = tx.send(fetch_avatar_for_key(&key2).await);
@@ -132,8 +131,7 @@ impl Component for Avatar {
                         };
 
                         // Decode via the ImageSource path (handles blocking decode correctly).
-                        let decode_source: ImageSource =
-                            (key, Bytes::from(bytes_vec)).into();
+                        let decode_source: ImageSource = (key, Bytes::from(bytes_vec)).into();
                         match decode_source.bytes().await {
                             Ok((sk_image, bytes)) => {
                                 let holder = ImageHolder {
@@ -181,10 +179,7 @@ impl Component for Avatar {
 
         match asset {
             Asset::Cached(holder) => {
-                let holder = holder
-                    .downcast_ref::<ImageHolder>()
-                    .unwrap()
-                    .clone();
+                let holder = holder.downcast_ref::<ImageHolder>().unwrap().clone();
                 freya_core::elements::image::image(holder)
                     .width(Size::px(size))
                     .height(Size::px(size))

@@ -8,7 +8,9 @@ use matrix_sdk_ui::timeline::{
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::{MsgAction, Reaction, ReactionSender};
-use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, UserPopupOverlay, ViewerSource};
+use crate::ui::components::{
+    Avatar, MediaThumbnail, UserPopupInfo, UserPopupOverlay, ViewerSource,
+};
 use crate::utils::{format_timestamp, sender_color, use_app_colors};
 
 pub struct MessageRow {
@@ -78,9 +80,19 @@ impl Component for MessageRow {
                 .cross_align(Alignment::Center)
                 .padding(Gaps::new(8., 16., 8., 16.))
                 .spacing(8.)
-                .child(rect().width(Size::flex(1.0)).height(Size::px(1.)).background(c.primary))
+                .child(
+                    rect()
+                        .width(Size::flex(1.0))
+                        .height(Size::px(1.))
+                        .background(c.primary),
+                )
                 .child(label().text("New messages").font_size(12.).color(c.primary))
-                .child(rect().width(Size::flex(1.0)).height(Size::px(1.)).background(c.primary));
+                .child(
+                    rect()
+                        .width(Size::flex(1.0))
+                        .height(Size::px(1.))
+                        .background(c.primary),
+                );
         }
 
         let Some(event) = item.as_event() else {
@@ -119,12 +131,7 @@ impl Component for MessageRow {
                                 .padding(Gaps::new(4., 12., 4., 12.))
                                 .corner_radius(12.)
                                 .background(c.surface_container)
-                                .child(
-                                    label()
-                                        .text(text)
-                                        .font_size(12.)
-                                        .color(c.on_surface_muted),
-                                ),
+                                .child(label().text(text).font_size(12.).color(c.on_surface_muted)),
                         ),
                 );
         }
@@ -239,51 +246,70 @@ impl Component for MessageRow {
             None
         };
 
-        let bubble_bg: (u8, u8, u8) = if is_me { c.primary } else { c.surface_container };
+        let bubble_bg: (u8, u8, u8) = if is_me {
+            c.primary
+        } else {
+            c.surface_container
+        };
 
         // ── Reply quote ───────────────────────────────────────────────────
-        let reply_el = if let Some((reply_sender, reply_body)) = &reply_to {
-            rect()
-                .vertical()
-                .padding(Gaps::new(0., 0., 6., 0.))
-                .child(
-                    rect()
-                        .vertical()
-                        .padding(Gaps::new(4., 8., 4., 8.))
-                        .corner_radius(8.)
-                        .background(if is_me { c.reply_me_bg } else { c.reply_other_bg })
-                        .spacing(2.)
-                        .child(
-                            label()
-                                .text(reply_sender.clone())
-                                .font_size(11.)
-                                .font_weight(FontWeight::BOLD)
-                                .color(if is_me {
-                                    c.reply_me_sender
+        let reply_el =
+            if let Some((reply_sender, reply_body)) = &reply_to {
+                rect()
+                    .vertical()
+                    .padding(Gaps::new(0., 0., 6., 0.))
+                    .child(
+                        rect()
+                            .vertical()
+                            .padding(Gaps::new(4., 8., 4., 8.))
+                            .corner_radius(8.)
+                            .background(if is_me {
+                                c.reply_me_bg
+                            } else {
+                                c.reply_other_bg
+                            })
+                            .spacing(2.)
+                            .child(
+                                label()
+                                    .text(reply_sender.clone())
+                                    .font_size(11.)
+                                    .font_weight(FontWeight::BOLD)
+                                    .color(if is_me {
+                                        c.reply_me_sender
+                                    } else {
+                                        c.reply_other_sender
+                                    }),
+                            )
+                            .child(label().text(reply_body.clone()).font_size(12.).color(
+                                if is_me {
+                                    c.reply_me_text
                                 } else {
-                                    c.reply_other_sender
-                                }),
-                        )
-                        .child(label().text(reply_body.clone()).font_size(12.).color(
-                            if is_me { c.reply_me_text } else { c.reply_other_text },
-                        )),
-                )
-                .into_element()
-        } else {
-            rect().into_element()
-        };
+                                    c.reply_other_text
+                                },
+                            )),
+                    )
+                    .into_element()
+            } else {
+                rect().into_element()
+            };
 
         // ── Content ───────────────────────────────────────────────────────
         let content_el = match message.msgtype() {
             MessageType::Text(t) => {
-                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
+                let text_color = if is_me {
+                    c.bubble_me_text
+                } else {
+                    c.bubble_other_text
+                };
                 rect()
                     .color(text_color)
                     .child(MarkdownViewer::new(t.body.clone()).color(text_color))
                     .into_element()
             }
             MessageType::Image(img) => {
-                let key = event_id.clone().unwrap_or_else(|| "img-unknown".to_string());
+                let key = event_id
+                    .clone()
+                    .unwrap_or_else(|| "img-unknown".to_string());
                 let key_view = key.clone();
                 let source = img.source.clone();
                 let caption = {
@@ -302,7 +328,11 @@ impl Component for MessageRow {
                 };
                 let blurhash = img.info.as_ref().and_then(|i| i.blurhash.clone());
                 let thumbnail_source = img.info.as_ref().and_then(|i| i.thumbnail_source.clone());
-                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
+                let text_color = if is_me {
+                    c.bubble_me_text
+                } else {
+                    c.bubble_other_text
+                };
                 rect()
                     .vertical()
                     .spacing(6.)
@@ -326,9 +356,9 @@ impl Component for MessageRow {
                                 thumb_size: Some((400, 300)),
                             }),
                     )
-                    .maybe_child(caption.map(|cap| {
-                        label().text(cap).color(text_color).into_element()
-                    }))
+                    .maybe_child(
+                        caption.map(|cap| label().text(cap).color(text_color).into_element()),
+                    )
                     .into_element()
             }
             _ => return rect(),
@@ -368,19 +398,17 @@ impl Component for MessageRow {
             } else {
                 freya_icons::lucide::check()
             };
-            let receipt_color: (u8, u8, u8) =
-                if fully_read { c.receipt_read } else { c.receipt_default };
+            let receipt_color: (u8, u8, u8) = if fully_read {
+                c.receipt_read
+            } else {
+                c.receipt_default
+            };
             bubble_inner.child(reply_el).child(content_el).child(
                 rect()
                     .horizontal()
                     .cross_align(Alignment::Center)
                     .spacing(4.)
-                    .child(
-                        label()
-                            .text(timestamp)
-                            .font_size(11.)
-                            .color(c.timestamp_me),
-                    )
+                    .child(label().text(timestamp).font_size(11.).color(c.timestamp_me))
                     .child(
                         svg(receipt_icon)
                             .color(receipt_color)
@@ -464,7 +492,11 @@ impl Component for MessageRow {
             .padding(Gaps::new(2., 12., 2., 12.))
             .spacing(10.)
             .cross_align(Alignment::End)
-            .main_align(if is_me { Alignment::End } else { Alignment::Start });
+            .main_align(if is_me {
+                Alignment::End
+            } else {
+                Alignment::Start
+            });
 
         let room_id = self.room_id.clone();
         let row = if !is_me && !is_dm {
@@ -551,7 +583,11 @@ impl Component for MessageRow {
         };
 
         let popup_overlay = user_popup.read().clone().map(|info| {
-            UserPopupOverlay { info, open: user_popup }.into_element()
+            UserPopupOverlay {
+                info,
+                open: user_popup,
+            }
+            .into_element()
         });
 
         #[cfg(not(target_os = "android"))]

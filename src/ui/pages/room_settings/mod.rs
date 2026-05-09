@@ -10,9 +10,9 @@ use crate::utils::{sender_color, use_app_colors};
 use crate::{Route, utils::matrix::CLIENT};
 
 mod notif_mode_selector;
-use notif_mode_selector::{notif_label, notif_popup_overlay};
 use crate::ui::components::m3_list_item;
 use crate::utils::extract_urls;
+use notif_mode_selector::{notif_label, notif_popup_overlay};
 
 const MEMBER_PREVIEW: usize = 5;
 const ADMIN_THRESHOLD: i64 = 50;
@@ -62,7 +62,9 @@ impl Component for RoomSettings {
             let room_id_notif = room_id.clone();
             let mut notif_mode = notif_mode;
             spawn(async move {
-                let Some(client) = CLIENT.get().cloned() else { return };
+                let Some(client) = CLIENT.get().cloned() else {
+                    return;
+                };
                 let (tx, rx) = tokio::sync::oneshot::channel::<Option<u8>>();
                 tokio::task::spawn(async move {
                     let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id_notif) else {
@@ -88,7 +90,9 @@ impl Component for RoomSettings {
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let Some(client) = CLIENT.get().cloned() else { return };
+                let Some(client) = CLIENT.get().cloned() else {
+                    return;
+                };
                 let (tx, rx) = tokio::sync::oneshot::channel::<(
                     String,
                     u64,
@@ -105,7 +109,11 @@ impl Component for RoomSettings {
                         let _ = tx.send((String::new(), 0, vec![], None, None));
                         return;
                     };
-                    let name = room.display_name().await.map(|n| n.to_string()).unwrap_or_default();
+                    let name = room
+                        .display_name()
+                        .await
+                        .map(|n| n.to_string())
+                        .unwrap_or_default();
                     let count = room.joined_members_count();
                     let topic = room.topic();
                     let version = room.version().map(|v| v.as_str().to_string());
@@ -117,16 +125,36 @@ impl Component for RoomSettings {
                         .into_iter()
                         .map(|m| {
                             let uid = m.user_id().to_string();
-                            let dn = m.display_name().map(|s| s.to_string()).unwrap_or_else(|| uid.clone());
-                            let initial = dn.chars().next().unwrap_or('?').to_uppercase().next().unwrap_or('?');
+                            let dn = m
+                                .display_name()
+                                .map(|s| s.to_string())
+                                .unwrap_or_else(|| uid.clone());
+                            let initial = dn
+                                .chars()
+                                .next()
+                                .unwrap_or('?')
+                                .to_uppercase()
+                                .next()
+                                .unwrap_or('?');
                             let color = sender_color(&uid);
                             let power_level = power_to_i64(m.power_level());
                             let avatar_url = m.avatar_url().map(|u| u.to_string());
-                            MemberItem { user_id: uid, display_name: dn, initial, color, power_level, avatar_url }
+                            MemberItem {
+                                user_id: uid,
+                                display_name: dn,
+                                initial,
+                                color,
+                                power_level,
+                                avatar_url,
+                            }
                         })
                         .collect();
 
-                    member_list.sort_by(|a, b| b.power_level.cmp(&a.power_level).then(a.display_name.cmp(&b.display_name)));
+                    member_list.sort_by(|a, b| {
+                        b.power_level
+                            .cmp(&a.power_level)
+                            .then(a.display_name.cmp(&b.display_name))
+                    });
 
                     let _ = tx.send((name, count, member_list, topic, version));
                 });
@@ -174,7 +202,9 @@ impl Component for RoomSettings {
                     if is_wide {
                         let _ = RouterContext::get().push(Route::HomePage);
                     } else {
-                        let _ = RouterContext::get().push(Route::RoomPage { room_id: room_id_nav.clone() });
+                        let _ = RouterContext::get().push(Route::RoomPage {
+                            room_id: room_id_nav.clone(),
+                        });
                     }
                 })),
                 actions: vec![],
@@ -341,7 +371,9 @@ impl Component for RoomSettings {
                                 rect()
                                     .width(Size::fill())
                                     .overflow(Overflow::Clip)
-                                    .on_press(move |_| *user_popup.write() = Some(popup_info.clone()))
+                                    .on_press(move |_| {
+                                        *user_popup.write() = Some(popup_info.clone())
+                                    })
                                     .child(
                                         rect()
                                             .horizontal()
@@ -376,7 +408,9 @@ impl Component for RoomSettings {
                                                             )
                                                             .maybe_child(is_admin.then(|| {
                                                                 rect()
-                                                                    .padding(Gaps::new(2., 6., 2., 6.))
+                                                                    .padding(Gaps::new(
+                                                                        2., 6., 2., 6.,
+                                                                    ))
                                                                     .corner_radius(8.)
                                                                     .background(c.primary)
                                                                     .child(
@@ -417,7 +451,11 @@ impl Component for RoomSettings {
                             // ── Leave room ────────────────────────────────────
                             .child(m3_list_item(
                                 freya_icons::lucide::log_out(),
-                                if is_leaving { "Leaving…" } else { "Leave room" },
+                                if is_leaving {
+                                    "Leaving…"
+                                } else {
+                                    "Leave room"
+                                },
                                 None,
                                 c.error,
                                 true,
@@ -431,14 +469,21 @@ impl Component for RoomSettings {
                     ),
             )
             // ── Overlays ──────────────────────────────────────────────────────
-            .maybe_child((*notif_open.read()).then(|| {
-                notif_popup_overlay(current_notif, room_id.clone(), notif_open, c)
-            }))
-            .maybe_child((*confirm_leave.read()).then(|| {
-                leave_confirm_overlay(room_id_leave.clone(), confirm_leave, leaving, c)
-            }))
+            .maybe_child(
+                (*notif_open.read())
+                    .then(|| notif_popup_overlay(current_notif, room_id.clone(), notif_open, c)),
+            )
+            .maybe_child(
+                (*confirm_leave.read()).then(|| {
+                    leave_confirm_overlay(room_id_leave.clone(), confirm_leave, leaving, c)
+                }),
+            )
             .maybe_child(user_popup.read().clone().map(|info| {
-                UserPopupOverlay { info, open: user_popup }.into_element()
+                UserPopupOverlay {
+                    info,
+                    open: user_popup,
+                }
+                .into_element()
             }))
     }
 }

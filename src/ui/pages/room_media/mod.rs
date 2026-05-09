@@ -9,7 +9,9 @@ use matrix_sdk_ui::timeline::{RoomExt, TimelineDetails, TimelineItemContent};
 
 use tokio::sync::mpsc::unbounded_channel;
 
-use crate::ui::components::{MediaViewer, MediaViewerItem, TopAppBar, TopAppBarTitle, ViewerSource};
+use crate::ui::components::{
+    MediaViewer, MediaViewerItem, TopAppBar, TopAppBarTitle, ViewerSource,
+};
 use crate::utils::{format_date_key, format_date_label, format_timestamp, matrix::CLIENT};
 
 mod media_thumb;

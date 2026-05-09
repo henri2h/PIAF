@@ -156,7 +156,12 @@ impl Component for SeenByRow {
             .child(Avatar {
                 size: 28.,
                 bytes: None,
-                initial: name.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                initial: name
+                    .chars()
+                    .next()
+                    .unwrap_or('?')
+                    .to_uppercase()
+                    .to_string(),
                 color: sender_color(&uid),
                 image_key: avatar_key.clone(),
                 fetch_key: Some(avatar_key),
@@ -287,7 +292,12 @@ impl Component for ReactionSenderRow {
             .child(Avatar {
                 size: 24.,
                 bytes: None,
-                initial: name.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                initial: name
+                    .chars()
+                    .next()
+                    .unwrap_or('?')
+                    .to_uppercase()
+                    .to_string(),
                 color: sender_color(&uid),
                 image_key: avatar_key.clone(),
                 fetch_key: Some(avatar_key),

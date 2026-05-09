@@ -6,7 +6,11 @@ use crate::utils::{const_values::AppColors, matrix::CLIENT};
 const OPTIONS: &[(Option<u8>, &str, &str)] = &[
     (None, "Default", "Follow the global notification setting"),
     (Some(0), "All messages", "Notify for every message"),
-    (Some(1), "Mentions only", "Only notify for @mentions and keywords"),
+    (
+        Some(1),
+        "Mentions only",
+        "Only notify for @mentions and keywords",
+    ),
     (Some(2), "Mute", "No notifications"),
 ];
 
@@ -49,7 +53,11 @@ pub(super) fn notif_popup_overlay(
                 .children(OPTIONS.iter().map(|&(val, name, desc)| {
                     let is_selected = val == current;
                     let room_id = room_id.clone();
-                    let bg = if is_selected { c.surface_container_high } else { c.surface };
+                    let bg = if is_selected {
+                        c.surface_container_high
+                    } else {
+                        c.surface
+                    };
 
                     rect()
                         .width(Size::fill())
@@ -58,15 +66,44 @@ pub(super) fn notif_popup_overlay(
                             *open.write() = false;
                             let room_id = room_id.clone();
                             spawn(async move {
-                                let Some(client) = CLIENT.get().cloned() else { return };
-                                let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id) else { return };
+                                let Some(client) = CLIENT.get().cloned() else {
+                                    return;
+                                };
+                                let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id)
+                                else {
+                                    return;
+                                };
                                 tokio::task::spawn(async move {
                                     let ns = client.notification_settings().await;
                                     match val {
-                                        None => { let _ = ns.delete_user_defined_room_rules(&parsed_id).await; }
-                                        Some(0) => { let _ = ns.set_room_notification_mode(&parsed_id, RoomNotificationMode::AllMessages).await; }
-                                        Some(1) => { let _ = ns.set_room_notification_mode(&parsed_id, RoomNotificationMode::MentionsAndKeywordsOnly).await; }
-                                        Some(2) => { let _ = ns.set_room_notification_mode(&parsed_id, RoomNotificationMode::Mute).await; }
+                                        None => {
+                                            let _ =
+                                                ns.delete_user_defined_room_rules(&parsed_id).await;
+                                        }
+                                        Some(0) => {
+                                            let _ = ns
+                                                .set_room_notification_mode(
+                                                    &parsed_id,
+                                                    RoomNotificationMode::AllMessages,
+                                                )
+                                                .await;
+                                        }
+                                        Some(1) => {
+                                            let _ = ns
+                                                .set_room_notification_mode(
+                                                    &parsed_id,
+                                                    RoomNotificationMode::MentionsAndKeywordsOnly,
+                                                )
+                                                .await;
+                                        }
+                                        Some(2) => {
+                                            let _ = ns
+                                                .set_room_notification_mode(
+                                                    &parsed_id,
+                                                    RoomNotificationMode::Mute,
+                                                )
+                                                .await;
+                                        }
                                         _ => {}
                                     }
                                 });
@@ -85,8 +122,23 @@ pub(super) fn notif_popup_overlay(
                                         .vertical()
                                         .width(Size::flex(1.0))
                                         .spacing(2.)
-                                        .child(label().text(name).font_size(15.).color(c.on_surface).font_weight(if is_selected { FontWeight::MEDIUM } else { FontWeight::NORMAL }))
-                                        .child(label().text(desc).font_size(13.).color(c.on_surface_variant)),
+                                        .child(
+                                            label()
+                                                .text(name)
+                                                .font_size(15.)
+                                                .color(c.on_surface)
+                                                .font_weight(if is_selected {
+                                                    FontWeight::MEDIUM
+                                                } else {
+                                                    FontWeight::NORMAL
+                                                }),
+                                        )
+                                        .child(
+                                            label()
+                                                .text(desc)
+                                                .font_size(13.)
+                                                .color(c.on_surface_variant),
+                                        ),
                                 )
                                 .maybe_child(is_selected.then(|| {
                                     svg(freya_icons::lucide::check())

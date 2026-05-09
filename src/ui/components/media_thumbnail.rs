@@ -2,7 +2,9 @@ use bytes::Bytes;
 use freya::prelude::*;
 use freya_query::prelude::QueryCapability;
 
-use crate::utils::queries::{FetchMediaContent, FetchMediaThumbnail, media_source_key, media_thumbnail_key};
+use crate::utils::queries::{
+    FetchMediaContent, FetchMediaThumbnail, media_source_key, media_thumbnail_key,
+};
 
 use super::ViewerSource;
 

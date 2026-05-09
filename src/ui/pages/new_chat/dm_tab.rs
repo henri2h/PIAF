@@ -130,7 +130,8 @@ pub(super) fn dm_tab(
                                 });
                                 match rx.await {
                                     Ok(Ok(room_id)) => {
-                                        let _ = RouterContext::get().push(Route::RoomPage { room_id });
+                                        let _ =
+                                            RouterContext::get().push(Route::RoomPage { room_id });
                                     }
                                     Ok(Err(e)) => {
                                         *dm_status.write() = Some(format!("Error: {e}"));

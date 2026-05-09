@@ -43,9 +43,8 @@ impl Component for HomePage {
 
         // Active room: drive via context so RoomListItem re-renders in-place
         // without remounting VirtualScrollView (which would reset scroll position).
-        let active_room: State<Option<String>> = use_state(|| {
-            ACTIVE_ROOM_RX.get().and_then(|rx| rx.borrow().clone())
-        });
+        let active_room: State<Option<String>> =
+            use_state(|| ACTIVE_ROOM_RX.get().and_then(|rx| rx.borrow().clone()));
         use_hook(|| {
             let mut active_room = active_room;
             if let Some(rx) = ACTIVE_ROOM_RX.get() {
@@ -54,7 +53,9 @@ impl Component for HomePage {
                 tokio::task::spawn(async move {
                     while rx.changed().await.is_ok() {
                         let val = rx.borrow().clone();
-                        if tx.unbounded_send(val).is_err() { break; }
+                        if tx.unbounded_send(val).is_err() {
+                            break;
+                        }
                     }
                 });
                 spawn(async move {
@@ -66,6 +67,34 @@ impl Component for HomePage {
             }
         });
         use_provide_context(|| ActiveRoomCtx(active_room));
+
+        // On each sync tick, subscribe all joined rooms that still lack a preview
+        // so off-screen rooms are fetched in the background.
+        use_hook(|| {
+            let Some(rx) = crate::SYNC_RX.get() else {
+                return;
+            };
+            let mut rx = rx.clone();
+            tokio::task::spawn(async move {
+                while rx.changed().await.is_ok() {
+                    let rooms_to_subscribe: Vec<_> = crate::utils::matrix::CLIENT
+                        .get()
+                        .map(|c| {
+                            c.joined_rooms()
+                                .into_iter()
+                                .filter(|r| r.latest_event().is_none())
+                                .map(|r| r.room_id().to_owned())
+                                .collect()
+                        })
+                        .unwrap_or_default();
+                    if !rooms_to_subscribe.is_empty() {
+                        if let Some(rq) = crate::REQUESTER.get() {
+                            rq.fetch_room_previews(rooms_to_subscribe);
+                        }
+                    }
+                }
+            });
+        });
 
         let mut search: State<String> = use_state(String::new);
         // Narrow mode: search toggle
@@ -133,9 +162,7 @@ impl Component for HomePage {
                 .width(Size::fill())
                 .theme_colors(InputColorsThemePartial {
                     background: Some(Preference::Specific(Color::from(c.surface_container))),
-                    hover_background: Some(Preference::Specific(Color::from(
-                        c.surface_container,
-                    ))),
+                    hover_background: Some(Preference::Specific(Color::from(c.surface_container))),
                     border_fill: Some(Preference::Specific(Color::TRANSPARENT)),
                     focus_border_fill: Some(Preference::Specific(Color::from(c.primary))),
                     ..Default::default()

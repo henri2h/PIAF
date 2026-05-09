@@ -35,7 +35,12 @@ impl Clone for TopAppBarTitle {
     fn clone(&self) -> Self {
         match self {
             Self::Text(t) => Self::Text(t.clone()),
-            Self::Room { name, room_id, initial, color } => Self::Room {
+            Self::Room {
+                name,
+                room_id,
+                initial,
+                color,
+            } => Self::Room {
                 name: name.clone(),
                 room_id: room_id.clone(),
                 initial: initial.clone(),
@@ -53,9 +58,18 @@ impl PartialEq for TopAppBarTitle {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Self::Text(a), Self::Text(b)) => a == b,
-            (Self::Room { name: a, room_id: ra, .. }, Self::Room { name: b, room_id: rb, .. }) => {
-                a == b && ra == rb
-            }
+            (
+                Self::Room {
+                    name: a,
+                    room_id: ra,
+                    ..
+                },
+                Self::Room {
+                    name: b,
+                    room_id: rb,
+                    ..
+                },
+            ) => a == b && ra == rb,
             _ => false,
         }
     }
@@ -160,7 +174,12 @@ impl Component for TopAppBar {
                 .font_weight(FontWeight::MEDIUM)
                 .color(c.on_surface)
                 .into_element(),
-            TopAppBarTitle::Room { name, room_id, initial, color } => rect()
+            TopAppBarTitle::Room {
+                name,
+                room_id,
+                initial,
+                color,
+            } => rect()
                 .horizontal()
                 .spacing(10.)
                 .cross_align(Alignment::Center)

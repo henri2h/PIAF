@@ -19,18 +19,20 @@ use eyeball_im::VectorDiff;
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 use futures::StreamExt;
-use matrix_sdk::ruma::{OwnedEventId, RoomId};
 use matrix_sdk::ruma::events::room::message::MessageType;
+use matrix_sdk::ruma::{OwnedEventId, RoomId};
 use matrix_sdk_ui::timeline::{
     RoomExt, TimelineDetails, TimelineEventItemId, TimelineItem, TimelineItemContent,
     TimelineReadReceiptTracking,
 };
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::utils::matrix::CLIENT;
 use crate::utils::format_timestamp;
+use crate::utils::matrix::CLIENT;
 use crate::{
-    ui::components::{MediaViewer, MediaViewerItem, TopAppBar, TopAppBarAction, TopAppBarTitle, ViewerSource},
+    ui::components::{
+        MediaViewer, MediaViewerItem, TopAppBar, TopAppBarAction, TopAppBarTitle, ViewerSource,
+    },
     utils::use_app_colors,
 };
 
@@ -163,8 +165,7 @@ impl Component for RoomPage {
                         let (_typing_guard, mut typing_broadcast) =
                             room.subscribe_to_typing_notifications();
 
-                        let mut tl_items: Vec<Arc<TimelineItem>> =
-                            items.iter().cloned().collect();
+                        let mut tl_items: Vec<Arc<TimelineItem>> = items.iter().cloned().collect();
                         let _ = init_tx.send((name, dm, tl_items.clone(), Some(timeline.clone())));
 
                         use matrix_sdk::ruma::api::client::receipt::create_receipt::v3::ReceiptType;
@@ -308,9 +309,10 @@ impl Component for RoomPage {
                     return None;
                 };
                 let sender = match event.sender_profile() {
-                    TimelineDetails::Ready(p) => {
-                        p.display_name.clone().unwrap_or_else(|| event.sender().to_string())
-                    }
+                    TimelineDetails::Ready(p) => p
+                        .display_name
+                        .clone()
+                        .unwrap_or_else(|| event.sender().to_string()),
                     _ => event.sender().to_string(),
                 };
                 let ts = format_timestamp(event.timestamp());
@@ -381,17 +383,17 @@ impl Component for RoomPage {
                     .expanded()
                     .vertical()
                     .content(Content::Flex)
-                    .maybe_child(
-                        detail_modal
-                            .read()
-                            .clone()
-                            .map(|msg| detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)),
-                    )
+                    .maybe_child(detail_modal.read().clone().map(|msg| {
+                        detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)
+                    }))
                     .maybe_child(action_popup_state.read().clone().map(|(area, item)| {
                         action_popup_overlay(
                             area,
                             item,
-                            CLIENT.get().and_then(|cl| cl.user_id()).map(|id| id.to_string()),
+                            CLIENT
+                                .get()
+                                .and_then(|cl| cl.user_id())
+                                .map(|id| id.to_string()),
                             action_popup_state,
                             msg_action_tx.clone(),
                             reply_info,
@@ -400,216 +402,236 @@ impl Component for RoomPage {
                             c,
                         )
                     }))
-            .child({
-                let room_id_search = room_id.clone();
-                let room_id_settings = room_id.clone();
-                TopAppBar {
-                    title: TopAppBarTitle::Room {
-                        initial: name.chars().next().unwrap_or('?').to_uppercase().to_string(),
-                        color: crate::utils::use_app_colors().primary,
-                        room_id: room_id.clone(),
-                        name: name.clone(),
-                    },
-                    on_back: if crate::WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed) {
-                        None
-                    } else {
-                        Some(Arc::new(|| {
-                            let _ = RouterContext::get().push(crate::Route::HomePage);
-                        }))
-                    },
-                    actions: vec![
-                        TopAppBarAction::IconButton {
-                            icon: freya_icons::lucide::search(),
-                            on_press: Arc::new(move || {
-                                let _ = RouterContext::get().push(crate::Route::RoomSearch {
-                                    room_id: room_id_search.clone(),
-                                });
-                            }),
-                        },
-                        TopAppBarAction::IconButton {
-                            icon: freya_icons::lucide::settings(),
-                            on_press: Arc::new(move || {
-                                let _ = RouterContext::get().push(crate::Route::RoomSettings {
-                                    room_id: room_id_settings.clone(),
-                                });
-                            }),
-                        },
-                    ],
-                }
-            })
-            .child(if is_loading {
-                rect()
-                    .width(Size::fill())
-                    .height(Size::flex(1.0))
-                    .center()
-                    .child(CircularLoader::new())
-                    .into_element()
-            } else {
-                rect()
-                    .width(Size::fill())
-                    .height(Size::flex(1.0))
-                    .on_sized(move |e: Event<SizedEventData>| {
-                        let vp_h = e.area.height();
-                        let ch = *content_height.read();
-                        let should_fill = *auto_fill.read();
-                        let is_paging = *paginating.read();
-                        *viewport_height.write() = vp_h;
-                        if should_fill && !is_paging && vp_h > 0.0 && ch > 0.0 && ch < vp_h {
-                            let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
-                            *anchor_info.write() = Some((y, ch));
-                            *paginating.write() = true;
-                            let _ = paginate_tx_fill.send(());
+                    .child({
+                        let room_id_search = room_id.clone();
+                        let room_id_settings = room_id.clone();
+                        TopAppBar {
+                            title: TopAppBarTitle::Room {
+                                initial: name
+                                    .chars()
+                                    .next()
+                                    .unwrap_or('?')
+                                    .to_uppercase()
+                                    .to_string(),
+                                color: crate::utils::use_app_colors().primary,
+                                room_id: room_id.clone(),
+                                name: name.clone(),
+                            },
+                            on_back: if crate::WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed)
+                            {
+                                None
+                            } else {
+                                Some(Arc::new(|| {
+                                    let _ = RouterContext::get().push(crate::Route::HomePage);
+                                }))
+                            },
+                            actions: vec![
+                                TopAppBarAction::IconButton {
+                                    icon: freya_icons::lucide::search(),
+                                    on_press: Arc::new(move || {
+                                        let _ =
+                                            RouterContext::get().push(crate::Route::RoomSearch {
+                                                room_id: room_id_search.clone(),
+                                            });
+                                    }),
+                                },
+                                TopAppBarAction::IconButton {
+                                    icon: freya_icons::lucide::settings(),
+                                    on_press: Arc::new(move || {
+                                        let _ =
+                                            RouterContext::get().push(crate::Route::RoomSettings {
+                                                room_id: room_id_settings.clone(),
+                                            });
+                                    }),
+                                },
+                            ],
                         }
                     })
-                    .child(
-                        ScrollView::new_controlled(scroll_controller)
+                    .child(if is_loading {
+                        rect()
                             .width(Size::fill())
-                            .height(Size::fill())
+                            .height(Size::flex(1.0))
+                            .center()
+                            .child(CircularLoader::new())
+                            .into_element()
+                    } else {
+                        rect()
+                            .width(Size::fill())
+                            .height(Size::flex(1.0))
+                            .on_sized(move |e: Event<SizedEventData>| {
+                                let vp_h = e.area.height();
+                                let ch = *content_height.read();
+                                let should_fill = *auto_fill.read();
+                                let is_paging = *paginating.read();
+                                *viewport_height.write() = vp_h;
+                                if should_fill && !is_paging && vp_h > 0.0 && ch > 0.0 && ch < vp_h
+                                {
+                                    let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
+                                    *anchor_info.write() = Some((y, ch));
+                                    *paginating.write() = true;
+                                    let _ = paginate_tx_fill.send(());
+                                }
+                            })
                             .child(
-                                rect()
-                                    .vertical()
+                                ScrollView::new_controlled(scroll_controller)
                                     .width(Size::fill())
-                                    .padding(Gaps::new(4., 0., 4., 0.))
-                                    .on_wheel(move |e: Event<WheelEventData>| {
-                                        let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
-                                        if y >= -400 && e.delta_y > 0. && !*paginating.read() {
-                                            *paginating.write() = true;
-                                            *pinned_to_bottom.write() = false;
-                                            *anchor_info.write() =
-                                                Some((y, *content_height.read()));
-                                            let _ = paginate_tx_wheel.send(());
-                                        }
-                                    })
-                                    .child(if is_at_start {
-                                        room_start_banner::RoomStartBanner {
-                                            room_id: room_id.clone(),
-                                            room_name: name.clone(),
-                                            c,
-                                        }
-                                        .into_element()
-                                    } else {
+                                    .height(Size::fill())
+                                    .child(
                                         rect()
-                                            .center()
+                                            .vertical()
                                             .width(Size::fill())
-                                            .padding(Gaps::new_all(8.))
-                                            .child(if is_paginating {
-                                                CircularLoader::new().into_element()
+                                            .padding(Gaps::new(4., 0., 4., 0.))
+                                            .on_wheel(move |e: Event<WheelEventData>| {
+                                                let (_, y) =
+                                                    Into::<(i32, i32)>::into(scroll_controller);
+                                                if y >= -400
+                                                    && e.delta_y > 0.
+                                                    && !*paginating.read()
+                                                {
+                                                    *paginating.write() = true;
+                                                    *pinned_to_bottom.write() = false;
+                                                    *anchor_info.write() =
+                                                        Some((y, *content_height.read()));
+                                                    let _ = paginate_tx_wheel.send(());
+                                                }
+                                            })
+                                            .child(if is_at_start {
+                                                room_start_banner::RoomStartBanner {
+                                                    room_id: room_id.clone(),
+                                                    room_name: name.clone(),
+                                                    c,
+                                                }
+                                                .into_element()
                                             } else {
-                                                rect().into_element()
-                                            })
-                                            .into_element()
-                                    })
-                                    .on_sized(move |e: Event<SizedEventData>| {
-                                        let new_h = e.inner_sizes.height;
-                                        let maybe_anchor = *anchor_info.read();
-                                        if let Some((old_y, old_h)) = maybe_anchor {
-                                            let delta = new_h - old_h;
-                                            if delta > 1.0 {
-                                                scroll_controller.scroll_to_y(old_y - delta as i32);
-                                                *anchor_info.write() = None;
-                                            }
-                                        }
-                                        *content_height.write() = new_h;
-                                        let vp_h = *viewport_height.read();
-                                        let should_fill = *auto_fill.read();
-                                        let is_paging = *paginating.read();
-                                        if should_fill
-                                            && !is_paging
-                                            && vp_h > 0.0
-                                            && new_h > 0.0
-                                            && new_h < vp_h
-                                        {
-                                            let (_, y) =
-                                                Into::<(i32, i32)>::into(scroll_controller);
-                                            *anchor_info.write() = Some((y, new_h));
-                                            *paginating.write() = true;
-                                            let _ = paginate_tx_inner.send(());
-                                        }
-                                    })
-                                    .children({
-                                        let date_labels: Vec<Option<String>> = (0..msgs.len())
-                                            .map(|i| timeline::date_label_for(&msgs, i))
-                                            .collect();
-                                        let my_uid = CLIENT
-                                            .get()
-                                            .and_then(|cl| cl.user_id())
-                                            .map(|id| id.to_string());
-                                        let room_id_rows = room_id.clone();
-                                        msgs.into_iter()
-                                            .zip(date_labels.into_iter())
-                                            .enumerate()
-                                            .map(move |(idx, (item, date_label))| {
-                                                let key = item
-                                                    .as_event()
-                                                    .and_then(|e| e.event_id())
-                                                    .map(|id| id.to_string())
-                                                    .unwrap_or_else(|| format!("virtual-{}", idx));
-                                                let my_uid = my_uid.clone();
                                                 rect()
-                                                    .key(key.clone())
+                                                    .center()
                                                     .width(Size::fill())
-                                                    .on_sized(move |e: Event<SizedEventData>| {
-                                                        let h = e.area.height();
-                                                        let old =
-                                                            heights.read().get(&key).copied();
-                                                        if old != Some(h) {
-                                                            heights
-                                                                .write()
-                                                                .insert(key.clone(), h);
-                                                        }
+                                                    .padding(Gaps::new_all(8.))
+                                                    .child(if is_paginating {
+                                                        CircularLoader::new().into_element()
+                                                    } else {
+                                                        rect().into_element()
                                                     })
-                                                    .child(MessageRow {
-                                                        room_id: room_id_rows.clone(),
-                                                        item,
-                                                        date_label,
-                                                        my_user_id: my_uid,
-                                                        action_tx: msg_action_tx.clone(),
-                                                        image_viewer,
-                                                        action_popup: action_popup_state,
-                                                        detail_modal,
-                                                        is_dm: room_is_dm,
-                                                    })
-                                                    .into()
+                                                    .into_element()
                                             })
-                                    }),
-                            ),
+                                            .on_sized(move |e: Event<SizedEventData>| {
+                                                let new_h = e.inner_sizes.height;
+                                                let maybe_anchor = *anchor_info.read();
+                                                if let Some((old_y, old_h)) = maybe_anchor {
+                                                    let delta = new_h - old_h;
+                                                    if delta > 1.0 {
+                                                        scroll_controller
+                                                            .scroll_to_y(old_y - delta as i32);
+                                                        *anchor_info.write() = None;
+                                                    }
+                                                }
+                                                *content_height.write() = new_h;
+                                                let vp_h = *viewport_height.read();
+                                                let should_fill = *auto_fill.read();
+                                                let is_paging = *paginating.read();
+                                                if should_fill
+                                                    && !is_paging
+                                                    && vp_h > 0.0
+                                                    && new_h > 0.0
+                                                    && new_h < vp_h
+                                                {
+                                                    let (_, y) =
+                                                        Into::<(i32, i32)>::into(scroll_controller);
+                                                    *anchor_info.write() = Some((y, new_h));
+                                                    *paginating.write() = true;
+                                                    let _ = paginate_tx_inner.send(());
+                                                }
+                                            })
+                                            .children({
+                                                let date_labels: Vec<Option<String>> = (0..msgs
+                                                    .len())
+                                                    .map(|i| timeline::date_label_for(&msgs, i))
+                                                    .collect();
+                                                let my_uid = CLIENT
+                                                    .get()
+                                                    .and_then(|cl| cl.user_id())
+                                                    .map(|id| id.to_string());
+                                                let room_id_rows = room_id.clone();
+                                                msgs.into_iter()
+                                                    .zip(date_labels.into_iter())
+                                                    .enumerate()
+                                                    .map(move |(idx, (item, date_label))| {
+                                                        let key = item
+                                                            .as_event()
+                                                            .and_then(|e| e.event_id())
+                                                            .map(|id| id.to_string())
+                                                            .unwrap_or_else(|| {
+                                                                format!("virtual-{}", idx)
+                                                            });
+                                                        let my_uid = my_uid.clone();
+                                                        rect()
+                                                            .key(key.clone())
+                                                            .width(Size::fill())
+                                                            .on_sized(
+                                                                move |e: Event<SizedEventData>| {
+                                                                    let h = e.area.height();
+                                                                    let old = heights
+                                                                        .read()
+                                                                        .get(&key)
+                                                                        .copied();
+                                                                    if old != Some(h) {
+                                                                        heights
+                                                                            .write()
+                                                                            .insert(key.clone(), h);
+                                                                    }
+                                                                },
+                                                            )
+                                                            .child(MessageRow {
+                                                                room_id: room_id_rows.clone(),
+                                                                item,
+                                                                date_label,
+                                                                my_user_id: my_uid,
+                                                                action_tx: msg_action_tx.clone(),
+                                                                image_viewer,
+                                                                action_popup: action_popup_state,
+                                                                detail_modal,
+                                                                is_dm: room_is_dm,
+                                                            })
+                                                            .into()
+                                                    })
+                                            }),
+                                    ),
+                            )
+                            .into_element()
+                    })
+                    .child(
+                        rect()
+                            .vertical()
+                            .width(Size::fill())
+                            .maybe_child(if viewer_active { None } else { typing_label }.map(
+                                |text| {
+                                    rect()
+                                        .width(Size::fill())
+                                        .padding(Gaps::new(2., 16., 2., 16.))
+                                        .child(
+                                            label()
+                                                .text(text)
+                                                .font_size(12.)
+                                                .color(c.on_surface_variant),
+                                        )
+                                },
+                            ))
+                            .maybe_child(if viewer_active {
+                                None
+                            } else {
+                                Some(rect().key(compose_key).width(Size::fill()).child(
+                                    ComposeBar {
+                                        initial_text,
+                                        edit_info,
+                                        reply_info,
+                                        room_id: room_id.clone(),
+                                        timeline: tl,
+                                    },
+                                ))
+                            })
+                            .into_element(),
                     )
                     .into_element()
             })
-            .child(
-                rect()
-                    .vertical()
-                    .width(Size::fill())
-                    .maybe_child(if viewer_active { None } else { typing_label }.map(|text| {
-                        rect()
-                            .width(Size::fill())
-                            .padding(Gaps::new(2., 16., 2., 16.))
-                            .child(
-                                label()
-                                    .text(text)
-                                    .font_size(12.)
-                                    .color(c.on_surface_variant),
-                            )
-                    }))
-                    .maybe_child(if viewer_active {
-                        None
-                    } else {
-                        Some(
-                            rect()
-                                .key(compose_key)
-                                .width(Size::fill())
-                                .child(ComposeBar {
-                                    initial_text,
-                                    edit_info,
-                                    reply_info,
-                                    room_id: room_id.clone(),
-                                    timeline: tl,
-                                }),
-                        )
-                    })
-                    .into_element()
-            )
-            .into_element()
-    })
     }
 }

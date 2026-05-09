@@ -50,7 +50,9 @@ impl Component for RoomMembers {
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let Some(client) = CLIENT.get().cloned() else { return };
+                let Some(client) = CLIENT.get().cloned() else {
+                    return;
+                };
                 let (tx, rx) = tokio::sync::oneshot::channel::<(Vec<MemberItem>, i64)>();
                 tokio::task::spawn(async move {
                     let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id) else {
@@ -71,18 +73,42 @@ impl Component for RoomMembers {
                         .into_iter()
                         .map(|m| {
                             let uid = m.user_id().to_string();
-                            let dn = m.display_name().map(|s| s.to_string()).unwrap_or_else(|| uid.clone());
-                            let initial = dn.chars().next().unwrap_or('?').to_uppercase().next().unwrap_or('?');
+                            let dn = m
+                                .display_name()
+                                .map(|s| s.to_string())
+                                .unwrap_or_else(|| uid.clone());
+                            let initial = dn
+                                .chars()
+                                .next()
+                                .unwrap_or('?')
+                                .to_uppercase()
+                                .next()
+                                .unwrap_or('?');
                             let color = sender_color(&uid);
                             let power_level = power_to_i64(m.power_level());
                             let avatar_url = m.avatar_url().map(|u| u.to_string());
-                            MemberItem { user_id: uid, display_name: dn, initial, color, power_level, avatar_url }
+                            MemberItem {
+                                user_id: uid,
+                                display_name: dn,
+                                initial,
+                                color,
+                                power_level,
+                                avatar_url,
+                            }
                         })
                         .collect();
 
-                    member_list.sort_by(|a, b| b.power_level.cmp(&a.power_level).then(a.display_name.cmp(&b.display_name)));
+                    member_list.sort_by(|a, b| {
+                        b.power_level
+                            .cmp(&a.power_level)
+                            .then(a.display_name.cmp(&b.display_name))
+                    });
 
-                    let my_power = member_list.iter().find(|m| m.user_id == my_id).map(|m| m.power_level).unwrap_or(0);
+                    let my_power = member_list
+                        .iter()
+                        .find(|m| m.user_id == my_id)
+                        .map(|m| m.power_level)
+                        .unwrap_or(0);
 
                     let _ = tx.send((member_list, my_power));
                 });
@@ -104,8 +130,12 @@ impl Component for RoomMembers {
             .iter()
             .filter(|m| {
                 search_text.is_empty()
-                    || m.display_name.to_lowercase().contains(&search_text.to_lowercase())
-                    || m.user_id.to_lowercase().contains(&search_text.to_lowercase())
+                    || m.display_name
+                        .to_lowercase()
+                        .contains(&search_text.to_lowercase())
+                    || m.user_id
+                        .to_lowercase()
+                        .contains(&search_text.to_lowercase())
             })
             .cloned()
             .collect();

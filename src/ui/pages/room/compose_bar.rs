@@ -34,9 +34,16 @@ impl Component for ComposeLine {
         let holder = use_state(ParagraphHolder::default);
 
         let editor = editable.editor().read();
-        let text = editor.line(line_index).map(|l| l.text.to_string()).unwrap_or_default();
+        let text = editor
+            .line(line_index)
+            .map(|l| l.text.to_string())
+            .unwrap_or_default();
         let is_active = editor.cursor_row() == line_index;
-        let cursor_index = if is_active { Some(editor.cursor_col()) } else { None };
+        let cursor_index = if is_active {
+            Some(editor.cursor_col())
+        } else {
+            None
+        };
         let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
         drop(editor);
 
@@ -175,7 +182,9 @@ impl Component for ComposeBar {
                     });
                 }
                 let room_id_clear = room_id_send.clone();
-                tokio::task::spawn(async move { clear_draft(&room_id_clear).await; });
+                tokio::task::spawn(async move {
+                    clear_draft(&room_id_clear).await;
+                });
             }
 
             // Clear the editable content.
@@ -191,7 +200,9 @@ impl Component for ComposeBar {
 
         // Save draft on each content change (debounced).
         use_side_effect(move || {
-            if is_editing { return; }
+            if is_editing {
+                return;
+            }
             let text = editable.editor().read().rope().to_string();
             let room_id = room_id.clone();
             tokio::task::spawn(async move {
@@ -293,10 +304,20 @@ impl Component for ComposeBar {
             // ── Context banner: editing or replying ───────────────────────
             .child(if is_editing || is_replying {
                 let (icon, label_text, label_color, preview) = if is_editing {
-                    (freya_icons::lucide::pencil(), "Editing message", c.primary, None)
+                    (
+                        freya_icons::lucide::pencil(),
+                        "Editing message",
+                        c.primary,
+                        None,
+                    )
                 } else {
                     let (_, sender, body) = reply_info.read().clone().unwrap();
-                    (freya_icons::lucide::reply(), "Replying to", c.primary, Some((sender, body)))
+                    (
+                        freya_icons::lucide::reply(),
+                        "Replying to",
+                        c.primary,
+                        Some((sender, body)),
+                    )
                 };
                 rect()
                     .horizontal()
@@ -437,7 +458,11 @@ impl Component for ComposeBar {
                             } else {
                                 freya_icons::lucide::send_horizontal()
                             })
-                            .color(if is_editing { c.primary } else { c.compose_text })
+                            .color(if is_editing {
+                                c.primary
+                            } else {
+                                c.compose_text
+                            })
                             .width(Size::px(18.))
                             .height(Size::px(18.)),
                         ),

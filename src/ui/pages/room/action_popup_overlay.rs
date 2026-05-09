@@ -45,9 +45,10 @@ pub(super) fn action_popup_overlay(
         };
 
     let sender_name: String = match event.sender_profile() {
-        TimelineDetails::Ready(p) => {
-            p.display_name.clone().unwrap_or_else(|| event.sender().to_string())
-        }
+        TimelineDetails::Ready(p) => p
+            .display_name
+            .clone()
+            .unwrap_or_else(|| event.sender().to_string()),
         _ => event.sender().to_string(),
     };
 

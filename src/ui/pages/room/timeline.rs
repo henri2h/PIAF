@@ -39,7 +39,9 @@ pub(super) fn apply_diff(items: &mut Vec<Arc<TimelineItem>>, diff: VectorDiff<Ar
 }
 
 pub(super) fn date_label_for(items: &[Arc<TimelineItem>], idx: usize) -> Option<String> {
-    let curr = items[idx].as_event().map(|e| format_date_key(e.timestamp()))?;
+    let curr = items[idx]
+        .as_event()
+        .map(|e| format_date_key(e.timestamp()))?;
     let prev = idx
         .checked_sub(1)
         .and_then(|i| items[i].as_event().map(|e| format_date_key(e.timestamp())));

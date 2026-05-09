@@ -394,7 +394,9 @@ fn drafts_file() -> Option<std::path::PathBuf> {
 }
 
 async fn read_drafts() -> std::collections::HashMap<String, String> {
-    let Some(path) = drafts_file() else { return Default::default() };
+    let Some(path) = drafts_file() else {
+        return Default::default();
+    };
     fs::read_to_string(&path)
         .await
         .ok()
@@ -434,7 +436,9 @@ pub async fn clear_draft(room_id: &str) {
 // ── Image download ────────────────────────────────────────────────────────────
 
 pub async fn save_image_to_downloads(bytes: &[u8]) {
-    let Some(data_dir) = DATA_DIR.get() else { return };
+    let Some(data_dir) = DATA_DIR.get() else {
+        return;
+    };
     let downloads_dir = data_dir.join("downloads");
     let _ = fs::create_dir_all(&downloads_dir).await;
     let ts = std::time::SystemTime::now()
