@@ -129,9 +129,14 @@ impl Component for UserPopupOverlay {
                                 .font_weight(FontWeight::MEDIUM)
                                 .color(colors.primary),
                         )
-                        .children(common_rooms.into_iter().take(4).map(|room| {
-                            RoomListItem { room }.into_element()
-                        }))
+                        .child(
+                            ScrollView::new()
+                                .width(Size::fill())
+                                .height(Size::px(240.))
+                                .children(common_rooms.into_iter().map(|room| {
+                                    RoomListItem { room }.into_element()
+                                })),
+                        )
                 }))
                 // ── DM button ─────────────────────────────────────────────────
                 .child(

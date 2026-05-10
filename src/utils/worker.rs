@@ -73,14 +73,6 @@ impl Requester {
         rx.await.map_err(|_| ())?
     }
 
-    pub async fn fetch_sender_name(&self, key: String) -> Result<String, ()> {
-        let (tx, rx) = oneshot::channel();
-        self.tx
-            .send(WorkerTask::FetchSenderName(key, tx))
-            .map_err(|_| ())?;
-        rx.await.map_err(|_| ())?
-    }
-
     pub async fn fetch_user_display_name(&self) -> Result<String, ()> {
         let (tx, rx) = oneshot::channel();
         self.tx
@@ -143,10 +135,6 @@ impl ClientWorker {
                 let result = do_fetch_user_avatar().await;
                 let _ = reply.send(result);
             }
-            WorkerTask::FetchSenderName(key, reply) => {
-                let result = do_fetch_sender_name(&key).await;
-                let _ = reply.send(result);
-            }
             WorkerTask::FetchUserDisplayName(reply) => {
                 let result = do_fetch_user_display_name().await;
                 let _ = reply.send(result);
@@ -197,7 +185,6 @@ pub enum WorkerTask {
     Login(String, String, ClientReply<anyhow::Result<()>>),
     FetchRoomAvatar(String, oneshot::Sender<Result<Vec<u8>, ()>>),
     FetchUserAvatar(oneshot::Sender<Result<Vec<u8>, ()>>),
-    FetchSenderName(String, oneshot::Sender<Result<String, ()>>),
     FetchUserDisplayName(oneshot::Sender<Result<String, ()>>),
     FetchRoomPreviews(Vec<matrix_sdk::ruma::OwnedRoomId>),
 }
@@ -264,41 +251,6 @@ async fn do_fetch_user_avatar() -> Result<Vec<u8>, ()> {
         .ok()
         .flatten()
         .ok_or(())
-}
-
-async fn do_fetch_sender_name(key: &str) -> Result<String, ()> {
-    let mut parts = key.splitn(2, '\x00');
-    let room_id = parts.next().unwrap_or("").to_owned();
-    let user_id = parts.next().unwrap_or("").to_owned();
-
-    let Some(client) = CLIENT.get().cloned() else {
-        return Err(());
-    };
-    let Ok(parsed_room) = matrix_sdk::ruma::RoomId::parse(&room_id) else {
-        return Err(());
-    };
-    let Ok(parsed_user) = matrix_sdk::ruma::UserId::parse(&user_id) else {
-        return Err(());
-    };
-    let Some(room) = client.get_room(&parsed_room) else {
-        return Err(());
-    };
-
-    let name = room
-        .get_member_no_sync(&parsed_user)
-        .await
-        .ok()
-        .flatten()
-        .and_then(|m| m.display_name().map(|s| s.to_string()))
-        .unwrap_or_else(|| {
-            user_id
-                .trim_start_matches('@')
-                .split(':')
-                .next()
-                .unwrap_or(&user_id)
-                .to_string()
-        });
-    Ok(name)
 }
 
 async fn do_fetch_room_previews(room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {

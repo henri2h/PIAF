@@ -68,34 +68,6 @@ impl Component for HomePage {
         });
         use_provide_context(|| ActiveRoomCtx(active_room));
 
-        // On each sync tick, subscribe all joined rooms that still lack a preview
-        // so off-screen rooms are fetched in the background.
-        use_hook(|| {
-            let Some(rx) = crate::SYNC_RX.get() else {
-                return;
-            };
-            let mut rx = rx.clone();
-            tokio::task::spawn(async move {
-                while rx.changed().await.is_ok() {
-                    let rooms_to_subscribe: Vec<_> = crate::utils::matrix::CLIENT
-                        .get()
-                        .map(|c| {
-                            c.joined_rooms()
-                                .into_iter()
-                                .filter(|r| r.latest_event().is_none())
-                                .map(|r| r.room_id().to_owned())
-                                .collect()
-                        })
-                        .unwrap_or_default();
-                    if !rooms_to_subscribe.is_empty() {
-                        if let Some(rq) = crate::REQUESTER.get() {
-                            rq.fetch_room_previews(rooms_to_subscribe);
-                        }
-                    }
-                }
-            });
-        });
-
         let mut search: State<String> = use_state(String::new);
         // Narrow mode: search toggle
         let mut search_open: State<bool> = use_state(|| false);
@@ -389,6 +361,11 @@ impl Component for HomePage {
                             let Some(room) = filtered_rooms.get(i) else {
                                 return rect().into_element();
                             };
+                            if room.latest_event().is_none() {
+                                if let Some(rq) = crate::REQUESTER.get() {
+                                    rq.fetch_room_previews(vec![room.room_id().to_owned()]);
+                                }
+                            }
                             let room_id = room.room_id().to_string();
                             rect()
                                 .key(room_id)

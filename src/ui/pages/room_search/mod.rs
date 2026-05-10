@@ -140,7 +140,7 @@ async fn search_room_messages(room_id: &str, query: &str) -> Vec<SearchResultIte
         return vec![];
     };
 
-    let (tx, rx) = tokio::sync::oneshot::channel::<Vec<SearchResultItem>>();
+    let (tx, rx) = futures::channel::oneshot::channel::<Vec<SearchResultItem>>();
     let query = query.to_owned();
 
     tokio::task::spawn(async move {

@@ -6,6 +6,7 @@ use freya_query::prelude::QueryCapability;
 use matrix_sdk::ruma::events::room::MediaSource;
 
 use crate::utils::{
+    const_values::STATUS_BAR_INSET,
     matrix::save_image_to_downloads,
     queries::{FetchMediaContent, media_source_key},
 };
@@ -315,46 +316,52 @@ impl Component for MediaViewer {
             // ── Header bar ───────────────────────────────────────────────────
             .child(
                 rect()
-                    .horizontal()
+                    .vertical()
                     .width(Size::fill())
-                    .height(Size::px(56.))
-                    .content(Content::Flex)
                     .background((20u8, 20u8, 20u8))
-                    .padding(Gaps::new(0., 8., 0., 8.))
-                    .cross_align(Alignment::Center)
-                    .spacing(8.)
+                    .child(rect().width(Size::fill()).height(Size::px(STATUS_BAR_INSET)))
                     .child(
-                        Button::new()
-                            .on_press(move |_| {
-                                *selected_key.write() = None;
-                                *want_next.write() = false;
-                            })
+                        rect()
+                            .horizontal()
+                            .width(Size::fill())
+                            .height(Size::px(56.))
+                            .content(Content::Flex)
+                            .padding(Gaps::new(0., 8., 0., 8.))
+                            .cross_align(Alignment::Center)
+                            .spacing(8.)
                             .child(
-                                svg(freya_icons::lucide::arrow_left())
-                                    .width(Size::px(20.))
-                                    .height(Size::px(20.))
-                                    .color((255u8, 255u8, 255u8)),
-                            ),
-                    )
-                    .child(header_center)
-                    .child(
-                        Button::new()
-                            .on_press(move |_| {
-                                if let Some(b) = dl_bytes.clone() {
-                                    tokio::task::spawn(async move {
-                                        save_image_to_downloads(&b).await;
-                                    });
-                                }
-                            })
+                                Button::new()
+                                    .on_press(move |_| {
+                                        *selected_key.write() = None;
+                                        *want_next.write() = false;
+                                    })
+                                    .child(
+                                        svg(freya_icons::lucide::arrow_left())
+                                            .width(Size::px(20.))
+                                            .height(Size::px(20.))
+                                            .color((255u8, 255u8, 255u8)),
+                                    ),
+                            )
+                            .child(header_center)
                             .child(
-                                svg(freya_icons::lucide::download())
-                                    .width(Size::px(20.))
-                                    .height(Size::px(20.))
-                                    .color(if dl_available {
-                                        (255u8, 255u8, 255u8)
-                                    } else {
-                                        (80u8, 80u8, 80u8)
-                                    }),
+                                Button::new()
+                                    .on_press(move |_| {
+                                        if let Some(b) = dl_bytes.clone() {
+                                            tokio::task::spawn(async move {
+                                                save_image_to_downloads(&b).await;
+                                            });
+                                        }
+                                    })
+                                    .child(
+                                        svg(freya_icons::lucide::download())
+                                            .width(Size::px(20.))
+                                            .height(Size::px(20.))
+                                            .color(if dl_available {
+                                                (255u8, 255u8, 255u8)
+                                            } else {
+                                                (80u8, 80u8, 80u8)
+                                            }),
+                                    ),
                             ),
                     ),
             )

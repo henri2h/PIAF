@@ -54,6 +54,7 @@ impl Component for DetailModalOverlay {
                 .child(
                     ScrollView::new()
                         .width(Size::fill())
+                        .height(Size::px(400.))
                         .child(
                             rect()
                                 .vertical()
