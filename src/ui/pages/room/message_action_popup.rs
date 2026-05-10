@@ -64,7 +64,7 @@ pub fn action_popup(
                 .vertical()
                 .padding(Gaps::new(12., 12., 12., 12.))
                 .spacing(8.)
-                .on_press(|_| {}) // absorb backdrop tap
+                .on_press(|e: Event<PressEventData>| e.stop_propagation())
                 .child(emoji_reaction_row(c, on_react))
                 .children(action_button_list(c, actions)),
         )

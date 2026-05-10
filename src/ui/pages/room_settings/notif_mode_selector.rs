@@ -35,7 +35,7 @@ pub(super) fn notif_popup_overlay(
                 .corner_radius(20.)
                 .background(c.surface)
                 .vertical()
-                .on_press(|_| {})
+                .on_press(|e: Event<PressEventData>| e.stop_propagation())
                 .child(
                     rect()
                         .horizontal()

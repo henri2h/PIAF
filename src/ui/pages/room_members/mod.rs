@@ -313,7 +313,7 @@ impl Component for RoomMembers {
                             .corner_radius(20.)
                             .padding(Gaps::new(24., 24., 32., 24.))
                             .spacing(16.)
-                            .on_press(|_| {})
+                            .on_press(|e: Event<PressEventData>| e.stop_propagation())
                             .child(
                                 label()
                                     .text(format!("Remove {target_name}?"))

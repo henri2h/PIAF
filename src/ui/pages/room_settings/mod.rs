@@ -10,7 +10,7 @@ use crate::utils::{sender_color, use_app_colors};
 use crate::{Route, utils::matrix::CLIENT};
 
 mod notif_mode_selector;
-use crate::ui::components::m3_list_item;
+use crate::ui::components::M3ListItem;
 use crate::utils::extract_urls;
 use notif_mode_selector::{notif_label, notif_popup_overlay};
 
@@ -293,13 +293,13 @@ impl Component for RoomSettings {
                                     }),
                             )
                             // ── Room ID list item ─────────────────────────────
-                            .child(m3_list_item(
-                                freya_icons::lucide::hash(),
-                                "Room ID",
-                                Some(room_id.clone()),
-                                c.on_surface_variant,
-                                false,
-                                move |_| {
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::hash(),
+                                item_label: "Room ID".to_string(),
+                                sublabel: Some(room_id.clone()),
+                                icon_color: c.on_surface_variant,
+                                destructive: false,
+                                on_press: EventHandler::new(move |_| {
                                     use freya::prelude::Clipboard;
                                     let _ = Clipboard::set(room_id_copy.clone());
                                     *copied.write() = true;
@@ -307,42 +307,42 @@ impl Component for RoomSettings {
                                         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                                         *copied.write() = false;
                                     });
-                                },
-                            ))
+                                }),
+                            })
                             .child(divider(c))
                             // ── Room version list item ────────────────────────
-                            .child(m3_list_item(
-                                freya_icons::lucide::info(),
-                                "Room version",
-                                version,
-                                c.on_surface_variant,
-                                false,
-                                |_| {},
-                            ))
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::info(),
+                                item_label: "Room version".to_string(),
+                                sublabel: version,
+                                icon_color: c.on_surface_variant,
+                                destructive: false,
+                                on_press: EventHandler::new(|_| {}),
+                            })
                             .child(divider(c))
                             // ── Media ─────────────────────────────────────────
-                            .child(m3_list_item(
-                                freya_icons::lucide::image(),
-                                "Media",
-                                None,
-                                c.on_surface_variant,
-                                false,
-                                move |_| {
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::image(),
+                                item_label: "Media".to_string(),
+                                sublabel: None,
+                                icon_color: c.on_surface_variant,
+                                destructive: false,
+                                on_press: EventHandler::new(move |_| {
                                     let _ = RouterContext::get().push(Route::RoomMediaPage {
                                         room_id: room_id_media.clone(),
                                     });
-                                },
-                            ))
+                                }),
+                            })
                             .child(divider(c))
                             // ── Notifications ─────────────────────────────────
-                            .child(m3_list_item(
-                                freya_icons::lucide::bell(),
-                                "Notifications",
-                                Some(notif_label(current_notif).to_string()),
-                                c.on_surface_variant,
-                                false,
-                                move |_| *notif_open.write() = true,
-                            ))
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::bell(),
+                                item_label: "Notifications".to_string(),
+                                sublabel: Some(notif_label(current_notif).to_string()),
+                                icon_color: c.on_surface_variant,
+                                destructive: false,
+                                on_press: EventHandler::new(move |_| *notif_open.write() = true),
+                            })
                             .child(divider(c))
                             // ── Members section ───────────────────────────────
                             .child(
@@ -431,40 +431,40 @@ impl Component for RoomSettings {
                                     )
                                     .into_element()
                             }))
-                            .child(m3_list_item(
-                                freya_icons::lucide::users(),
-                                if remaining > 0 {
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::users(),
+                                item_label: if remaining > 0 {
                                     format!("See all {count} members")
                                 } else {
                                     "See all members".to_string()
                                 },
-                                None,
-                                c.on_surface_variant,
-                                false,
-                                move |_| {
+                                sublabel: None,
+                                icon_color: c.on_surface_variant,
+                                destructive: false,
+                                on_press: EventHandler::new(move |_| {
                                     let _ = RouterContext::get().push(Route::RoomMembers {
                                         room_id: room_id_members.clone(),
                                     });
-                                },
-                            ))
+                                }),
+                            })
                             .child(divider(c))
                             // ── Leave room ────────────────────────────────────
-                            .child(m3_list_item(
-                                freya_icons::lucide::log_out(),
-                                if is_leaving {
-                                    "Leaving…"
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::log_out(),
+                                item_label: if is_leaving {
+                                    "Leaving…".to_string()
                                 } else {
-                                    "Leave room"
+                                    "Leave room".to_string()
                                 },
-                                None,
-                                c.error,
-                                true,
-                                move |_| {
+                                sublabel: None,
+                                icon_color: c.error,
+                                destructive: true,
+                                on_press: EventHandler::new(move |_| {
                                     if !is_leaving {
                                         *confirm_leave.write() = true;
                                     }
-                                },
-                            ))
+                                }),
+                            })
                             .child(rect().width(Size::fill()).height(Size::px(16.))),
                     ),
             )
@@ -519,7 +519,7 @@ fn leave_confirm_overlay(
                 .corner_radius(20.)
                 .padding(Gaps::new(24., 24., 32., 24.))
                 .spacing(16.)
-                .on_press(|_| {})
+                .on_press(|e: Event<PressEventData>| e.stop_propagation())
                 .child(
                     label()
                         .text("Leave room?")
