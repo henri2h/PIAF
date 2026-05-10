@@ -14,60 +14,18 @@ pub struct PopupAction {
     pub on_press: Box<dyn FnMut()>,
 }
 
-/// Builds the full action popup: backdrop + positioned card with emoji row and buttons.
-///
-/// The card appears above the message when it sits in the lower half of the screen,
-/// and below it otherwise.  Horizontal position is clamped to remain on screen.
+/// Builds the action popup using the Freya Popup component.
 pub fn action_popup(
-    area: Area,
     c: AppColors,
     mut on_dismiss: impl FnMut() + 'static,
     on_react: Rc<RefCell<dyn FnMut(String) + 'static>>,
     actions: Vec<PopupAction>,
 ) -> Element {
-    let win = Platform::get().root_size.peek();
-    let win_w = win.width;
-    let win_h = win.height;
-
-    const CARD_W: f32 = 300.;
-    const CARD_MARGIN: f32 = 8.;
-
-    let space_below = win_h - (area.origin.y + area.size.height);
-    let show_below = space_below >= area.origin.y;
-
-    let card_top = if show_below {
-        area.origin.y + area.size.height + CARD_MARGIN
-    } else {
-        let estimated_h = 68. + actions.len() as f32 * 52. + 48.;
-        (area.origin.y - estimated_h - CARD_MARGIN).max(CARD_MARGIN)
-    };
-
-    let msg_center_x = area.origin.x + area.size.width / 2.;
-    let card_left = (msg_center_x - CARD_W / 2.)
-        .max(CARD_MARGIN)
-        .min(win_w - CARD_W - CARD_MARGIN);
-
-    rect()
-        .position(Position::new_global().top(0.).left(0.))
-        .layer(Layer::Overlay)
-        .width(Size::window_percent(100.))
-        .height(Size::window_percent(100.))
-        .background((0u8, 0u8, 0u8, 100u8))
-        .on_press(move |_| on_dismiss())
-        .child(
-            rect()
-                .position(Position::new_absolute().top(card_top).left(card_left))
-                .width(Size::px(CARD_W))
-                .background(c.surface_container_high)
-                .corner_radius(16.)
-                .shadow((0., 4., 16., 0., (0u8, 0u8, 0u8, 80u8)))
-                .vertical()
-                .padding(Gaps::new(12., 12., 12., 12.))
-                .spacing(8.)
-                .on_press(|e: Event<PressEventData>| e.stop_propagation())
-                .child(emoji_reaction_row(c, on_react))
-                .children(action_button_list(c, actions)),
-        )
+    Popup::new()
+        .show(true)
+        .on_close_request(move |_| on_dismiss())
+        .child(emoji_reaction_row(c, on_react))
+        .children(action_button_list(c, actions))
         .into()
 }
 

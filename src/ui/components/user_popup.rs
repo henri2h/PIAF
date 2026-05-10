@@ -4,7 +4,6 @@ use freya_router::prelude::RouterContext;
 
 use crate::ui::pages::home::{ActiveRoomCtx, room_list_item::RoomListItem};
 use crate::utils::queries::FetchMutualRooms;
-use crate::utils::use_app_colors;
 use crate::{Route, utils::matrix::CLIENT};
 
 use super::Avatar;
@@ -26,7 +25,8 @@ pub struct UserPopupOverlay {
 
 impl Component for UserPopupOverlay {
     fn render(&self) -> impl IntoElement {
-        let c = use_app_colors();
+        let theme = use_theme();
+        let colors = theme.read().colors.clone();
         let info = self.info.clone();
         let mut open = self.open;
 
@@ -73,143 +73,128 @@ impl Component for UserPopupOverlay {
         let dm_room_for_press = dm_room_id.clone();
         let user_id_for_press = info.user_id.clone();
 
-        rect()
-            .position(Position::new_global().top(0.).left(0.))
-            .layer(Layer::Overlay)
-            .width(Size::window_percent(100.))
-            .height(Size::window_percent(100.))
-            .background((0u8, 0u8, 0u8, 160u8))
-            .on_press(move |_| *open.write() = None)
+        Popup::new()
+            .show(true)
+            .on_close_request(move |_| *open.write() = None)
+            // ── Header ────────────────────────────────────────────────────────
             .child(
                 rect()
-                    .position(Position::new_absolute().bottom(0.).left(0.))
-                    .width(Size::fill())
-                    .background(c.surface)
-                    .vertical()
-                    .corner_radius(20.)
-                    .padding(Gaps::new(24., 24., 32., 24.))
+                    .horizontal()
                     .spacing(16.)
-                    .on_press(|e: Event<PressEventData>| e.stop_propagation())
-                    // ── Header ────────────────────────────────────────────────
+                    .cross_align(Alignment::Center)
+                    .child(Avatar {
+                        size: 56.,
+                        bytes: None,
+                        initial: info.initial.clone(),
+                        color: info.color,
+                        image_key: info.user_id.clone(),
+                        fetch_key,
+                    })
                     .child(
                         rect()
-                            .horizontal()
-                            .spacing(16.)
-                            .cross_align(Alignment::Center)
-                            .child(Avatar {
-                                size: 56.,
-                                bytes: None,
-                                initial: info.initial.clone(),
-                                color: info.color,
-                                image_key: info.user_id.clone(),
-                                fetch_key,
-                            })
-                            .child(
-                                rect()
-                                    .vertical()
-                                    .spacing(2.)
-                                    .child(
-                                        label()
-                                            .text(info.display_name.clone())
-                                            .font_size(18.)
-                                            .font_weight(FontWeight::MEDIUM)
-                                            .color(c.on_surface),
-                                    )
-                                    .child(
-                                        label()
-                                            .text(info.user_id.clone())
-                                            .font_size(13.)
-                                            .color(c.on_surface_variant),
-                                    ),
-                            ),
-                    )
-                    // ── Rooms in common ───────────────────────────────────────
-                    .maybe_child((!is_loading && common_count > 0).then(|| {
-                        rect()
                             .vertical()
-                            .width(Size::fill())
                             .spacing(2.)
                             .child(
                                 label()
-                                    .text(format!(
-                                        "{common_count} room{} in common",
-                                        if common_count == 1 { "" } else { "s" }
-                                    ))
-                                    .font_size(12.)
+                                    .text(info.display_name.clone())
+                                    .font_size(18.)
                                     .font_weight(FontWeight::MEDIUM)
-                                    .color(c.primary),
+                                    .color(colors.text_primary),
                             )
-                            .children(common_rooms.into_iter().take(4).map(|room| {
-                                RoomListItem { room }.into_element()
-                            }))
-                    }))
-                    // ── DM button ─────────────────────────────────────────────
-                    .child(
-                        rect()
-                            .width(Size::fill())
-                            .padding(Gaps::new(14., 0., 14., 0.))
-                            .corner_radius(8.)
-                            .background(c.primary)
-                            .overflow(Overflow::Clip)
-                            .center()
-                            .on_press(move |_| {
-                                if *action_loading.read() || is_loading {
-                                    return;
-                                }
-                                *action_loading.write() = true;
-                                let dm_room_id = dm_room_for_press.clone();
-                                let user_id = user_id_for_press.clone();
-                                spawn(async move {
-                                    let room_id = if let Some(id) = dm_room_id {
-                                        Some(id)
-                                    } else {
-                                        let Some(client) = CLIENT.get().cloned() else { return };
-                                        let (tx, rx) =
-                                            futures::channel::oneshot::channel::<Option<String>>();
-                                        tokio::spawn(async move {
-                                            let Ok(parsed) =
-                                                matrix_sdk::ruma::UserId::parse(&user_id)
-                                            else {
-                                                let _ = tx.send(None);
-                                                return;
-                                            };
-                                            use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoom;
-                                            let mut req = CreateRoom::new();
-                                            req.is_direct = true;
-                                            req.invite = vec![parsed.to_owned()];
-                                            match client.create_room(req).await {
-                                                Ok(room) => {
-                                                    let _ = tx.send(Some(
-                                                        room.room_id().to_string(),
-                                                    ));
-                                                }
-                                                Err(_) => {
-                                                    let _ = tx.send(None);
-                                                }
-                                            }
-                                        });
-                                        rx.await.ok().flatten()
-                                    };
-                                    if let Some(id) = room_id {
-                                        *open.write() = None;
-                                        let _ = RouterContext::get()
-                                            .push(Route::RoomPage { room_id: id });
-                                    }
-                                    *action_loading.write() = false;
-                                });
-                            })
                             .child(
                                 label()
-                                    .text(if *action_loading.read() || is_loading {
-                                        "Loading…"
-                                    } else if has_dm {
-                                        "Jump to DM"
-                                    } else {
-                                        "Send message"
-                                    })
-                                    .font_size(16.)
-                                    .color(c.on_primary),
+                                    .text(info.user_id.clone())
+                                    .font_size(13.)
+                                    .color(colors.text_secondary),
                             ),
+                    ),
+            )
+            // ── Rooms in common ───────────────────────────────────────────────
+            .maybe_child((!is_loading && common_count > 0).then(|| {
+                rect()
+                    .vertical()
+                    .width(Size::fill())
+                    .spacing(2.)
+                    .child(
+                        label()
+                            .text(format!(
+                                "{common_count} room{} in common",
+                                if common_count == 1 { "" } else { "s" }
+                            ))
+                            .font_size(12.)
+                            .font_weight(FontWeight::MEDIUM)
+                            .color(colors.primary),
+                    )
+                    .children(common_rooms.into_iter().take(4).map(|room| {
+                        RoomListItem { room }.into_element()
+                    }))
+            }))
+            // ── DM button ─────────────────────────────────────────────────────
+            .child(
+                rect()
+                    .width(Size::fill())
+                    .padding(Gaps::new(14., 0., 14., 0.))
+                    .corner_radius(8.)
+                    .background(colors.primary)
+                    .overflow(Overflow::Clip)
+                    .center()
+                    .on_press(move |_| {
+                        if *action_loading.read() || is_loading {
+                            return;
+                        }
+                        *action_loading.write() = true;
+                        let dm_room_id = dm_room_for_press.clone();
+                        let user_id = user_id_for_press.clone();
+                        spawn(async move {
+                            let room_id = if let Some(id) = dm_room_id {
+                                Some(id)
+                            } else {
+                                let Some(client) = CLIENT.get().cloned() else { return };
+                                let (tx, rx) =
+                                    futures::channel::oneshot::channel::<Option<String>>();
+                                tokio::spawn(async move {
+                                    let Ok(parsed) =
+                                        matrix_sdk::ruma::UserId::parse(&user_id)
+                                    else {
+                                        let _ = tx.send(None);
+                                        return;
+                                    };
+                                    use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoom;
+                                    let mut req = CreateRoom::new();
+                                    req.is_direct = true;
+                                    req.invite = vec![parsed.to_owned()];
+                                    match client.create_room(req).await {
+                                        Ok(room) => {
+                                            let _ = tx.send(Some(
+                                                room.room_id().to_string(),
+                                            ));
+                                        }
+                                        Err(_) => {
+                                            let _ = tx.send(None);
+                                        }
+                                    }
+                                });
+                                rx.await.ok().flatten()
+                            };
+                            if let Some(id) = room_id {
+                                *open.write() = None;
+                                let _ = RouterContext::get()
+                                    .push(Route::RoomPage { room_id: id });
+                            }
+                            *action_loading.write() = false;
+                        });
+                    })
+                    .child(
+                        label()
+                            .text(if *action_loading.read() || is_loading {
+                                "Loading…"
+                            } else if has_dm {
+                                "Jump to DM"
+                            } else {
+                                "Send message"
+                            })
+                            .font_size(16.)
+                            .color(colors.text_inverse),
                     ),
             )
     }

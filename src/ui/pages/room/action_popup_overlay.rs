@@ -11,10 +11,9 @@ use super::{MsgAction, message_action_popup};
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn action_popup_overlay(
-    area: Area,
     popup_item: Arc<TimelineItem>,
     my_user_id: Option<String>,
-    mut popup_state: State<Option<(Area, Arc<TimelineItem>)>>,
+    mut popup_state: State<Option<Arc<TimelineItem>>>,
     action_tx: Arc<UnboundedSender<MsgAction>>,
     mut reply_info: State<Option<(String, String, String)>>,
     mut edit_info: State<Option<(String, String)>>,
@@ -127,7 +126,6 @@ pub(super) fn action_popup_overlay(
     }
 
     message_action_popup::action_popup(
-        area,
         c,
         move || *popup_state.write() = None,
         on_react,

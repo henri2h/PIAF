@@ -20,7 +20,7 @@ pub struct MessageRow {
     pub my_user_id: Option<String>,
     pub action_tx: Arc<UnboundedSender<MsgAction>>,
     pub image_viewer: State<Option<String>>,
-    pub action_popup: State<Option<(Area, Arc<TimelineItem>)>>,
+    pub action_popup: State<Option<Arc<TimelineItem>>>,
     pub detail_modal: State<Option<Arc<TimelineItem>>>,
     pub is_dm: bool,
 }
@@ -46,7 +46,6 @@ impl Component for MessageRow {
         let mut detail_modal = self.detail_modal;
         let date_label = self.date_label.clone();
 
-        let mut row_area: State<Option<Area>> = use_state(|| None);
         let mut user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
         #[cfg(target_os = "android")]
         let mut press_gen: State<u32> = use_state(|| 0u32);
@@ -478,9 +477,7 @@ impl Component for MessageRow {
         let bubble_col = rect()
             .vertical()
             .on_secondary_down(move |_| {
-                if let Some(area) = *row_area.read() {
-                    *action_popup.write() = Some((area, item_for_popup.clone()));
-                }
+                *action_popup.write() = Some(item_for_popup.clone());
             })
             .child(bubble_inner)
             .child(reactions_section);
@@ -594,9 +591,6 @@ impl Component for MessageRow {
         return rect()
             .vertical()
             .width(Size::fill())
-            .on_sized(move |e: Event<SizedEventData>| {
-                *row_area.write() = Some(e.area);
-            })
             .child(date_separator)
             .child(row.child(bubble_col))
             .child(read_receipt_row)
@@ -606,9 +600,6 @@ impl Component for MessageRow {
         return rect()
             .vertical()
             .width(Size::fill())
-            .on_sized(move |e: Event<SizedEventData>| {
-                *row_area.write() = Some(e.area);
-            })
             .on_touch_start(move |_: Event<TouchEventData>| {
                 let next_gen = *press_gen.read() + 1;
                 *press_gen.write() = next_gen;
@@ -616,9 +607,7 @@ impl Component for MessageRow {
                 spawn(async move {
                     tokio::time::sleep(std::time::Duration::from_millis(350)).await;
                     if *press_gen.read() == next_gen {
-                        if let Some(area) = *row_area.read() {
-                            *action_popup.write() = Some((area, item_p));
-                        }
+                        *action_popup.write() = Some(item_p);
                     }
                 });
             })

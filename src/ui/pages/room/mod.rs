@@ -96,7 +96,7 @@ impl Component for RoomPage {
         let reply_info: State<Option<(String, String, String)>> = use_state(|| None);
         let image_viewer: State<Option<String>> = use_state(|| None);
         let detail_modal: State<Option<Arc<TimelineItem>>> = use_state(|| None);
-        let action_popup_state: State<Option<(Area, Arc<TimelineItem>)>> = use_state(|| None);
+        let action_popup_state: State<Option<Arc<TimelineItem>>> = use_state(|| None);
         let mut content_height: State<f32> = use_state(|| 0.0f32);
         let mut anchor_info: State<Option<(i32, f32)>> = use_state(|| None);
         let mut auto_fill: State<bool> = use_state(|| false);
@@ -386,9 +386,8 @@ impl Component for RoomPage {
                     .maybe_child(detail_modal.read().clone().map(|msg| {
                         detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)
                     }))
-                    .maybe_child(action_popup_state.read().clone().map(|(area, item)| {
+                    .maybe_child(action_popup_state.read().clone().map(|item| {
                         action_popup_overlay(
-                            area,
                             item,
                             CLIENT
                                 .get()
