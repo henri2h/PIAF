@@ -7,6 +7,9 @@ edition = "2024"
 name = "piaf"
 crate-type = ["cdylib", "rlib"]
 
+[features]
+hotreload = ["freya/hotreload"]
+
 [dependencies]
 freya = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
   "sdk",
