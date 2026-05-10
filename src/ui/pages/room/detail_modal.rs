@@ -12,56 +12,60 @@ use crate::utils::{format_timestamp, sender_color, use_app_colors};
 use super::{Reaction, ReactionSender};
 
 pub(super) struct DetailModalOverlay {
-    pub item: Arc<TimelineItem>,
-    pub room_id: String,
     pub modal: State<Option<Arc<TimelineItem>>>,
+    pub room_id: String,
 }
 
 impl PartialEq for DetailModalOverlay {
     fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.item, &other.item)
-            && self.room_id == other.room_id
-            && self.modal == other.modal
+        self.room_id == other.room_id && self.modal == other.modal
     }
 }
 
 impl Component for DetailModalOverlay {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let item = self.item.clone();
+        let modal_item = self.modal.read().clone();
+        let show = modal_item.is_some();
         let room_id = self.room_id.clone();
         let mut modal = self.modal;
 
-        Popup::new()
-            .show(true)
-            .on_close_request(move |_| *modal.write() = None)
-            // ── Header ────────────────────────────────────────────────────────
-            .child(
-                rect()
-                    .horizontal()
-                    .width(Size::fill())
-                    .cross_align(Alignment::Center)
-                    .child(
-                        label()
-                            .text("Message details")
-                            .font_size(16.)
-                            .font_weight(FontWeight::BOLD)
-                            .color(c.on_surface),
-                    ),
-            )
-            // ── Scrollable content ────────────────────────────────────────────
-            .child(
-                ScrollView::new()
-                    .width(Size::fill())
-                    .child(
-                        rect()
-                            .vertical()
-                            .width(Size::fill())
-                            .spacing(16.)
-                            .child(seen_by_section(&item, &room_id, c))
-                            .child(reactions_section(&item, &room_id, c)),
-                    ),
-            )
+        let mut popup = Popup::new()
+            .show(show)
+            .on_close_request(move |_| *modal.write() = None);
+
+        if let Some(item) = modal_item {
+            popup = popup
+                // ── Header ────────────────────────────────────────────────────
+                .child(
+                    rect()
+                        .horizontal()
+                        .width(Size::fill())
+                        .cross_align(Alignment::Center)
+                        .child(
+                            label()
+                                .text("Message details")
+                                .font_size(16.)
+                                .font_weight(FontWeight::BOLD)
+                                .color(c.on_surface),
+                        ),
+                )
+                // ── Scrollable content ────────────────────────────────────────
+                .child(
+                    ScrollView::new()
+                        .width(Size::fill())
+                        .child(
+                            rect()
+                                .vertical()
+                                .width(Size::fill())
+                                .spacing(16.)
+                                .child(seen_by_section(&item, &room_id, c))
+                                .child(reactions_section(&item, &room_id, c)),
+                        ),
+                );
+        }
+
+        popup
     }
 }
 

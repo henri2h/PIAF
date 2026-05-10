@@ -579,14 +579,6 @@ impl Component for MessageRow {
             rect().into_element()
         };
 
-        let popup_overlay = user_popup.read().clone().map(|info| {
-            UserPopupOverlay {
-                info,
-                open: user_popup,
-            }
-            .into_element()
-        });
-
         #[cfg(not(target_os = "android"))]
         return rect()
             .vertical()
@@ -594,7 +586,7 @@ impl Component for MessageRow {
             .child(date_separator)
             .child(row.child(bubble_col))
             .child(read_receipt_row)
-            .maybe_child(popup_overlay);
+            .child(UserPopupOverlay { open: user_popup });
 
         #[cfg(target_os = "android")]
         return rect()
@@ -623,6 +615,6 @@ impl Component for MessageRow {
             .child(date_separator)
             .child(row.child(bubble_col))
             .child(read_receipt_row)
-            .maybe_child(popup_overlay);
+            .child(UserPopupOverlay { open: user_popup });
     }
 }

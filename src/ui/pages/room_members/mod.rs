@@ -372,8 +372,6 @@ impl Component for RoomMembers {
                     )
                     .into_element()
             }))
-            .maybe_child(user_popup.read().clone().map(|info| {
-                UserPopupOverlay { info, open: user_popup }.into_element()
-            }))
+            .child(UserPopupOverlay { open: user_popup })
     }
 }

@@ -11,9 +11,8 @@ use super::{MsgAction, message_action_popup};
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn action_popup_overlay(
-    popup_item: Arc<TimelineItem>,
-    my_user_id: Option<String>,
     mut popup_state: State<Option<Arc<TimelineItem>>>,
+    my_user_id: Option<String>,
     action_tx: Arc<UnboundedSender<MsgAction>>,
     mut reply_info: State<Option<(String, String, String)>>,
     mut edit_info: State<Option<(String, String)>>,
@@ -22,8 +21,14 @@ pub(super) fn action_popup_overlay(
 ) -> Element {
     use message_action_popup::PopupAction;
 
+    let popup_item = popup_state.read().clone();
+
+    let Some(popup_item) = popup_item else {
+        return Popup::new().show(false).into();
+    };
+
     let Some(event) = popup_item.as_event() else {
-        return rect().into();
+        return Popup::new().show(false).into();
     };
 
     let event_id = event.event_id().map(|id| id.to_string());
@@ -37,10 +42,10 @@ pub(super) fn action_popup_overlay(
                     _ => ("[Message]".to_string(), None),
                 }
             } else {
-                return rect().into();
+                return Popup::new().show(false).into();
             }
         } else {
-            return rect().into();
+            return Popup::new().show(false).into();
         };
 
     let sender_name: String = match event.sender_profile() {

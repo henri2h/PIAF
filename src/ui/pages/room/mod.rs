@@ -383,28 +383,22 @@ impl Component for RoomPage {
                     .expanded()
                     .vertical()
                     .content(Content::Flex)
-                    .maybe_child(detail_modal.read().clone().map(|msg| {
-                        detail_modal::DetailModalOverlay {
-                            item: msg,
-                            room_id: room_id.clone(),
-                            modal: detail_modal,
-                        }
-                    }))
-                    .maybe_child(action_popup_state.read().clone().map(|item| {
-                        action_popup_overlay(
-                            item,
-                            CLIENT
-                                .get()
-                                .and_then(|cl| cl.user_id())
-                                .map(|id| id.to_string()),
-                            action_popup_state,
-                            msg_action_tx.clone(),
-                            reply_info,
-                            edit_info,
-                            detail_modal,
-                            c,
-                        )
-                    }))
+                    .child(detail_modal::DetailModalOverlay {
+                        modal: detail_modal,
+                        room_id: room_id.clone(),
+                    })
+                    .child(action_popup_overlay(
+                        action_popup_state,
+                        CLIENT
+                            .get()
+                            .and_then(|cl| cl.user_id())
+                            .map(|id| id.to_string()),
+                        msg_action_tx.clone(),
+                        reply_info,
+                        edit_info,
+                        detail_modal,
+                        c,
+                    ))
                     .child({
                         let room_id_search = room_id.clone();
                         let room_id_settings = room_id.clone();

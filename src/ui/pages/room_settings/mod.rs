@@ -478,13 +478,7 @@ impl Component for RoomSettings {
                     leave_confirm_overlay(room_id_leave.clone(), confirm_leave, leaving, c)
                 }),
             )
-            .maybe_child(user_popup.read().clone().map(|info| {
-                UserPopupOverlay {
-                    info,
-                    open: user_popup,
-                }
-                .into_element()
-            }))
+            .child(UserPopupOverlay { open: user_popup })
     }
 }
 
