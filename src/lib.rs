@@ -99,7 +99,7 @@ impl Component for Layout {
         if let Some(rx) = THEME_PREF_RX.get() {
             use_tokio_track_watcher(rx, _theme_pref_tick);
         }
-        let mut theme = use_init_root_theme(|| {
+        let mut theme = use_init_theme(|| {
             let system = *Platform::get().preferred_theme.read();
             let pref = utils::const_values::ThemePref::from_u8(
                 THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
@@ -230,7 +230,7 @@ impl Component for Layout {
         if let Some(rx) = THEME_PREF_RX.get() {
             use_tokio_track_watcher(rx, _theme_pref_tick);
         }
-        let mut theme = use_init_root_theme(|| {
+        let mut theme = use_init_theme(|| {
             let system = *Platform::get().preferred_theme.read();
             let pref = utils::const_values::ThemePref::from_u8(
                 THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
