@@ -28,7 +28,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android
+          target: aarch64-linux-android, x86_64-linux-android
 
       - name: Install cargo-ndk
         run: cargo install cargo-ndk
