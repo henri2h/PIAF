@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use freya::prelude::PreferredTheme;
+use freya::prelude::{ColorsSheet, Color};
 
 /// User-configurable theme preference (stored as u8: 0=System, 1=Light, 2=Dark).
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
@@ -92,96 +92,145 @@ pub struct AppColors {
 }
 
 impl AppColors {
-    pub fn light() -> Self {
+    /// Derive all app colors from freya's ColorsSheet.
+    /// Standard tokens come directly from the sheet; chat-specific tokens are
+    /// computed from the base colors, varying by light vs dark (detected via
+    /// text_primary brightness).
+    pub fn from_colors(c: &ColorsSheet) -> Self {
+        let is_dark = c.text_primary.r() > 128;
+        let rgb = |color: Color| (color.r(), color.g(), color.b());
+
+        let (
+            reply_me_bg, reply_other_bg,
+            reply_me_sender, reply_other_sender,
+            reply_me_text, reply_other_text,
+            timestamp_me, receipt_default,
+            reaction_active_bg, reaction_active_text,
+            reaction_default_text,
+            date_separator_bg,
+        ) = if is_dark {
+            (
+                (20, 100, 180), (42, 45, 58),
+                (170, 215, 255), (120, 158, 205),
+                (195, 228, 255), (175, 175, 195),
+                (185, 222, 255), (185, 222, 255),
+                (18, 58, 115), (125, 188, 255),
+                (185, 185, 205),
+                (48, 43, 62),
+            )
+        } else {
+            (
+                (20, 120, 200), (210, 213, 218),
+                (180, 220, 255), (60, 100, 160),
+                (200, 230, 255), (80, 80, 80),
+                (190, 225, 255), (190, 225, 255),
+                (200, 230, 255), (0, 80, 160),
+                (60, 60, 60),
+                (231, 224, 236),
+            )
+        };
+
         Self {
-            primary: (29, 155, 240),
-            on_primary: (255, 255, 255),
-            surface: (255, 255, 255),
-            surface_container: (240, 242, 245),
-            surface_container_high: (232, 234, 237),
-            on_surface: (28, 27, 31),
-            on_surface_variant: (73, 89, 104),
-            on_surface_muted: (100, 100, 100),
-            on_surface_faint: (130, 130, 130),
-            error: (186, 26, 26),
-            outline: (200, 205, 210),
-            outline_variant: (202, 207, 212),
-            outline_variant_light: (225, 228, 232),
-            bubble_me_text: (255, 255, 255),
-            bubble_other_text: (20, 20, 20),
-            reply_me_bg: (20, 120, 200),
-            reply_other_bg: (210, 213, 218),
-            reply_me_sender: (180, 220, 255),
-            reply_other_sender: (60, 100, 160),
-            reply_me_text: (200, 230, 255),
-            reply_other_text: (80, 80, 80),
-            timestamp_me: (190, 225, 255),
-            receipt_default: (190, 225, 255),
-            receipt_read: (80, 220, 140),
-            reaction_active_bg: (200, 230, 255),
-            reaction_active_text: (0, 80, 160),
-            reaction_default_bg: (230, 232, 235),
-            reaction_default_text: (60, 60, 60),
-            date_separator_bg: (231, 224, 236),
-            overflow_badge_bg: (150, 150, 150),
-            status_online: (67, 160, 71),
-            compose_text: (50, 50, 50),
-            compose_edit_text: (80, 80, 80),
-            splash_bg: (15, 163, 242),
+            primary:                rgb(c.primary),
+            on_primary:             rgb(c.text_inverse),
+            surface:                rgb(c.background),
+            surface_container:      rgb(c.surface_primary),
+            surface_container_high: rgb(c.surface_secondary),
+            on_surface:             rgb(c.text_primary),
+            on_surface_variant:     rgb(c.text_secondary),
+            on_surface_muted:       rgb(c.text_secondary),
+            on_surface_faint:       rgb(c.text_placeholder),
+            error:                  rgb(c.error),
+            outline:                rgb(c.border),
+            outline_variant:        rgb(c.border_focus),
+            outline_variant_light:  rgb(c.border_disabled),
+            bubble_me_text:         rgb(c.text_inverse),
+            bubble_other_text:      rgb(c.text_primary),
+            reply_me_bg,
+            reply_other_bg,
+            reply_me_sender,
+            reply_other_sender,
+            reply_me_text,
+            reply_other_text,
+            timestamp_me,
+            receipt_default,
+            receipt_read:           rgb(c.success),
+            reaction_active_bg,
+            reaction_active_text,
+            reaction_default_bg:    rgb(c.surface_primary),
+            reaction_default_text,
+            date_separator_bg,
+            overflow_badge_bg:      rgb(c.surface_inverse),
+            status_online:          rgb(c.success),
+            compose_text:           rgb(c.text_primary),
+            compose_edit_text:      rgb(c.text_secondary),
+            splash_bg:              rgb(c.primary),
         }
     }
+}
 
-    pub fn dark() -> Self {
-        Self {
-            primary: (29, 155, 240),
-            on_primary: (255, 255, 255),
-            surface: (15, 15, 18),
-            surface_container: (26, 28, 35),
-            surface_container_high: (36, 38, 48),
-            on_surface: (228, 225, 235),
-            on_surface_variant: (155, 170, 190),
-            on_surface_muted: (125, 128, 140),
-            on_surface_faint: (85, 88, 100),
-            error: (255, 100, 100),
-            outline: (55, 58, 70),
-            outline_variant: (48, 52, 63),
-            outline_variant_light: (33, 36, 47),
-            bubble_me_text: (255, 255, 255),
-            bubble_other_text: (222, 218, 230),
-            reply_me_bg: (20, 100, 180),
-            reply_other_bg: (42, 45, 58),
-            reply_me_sender: (170, 215, 255),
-            reply_other_sender: (120, 158, 205),
-            reply_me_text: (195, 228, 255),
-            reply_other_text: (175, 175, 195),
-            timestamp_me: (185, 222, 255),
-            receipt_default: (185, 222, 255),
-            receipt_read: (75, 215, 135),
-            reaction_active_bg: (18, 58, 115),
-            reaction_active_text: (125, 188, 255),
-            reaction_default_bg: (38, 41, 53),
-            reaction_default_text: (185, 185, 205),
-            date_separator_bg: (48, 43, 62),
-            overflow_badge_bg: (85, 88, 100),
-            status_online: (78, 175, 88),
-            compose_text: (218, 213, 228),
-            compose_edit_text: (185, 182, 198),
-            splash_bg: (12, 140, 210),
-        }
+// ── Piaf color palettes for light and dark themes ─────────────────────────────
+
+pub fn piaf_light_colors() -> ColorsSheet {
+    ColorsSheet {
+        primary:                  Color::from_rgb(29, 155, 240),
+        secondary:                Color::from_rgb(29, 155, 240),
+        tertiary:                 Color::from_rgb(15, 130, 200),
+        success:                  Color::from_rgb(67, 160, 71),
+        warning:                  Color::from_rgb(255, 193, 7),
+        error:                    Color::from_rgb(186, 26, 26),
+        info:                     Color::from_rgb(33, 150, 243),
+        background:               Color::from_rgb(255, 255, 255),
+        surface_primary:          Color::from_rgb(240, 242, 245),
+        surface_secondary:        Color::from_rgb(232, 234, 237),
+        surface_tertiary:         Color::from_rgb(248, 249, 250),
+        surface_inverse:          Color::from_rgb(15, 15, 18),
+        surface_inverse_secondary: Color::from_rgb(26, 28, 35),
+        surface_inverse_tertiary: Color::from_rgb(36, 38, 48),
+        border:                   Color::from_rgb(200, 205, 210),
+        border_focus:             Color::from_rgb(202, 207, 212),
+        border_disabled:          Color::from_rgb(225, 228, 232),
+        text_primary:             Color::from_rgb(28, 27, 31),
+        text_secondary:           Color::from_rgb(73, 89, 104),
+        text_placeholder:         Color::from_rgb(130, 130, 130),
+        text_inverse:             Color::WHITE,
+        text_highlight:           Color::from_rgb(29, 155, 240),
+        focus:                    Color::from_rgb(200, 232, 255),
+        active:                   Color::from_rgb(232, 234, 237),
+        disabled:                 Color::from_rgb(200, 205, 210),
+        overlay:                  Color::from_argb(128, 0, 0, 0),
+        shadow:                   Color::from_argb(51, 0, 0, 0),
     }
+}
 
-    pub fn for_preference(pref: PreferredTheme) -> Self {
-        match pref {
-            PreferredTheme::Dark => Self::dark(),
-            PreferredTheme::Light => Self::light(),
-        }
-    }
-
-    pub fn for_theme_pref(pref: ThemePref, system: PreferredTheme) -> Self {
-        match pref {
-            ThemePref::Light => Self::light(),
-            ThemePref::Dark => Self::dark(),
-            ThemePref::System => Self::for_preference(system),
-        }
+pub fn piaf_dark_colors() -> ColorsSheet {
+    ColorsSheet {
+        primary:                  Color::from_rgb(29, 155, 240),
+        secondary:                Color::from_rgb(29, 155, 240),
+        tertiary:                 Color::from_rgb(15, 130, 200),
+        success:                  Color::from_rgb(78, 175, 88),
+        warning:                  Color::from_rgb(255, 213, 79),
+        error:                    Color::from_rgb(255, 100, 100),
+        info:                     Color::from_rgb(100, 181, 246),
+        background:               Color::from_rgb(15, 15, 18),
+        surface_primary:          Color::from_rgb(26, 28, 35),
+        surface_secondary:        Color::from_rgb(36, 38, 48),
+        surface_tertiary:         Color::from_rgb(22, 22, 28),
+        surface_inverse:          Color::from_rgb(240, 242, 245),
+        surface_inverse_secondary: Color::from_rgb(232, 234, 237),
+        surface_inverse_tertiary: Color::from_rgb(255, 255, 255),
+        border:                   Color::from_rgb(55, 58, 70),
+        border_focus:             Color::from_rgb(48, 52, 63),
+        border_disabled:          Color::from_rgb(33, 36, 47),
+        text_primary:             Color::from_rgb(228, 225, 235),
+        text_secondary:           Color::from_rgb(155, 170, 190),
+        text_placeholder:         Color::from_rgb(85, 88, 100),
+        text_inverse:             Color::WHITE,
+        text_highlight:           Color::from_rgb(29, 155, 240),
+        focus:                    Color::from_rgb(18, 58, 115),
+        active:                   Color::from_rgb(36, 38, 48),
+        disabled:                 Color::from_rgb(55, 58, 70),
+        overlay:                  Color::from_argb(51, 255, 255, 255),
+        shadow:                   Color::from_argb(153, 0, 0, 0),
     }
 }

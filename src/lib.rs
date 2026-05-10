@@ -106,20 +106,12 @@ impl Component for Layout {
             );
             effective_theme(pref, system)
         });
-        let mut colors = utils::use_init_app_colors(|| {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            utils::const_values::AppColors::for_theme_pref(pref, system)
-        });
         use_side_effect(move || {
             let system = *Platform::get().preferred_theme.read();
             let pref = utils::const_values::ThemePref::from_u8(
                 THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
             );
             theme.set(effective_theme(pref, system));
-            colors.set(utils::const_values::AppColors::for_theme_pref(pref, system));
         });
 
         let mut width: State<f32> = use_state(|| 0.0f32);
@@ -237,20 +229,12 @@ impl Component for Layout {
             );
             effective_theme(pref, system)
         });
-        let mut colors = utils::use_init_app_colors(|| {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            utils::const_values::AppColors::for_theme_pref(pref, system)
-        });
         use_side_effect(move || {
             let system = *Platform::get().preferred_theme.read();
             let pref = utils::const_values::ThemePref::from_u8(
                 THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
             );
             theme.set(effective_theme(pref, system));
-            colors.set(utils::const_values::AppColors::for_theme_pref(pref, system));
         });
 
         let route = use_route::<Route>();
@@ -869,9 +853,13 @@ fn android_main(droid_app: AndroidApp) {
 }
 
 fn effective_theme(pref: utils::const_values::ThemePref, system: PreferredTheme) -> Theme {
-    match pref {
-        utils::const_values::ThemePref::Light => PreferredTheme::Light.to_theme(),
-        utils::const_values::ThemePref::Dark => PreferredTheme::Dark.to_theme(),
-        utils::const_values::ThemePref::System => system.to_theme(),
-    }
+    use utils::const_values::{piaf_dark_colors, piaf_light_colors};
+    let is_dark = match pref {
+        utils::const_values::ThemePref::Light => false,
+        utils::const_values::ThemePref::Dark => true,
+        utils::const_values::ThemePref::System => matches!(system, PreferredTheme::Dark),
+    };
+    let mut theme = if is_dark { dark_theme() } else { light_theme() };
+    theme.colors = if is_dark { piaf_dark_colors() } else { piaf_light_colors() };
+    theme
 }

@@ -11,6 +11,7 @@ use futures::StreamExt;
 use tokio::sync::watch;
 
 use const_values::AppColors;
+use freya::prelude::use_theme;
 
 /// Safe replacement for `freya::sdk::use_track_watcher`.
 ///
@@ -45,23 +46,10 @@ pub fn use_tokio_track_watcher<T: Send + Sync + 'static>(
     });
 }
 
-/// Initialize `AppColors` as a root-scoped context (call once at the app root).
-pub fn use_init_app_colors(init: impl FnOnce() -> AppColors) -> State<AppColors> {
-    use_hook(|| {
-        if let Some(existing) = try_consume_context::<State<AppColors>>() {
-            existing
-        } else {
-            let state = State::create_in_scope(init(), ScopeId::ROOT);
-            provide_context_for_scope_id(state, ScopeId::ROOT);
-            state
-        }
-    })
-}
-
-/// Read the current `AppColors` from context and subscribe to changes.
-/// Panics if `use_init_app_colors` was not called at a parent scope.
+/// Derives `AppColors` from the current freya theme. Use inside Component::render().
 pub fn use_app_colors() -> AppColors {
-    *use_consume::<State<AppColors>>().read()
+    let theme = use_theme();
+    AppColors::from_colors(&theme.read().colors)
 }
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 

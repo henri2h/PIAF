@@ -131,16 +131,12 @@ impl Component for Layout {
         let system_theme = || *Platform::get().preferred_theme.read();
 
         let mut theme = use_init_theme(|| effective_theme(current_pref(), system_theme()));
-        let mut colors = utils::use_init_app_colors(|| {
-            utils::const_values::AppColors::for_theme_pref(current_pref(), system_theme())
-        });
 
         use_side_effect(move || {
             let _ = *_tpt.read();
             let pref = current_pref();
             let system = system_theme();
             theme.set(effective_theme(pref, system));
-            colors.set(utils::const_values::AppColors::for_theme_pref(pref, system));
         });
 
         let c = utils::use_app_colors();
