@@ -10,6 +10,7 @@ env:
   ANDROID_NDK_HOME: /home/runner/android-ndk-r26d
   ANDROID_NDK: /home/runner/android-ndk-r26d
 
+jobs:
   build-android:
     name: Build (Android)
     runs-on: ubuntu-latest
