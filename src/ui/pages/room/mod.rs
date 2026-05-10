@@ -384,7 +384,11 @@ impl Component for RoomPage {
                     .vertical()
                     .content(Content::Flex)
                     .maybe_child(detail_modal.read().clone().map(|msg| {
-                        detail_modal::detail_modal_overlay(msg, room_id.clone(), detail_modal, c)
+                        detail_modal::DetailModalOverlay {
+                            item: msg,
+                            room_id: room_id.clone(),
+                            modal: detail_modal,
+                        }
                     }))
                     .maybe_child(action_popup_state.read().clone().map(|item| {
                         action_popup_overlay(

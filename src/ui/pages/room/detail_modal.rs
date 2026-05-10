@@ -6,68 +6,66 @@ use freya_query::prelude::*;
 use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
 use crate::ui::components::Avatar;
-use crate::utils::const_values::AppColors;
 use crate::utils::queries::FetchSenderName;
-use crate::utils::{format_timestamp, sender_color};
+use crate::utils::{format_timestamp, sender_color, use_app_colors};
 
 use super::{Reaction, ReactionSender};
 
-pub(super) fn detail_modal_overlay(
-    item: Arc<TimelineItem>,
-    room_id: String,
-    mut modal: State<Option<Arc<TimelineItem>>>,
-    c: AppColors,
-) -> Element {
-    rect()
-        .position(Position::new_global().top(0.).left(0.))
-        .layer(Layer::Overlay)
-        .width(Size::window_percent(100.))
-        .height(Size::window_percent(100.))
-        .background((0, 0, 0, 160u8))
-        .on_press(move |_| *modal.write() = None)
-        .child(
-            rect()
-                .position(Position::new_absolute().bottom(0.).left(0.))
-                .width(Size::fill())
-                .max_height(Size::percent(70.))
-                .content(Content::Flex)
-                .corner_radius(20.)
-                .background(c.surface)
-                .vertical()
-                .on_press(|e: Event<PressEventData>| e.stop_propagation())
-                .child(
-                    rect()
-                        .horizontal()
-                        .width(Size::fill())
-                        .cross_align(Alignment::Center)
-                        .padding(Gaps::new(16., 16., 12., 16.))
-                        .child(
-                            label()
-                                .text("Message details")
-                                .font_size(16.)
-                                .font_weight(FontWeight::BOLD)
-                                .color(c.on_surface),
-                        ),
-                )
-                .child(
-                    ScrollView::new()
-                        .width(Size::fill())
-                        .height(Size::flex(1.0))
-                        .child(
-                            rect()
-                                .vertical()
-                                .width(Size::fill())
-                                .padding(Gaps::new(0., 16., 24., 16.))
-                                .spacing(16.)
-                                .child(seen_by_section(&item, &room_id, c))
-                                .child(reactions_section(&item, &room_id, c)),
-                        ),
-                ),
-        )
-        .into()
+pub(super) struct DetailModalOverlay {
+    pub item: Arc<TimelineItem>,
+    pub room_id: String,
+    pub modal: State<Option<Arc<TimelineItem>>>,
 }
 
-fn section_title(text: &str, c: AppColors) -> Element {
+impl PartialEq for DetailModalOverlay {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.item, &other.item)
+            && self.room_id == other.room_id
+            && self.modal == other.modal
+    }
+}
+
+impl Component for DetailModalOverlay {
+    fn render(&self) -> impl IntoElement {
+        let c = use_app_colors();
+        let item = self.item.clone();
+        let room_id = self.room_id.clone();
+        let mut modal = self.modal;
+
+        Popup::new()
+            .show(true)
+            .on_close_request(move |_| *modal.write() = None)
+            // ── Header ────────────────────────────────────────────────────────
+            .child(
+                rect()
+                    .horizontal()
+                    .width(Size::fill())
+                    .cross_align(Alignment::Center)
+                    .child(
+                        label()
+                            .text("Message details")
+                            .font_size(16.)
+                            .font_weight(FontWeight::BOLD)
+                            .color(c.on_surface),
+                    ),
+            )
+            // ── Scrollable content ────────────────────────────────────────────
+            .child(
+                ScrollView::new()
+                    .width(Size::fill())
+                    .child(
+                        rect()
+                            .vertical()
+                            .width(Size::fill())
+                            .spacing(16.)
+                            .child(seen_by_section(&item, &room_id, c))
+                            .child(reactions_section(&item, &room_id, c)),
+                    ),
+            )
+    }
+}
+
+fn section_title(text: &str, c: crate::utils::const_values::AppColors) -> Element {
     label()
         .text(text.to_string())
         .font_size(13.)
@@ -76,7 +74,7 @@ fn section_title(text: &str, c: AppColors) -> Element {
         .into()
 }
 
-fn seen_by_section(item: &Arc<TimelineItem>, room_id: &str, c: AppColors) -> Element {
+fn seen_by_section(item: &Arc<TimelineItem>, room_id: &str, c: crate::utils::const_values::AppColors) -> Element {
     let mut col = rect()
         .vertical()
         .width(Size::fill())
@@ -111,7 +109,6 @@ fn seen_by_section(item: &Arc<TimelineItem>, room_id: &str, c: AppColors) -> Ele
                 uid: uid.clone(),
                 display_fallback: display_fallback.clone(),
                 timestamp: timestamp.clone(),
-                c,
             });
         }
     }
@@ -124,12 +121,11 @@ struct SeenByRow {
     uid: String,
     display_fallback: String,
     timestamp: String,
-    c: AppColors,
 }
 
 impl Component for SeenByRow {
     fn render(&self) -> impl IntoElement {
-        let c = self.c;
+        let c = use_app_colors();
         let uid = self.uid.clone();
         let room_id = self.room_id.clone();
         let display_fallback = self.display_fallback.clone();
@@ -181,7 +177,7 @@ impl Component for SeenByRow {
     }
 }
 
-fn reactions_section(item: &Arc<TimelineItem>, room_id: &str, c: AppColors) -> Element {
+fn reactions_section(item: &Arc<TimelineItem>, room_id: &str, c: crate::utils::const_values::AppColors) -> Element {
     let reactions: Vec<Reaction> = item
         .as_event()
         .and_then(|e| {
@@ -230,18 +226,14 @@ fn reactions_section(item: &Arc<TimelineItem>, room_id: &str, c: AppColors) -> E
     col.into()
 }
 
-fn reaction_group(reaction: &Reaction, room_id: &str, c: AppColors) -> Element {
+fn reaction_group(reaction: &Reaction, room_id: &str, c: crate::utils::const_values::AppColors) -> Element {
     let mut group = rect().vertical().width(Size::fill()).spacing(4.).child(
         label()
             .text(format!(
                 "{} · {} {}",
                 reaction.key,
                 reaction.count,
-                if reaction.count == 1 {
-                    "person"
-                } else {
-                    "people"
-                }
+                if reaction.count == 1 { "person" } else { "people" }
             ))
             .font_size(13.)
             .color(c.on_surface),
@@ -251,7 +243,6 @@ fn reaction_group(reaction: &Reaction, room_id: &str, c: AppColors) -> Element {
         group = group.child(ReactionSenderRow {
             room_id: room_id.to_string(),
             sender: sender.clone(),
-            c,
         });
     }
     group.into()
@@ -261,12 +252,11 @@ fn reaction_group(reaction: &Reaction, room_id: &str, c: AppColors) -> Element {
 struct ReactionSenderRow {
     room_id: String,
     sender: ReactionSender,
-    c: AppColors,
 }
 
 impl Component for ReactionSenderRow {
     fn render(&self) -> impl IntoElement {
-        let c = self.c;
+        let c = use_app_colors();
         let uid = self.sender.user_id.clone();
         let timestamp = self.sender.timestamp.clone();
         let display_fallback = self.sender.display.clone();
