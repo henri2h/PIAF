@@ -4,8 +4,10 @@ use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use std::sync::atomic::Ordering;
+
 use crate::utils::const_values::AppColors;
-use crate::utils::{use_app_colors, use_tokio_track_watcher};
+use crate::utils::use_app_colors;
 use crate::{Route, utils::matrix::CLIENT};
 
 mod appearance;
@@ -25,17 +27,7 @@ impl Component for Settings {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
 
-        let mut _tpt: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(
-            crate::THEME_PREF_RX
-                .get()
-                .expect("THEME_PREF_RX not initialized"),
-            _tpt,
-        );
-        let current_pref = crate::THEME_PREF_RX
-            .get()
-            .map(|rx| *rx.borrow())
-            .unwrap_or(0);
+        let current_pref = crate::THEME_PREF.load(Ordering::Relaxed);
 
         let user_id = CLIENT
             .get()

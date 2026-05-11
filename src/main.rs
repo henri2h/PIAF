@@ -1,14 +1,14 @@
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 
 use freya::prelude::*;
 use freya_router::prelude::{Outlet, Routable, Router, RouterConfig, RouterContext, use_route};
+use tokio::runtime::Builder;
 use tokio::sync::watch;
 
 use crate::utils::{
-    matrix::restore_matrix_client,
-    use_tokio_track_watcher,
-    worker::{ClientWorker, Requester},
+    matrix::restore_matrix_client, use_tokio_track_watcher, worker::Requester,
+    worker::client::MatrixClientWorker,
 };
 use ui::pages::{
     home::HomePage,
@@ -33,18 +33,20 @@ pub static SYNC_TX: OnceLock<watch::Sender<()>> = OnceLock::new();
 pub static SYNC_RX: OnceLock<watch::Receiver<()>> = OnceLock::new();
 pub static ACTIVE_ROOM_TX: OnceLock<watch::Sender<Option<String>>> = OnceLock::new();
 pub static ACTIVE_ROOM_RX: OnceLock<watch::Receiver<Option<String>>> = OnceLock::new();
-pub static THEME_PREF_TX: OnceLock<watch::Sender<u8>> = OnceLock::new();
-pub static THEME_PREF_RX: OnceLock<watch::Receiver<u8>> = OnceLock::new();
+pub static THEME_PREF: AtomicU8 = AtomicU8::new(0);
 /// Set to true by Layout when the window is wide enough for split-pane view.
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 /// True while no sync batch has completed yet (initial loading phase).
 pub static SYNCING: AtomicBool = AtomicBool::new(true);
 
-#[tokio::main]
-async fn main() {
+fn main() {
     println!("Starting PIAF client");
 
-    let requester = ClientWorker::spawn().await;
+    let rt = Builder::new_multi_thread().enable_all().build().unwrap();
+    // Enter the Tokio context so its APIs (channels, timers, etc.) work.
+    let _rt = rt.enter();
+
+    let requester = MatrixClientWorker::spawn();
     REQUESTER.set(requester).unwrap();
 
     let (sync_tx, sync_rx) = watch::channel(());
@@ -55,15 +57,12 @@ async fn main() {
     ACTIVE_ROOM_TX.set(active_room_tx).unwrap();
     ACTIVE_ROOM_RX.set(active_room_rx).unwrap();
 
-    let base_dir = dirs::data_dir().expect("no data_dir").join("piaf");
-    let saved_pref = tokio::fs::read_to_string(base_dir.join("theme_pref"))
-        .await
-        .ok()
+    let saved_pref = dirs::data_dir()
+        .map(|d| d.join("piaf").join("theme_pref"))
+        .and_then(|p| std::fs::read_to_string(p).ok())
         .and_then(|s| s.trim().parse::<u8>().ok())
         .unwrap_or(0);
-    let (theme_pref_tx, theme_pref_rx) = watch::channel(saved_pref);
-    THEME_PREF_TX.set(theme_pref_tx).unwrap();
-    THEME_PREF_RX.set(theme_pref_rx).unwrap();
+    THEME_PREF.store(saved_pref, Ordering::Relaxed);
 
     tokio::spawn(async {
         let base_dir = dirs::data_dir().expect("no data_dir").join("piaf");
@@ -119,25 +118,16 @@ fn app() -> impl IntoElement {
 struct Layout;
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
-        let mut _tpt: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(
-            THEME_PREF_RX.get().expect("THEME_PREF_RX not initialized"),
-            _tpt,
-        );
-        let current_pref = || {
-            utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            )
-        };
-        let system_theme = || *Platform::get().preferred_theme.read();
-
-        let mut theme = use_init_theme(|| effective_theme(current_pref(), system_theme()));
-
+        let mut theme = use_init_theme(|| {
+            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
+            effective_theme(pref, *Platform::get().preferred_theme.read())
+        });
         use_side_effect(move || {
-            let _ = *_tpt.read();
-            let pref = current_pref();
-            let system = system_theme();
-            theme.set(effective_theme(pref, system));
+            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
+            theme.set(effective_theme(
+                pref,
+                *Platform::get().preferred_theme.read(),
+            ));
         });
 
         let c = utils::use_app_colors();
@@ -332,7 +322,10 @@ impl Component for ActiveRoomPanel {
     }
 }
 
-fn effective_theme(pref: utils::const_values::ThemePref, system: PreferredTheme) -> Theme {
+pub(crate) fn effective_theme(
+    pref: utils::const_values::ThemePref,
+    system: PreferredTheme,
+) -> Theme {
     match pref {
         utils::const_values::ThemePref::Light => PreferredTheme::Light.to_theme(),
         utils::const_values::ThemePref::Dark => PreferredTheme::Dark.to_theme(),

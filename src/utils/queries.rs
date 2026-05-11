@@ -348,7 +348,20 @@ impl QueryCapability for FetchUserDisplayName {
     type Keys = ();
 
     async fn run(&self, _: &()) -> Result<String, ()> {
-        REQUESTER.get().ok_or(())?.fetch_user_display_name().await
+        let client = CLIENT.get().cloned().ok_or(())?;
+        let (tx, rx) = futures::channel::oneshot::channel::<Result<String, ()>>();
+        tokio::spawn(async move {
+            let name = client
+                .account()
+                .get_display_name()
+                .await
+                .ok()
+                .flatten()
+                .or_else(|| client.user_id().map(|id| id.to_string()))
+                .unwrap_or_default();
+            let _ = tx.send(Ok(name));
+        });
+        rx.await.map_err(|_| ())?
     }
 }
 

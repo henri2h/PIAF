@@ -1,12 +1,13 @@
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::Route;
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::utils::const_values::AppColors;
-use crate::utils::{use_app_colors, use_tokio_track_watcher};
+use crate::utils::const_values::{AppColors, ThemePref};
+use crate::utils::use_app_colors;
 
 #[derive(PartialEq)]
 pub struct SettingsAppearance {}
@@ -14,18 +15,8 @@ pub struct SettingsAppearance {}
 impl Component for SettingsAppearance {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-
-        let mut _tpt: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(
-            crate::THEME_PREF_RX
-                .get()
-                .expect("THEME_PREF_RX not initialized"),
-            _tpt,
-        );
-        let current_pref = crate::THEME_PREF_RX
-            .get()
-            .map(|rx| *rx.borrow())
-            .unwrap_or(0);
+        let theme = use_theme();
+        let current_pref = crate::THEME_PREF.load(Ordering::Relaxed);
 
         rect()
             .expanded()
@@ -45,12 +36,12 @@ impl Component for SettingsAppearance {
                     .width(Size::fill())
                     .padding(Gaps::new(8., 0., 8., 0.))
                     .child(super::section_label("Theme", c))
-                    .child(theme_selector(current_pref, c)),
+                    .child(theme_selector(current_pref, c, theme)),
             )
     }
 }
 
-fn theme_selector(current: u8, c: AppColors) -> Element {
+fn theme_selector(current: u8, c: AppColors, mut theme: State<Theme>) -> Element {
     const OPTIONS: &[(u8, &str)] = &[(0, "System"), (1, "Light"), (2, "Dark")];
     let mut row = rect()
         .horizontal()
@@ -78,9 +69,10 @@ fn theme_selector(current: u8, c: AppColors) -> Element {
                 .background(bg)
                 .overflow(Overflow::Clip)
                 .on_press(move |_| {
-                    if let Some(tx) = crate::THEME_PREF_TX.get() {
-                        let _ = tx.send(val);
-                    }
+                    crate::THEME_PREF.store(val, Ordering::Relaxed);
+                    let pref = ThemePref::from_u8(val);
+                    let system = *Platform::get().preferred_theme.read();
+                    theme.set(crate::effective_theme(pref, system));
                     spawn(async move {
                         crate::utils::matrix::save_theme_pref(val).await;
                     });

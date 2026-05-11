@@ -1,5 +1,5 @@
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 
 use freya::prelude::*;
 #[cfg(target_os = "android")]
@@ -36,8 +36,7 @@ pub static SYNC_TX: OnceLock<watch::Sender<()>> = OnceLock::new();
 pub static SYNC_RX: OnceLock<watch::Receiver<()>> = OnceLock::new();
 pub static ACTIVE_ROOM_TX: OnceLock<watch::Sender<Option<String>>> = OnceLock::new();
 pub static ACTIVE_ROOM_RX: OnceLock<watch::Receiver<Option<String>>> = OnceLock::new();
-pub static THEME_PREF_TX: OnceLock<watch::Sender<u8>> = OnceLock::new();
-pub static THEME_PREF_RX: OnceLock<watch::Receiver<u8>> = OnceLock::new();
+pub static THEME_PREF: AtomicU8 = AtomicU8::new(0);
 /// Set to true by Layout when the window is wide enough for split-pane view.
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "android")]
@@ -95,24 +94,16 @@ struct Layout;
 #[cfg(not(target_os = "android"))]
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
-        let mut _theme_pref_tick: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(
-            THEME_PREF_RX.get().expect("THEME_PREF_RX not initialized"),
-            _theme_pref_tick,
-        );
         let mut theme = use_init_theme(|| {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            effective_theme(pref, system)
+            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
+            effective_theme(pref, *Platform::get().preferred_theme.read())
         });
         use_side_effect(move || {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            theme.set(effective_theme(pref, system));
+            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
+            theme.set(effective_theme(
+                pref,
+                *Platform::get().preferred_theme.read(),
+            ));
         });
 
         let mut width: State<f32> = use_state(|| 0.0f32);
@@ -219,24 +210,16 @@ impl Component for Layout {
 #[cfg(target_os = "android")]
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
-        let mut _theme_pref_tick: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(
-            THEME_PREF_RX.get().expect("THEME_PREF_RX not initialized"),
-            _theme_pref_tick,
-        );
         let mut theme = use_init_theme(|| {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            effective_theme(pref, system)
+            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
+            effective_theme(pref, *Platform::get().preferred_theme.read())
         });
         use_side_effect(move || {
-            let system = *Platform::get().preferred_theme.read();
-            let pref = utils::const_values::ThemePref::from_u8(
-                THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
-            );
-            theme.set(effective_theme(pref, system));
+            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
+            theme.set(effective_theme(
+                pref,
+                *Platform::get().preferred_theme.read(),
+            ));
         });
 
         let route = use_route::<Route>();
@@ -285,7 +268,7 @@ impl Component for Layout {
                         .main_align(Alignment::center())
                         .padding(Gaps::new(4., 4., 20., 4.))
                         .spacing(4.)
-                        .background(colors.read().surface)
+                        .background(utils::use_app_colors().surface)
                         .child(navbar_tab(Route::HomePage, "Chats", lucide::message_circle))
                         .child(navbar_tab(Route::Settings, "Settings", lucide::settings))
                         .into_element()
@@ -812,7 +795,7 @@ fn android_main(droid_app: AndroidApp) {
 
     // Initialize workers while runtime is active; spawned tasks keep running after block_on.
     rt.block_on(async {
-        let requester = utils::worker::ClientWorker::spawn().await;
+        let requester = utils::worker::MatrixClientWorker::spawn().await;
         REQUESTER.set(requester).unwrap();
 
         let (sync_tx, sync_rx) = tokio::sync::watch::channel(());
@@ -828,9 +811,7 @@ fn android_main(droid_app: AndroidApp) {
             .ok()
             .and_then(|s| s.trim().parse::<u8>().ok())
             .unwrap_or(0);
-        let (theme_pref_tx, theme_pref_rx) = tokio::sync::watch::channel(saved_pref);
-        THEME_PREF_TX.set(theme_pref_tx).unwrap();
-        THEME_PREF_RX.set(theme_pref_rx).unwrap();
+        THEME_PREF.store(saved_pref, Ordering::Relaxed);
 
         tokio::spawn(async move {
             match utils::matrix::restore_matrix_client(data_path).await {
@@ -857,7 +838,10 @@ fn android_main(droid_app: AndroidApp) {
     )
 }
 
-fn effective_theme(pref: utils::const_values::ThemePref, system: PreferredTheme) -> Theme {
+pub(crate) fn effective_theme(
+    pref: utils::const_values::ThemePref,
+    system: PreferredTheme,
+) -> Theme {
     use utils::const_values::{piaf_dark_colors, piaf_light_colors};
     let is_dark = match pref {
         utils::const_values::ThemePref::Light => false,
