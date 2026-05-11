@@ -1350,6 +1350,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
+name = "const_format"
+version = "0.2.36"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4481a617ad9a412be3b97c5d403fef8ed023103368908b9c50af598ff467cc1e"
+dependencies = [
+ "const_format_proc_macros",
+ "konst 0.2.20",
+]
+
+[[package]]
+name = "const_format_proc_macros"
+version = "0.2.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d57c2eccfb16dbac1f4e61e206105db5820c9d26c3c472bc17c774259ef7744"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-xid",
+]
+
+[[package]]
 name = "const_panic"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1559,6 +1580,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "data-encoding"
+version = "2.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4ae5f15dda3c708c0ade84bfee31ccab44a3da4f88015ed22f63732abe300c8"
+
+[[package]]
 name = "date_header"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1694,6 +1721,85 @@ dependencies = [
  "block-buffer",
  "crypto-common",
  "subtle",
+]
+
+[[package]]
+name = "dioxus-cli-config"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c000f584ddf608e2b272b3074bf11512a474eeeb2eb85a1915f276ce5c4a8615"
+
+[[package]]
+name = "dioxus-core"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45887100ff0cf89abeb8b659808294fda48cd53f3b424e36407dedffcfea830b"
+dependencies = [
+ "anyhow",
+ "const_format",
+ "dioxus-core-types",
+ "futures-channel",
+ "futures-util",
+ "generational-box",
+ "longest-increasing-subsequence",
+ "rustc-hash",
+ "rustversion",
+ "serde",
+ "slab",
+ "slotmap",
+ "subsecond",
+ "tracing",
+]
+
+[[package]]
+name = "dioxus-core-types"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36963eab106b169737762f9cd5ee5fd97f585989dcb2d8e30a596e97a6999009"
+
+[[package]]
+name = "dioxus-devtools"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2349cedbdf1b429df1f1bea61fdee0ad3dae7b2548eedfbeca82710122a57da0"
+dependencies = [
+ "dioxus-cli-config",
+ "dioxus-core",
+ "dioxus-devtools-types",
+ "dioxus-signals",
+ "serde",
+ "serde_json",
+ "subsecond",
+ "thiserror 2.0.18",
+ "tracing",
+ "tungstenite",
+]
+
+[[package]]
+name = "dioxus-devtools-types"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ab9b0f7565d1916b70915f59b89ea8054ef0a9d67a364a32bbee68ef5f3818d"
+dependencies = [
+ "dioxus-core",
+ "serde",
+ "subsecond-types",
+]
+
+[[package]]
+name = "dioxus-signals"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3705754f5e043deec9fc7af0d159f18e5b21c02c47d255c7e477f31368f0b6d2"
+dependencies = [
+ "dioxus-core",
+ "futures-channel",
+ "futures-util",
+ "generational-box",
+ "parking_lot",
+ "rustc-hash",
+ "tracing",
+ "warnings",
 ]
 
 [[package]]
@@ -2177,7 +2283,6 @@ dependencies = [
 [[package]]
 name = "freya"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "cfg-if",
  "freya-android",
@@ -2197,7 +2302,6 @@ dependencies = [
 [[package]]
 name = "freya-android"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "freya-components",
  "freya-core",
@@ -2210,7 +2314,6 @@ dependencies = [
 [[package]]
 name = "freya-animation"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "async-io",
  "easer",
@@ -2220,7 +2323,6 @@ dependencies = [
 [[package]]
 name = "freya-clipboard"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "copypasta",
  "freya-core",
@@ -2229,7 +2331,6 @@ dependencies = [
 [[package]]
 name = "freya-components"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -2254,13 +2355,13 @@ dependencies = [
 [[package]]
 name = "freya-core"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "accesskit",
  "async-broadcast",
  "bitflags 2.11.1",
  "bytes",
  "cursor-icon",
+ "dioxus-devtools",
  "freya-engine",
  "futures-channel",
  "futures-lite",
@@ -2275,6 +2376,7 @@ dependencies = [
  "ragnarok",
  "rustc-hash",
  "smallvec",
+ "subsecond",
  "torin",
  "tracing",
 ]
@@ -2282,7 +2384,6 @@ dependencies = [
 [[package]]
 name = "freya-edit"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "bitflags 2.11.1",
  "freya-clipboard",
@@ -2296,7 +2397,6 @@ dependencies = [
 [[package]]
 name = "freya-engine"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "bitflags 2.11.1",
  "freya-skia-safe",
@@ -2305,7 +2405,6 @@ dependencies = [
 [[package]]
 name = "freya-icons"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "bytes",
 ]
@@ -2313,7 +2412,6 @@ dependencies = [
 [[package]]
 name = "freya-material-design"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "freya-animation",
  "freya-components",
@@ -2325,7 +2423,6 @@ dependencies = [
 [[package]]
 name = "freya-performance-plugin"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "freya-core",
  "freya-engine",
@@ -2335,7 +2432,6 @@ dependencies = [
 [[package]]
 name = "freya-query"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2345,7 +2441,6 @@ dependencies = [
 [[package]]
 name = "freya-radio"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "freya-core",
 ]
@@ -2353,7 +2448,6 @@ dependencies = [
 [[package]]
 name = "freya-router"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "freya-core",
  "freya-router-macro",
@@ -2365,7 +2459,6 @@ dependencies = [
 [[package]]
 name = "freya-router-macro"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2376,7 +2469,6 @@ dependencies = [
 [[package]]
 name = "freya-sdk"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2427,7 +2519,6 @@ dependencies = [
 [[package]]
 name = "freya-winit"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3538,6 +3629,15 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
 name = "konst"
+version = "0.2.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "128133ed7824fcd73d6e7b17957c5eb7bacb885649bd8c69708b2331a10bcefb"
+dependencies = [
+ "konst_macro_rules",
+]
+
+[[package]]
+name = "konst"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f660d5f887e3562f9ab6f4a14988795b694099d66b4f5dedc02d197ba9becb1d"
@@ -3545,6 +3645,12 @@ dependencies = [
  "const_panic",
  "typewit",
 ]
+
+[[package]]
+name = "konst_macro_rules"
+version = "0.2.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4933f3f57a8e9d9da04db23fb153356ecaf00cbd14aee46279c33dc80925c37"
 
 [[package]]
 name = "language-tags"
@@ -3663,6 +3769,12 @@ name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+
+[[package]]
+name = "longest-increasing-subsequence"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3bd0dd2cd90571056fdb71f6275fada10131182f84899f4b2a916e565d81d86"
 
 [[package]]
 name = "loom"
@@ -4132,6 +4244,15 @@ name = "memchr"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
+
+[[package]]
+name = "memfd"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad38eb12aea514a0466ea40a80fd8cc83637065948eb4a426e4aa46261175227"
+dependencies = [
+ "rustix 1.1.4",
+]
 
 [[package]]
 name = "memmap2"
@@ -4931,7 +5052,6 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 [[package]]
 name = "pathgraph"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 
 [[package]]
 name = "pbkdf2"
@@ -5405,7 +5525,6 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 [[package]]
 name = "ragnarok"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "euclid",
  "hotpath",
@@ -5872,7 +5991,7 @@ dependencies = [
  "http",
  "indexmap",
  "js_int",
- "konst",
+ "konst 0.4.3",
  "percent-encoding",
  "rand 0.10.1",
  "regex",
@@ -6293,6 +6412,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha1"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.2.17",
+ "digest",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6379,6 +6509,16 @@ name = "slab"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
+
+[[package]]
+name = "slotmap"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bdd58c3c93c3d278ca835519292445cb4b0d4dc59ccfdf7ceadaab3f8aeb4038"
+dependencies = [
+ "serde",
+ "version_check",
+]
 
 [[package]]
 name = "smallvec"
@@ -6559,6 +6699,34 @@ dependencies = [
  "phf_shared",
  "proc-macro2",
  "quote",
+]
+
+[[package]]
+name = "subsecond"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9cc79674bd55726e6b123204403389400229a95fe4a3b2c5453dada70b06ca95"
+dependencies = [
+ "js-sys",
+ "libc",
+ "libloading",
+ "memfd",
+ "memmap2",
+ "serde",
+ "subsecond-types",
+ "thiserror 2.0.18",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "subsecond-types"
+version = "0.7.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9798bfed58797aed51c672aa99810aac30a50d3120ecfdcf28c13784e9a8f1c"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -6956,7 +7124,6 @@ dependencies = [
 [[package]]
 name = "torin"
 version = "0.4.0-rc.19"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#b7c296e44d68115c3e70312f218b5f53b011b6df"
 dependencies = [
  "euclid",
  "itertools 0.14.0",
@@ -7101,6 +7268,23 @@ name = "ttf-parser"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
+
+[[package]]
+name = "tungstenite"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8628dcc84e5a09eb3d8423d6cb682965dea9133204e8fb3efee74c2a0c259442"
+dependencies = [
+ "bytes",
+ "data-encoding",
+ "http",
+ "httparse",
+ "log",
+ "rand 0.9.4",
+ "sha1",
+ "thiserror 2.0.18",
+ "utf-8",
+]
 
 [[package]]
 name = "typenum"
@@ -7309,6 +7493,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa7760aed19e106de2c7c0b581b509f2f25d3dacaf737cb82ac61bc6d760b0e"
 dependencies = [
  "try-lock",
+]
+
+[[package]]
+name = "warnings"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64f68998838dab65727c9b30465595c6f7c953313559371ca8bf31759b3680ad"
+dependencies = [
+ "pin-project",
+ "tracing",
+ "warnings-macro",
+]
+
+[[package]]
+name = "warnings-macro"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59195a1db0e95b920366d949ba5e0d3fc0e70b67c09be15ce5abb790106b0571"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
 ]
 
 [[package]]

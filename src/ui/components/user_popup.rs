@@ -39,7 +39,10 @@ impl Component for UserPopupOverlay {
         });
 
         // Hooks must always be called; use empty key when no user is selected.
-        let user_id_key = info_opt.as_ref().map(|i| i.user_id.clone()).unwrap_or_default();
+        let user_id_key = info_opt
+            .as_ref()
+            .map(|i| i.user_id.clone())
+            .unwrap_or_default();
         let mutual_query = use_query(Query::new(user_id_key, FetchMutualRooms));
         let mutual_state = mutual_query.read();
         let is_loading = mutual_state.state().is_pending() || mutual_state.state().is_loading();

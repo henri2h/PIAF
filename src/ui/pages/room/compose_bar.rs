@@ -387,6 +387,7 @@ impl Component for ComposeBar {
                     .content(Content::Flex)
                     .width(Size::fill())
                     .padding(Gaps::new_all(8.))
+                    .cross_align(Alignment::Center)
                     .spacing(8.)
                     .child(
                         Button::new().on_press(on_attach).child(
@@ -430,11 +431,11 @@ impl Component for ComposeBar {
                                             .maybe_child(is_empty.then(|| {
                                                 label()
                                                     .text(if is_editing {
-                                                        "Edit message…"
+                                                        "Edit message"
                                                     } else if is_replying {
-                                                        "Reply…"
+                                                        "Reply"
                                                     } else {
-                                                        "Message…"
+                                                        "Message"
                                                     })
                                                     .font_size(14.)
                                                     .color(c.on_surface_muted)

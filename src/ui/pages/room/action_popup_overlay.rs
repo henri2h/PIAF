@@ -130,10 +130,5 @@ pub(super) fn action_popup_overlay(
         }
     }
 
-    message_action_popup::action_popup(
-        c,
-        move || *popup_state.write() = None,
-        on_react,
-        actions,
-    )
+    message_action_popup::action_popup(c, move || *popup_state.write() = None, on_react, actions)
 }

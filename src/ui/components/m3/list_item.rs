@@ -16,7 +16,11 @@ pub struct M3ListItem {
 impl Component for M3ListItem {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let text_color = if self.destructive { c.error } else { c.on_surface };
+        let text_color = if self.destructive {
+            c.error
+        } else {
+            c.on_surface
+        };
         let item_label = self.item_label.clone();
         let sublabel = self.sublabel.clone();
         let icon = self.icon.clone();
@@ -24,7 +28,11 @@ impl Component for M3ListItem {
         let destructive = self.destructive;
         let on_press = self.on_press.clone();
         let mut hovered: State<bool> = use_state(|| false);
-        let bg = if *hovered.read() { c.surface_container } else { c.surface };
+        let bg = if *hovered.read() {
+            c.surface_container
+        } else {
+            c.surface
+        };
 
         rect()
             .width(Size::fill())
@@ -57,7 +65,9 @@ impl Component for M3ListItem {
                                     .vertical()
                                     .width(Size::flex(1.0))
                                     .spacing(2.)
-                                    .child(label().text(item_label).font_size(16.).color(text_color))
+                                    .child(
+                                        label().text(item_label).font_size(16.).color(text_color),
+                                    )
                                     .maybe_child(sublabel.map(|sub| {
                                         label().text(sub).font_size(14.).color(c.on_surface_variant)
                                     })),

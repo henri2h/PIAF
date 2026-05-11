@@ -73,6 +73,22 @@ impl Component for MyComponent {
 
 Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use_track_watcher` (re-renders on watch channel change).
 
+#### Hooks rules (Freya)
+
+**Hooks must be called unconditionally at the top of `render`, every time, in the same order.** Never inside `if`/`else`, loops, or after an early `return`. This includes `use_state`, `use_hook`, `use_query`, and `use_tokio_track_watcher` (which calls `use_hook` internally and counts as a hook).
+
+**Never wrap a hook call in `if let Some(x) = OnceLock.get()`** — `SYNC_RX`, `ACTIVE_ROOM_RX`, and `THEME_PREF_RX` are all set in `main()` before `launch()`, so `.get()` always returns `Some`. Call unconditionally with `.expect()`:
+
+```rust
+// Wrong — hook inside conditional
+if let Some(rx) = SYNC_RX.get() {
+    use_tokio_track_watcher(rx, tick);
+}
+
+// Correct
+use_tokio_track_watcher(SYNC_RX.get().expect("SYNC_RX not initialized"), tick);
+```
+
 **`Size::flex()` requires `.content(Content::Flex)` on the parent** — any rect whose children use `Size::flex(n)` must have `.content(Content::Flex)`, or the flex sizing is silently ignored. This applies to both horizontal and vertical rects, including divider rows with flex spacers.
 
 #### File layout rules

@@ -37,9 +37,7 @@ impl Component for HomePage {
 
         let mut chips_visible: State<bool> = use_state(|| false);
         let sync_tick: State<u64> = use_state(|| 0u64);
-        if let Some(rx) = SYNC_RX.get() {
-            use_tokio_track_watcher(rx, sync_tick);
-        }
+        use_tokio_track_watcher(SYNC_RX.get().expect("SYNC_RX not initialized"), sync_tick);
 
         // Active room: drive via context so RoomListItem re-renders in-place
         // without remounting VirtualScrollView (which would reset scroll position).

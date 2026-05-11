@@ -120,9 +120,10 @@ struct Layout;
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
         let mut _tpt: State<u64> = use_state(|| 0u64);
-        if let Some(rx) = THEME_PREF_RX.get() {
-            use_tokio_track_watcher(rx, _tpt);
-        }
+        use_tokio_track_watcher(
+            THEME_PREF_RX.get().expect("THEME_PREF_RX not initialized"),
+            _tpt,
+        );
         let current_pref = || {
             utils::const_values::ThemePref::from_u8(
                 THEME_PREF_RX.get().map(|r| *r.borrow()).unwrap_or(0),
@@ -255,9 +256,12 @@ impl Component for ActiveRoomPanel {
     fn render(&self) -> impl IntoElement {
         let c = utils::use_app_colors();
         let mut _room_tick: State<u64> = use_state(|| 0u64);
-        if let Some(rx) = ACTIVE_ROOM_RX.get() {
-            use_tokio_track_watcher(rx, _room_tick);
-        }
+        use_tokio_track_watcher(
+            ACTIVE_ROOM_RX
+                .get()
+                .expect("ACTIVE_ROOM_RX not initialized"),
+            _room_tick,
+        );
 
         let route = use_route::<Route>();
 

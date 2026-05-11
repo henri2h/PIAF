@@ -14,7 +14,7 @@ use crate::ui::components::M3ListItem;
 use crate::utils::extract_urls;
 use notif_mode_selector::{notif_label, notif_popup_overlay};
 
-const MEMBER_PREVIEW: usize = 5;
+const MEMBER_PREVIEW_COUNT: usize = 5;
 const ADMIN_THRESHOLD: i64 = 50;
 
 fn power_to_i64(pl: UserPowerLevel) -> i64 {
@@ -188,8 +188,9 @@ impl Component for RoomSettings {
         let room_id_leave = room_id.clone();
         let is_wide = crate::WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed);
 
-        let preview_members: Vec<&MemberItem> = member_list.iter().take(MEMBER_PREVIEW).collect();
-        let remaining = member_list.len().saturating_sub(MEMBER_PREVIEW);
+        let preview_members: Vec<&MemberItem> =
+            member_list.iter().take(MEMBER_PREVIEW_COUNT).collect();
+        let remaining = member_list.len().saturating_sub(MEMBER_PREVIEW_COUNT);
 
         rect()
             .expanded()

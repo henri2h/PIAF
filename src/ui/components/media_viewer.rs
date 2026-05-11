@@ -319,7 +319,11 @@ impl Component for MediaViewer {
                     .vertical()
                     .width(Size::fill())
                     .background((20u8, 20u8, 20u8))
-                    .child(rect().width(Size::fill()).height(Size::px(STATUS_BAR_INSET)))
+                    .child(
+                        rect()
+                            .width(Size::fill())
+                            .height(Size::px(STATUS_BAR_INSET)),
+                    )
                     .child(
                         rect()
                             .horizontal()

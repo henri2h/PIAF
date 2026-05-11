@@ -26,9 +26,12 @@ impl Component for Settings {
         let c = use_app_colors();
 
         let mut _tpt: State<u64> = use_state(|| 0u64);
-        if let Some(rx) = crate::THEME_PREF_RX.get() {
-            use_tokio_track_watcher(rx, _tpt);
-        }
+        use_tokio_track_watcher(
+            crate::THEME_PREF_RX
+                .get()
+                .expect("THEME_PREF_RX not initialized"),
+            _tpt,
+        );
         let current_pref = crate::THEME_PREF_RX
             .get()
             .map(|rx| *rx.borrow())

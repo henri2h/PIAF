@@ -96,9 +96,10 @@ struct Layout;
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
         let mut _theme_pref_tick: State<u64> = use_state(|| 0u64);
-        if let Some(rx) = THEME_PREF_RX.get() {
-            use_tokio_track_watcher(rx, _theme_pref_tick);
-        }
+        use_tokio_track_watcher(
+            THEME_PREF_RX.get().expect("THEME_PREF_RX not initialized"),
+            _theme_pref_tick,
+        );
         let mut theme = use_init_theme(|| {
             let system = *Platform::get().preferred_theme.read();
             let pref = utils::const_values::ThemePref::from_u8(
@@ -219,9 +220,10 @@ impl Component for Layout {
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
         let mut _theme_pref_tick: State<u64> = use_state(|| 0u64);
-        if let Some(rx) = THEME_PREF_RX.get() {
-            use_tokio_track_watcher(rx, _theme_pref_tick);
-        }
+        use_tokio_track_watcher(
+            THEME_PREF_RX.get().expect("THEME_PREF_RX not initialized"),
+            _theme_pref_tick,
+        );
         let mut theme = use_init_theme(|| {
             let system = *Platform::get().preferred_theme.read();
             let pref = utils::const_values::ThemePref::from_u8(
@@ -322,9 +324,12 @@ struct ActiveRoomPanel;
 impl Component for ActiveRoomPanel {
     fn render(&self) -> impl IntoElement {
         let mut _room_tick: State<u64> = use_state(|| 0u64);
-        if let Some(rx) = ACTIVE_ROOM_RX.get() {
-            use_tokio_track_watcher(rx, _room_tick);
-        }
+        use_tokio_track_watcher(
+            ACTIVE_ROOM_RX
+                .get()
+                .expect("ACTIVE_ROOM_RX not initialized"),
+            _room_tick,
+        );
 
         let route = use_route::<Route>();
 
@@ -860,6 +865,10 @@ fn effective_theme(pref: utils::const_values::ThemePref, system: PreferredTheme)
         utils::const_values::ThemePref::System => matches!(system, PreferredTheme::Dark),
     };
     let mut theme = if is_dark { dark_theme() } else { light_theme() };
-    theme.colors = if is_dark { piaf_dark_colors() } else { piaf_light_colors() };
+    theme.colors = if is_dark {
+        piaf_dark_colors()
+    } else {
+        piaf_light_colors()
+    };
     theme
 }

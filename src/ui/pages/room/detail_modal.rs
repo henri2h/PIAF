@@ -79,7 +79,11 @@ fn section_title(text: &str, c: crate::utils::const_values::AppColors) -> Elemen
         .into()
 }
 
-fn seen_by_section(item: &Arc<TimelineItem>, room_id: &str, c: crate::utils::const_values::AppColors) -> Element {
+fn seen_by_section(
+    item: &Arc<TimelineItem>,
+    room_id: &str,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
     let mut col = rect()
         .vertical()
         .width(Size::fill())
@@ -182,7 +186,11 @@ impl Component for SeenByRow {
     }
 }
 
-fn reactions_section(item: &Arc<TimelineItem>, room_id: &str, c: crate::utils::const_values::AppColors) -> Element {
+fn reactions_section(
+    item: &Arc<TimelineItem>,
+    room_id: &str,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
     let reactions: Vec<Reaction> = item
         .as_event()
         .and_then(|e| {
@@ -231,14 +239,22 @@ fn reactions_section(item: &Arc<TimelineItem>, room_id: &str, c: crate::utils::c
     col.into()
 }
 
-fn reaction_group(reaction: &Reaction, room_id: &str, c: crate::utils::const_values::AppColors) -> Element {
+fn reaction_group(
+    reaction: &Reaction,
+    room_id: &str,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
     let mut group = rect().vertical().width(Size::fill()).spacing(4.).child(
         label()
             .text(format!(
                 "{} · {} {}",
                 reaction.key,
                 reaction.count,
-                if reaction.count == 1 { "person" } else { "people" }
+                if reaction.count == 1 {
+                    "person"
+                } else {
+                    "people"
+                }
             ))
             .font_size(13.)
             .color(c.on_surface),
