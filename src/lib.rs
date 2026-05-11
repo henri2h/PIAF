@@ -1,5 +1,5 @@
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use freya::prelude::*;
 #[cfg(target_os = "android")]
@@ -36,7 +36,6 @@ pub static SYNC_TX: OnceLock<watch::Sender<()>> = OnceLock::new();
 pub static SYNC_RX: OnceLock<watch::Receiver<()>> = OnceLock::new();
 pub static ACTIVE_ROOM_TX: OnceLock<watch::Sender<Option<String>>> = OnceLock::new();
 pub static ACTIVE_ROOM_RX: OnceLock<watch::Receiver<Option<String>>> = OnceLock::new();
-pub static THEME_PREF: AtomicU8 = AtomicU8::new(0);
 /// Set to true by Layout when the window is wide enough for split-pane view.
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "android")]
@@ -94,17 +93,7 @@ struct Layout;
 #[cfg(not(target_os = "android"))]
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
-        let mut theme = use_init_theme(|| {
-            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
-            effective_theme(pref, *Platform::get().preferred_theme.read())
-        });
-        use_side_effect(move || {
-            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
-            theme.set(effective_theme(
-                pref,
-                *Platform::get().preferred_theme.read(),
-            ));
-        });
+        use_init_theme(|| effective_theme(utils::matrix::load_theme_is_dark()));
 
         let mut width: State<f32> = use_state(|| 0.0f32);
         let w = *width.read();
@@ -210,17 +199,7 @@ impl Component for Layout {
 #[cfg(target_os = "android")]
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
-        let mut theme = use_init_theme(|| {
-            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
-            effective_theme(pref, *Platform::get().preferred_theme.read())
-        });
-        use_side_effect(move || {
-            let pref = utils::const_values::ThemePref::from_u8(THEME_PREF.load(Ordering::Relaxed));
-            theme.set(effective_theme(
-                pref,
-                *Platform::get().preferred_theme.read(),
-            ));
-        });
+        use_init_theme(|| effective_theme(utils::matrix::load_theme_is_dark()));
 
         let route = use_route::<Route>();
 
@@ -806,13 +785,6 @@ fn android_main(droid_app: AndroidApp) {
         ACTIVE_ROOM_TX.set(active_room_tx).unwrap();
         ACTIVE_ROOM_RX.set(active_room_rx).unwrap();
 
-        let saved_pref = tokio::fs::read_to_string(data_path.join("theme_pref"))
-            .await
-            .ok()
-            .and_then(|s| s.trim().parse::<u8>().ok())
-            .unwrap_or(0);
-        THEME_PREF.store(saved_pref, Ordering::Relaxed);
-
         tokio::spawn(async move {
             match utils::matrix::restore_matrix_client(data_path).await {
                 Ok(available) => println!("Client available: {available}"),
@@ -838,16 +810,8 @@ fn android_main(droid_app: AndroidApp) {
     )
 }
 
-pub(crate) fn effective_theme(
-    pref: utils::const_values::ThemePref,
-    system: PreferredTheme,
-) -> Theme {
+pub(crate) fn effective_theme(is_dark: bool) -> Theme {
     use utils::const_values::{piaf_dark_colors, piaf_light_colors};
-    let is_dark = match pref {
-        utils::const_values::ThemePref::Light => false,
-        utils::const_values::ThemePref::Dark => true,
-        utils::const_values::ThemePref::System => matches!(system, PreferredTheme::Dark),
-    };
     let mut theme = if is_dark { dark_theme() } else { light_theme() };
     theme.colors = if is_dark {
         piaf_dark_colors()

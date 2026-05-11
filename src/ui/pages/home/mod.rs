@@ -36,8 +36,6 @@ impl Component for HomePage {
         let c = use_app_colors();
 
         let mut chips_visible: State<bool> = use_state(|| false);
-        let sync_tick: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(SYNC_RX.get().expect("SYNC_RX not initialized"), sync_tick);
 
         // Active room: drive via context so RoomListItem re-renders in-place
         // without remounting VirtualScrollView (which would reset scroll position).
@@ -114,7 +112,6 @@ impl Component for HomePage {
         let rooms_len = filtered_rooms.len();
 
         let initial_loading = CLIENT.get().is_none();
-        let _ = *sync_tick.read();
         let is_wide = WIDE_MODE.load(Ordering::Relaxed);
         let is_search_open = *search_open.read();
         let show_chips = *chips_visible.read();

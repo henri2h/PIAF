@@ -4,8 +4,6 @@ use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use std::sync::atomic::Ordering;
-
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
 use crate::{Route, utils::matrix::CLIENT};
@@ -27,7 +25,8 @@ impl Component for Settings {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
 
-        let current_pref = crate::THEME_PREF.load(Ordering::Relaxed);
+        let is_dark = use_theme().read().name == "dark";
+        let theme_label = if is_dark { "Dark" } else { "Light" };
 
         let user_id = CLIENT
             .get()
@@ -88,11 +87,7 @@ impl Component for Settings {
                             .child(section_label("Appearance", c))
                             .child(nav_row(
                                 "Appearance",
-                                Some(match current_pref {
-                                    1 => "Light",
-                                    2 => "Dark",
-                                    _ => "System",
-                                }),
+                                Some(theme_label),
                                 freya_icons::lucide::sun_moon(),
                                 c,
                                 Arc::new(|| {

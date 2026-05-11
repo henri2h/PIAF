@@ -365,23 +365,19 @@ fn theme_pref_file() -> Option<std::path::PathBuf> {
         .map(|p| p.join("theme_pref"))
 }
 
-#[allow(dead_code)]
-pub async fn load_theme_pref() -> u8 {
-    let Some(path) = theme_pref_file() else {
-        return 0;
-    };
-    fs::read_to_string(&path)
-        .await
-        .ok()
-        .and_then(|s| s.trim().parse().ok())
-        .unwrap_or(0)
+pub fn load_theme_is_dark() -> bool {
+    theme_pref_file()
+        .and_then(|p| std::fs::read_to_string(p).ok())
+        .and_then(|s| s.trim().parse::<u8>().ok())
+        .map(|v| v == 2)
+        .unwrap_or(false)
 }
 
-pub async fn save_theme_pref(pref: u8) {
+pub async fn save_theme_pref(is_dark: bool) {
     let Some(path) = theme_pref_file() else {
         return;
     };
-    let _ = fs::write(&path, pref.to_string()).await;
+    let _ = fs::write(&path, if is_dark { "2" } else { "1" }).await;
 }
 
 // ── Draft persistence ─────────────────────────────────────────────────────────

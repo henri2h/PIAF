@@ -1,12 +1,11 @@
 use std::sync::Arc;
-use std::sync::atomic::Ordering;
 
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::Route;
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::utils::const_values::{AppColors, ThemePref};
+use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
 
 #[derive(PartialEq)]
@@ -16,7 +15,7 @@ impl Component for SettingsAppearance {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
         let theme = use_theme();
-        let current_pref = crate::THEME_PREF.load(Ordering::Relaxed);
+        let is_dark = theme.read().name == "dark";
 
         rect()
             .expanded()
@@ -36,21 +35,21 @@ impl Component for SettingsAppearance {
                     .width(Size::fill())
                     .padding(Gaps::new(8., 0., 8., 0.))
                     .child(super::section_label("Theme", c))
-                    .child(theme_selector(current_pref, c, theme)),
+                    .child(theme_selector(is_dark, c, theme)),
             )
     }
 }
 
-fn theme_selector(current: u8, c: AppColors, mut theme: State<Theme>) -> Element {
-    const OPTIONS: &[(u8, &str)] = &[(0, "System"), (1, "Light"), (2, "Dark")];
+fn theme_selector(is_dark: bool, c: AppColors, mut theme: State<Theme>) -> Element {
+    const OPTIONS: &[(bool, &str)] = &[(false, "Light"), (true, "Dark")];
     let mut row = rect()
         .horizontal()
         .width(Size::fill())
         .content(Content::flex())
         .padding(Gaps::new(8., 16., 12., 16.))
         .spacing(8.);
-    for &(val, name) in OPTIONS {
-        let is_selected = val == current;
+    for &(dark, name) in OPTIONS {
+        let is_selected = dark == is_dark;
         let bg = if is_selected {
             c.primary
         } else {
@@ -69,12 +68,9 @@ fn theme_selector(current: u8, c: AppColors, mut theme: State<Theme>) -> Element
                 .background(bg)
                 .overflow(Overflow::Clip)
                 .on_press(move |_| {
-                    crate::THEME_PREF.store(val, Ordering::Relaxed);
-                    let pref = ThemePref::from_u8(val);
-                    let system = *Platform::get().preferred_theme.read();
-                    theme.set(crate::effective_theme(pref, system));
+                    theme.set(crate::effective_theme(dark));
                     spawn(async move {
-                        crate::utils::matrix::save_theme_pref(val).await;
+                        crate::utils::matrix::save_theme_pref(dark).await;
                     });
                 })
                 .child(

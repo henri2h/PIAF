@@ -287,7 +287,6 @@ impl Component for ComposeBar {
                     let _ = room
                         .send_attachment(&filename, &mime, bytes, AttachmentConfig::default())
                         .await;
-                    let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
                 });
             }
         };
