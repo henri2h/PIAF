@@ -129,7 +129,7 @@ impl Component for HomePage {
                 .width(Size::fill())
                 .theme_colors(InputColorsThemePartial {
                     background: Some(Preference::Specific(Color::from(c.surface_container))),
-                    hover_background: Some(Preference::Specific(Color::from(c.surface_container))),
+                    focus_background: Some(Preference::Specific(Color::from(c.surface_container))),
                     border_fill: Some(Preference::Specific(Color::TRANSPARENT)),
                     focus_border_fill: Some(Preference::Specific(Color::from(c.primary))),
                     ..Default::default()

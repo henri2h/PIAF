@@ -24,11 +24,11 @@ pub(super) fn action_popup_overlay(
     let popup_item = popup_state.read().clone();
 
     let Some(popup_item) = popup_item else {
-        return Popup::new().show(false).into();
+        return Popup::new().into();
     };
 
     let Some(event) = popup_item.as_event() else {
-        return Popup::new().show(false).into();
+        return Popup::new().into();
     };
 
     let event_id = event.event_id().map(|id| id.to_string());
@@ -42,10 +42,10 @@ pub(super) fn action_popup_overlay(
                     _ => ("[Message]".to_string(), None),
                 }
             } else {
-                return Popup::new().show(false).into();
+                return Popup::new().into();
             }
         } else {
-            return Popup::new().show(false).into();
+            return Popup::new().into();
         };
 
     let sender_name: String = match event.sender_profile() {

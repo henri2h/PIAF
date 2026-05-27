@@ -22,7 +22,6 @@ pub fn action_popup(
     actions: Vec<PopupAction>,
 ) -> Element {
     Popup::new()
-        .show(true)
         .on_close_request(move |_| on_dismiss())
         .child(emoji_reaction_row(c, on_react))
         .children(action_button_list(c, actions))

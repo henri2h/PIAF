@@ -28,7 +28,6 @@ impl Component for UserPopupOverlay {
         let colors = theme.read().colors.clone();
         let mut open = self.open;
         let info_opt = self.open.read().clone();
-        let show = info_opt.is_some();
 
         let mut action_loading: State<bool> = use_state(|| false);
 
@@ -50,7 +49,6 @@ impl Component for UserPopupOverlay {
         drop(mutual_state);
 
         let mut popup = Popup::new()
-            .show(show)
             .on_close_request(move |_| *open.write() = None);
 
         if let Some(info) = info_opt {

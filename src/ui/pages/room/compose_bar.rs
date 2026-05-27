@@ -106,8 +106,8 @@ impl Component for ComposeBar {
         let tl = self.timeline.clone();
         let room_id = self.room_id.clone();
 
-        let focus = use_hook(|| Focus::new_for_id(Focus::new_id()));
-        let focus_status = use_focus_status(focus);
+        let a11y_id = use_a11y();
+        let focus = use_focus(a11y_id);
         let mut editable = use_editable(|| initial_text.clone(), EditableConfig::new);
         let mut editor_state = *editable.editor();
 
@@ -294,7 +294,7 @@ impl Component for ComposeBar {
         let line_count = editable.editor().read().len_lines().max(1);
         let inner_h = (line_count as f32 * LINE_H).min(MAX_LINES as f32 * LINE_H);
         let is_empty = editable.editor().read().rope().len_chars() == 0;
-        let is_focused = focus_status().is_focused();
+        let is_focused = focus().is_focused();
 
         let bar = rect().vertical().width(Size::fill()).background(c.surface);
         #[cfg(target_os = "android")]
@@ -398,13 +398,13 @@ impl Component for ComposeBar {
                     )
                     .child(
                         rect()
-                            .a11y_id(focus.a11y_id())
+                            .a11y_id(a11y_id)
                             .a11y_focusable(true)
                             .a11y_role(AccessibilityRole::TextInput)
                             .on_key_down(on_key_down)
                             .on_key_up(on_key_up)
                             .on_global_pointer_press(on_global_pointer_press)
-                            .on_pointer_down(move |_| focus.request_focus())
+                            .on_pointer_down(move |_| a11y_id.request_focus())
                             .width(Size::flex(1.0))
                             .height(Size::px(inner_h + V_PAD * 2.))
                             .corner_radius(20.)

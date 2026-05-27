@@ -26,12 +26,10 @@ impl Component for DetailModalOverlay {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
         let modal_item = self.modal.read().clone();
-        let show = modal_item.is_some();
         let room_id = self.room_id.clone();
         let mut modal = self.modal;
 
         let mut popup = Popup::new()
-            .show(show)
             .on_close_request(move |_| *modal.write() = None);
 
         if let Some(item) = modal_item {
