@@ -25,13 +25,14 @@ use matrix_sdk_ui::timeline::{
     RoomExt, TimelineDetails, TimelineEventItemId, TimelineItem, TimelineItemContent,
     TimelineReadReceiptTracking,
 };
-use tokio::sync::mpsc::UnboundedSender;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 use crate::utils::format_timestamp;
 use crate::utils::matrix::CLIENT;
 use crate::{
     ui::components::{
-        MediaViewer, MediaViewerItem, TopAppBar, TopAppBarAction, TopAppBarTitle, ViewerSource,
+        MediaViewer, MediaViewerItem, TopAppBar, TopAppBarAction, TopAppBarTitle, UserPopupInfo,
+        UserPopupOverlay, ViewerSource,
     },
     utils::use_app_colors,
 };
@@ -55,19 +56,205 @@ pub(super) struct Reaction {
     pub senders: Vec<ReactionSender>,
 }
 
-#[derive(Clone)]
-pub(super) struct TimelineHandle(pub Arc<matrix_sdk_ui::timeline::Timeline>);
-
-impl PartialEq for TimelineHandle {
-    fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.0, &other.0)
-    }
-}
-
 #[derive(Debug)]
 pub(super) enum MsgAction {
     React { event_id: String, key: String },
     Delete { event_id: String },
+    Send { text: String },
+    Edit { event_id: String, text: String },
+    Reply { reply_event_id: String, text: String },
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+fn spawn_timeline_task(
+    room_id: String,
+    init_tx: futures::channel::oneshot::Sender<(String, bool, Vec<Arc<TimelineItem>>)>,
+    mut page_rx: UnboundedReceiver<()>,
+    mut action_rx: UnboundedReceiver<MsgAction>,
+    update_tx: UnboundedSender<(Vec<Arc<TimelineItem>>, bool)>,
+    typing_tx: UnboundedSender<Vec<String>>,
+    reached_start_tx: UnboundedSender<()>,
+) {
+    let Some(client) = CLIENT.get().cloned() else { return };
+    tokio::task::spawn(async move {
+        let Ok(parsed_id) = RoomId::parse(&room_id) else { return };
+        let Some(room) = client.get_room(&parsed_id) else { return };
+        let name = room
+            .display_name()
+            .await
+            .map(|n| n.to_string())
+            .unwrap_or_else(|_| room_id.clone());
+        let dm = room.is_dm();
+
+        let Ok(timeline) = room
+            .timeline_builder()
+            .track_read_marker_and_receipts(TimelineReadReceiptTracking::MessageLikeEvents)
+            .build()
+            .await
+        else {
+            let _ = init_tx.send((name, dm, vec![]));
+            return;
+        };
+        let timeline = Arc::new(timeline);
+        let (items, mut stream) = timeline.subscribe().await;
+        let (_typing_guard, mut typing_broadcast) = room.subscribe_to_typing_notifications();
+
+        let mut tl_items: Vec<Arc<TimelineItem>> = items.iter().cloned().collect();
+        let _ = init_tx.send((name, dm, tl_items.clone()));
+
+        use matrix_sdk::ruma::api::client::receipt::create_receipt::v3::ReceiptType;
+        let _ = timeline.mark_as_read(ReceiptType::Read).await;
+        let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+
+        loop {
+            tokio::select! {
+                biased;
+                page_opt = page_rx.recv() => {
+                    if page_opt.is_none() { break; }
+                    if timeline.paginate_backwards(20).await.unwrap_or(false) {
+                        let _ = reached_start_tx.send(());
+                    }
+                }
+                action_opt = action_rx.recv() => {
+                    let Some(action) = action_opt else { break; };
+                    match action {
+                        MsgAction::React { event_id, key } => {
+                            if let Ok(eid) = OwnedEventId::try_from(event_id.as_str()) {
+                                let _ = timeline.toggle_reaction(&TimelineEventItemId::EventId(eid), &key).await;
+                            }
+                        }
+                        MsgAction::Delete { event_id } => {
+                            if let Ok(eid) = OwnedEventId::try_from(event_id.as_str()) {
+                                let _ = room.redact(&eid, None, None).await;
+                            }
+                        }
+                        MsgAction::Send { text } => {
+                            use matrix_sdk::ruma::events::AnyMessageLikeEventContent;
+                            use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
+                            let content = AnyMessageLikeEventContent::RoomMessage(RoomMessageEventContent::text_plain(text));
+                            let _ = timeline.send(content).await;
+                            let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+                        }
+                        MsgAction::Edit { event_id, text } => {
+                            use matrix_sdk::room::edit::EditedContent;
+                            use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
+                            if let Ok(eid) = OwnedEventId::try_from(event_id.as_str()) {
+                                let content = EditedContent::RoomMessage(RoomMessageEventContent::text_plain(text).into());
+                                let _ = timeline.edit(&TimelineEventItemId::EventId(eid), content).await;
+                                let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+                            }
+                        }
+                        MsgAction::Reply { reply_event_id, text } => {
+                            use matrix_sdk::ruma::events::room::message::RoomMessageEventContentWithoutRelation;
+                            if let Ok(eid) = OwnedEventId::try_from(reply_event_id.as_str()) {
+                                let content = RoomMessageEventContentWithoutRelation::text_plain(text);
+                                let _ = timeline.send_reply(content, eid).await;
+                                let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+                            }
+                        }
+                    }
+                }
+                typing_opt = typing_broadcast.recv() => {
+                    if let Ok(users) = typing_opt {
+                        let names: Vec<String> = users.into_iter().map(|uid| uid.localpart().to_string()).collect();
+                        let _ = typing_tx.send(names);
+                    }
+                }
+                diffs_opt = stream.next() => {
+                    let Some(diffs) = diffs_opt else { break; };
+                    let has_new = diffs.iter().any(|d| matches!(d, VectorDiff::PushBack { .. }));
+                    for diff in diffs { timeline::apply_diff(&mut tl_items, diff); }
+                    let _ = update_tx.send((tl_items.clone(), has_new));
+                }
+            }
+        }
+    });
+}
+
+async fn run_smol_loop(
+    mut reached_start_rx: UnboundedReceiver<()>,
+    mut update_rx: UnboundedReceiver<(Vec<Arc<TimelineItem>>, bool)>,
+    mut typing_rx: UnboundedReceiver<Vec<String>>,
+    mut at_start: State<bool>,
+    mut paginating: State<bool>,
+    mut auto_fill: State<bool>,
+    mut messages: State<Vec<Arc<TimelineItem>>>,
+    pinned_to_bottom: State<bool>,
+    mut typing_users: State<Vec<String>>,
+    heights: State<HashMap<String, f32>>,
+    mut scroll_controller: ScrollController,
+) {
+    loop {
+        tokio::select! {
+            _ = reached_start_rx.recv() => {
+                *at_start.write() = true;
+                *paginating.write() = false;
+                *auto_fill.write() = false;
+            }
+            update_opt = update_rx.recv() => {
+                let Some((msgs, has_new)) = update_opt else { break; };
+                let old_len = messages.read().len();
+                let new_len = msgs.len();
+                let prepend_count = new_len.saturating_sub(old_len);
+
+                if prepend_count > 0 && !has_new {
+                    let estimated: f32 = {
+                        let h = heights.read();
+                        msgs[..prepend_count]
+                            .iter()
+                            .map(|item| {
+                                item.as_event()
+                                    .and_then(|e| e.event_id())
+                                    .map(|id| id.to_string())
+                                    .and_then(|id| h.get(&id))
+                                    .copied()
+                                    .unwrap_or(DEFAULT_MSG_HEIGHT)
+                            })
+                            .sum()
+                    };
+                    let (_, y) = scroll_controller.into();
+                    *messages.write() = msgs;
+                    scroll_controller.scroll_to_y(y - estimated as i32);
+                } else {
+                    *messages.write() = msgs;
+                }
+
+                *paginating.write() = false;
+                if new_len == old_len {
+                    *auto_fill.write() = false;
+                }
+                if has_new && *pinned_to_bottom.read() {
+                    scroll_controller.scroll_to(ScrollPosition::End, Direction::Vertical);
+                }
+            }
+            typing_opt = typing_rx.recv() => {
+                let Some(users) = typing_opt else { break; };
+                *typing_users.write() = users;
+            }
+        }
+    }
+}
+
+fn try_auto_fill(
+    vp_h: f32,
+    content_h: f32,
+    auto_fill: State<bool>,
+    mut paginating: State<bool>,
+    mut anchor_info: State<Option<(i32, f32)>>,
+    scroll_controller: ScrollController,
+    paginate_tx: &Arc<UnboundedSender<()>>,
+) {
+    let should_fill = *auto_fill.read();
+    let is_paging = *paginating.read();
+    if should_fill && !is_paging && vp_h > 0.0 && content_h > 0.0 && content_h < vp_h {
+        let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
+        *anchor_info.write() = Some((y, content_h));
+        *paginating.write() = true;
+        let _ = paginate_tx.send(());
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -89,20 +276,20 @@ impl Component for RoomPage {
         let mut is_dm: State<bool> = use_state(|| false);
         let mut loading: State<bool> = use_state(|| true);
         let mut paginating: State<bool> = use_state(|| false);
-        let mut at_start: State<bool> = use_state(|| false);
+        let at_start: State<bool> = use_state(|| false);
         let mut pinned_to_bottom: State<bool> = use_state(|| true);
-        let mut timeline_handle: State<Option<TimelineHandle>> = use_state(|| None);
         let edit_info: State<Option<(String, String)>> = use_state(|| None);
         let reply_info: State<Option<(String, String, String)>> = use_state(|| None);
         let image_viewer: State<Option<String>> = use_state(|| None);
         let detail_modal: State<Option<Arc<TimelineItem>>> = use_state(|| None);
         let action_popup_state: State<Option<Arc<TimelineItem>>> = use_state(|| None);
+        let user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
         let mut content_height: State<f32> = use_state(|| 0.0f32);
         let mut anchor_info: State<Option<(i32, f32)>> = use_state(|| None);
         let mut auto_fill: State<bool> = use_state(|| false);
         let mut viewport_height: State<f32> = use_state(|| 0.0f32);
         let mut heights: State<HashMap<String, f32>> = use_state(HashMap::new);
-        let mut typing_users: State<Vec<String>> = use_state(|| vec![]);
+        let typing_users: State<Vec<String>> = use_state(|| vec![]);
 
         let mut scroll_controller = use_scroll_controller(|| ScrollConfig {
             default_vertical_position: ScrollPosition::End,
@@ -114,15 +301,13 @@ impl Component for RoomPage {
             Arc<UnboundedSender<MsgAction>>,
         ) = use_hook(|| {
             let room_id = room_id.clone();
-            let mut scroll_controller = scroll_controller;
-            let heights = heights;
 
-            let (page_tx, mut page_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
-            let (action_tx, mut action_rx) = tokio::sync::mpsc::unbounded_channel::<MsgAction>();
-            let (update_tx, mut update_rx) =
+            let (page_tx, page_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
+            let (action_tx, action_rx) = tokio::sync::mpsc::unbounded_channel::<MsgAction>();
+            let (update_tx, update_rx) =
                 tokio::sync::mpsc::unbounded_channel::<(Vec<Arc<TimelineItem>>, bool)>();
-            let (typing_tx, mut typing_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<String>>();
-            let (reached_start_tx, mut reached_start_rx) =
+            let (typing_tx, typing_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<String>>();
+            let (reached_start_tx, reached_start_rx) =
                 tokio::sync::mpsc::unbounded_channel::<()>();
 
             spawn(async move {
@@ -130,156 +315,24 @@ impl Component for RoomPage {
                     String,
                     bool,
                     Vec<Arc<TimelineItem>>,
-                    Option<Arc<matrix_sdk_ui::timeline::Timeline>>,
                 )>();
 
-                if let Some(client) = CLIENT.get().cloned() {
-                    let room_id2 = room_id.clone();
-                    tokio::task::spawn(async move {
-                        let Ok(parsed_id) = RoomId::parse(&room_id2) else {
-                            return;
-                        };
-                        let Some(room) = client.get_room(&parsed_id) else {
-                            return;
-                        };
-                        let name = room
-                            .display_name()
-                            .await
-                            .map(|n| n.to_string())
-                            .unwrap_or_else(|_| room_id2.clone());
-                        let dm = room.is_dm();
+                spawn_timeline_task(room_id, init_tx, page_rx, action_rx, update_tx, typing_tx, reached_start_tx);
 
-                        let Ok(timeline) = room
-                            .timeline_builder()
-                            .track_read_marker_and_receipts(
-                                TimelineReadReceiptTracking::MessageLikeEvents,
-                            )
-                            .build()
-                            .await
-                        else {
-                            let _ = init_tx.send((name, dm, vec![], None));
-                            return;
-                        };
-                        let timeline = Arc::new(timeline);
-                        let (items, mut stream) = timeline.subscribe().await;
-                        let (_typing_guard, mut typing_broadcast) =
-                            room.subscribe_to_typing_notifications();
-
-                        let mut tl_items: Vec<Arc<TimelineItem>> = items.iter().cloned().collect();
-                        let _ = init_tx.send((name, dm, tl_items.clone(), Some(timeline.clone())));
-
-                        use matrix_sdk::ruma::api::client::receipt::create_receipt::v3::ReceiptType;
-                        let _ = timeline.mark_as_read(ReceiptType::Read).await;
-                        let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
-
-                        loop {
-                            tokio::select! {
-                                biased;
-                                page_opt = page_rx.recv() => {
-                                    if page_opt.is_none() { break; }
-                                    if timeline.paginate_backwards(20).await.unwrap_or(false) {
-                                        let _ = reached_start_tx.send(());
-                                    }
-                                }
-                                action_opt = action_rx.recv() => {
-                                    let Some(action) = action_opt else { break; };
-                                    match action {
-                                        MsgAction::React { event_id, key } => {
-                                            if let Ok(eid) = OwnedEventId::try_from(event_id.as_str()) {
-                                                let item_id = TimelineEventItemId::EventId(eid);
-                                                let _ = timeline.toggle_reaction(&item_id, &key).await;
-                                            }
-                                        }
-                                        MsgAction::Delete { event_id } => {
-                                            if let Ok(eid) = OwnedEventId::try_from(event_id.as_str()) {
-                                                let _ = room.redact(&eid, None, None).await;
-                                            }
-                                        }
-                                    }
-                                }
-                                typing_opt = typing_broadcast.recv() => {
-                                    if let Ok(users) = typing_opt {
-                                        let names: Vec<String> = users
-                                            .into_iter()
-                                            .map(|uid| uid.localpart().to_string())
-                                            .collect();
-                                        let _ = typing_tx.send(names);
-                                    }
-                                }
-                                diffs_opt = stream.next() => {
-                                    let Some(diffs) = diffs_opt else { break; };
-                                    let has_new = diffs
-                                        .iter()
-                                        .any(|d| matches!(d, VectorDiff::PushBack { .. }));
-                                    for diff in diffs {
-                                        timeline::apply_diff(&mut tl_items, diff);
-                                    }
-                                    let _ = update_tx.send((tl_items.clone(), has_new));
-                                }
-                            }
-                        }
-                    });
-                }
-
-                if let Ok((name, dm, msgs, tl)) = init_rx.await {
+                if let Ok((name, dm, msgs)) = init_rx.await {
                     *room_name.write() = name;
                     *is_dm.write() = dm;
                     *messages.write() = msgs;
-                    *timeline_handle.write() = tl.map(TimelineHandle);
                 }
                 *loading.write() = false;
                 *auto_fill.write() = true;
 
-                loop {
-                    tokio::select! {
-                        _ = reached_start_rx.recv() => {
-                            *at_start.write() = true;
-                            *paginating.write() = false;
-                            *auto_fill.write() = false;
-                        }
-                        update_opt = update_rx.recv() => {
-                            let Some((msgs, has_new)) = update_opt else { break; };
-                            let old_len = messages.read().len();
-                            let new_len = msgs.len();
-                            let prepend_count = new_len.saturating_sub(old_len);
-
-                            if prepend_count > 0 && !has_new {
-                                let estimated: f32 = {
-                                    let h = heights.read();
-                                    msgs[..prepend_count]
-                                        .iter()
-                                        .map(|item| {
-                                            item.as_event()
-                                                .and_then(|e| e.event_id())
-                                                .map(|id| id.to_string())
-                                                .and_then(|id| h.get(&id))
-                                                .copied()
-                                                .unwrap_or(DEFAULT_MSG_HEIGHT)
-                                        })
-                                        .sum()
-                                };
-                                let (_, y) = scroll_controller.into();
-                                *messages.write() = msgs;
-                                scroll_controller.scroll_to_y(y - estimated as i32);
-                            } else {
-                                *messages.write() = msgs;
-                            }
-
-                            *paginating.write() = false;
-                            if new_len == old_len {
-                                *auto_fill.write() = false;
-                            }
-                            if has_new && *pinned_to_bottom.read() {
-                                scroll_controller
-                                    .scroll_to(ScrollPosition::End, Direction::Vertical);
-                            }
-                        }
-                        typing_opt = typing_rx.recv() => {
-                            let Some(users) = typing_opt else { break; };
-                            *typing_users.write() = users;
-                        }
-                    }
-                }
+                run_smol_loop(
+                    reached_start_rx, update_rx, typing_rx,
+                    at_start, paginating, auto_fill,
+                    messages, pinned_to_bottom, typing_users,
+                    heights, scroll_controller,
+                ).await;
             });
 
             (Arc::new(page_tx), Arc::new(action_tx))
@@ -351,7 +404,6 @@ impl Component for RoomPage {
 
         let is_loading = *loading.read();
         let is_paginating = *paginating.read();
-        let tl = timeline_handle.read().clone();
         let typing_label = {
             let users = typing_users.read();
             match users.len() {
@@ -389,6 +441,7 @@ impl Component for RoomPage {
                         modal: detail_modal,
                         room_id: room_id.clone(),
                     })
+                    .child(UserPopupOverlay { open: user_popup })
                     .child(action_popup_overlay(
                         action_popup_state,
                         CLIENT
@@ -460,16 +513,8 @@ impl Component for RoomPage {
                             .on_sized(move |e: Event<SizedEventData>| {
                                 let vp_h = e.area.height();
                                 let ch = *content_height.read();
-                                let should_fill = *auto_fill.read();
-                                let is_paging = *paginating.read();
                                 *viewport_height.write() = vp_h;
-                                if should_fill && !is_paging && vp_h > 0.0 && ch > 0.0 && ch < vp_h
-                                {
-                                    let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
-                                    *anchor_info.write() = Some((y, ch));
-                                    *paginating.write() = true;
-                                    let _ = paginate_tx_fill.send(());
-                                }
+                                try_auto_fill(vp_h, ch, auto_fill, paginating, anchor_info, scroll_controller, &paginate_tx_fill);
                             })
                             .child(
                                 ScrollView::new_controlled(scroll_controller)
@@ -526,20 +571,7 @@ impl Component for RoomPage {
                                                 }
                                                 *content_height.write() = new_h;
                                                 let vp_h = *viewport_height.read();
-                                                let should_fill = *auto_fill.read();
-                                                let is_paging = *paginating.read();
-                                                if should_fill
-                                                    && !is_paging
-                                                    && vp_h > 0.0
-                                                    && new_h > 0.0
-                                                    && new_h < vp_h
-                                                {
-                                                    let (_, y) =
-                                                        Into::<(i32, i32)>::into(scroll_controller);
-                                                    *anchor_info.write() = Some((y, new_h));
-                                                    *paginating.write() = true;
-                                                    let _ = paginate_tx_inner.send(());
-                                                }
+                                                try_auto_fill(vp_h, new_h, auto_fill, paginating, anchor_info, scroll_controller, &paginate_tx_inner);
                                             })
                                             .children({
                                                 let date_labels: Vec<Option<String>> = (0..msgs
@@ -551,6 +583,7 @@ impl Component for RoomPage {
                                                     .and_then(|cl| cl.user_id())
                                                     .map(|id| id.to_string());
                                                 let room_id_rows = room_id.clone();
+                                                let msg_action_tx_rows = msg_action_tx.clone();
                                                 msgs.into_iter()
                                                     .zip(date_labels.into_iter())
                                                     .enumerate()
@@ -585,11 +618,12 @@ impl Component for RoomPage {
                                                                 item,
                                                                 date_label,
                                                                 my_user_id: my_uid,
-                                                                action_tx: msg_action_tx.clone(),
+                                                                action_tx: msg_action_tx_rows.clone(),
                                                                 image_viewer,
                                                                 action_popup: action_popup_state,
                                                                 detail_modal,
                                                                 is_dm: room_is_dm,
+                                                                user_popup,
                                                             })
                                                             .into()
                                                     })
@@ -624,7 +658,7 @@ impl Component for RoomPage {
                                         edit_info,
                                         reply_info,
                                         room_id: room_id.clone(),
-                                        timeline: tl,
+                                        action_tx: msg_action_tx.clone(),
                                     },
                                 ))
                             })

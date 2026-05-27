@@ -1,12 +1,8 @@
 use crate::utils::{
     matrix::ROOM_LIST_SERVICE,
-    worker::{
-        client::{ClientReply, ClientResponse, WorkerTask},
-        sync::SyncTask,
-    },
+    worker::{client::WorkerTask, sync::MatrixSyncWorker},
 };
 use futures::channel::oneshot;
-use std::sync::mpsc::sync_channel;
 use tokio::sync::mpsc::UnboundedSender;
 
 pub mod client;
@@ -15,24 +11,21 @@ pub mod sync;
 #[derive(Clone, Debug)]
 pub struct Requester {
     pub tx: UnboundedSender<WorkerTask>,
-    pub sync_tx: UnboundedSender<SyncTask>,
 }
 
 impl Requester {
-    pub fn login(&self, username: String, password: String) -> anyhow::Result<()> {
-        let (reply, response) = oneshot_blocking();
-
+    pub async fn login(&self, username: String, password: String) -> anyhow::Result<()> {
+        let (tx, rx) = oneshot::channel();
         self.tx
-            .send(WorkerTask::Login(username, password, reply))
+            .send(WorkerTask::Login(username, password, tx))
             .unwrap();
-
-        return response.recv();
+        rx.await.map_err(|_| anyhow::anyhow!("worker dropped"))?
     }
 
     pub fn start_sync(&self, initial_sync_token: Option<String>) {
-        self.sync_tx
-            .send(SyncTask::RunSyncForever(initial_sync_token))
-            .unwrap();
+        tokio::spawn(async move {
+            MatrixSyncWorker {}.run(initial_sync_token).await;
+        });
     }
 
     pub fn start_room_list_sync(&self) {
@@ -76,12 +69,4 @@ impl Requester {
             .map_err(|_| ())?;
         rx.await.map_err(|_| ())?
     }
-}
-
-fn oneshot_blocking<T>() -> (ClientReply<T>, ClientResponse<T>) {
-    let (tx, rx) = sync_channel(1);
-    let reply = ClientReply(tx);
-    let response = ClientResponse(rx);
-
-    return (reply, response);
 }

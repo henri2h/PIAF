@@ -1,5 +1,6 @@
 use std::sync::atomic::Ordering;
 
+use futures::channel::oneshot;
 use matrix_sdk::{
     Client, ClientBuilder, LoopCtrl, ServerName,
     authentication::matrix::MatrixSession,
@@ -80,21 +81,9 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
         // cached rooms from the local store without waiting for the network.
         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
 
-        if ROOM_LIST_SERVICE.get().is_none() {
-            if let Ok(room_list_s) = RoomListService::new(client.clone()).await {
-                ROOM_LIST_SERVICE.set(room_list_s).ok();
-            }
-        }
-
-        #[cfg(target_os = "android")]
-        crate::utils::push::register_pusher_if_stored(&client, &base_dir).await;
-
         // Start sync only when the main app worker is available.
         // In the push context REQUESTER is not set, so this is skipped.
-        if let Some(rq) = REQUESTER.get() {
-            rq.start_sync(sync_token);
-            rq.start_room_list_sync();
-        }
+        activate_client(&client, sync_token, &base_dir).await;
 
         return Ok(true);
     }
@@ -133,6 +122,22 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<
     Ok((client, sync_token))
 }
 
+async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_dir: &Path) {
+    if ROOM_LIST_SERVICE.get().is_none() {
+        if let Ok(room_list_s) = RoomListService::new(client.clone()).await {
+            ROOM_LIST_SERVICE.set(room_list_s).ok();
+        }
+    }
+
+    #[cfg(target_os = "android")]
+    crate::utils::push::register_pusher_if_stored(client, _pusher_dir).await;
+
+    if let Some(rq) = REQUESTER.get() {
+        rq.start_sync(sync_token);
+        rq.start_room_list_sync();
+    }
+}
+
 pub async fn login_matrix(username: String, password: String) -> anyhow::Result<()> {
     let session_file = SESSION_FILE.get().unwrap();
     let data_dir = DATA_DIR.get().unwrap();
@@ -169,16 +174,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
             // Saving client
             CLIENT.set(client).expect("Client already set");
 
-            if let Ok(room_list_s) = RoomListService::new(CLIENT.get().unwrap().clone()).await {
-                ROOM_LIST_SERVICE.set(room_list_s).ok();
-            }
-
-            #[cfg(target_os = "android")]
-            crate::utils::push::register_pusher_if_stored(CLIENT.get().unwrap(), &data_dir).await;
-
-            let rq = REQUESTER.get().unwrap();
-            rq.start_sync(None);
-            rq.start_room_list_sync();
+            activate_client(CLIENT.get().unwrap(), None, data_dir).await;
 
             Ok(())
         }
@@ -443,6 +439,30 @@ pub async fn save_image_to_downloads(bytes: &[u8]) {
         .as_millis();
     let path = downloads_dir.join(format!("image_{}.jpg", ts));
     let _ = fs::write(&path, bytes).await;
+}
+
+// ── DM helpers ────────────────────────────────────────────────────────────────
+
+pub async fn create_or_get_dm(user_id: String) -> Option<String> {
+    let client = CLIENT.get().cloned()?;
+    let Ok(parsed) = matrix_sdk::ruma::UserId::parse(&user_id) else {
+        return None;
+    };
+    if let Some(room) = client.get_dm_room(&parsed) {
+        return Some(room.room_id().to_string());
+    }
+    let (tx, rx) = oneshot::channel::<Option<String>>();
+    tokio::spawn(async move {
+        use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoom;
+        let mut req = CreateRoom::new();
+        req.is_direct = true;
+        req.invite = vec![parsed.to_owned()];
+        match client.create_room(req).await {
+            Ok(room) => { let _ = tx.send(Some(room.room_id().to_string())); }
+            Err(_) => { let _ = tx.send(None); }
+        }
+    });
+    rx.await.ok().flatten()
 }
 
 /// Persist the sync token for a future session.

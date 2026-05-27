@@ -1,17 +1,15 @@
 use crate::utils::{
     matrix::{CLIENT, ROOM_LIST_SERVICE, login_matrix},
-    worker::{Requester, sync::MatrixSyncWorker},
+    worker::Requester,
 };
 use futures::channel::oneshot;
 use matrix_sdk::media::MediaFormat;
-use std::sync::mpsc::{Receiver, SyncSender};
 use tokio::sync::mpsc::{UnboundedReceiver, unbounded_channel};
 
 pub struct MatrixClientWorker {}
 
 pub enum WorkerTask {
-    Init,
-    Login(String, String, ClientReply<anyhow::Result<()>>),
+    Login(String, String, oneshot::Sender<anyhow::Result<()>>),
     FetchRoomAvatar(String, oneshot::Sender<Result<Vec<u8>, ()>>),
     FetchUserAvatar(oneshot::Sender<Result<Vec<u8>, ()>>),
     FetchUserDisplayName(oneshot::Sender<Result<String, ()>>),
@@ -21,26 +19,13 @@ pub enum WorkerTask {
 impl MatrixClientWorker {
     pub fn spawn() -> Requester {
         let (client_tx, client_rx) = unbounded_channel();
-        let (sync_tx, sync_rx) = unbounded_channel();
 
-        // Main worker
         let mut worker = MatrixClientWorker {};
-
         tokio::spawn(async move {
             worker.work(client_rx).await;
         });
 
-        // Sync worker
-        let mut sync_worker = MatrixSyncWorker {};
-
-        tokio::spawn(async move {
-            sync_worker.work(sync_rx).await;
-        });
-
-        return Requester {
-            tx: client_tx,
-            sync_tx,
-        };
+        Requester { tx: client_tx }
     }
 
     pub async fn work(&mut self, mut rx: UnboundedReceiver<WorkerTask>) {
@@ -58,11 +43,10 @@ impl MatrixClientWorker {
 
     pub async fn run(&mut self, task: WorkerTask) {
         match task {
-            WorkerTask::Init => todo!(),
             WorkerTask::Login(username, password, reply) => {
                 println!("Call worker login");
                 let response = login_matrix(username, password).await;
-                reply.send(response);
+                let _ = reply.send(response);
             }
             WorkerTask::FetchRoomAvatar(room_id, reply) => {
                 println!("Get room: {room_id}");
@@ -82,23 +66,6 @@ impl MatrixClientWorker {
                 do_fetch_room_previews(room_ids).await;
             }
         }
-    }
-}
-
-pub struct ClientResponse<T>(pub(crate) Receiver<T>);
-pub struct ClientReply<T>(pub(crate) SyncSender<T>);
-
-impl<T> ClientResponse<T> {
-    pub fn recv(self) -> T {
-        self.0
-            .recv()
-            .expect("failed to receive response from client thread")
-    }
-}
-
-impl<T> ClientReply<T> {
-    fn send(self, t: T) {
-        self.0.send(t).unwrap();
     }
 }
 

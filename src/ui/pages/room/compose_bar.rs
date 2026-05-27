@@ -1,19 +1,15 @@
+use std::sync::Arc;
 use std::time::Duration;
 
 use freya::prelude::*;
 use freya::text_edit::*;
-use matrix_sdk::room::edit::EditedContent;
-use matrix_sdk::ruma::OwnedEventId;
-use matrix_sdk::ruma::events::room::message::{
-    RoomMessageEventContent, RoomMessageEventContentWithoutRelation,
-};
-use matrix_sdk_ui::timeline::TimelineEventItemId;
+use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::{clear_draft, load_draft, save_draft};
 use crate::utils::use_app_colors;
 
-use super::TimelineHandle;
+use super::MsgAction;
 
 #[derive(PartialEq)]
 struct ComposeLine {
@@ -87,12 +83,12 @@ pub struct ComposeBar {
     pub edit_info: State<Option<(String, String)>>,
     pub reply_info: State<Option<(String, String, String)>>,
     pub room_id: String,
-    pub timeline: Option<TimelineHandle>,
+    pub action_tx: Arc<UnboundedSender<MsgAction>>,
 }
 
 impl PartialEq for ComposeBar {
     fn eq(&self, other: &Self) -> bool {
-        self.timeline == other.timeline && self.room_id == other.room_id
+        Arc::ptr_eq(&self.action_tx, &other.action_tx) && self.room_id == other.room_id
     }
 }
 
@@ -103,7 +99,7 @@ impl Component for ComposeBar {
         let initial_text = self.initial_text.clone();
         let mut edit_info = self.edit_info;
         let mut reply_info = self.reply_info;
-        let tl = self.timeline.clone();
+        let action_tx = self.action_tx.clone();
         let room_id = self.room_id.clone();
 
         let a11y_id = use_a11y();
@@ -131,8 +127,6 @@ impl Component for ComposeBar {
         let is_editing = edit_info.read().is_some();
         let is_replying = reply_info.read().is_some();
 
-        let tl_send = tl.clone();
-        let tl_edit = tl.clone();
         let room_id_attach = room_id.clone();
         let room_id_send = room_id.clone();
 
@@ -146,41 +140,13 @@ impl Component for ComposeBar {
             let reply = reply_info.read().clone();
 
             if let Some((event_id, _)) = edit {
-                if let Some(TimelineHandle(timeline)) = tl_edit.clone() {
-                    tokio::task::spawn(async move {
-                        if let Ok(eid) = OwnedEventId::try_from(event_id.as_str()) {
-                            let item_id = TimelineEventItemId::EventId(eid);
-                            let content = EditedContent::RoomMessage(
-                                RoomMessageEventContent::text_plain(text).into(),
-                            );
-                            let _ = timeline.edit(&item_id, content).await;
-                            let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
-                        }
-                    });
-                }
+                let _ = action_tx.send(MsgAction::Edit { event_id, text });
                 *edit_info.write() = None;
             } else if let Some((reply_event_id, _, _)) = reply {
-                if let Some(TimelineHandle(timeline)) = tl_send.clone() {
-                    tokio::task::spawn(async move {
-                        if let Ok(eid) = OwnedEventId::try_from(reply_event_id.as_str()) {
-                            let content = RoomMessageEventContentWithoutRelation::text_plain(text);
-                            let _ = timeline.send_reply(content, eid).await;
-                            let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
-                        }
-                    });
-                }
+                let _ = action_tx.send(MsgAction::Reply { reply_event_id, text });
                 *reply_info.write() = None;
             } else {
-                if let Some(TimelineHandle(timeline)) = tl_send.clone() {
-                    tokio::task::spawn(async move {
-                        use matrix_sdk::ruma::events::AnyMessageLikeEventContent;
-                        let content = AnyMessageLikeEventContent::RoomMessage(
-                            RoomMessageEventContent::text_plain(text),
-                        );
-                        let _ = timeline.send(content).await;
-                        let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
-                    });
-                }
+                let _ = action_tx.send(MsgAction::Send { text });
                 let room_id_clear = room_id_send.clone();
                 tokio::task::spawn(async move {
                     clear_draft(&room_id_clear).await;

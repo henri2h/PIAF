@@ -4,7 +4,7 @@ use freya_router::prelude::RouterContext;
 
 use crate::ui::pages::home::{ActiveRoomCtx, room_list_item::RoomListItem};
 use crate::utils::queries::FetchMutualRooms;
-use crate::{Route, utils::matrix::CLIENT};
+use crate::{Route, utils::matrix::{CLIENT, create_or_get_dm}};
 
 use super::Avatar;
 
@@ -68,16 +68,13 @@ impl Component for UserPopupOverlay {
                 vec![]
             };
 
-            let dm_room_id = CLIENT.get().and_then(|client| {
+            let has_dm = CLIENT.get().and_then(|client| {
                 matrix_sdk::ruma::UserId::parse(&info.user_id)
                     .ok()
                     .and_then(|uid| client.get_dm_room(&uid))
-                    .map(|r| r.room_id().to_string())
-            });
+            }).is_some();
 
             let common_count = common_rooms.len();
-            let has_dm = dm_room_id.is_some();
-            let dm_room_for_press = dm_room_id.clone();
             let user_id_for_press = info.user_id.clone();
 
             popup = popup
@@ -153,43 +150,12 @@ impl Component for UserPopupOverlay {
                                 return;
                             }
                             *action_loading.write() = true;
-                            let dm_room_id = dm_room_for_press.clone();
                             let user_id = user_id_for_press.clone();
                             spawn(async move {
-                                let room_id = if let Some(id) = dm_room_id {
-                                    Some(id)
-                                } else {
-                                    let Some(client) = CLIENT.get().cloned() else { return };
-                                    let (tx, rx) =
-                                        futures::channel::oneshot::channel::<Option<String>>();
-                                    tokio::spawn(async move {
-                                        let Ok(parsed) =
-                                            matrix_sdk::ruma::UserId::parse(&user_id)
-                                        else {
-                                            let _ = tx.send(None);
-                                            return;
-                                        };
-                                        use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoom;
-                                        let mut req = CreateRoom::new();
-                                        req.is_direct = true;
-                                        req.invite = vec![parsed.to_owned()];
-                                        match client.create_room(req).await {
-                                            Ok(room) => {
-                                                let _ = tx.send(Some(
-                                                    room.room_id().to_string(),
-                                                ));
-                                            }
-                                            Err(_) => {
-                                                let _ = tx.send(None);
-                                            }
-                                        }
-                                    });
-                                    rx.await.ok().flatten()
-                                };
-                                if let Some(id) = room_id {
+                                if let Some(room_id) = create_or_get_dm(user_id).await {
                                     *open.write() = None;
                                     let _ = RouterContext::get()
-                                        .push(Route::RoomPage { room_id: id });
+                                        .push(Route::RoomPage { room_id });
                                 }
                                 *action_loading.write() = false;
                             });

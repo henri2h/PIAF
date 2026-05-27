@@ -9,7 +9,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use super::{MsgAction, Reaction, ReactionSender};
 use crate::ui::components::{
-    Avatar, MediaThumbnail, UserPopupInfo, UserPopupOverlay, ViewerSource,
+    Avatar, MediaThumbnail, UserPopupInfo, ViewerSource,
 };
 use crate::utils::{format_timestamp, sender_color, use_app_colors};
 
@@ -23,6 +23,7 @@ pub struct MessageRow {
     pub action_popup: State<Option<Arc<TimelineItem>>>,
     pub detail_modal: State<Option<Arc<TimelineItem>>>,
     pub is_dm: bool,
+    pub user_popup: State<Option<UserPopupInfo>>,
 }
 
 impl PartialEq for MessageRow {
@@ -31,6 +32,7 @@ impl PartialEq for MessageRow {
             && self.date_label == other.date_label
             && self.is_dm == other.is_dm
             && Arc::ptr_eq(&self.action_tx, &other.action_tx)
+            && self.user_popup == other.user_popup
     }
 }
 
@@ -45,8 +47,7 @@ impl Component for MessageRow {
         let mut action_popup = self.action_popup;
         let mut detail_modal = self.detail_modal;
         let date_label = self.date_label.clone();
-
-        let mut user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
+        let mut user_popup = self.user_popup;
         #[cfg(target_os = "android")]
         let mut press_gen: State<u32> = use_state(|| 0u32);
 
@@ -585,8 +586,7 @@ impl Component for MessageRow {
             .width(Size::fill())
             .child(date_separator)
             .child(row.child(bubble_col))
-            .child(read_receipt_row)
-            .child(UserPopupOverlay { open: user_popup });
+            .child(read_receipt_row);
 
         #[cfg(target_os = "android")]
         return rect()
@@ -614,7 +614,6 @@ impl Component for MessageRow {
             })
             .child(date_separator)
             .child(row.child(bubble_col))
-            .child(read_receipt_row)
-            .child(UserPopupOverlay { open: user_popup });
+            .child(read_receipt_row);
     }
 }

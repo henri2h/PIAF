@@ -37,7 +37,7 @@ impl Component for LoginPage {
             *error_string.write() = None;
             *logging_in.write() = true;
             spawn(async move {
-                let result = REQUESTER.get().unwrap().login(username, pwd);
+                let result = REQUESTER.get().unwrap().login(username, pwd).await;
                 *logging_in.write() = false;
                 match result {
                     Ok(()) => {

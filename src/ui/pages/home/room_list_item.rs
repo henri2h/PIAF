@@ -154,6 +154,32 @@ fn hero_initial(hero: &RoomHero) -> String {
 }
 
 // ---------------------------------------------------------------------------
+// Android long-press helpers
+// ---------------------------------------------------------------------------
+
+#[cfg(target_os = "android")]
+fn start_long_press(mut press_gen: State<u64>, mut long_pressed: State<bool>) {
+    let next_gen = *press_gen.read() + 1;
+    *press_gen.write() = next_gen;
+    spawn(async move {
+        tokio::time::sleep(std::time::Duration::from_millis(350)).await;
+        if *press_gen.read() == next_gen {
+            *long_pressed.write() = true;
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+            if *press_gen.read() == next_gen {
+                *long_pressed.write() = false;
+            }
+        }
+    });
+}
+
+#[cfg(target_os = "android")]
+fn cancel_long_press(mut press_gen: State<u64>, mut long_pressed: State<bool>) {
+    *press_gen.write() += 1;
+    *long_pressed.write() = false;
+}
+
+// ---------------------------------------------------------------------------
 // RoomListItem
 // ---------------------------------------------------------------------------
 
@@ -494,32 +520,10 @@ impl Component for RoomListItem {
 
         #[cfg(target_os = "android")]
         return outer
-            .on_touch_start(move |_: Event<TouchEventData>| {
-                let next_gen = *press_gen.read() + 1;
-                *press_gen.write() = next_gen;
-                spawn(async move {
-                    tokio::time::sleep(std::time::Duration::from_millis(350)).await;
-                    if *press_gen.read() == next_gen {
-                        *long_pressed.write() = true;
-                        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-                        if *press_gen.read() == next_gen {
-                            *long_pressed.write() = false;
-                        }
-                    }
-                });
-            })
-            .on_touch_move(move |_: Event<TouchEventData>| {
-                *press_gen.write() += 1;
-                *long_pressed.write() = false;
-            })
-            .on_touch_end(move |_: Event<TouchEventData>| {
-                *press_gen.write() += 1;
-                *long_pressed.write() = false;
-            })
-            .on_touch_cancel(move |_: Event<TouchEventData>| {
-                *press_gen.write() += 1;
-                *long_pressed.write() = false;
-            })
+            .on_touch_start(move |_: Event<TouchEventData>| start_long_press(press_gen, long_pressed))
+            .on_touch_move(move |_: Event<TouchEventData>| cancel_long_press(press_gen, long_pressed))
+            .on_touch_end(move |_: Event<TouchEventData>| cancel_long_press(press_gen, long_pressed))
+            .on_touch_cancel(move |_: Event<TouchEventData>| cancel_long_press(press_gen, long_pressed))
             .child(highlighted);
     }
 }
