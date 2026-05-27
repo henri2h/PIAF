@@ -234,6 +234,8 @@ impl Component for RoomPage {
                     tokio::select! {
                         _ = reached_start_rx.recv() => {
                             *at_start.write() = true;
+                            *paginating.write() = false;
+                            *auto_fill.write() = false;
                         }
                         update_opt = update_rx.recv() => {
                             let Some((msgs, has_new)) = update_opt else { break; };
