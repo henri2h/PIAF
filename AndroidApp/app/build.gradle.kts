@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
@@ -41,7 +43,14 @@ android {
 
 tasks.register<Exec>("buildRustLibrary") {
     workingDir("../..")
-    val androidHome = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT") ?: ""
+    val androidHome = System.getenv("ANDROID_HOME")
+        ?: System.getenv("ANDROID_SDK_ROOT")
+        ?: run {
+            val localProps = Properties()
+            val localPropsFile = rootProject.file("local.properties")
+            if (localPropsFile.exists()) localProps.load(localPropsFile.inputStream())
+            localProps.getProperty("sdk.dir") ?: ""
+        }
     environment("ANDROID_HOME", androidHome)
     environment("ANDROID_JAR", "$androidHome/platforms/android-36/android.jar")
     commandLine("cargo", "ndk",

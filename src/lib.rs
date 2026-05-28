@@ -200,6 +200,7 @@ impl Component for Layout {
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
         use_init_theme(|| effective_theme(utils::matrix::load_theme_is_dark()));
+        let c = utils::use_app_colors();
 
         let route = use_route::<Route>();
 
@@ -247,7 +248,7 @@ impl Component for Layout {
                         .main_align(Alignment::center())
                         .padding(Gaps::new(4., 4., 20., 4.))
                         .spacing(4.)
-                        .background(utils::use_app_colors().surface)
+                        .background(c.surface)
                         .child(navbar_tab(Route::HomePage, "Chats", lucide::message_circle))
                         .child(navbar_tab(Route::Settings, "Settings", lucide::settings))
                         .into_element()
@@ -774,7 +775,7 @@ fn android_main(droid_app: AndroidApp) {
 
     // Initialize workers while runtime is active; spawned tasks keep running after block_on.
     rt.block_on(async {
-        let requester = utils::worker::MatrixClientWorker::spawn().await;
+        let requester = utils::worker::client::MatrixClientWorker::spawn();
         REQUESTER.set(requester).unwrap();
 
         let (sync_tx, sync_rx) = tokio::sync::watch::channel(());
