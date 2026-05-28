@@ -520,10 +520,18 @@ impl Component for RoomListItem {
 
         #[cfg(target_os = "android")]
         return outer
-            .on_touch_start(move |_: Event<TouchEventData>| start_long_press(press_gen, long_pressed))
-            .on_touch_move(move |_: Event<TouchEventData>| cancel_long_press(press_gen, long_pressed))
-            .on_touch_end(move |_: Event<TouchEventData>| cancel_long_press(press_gen, long_pressed))
-            .on_touch_cancel(move |_: Event<TouchEventData>| cancel_long_press(press_gen, long_pressed))
+            .on_touch_start(move |_: Event<TouchEventData>| {
+                start_long_press(press_gen, long_pressed)
+            })
+            .on_touch_move(move |_: Event<TouchEventData>| {
+                cancel_long_press(press_gen, long_pressed)
+            })
+            .on_touch_end(move |_: Event<TouchEventData>| {
+                cancel_long_press(press_gen, long_pressed)
+            })
+            .on_touch_cancel(move |_: Event<TouchEventData>| {
+                cancel_long_press(press_gen, long_pressed)
+            })
             .child(highlighted);
     }
 }

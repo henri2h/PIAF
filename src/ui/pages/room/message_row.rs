@@ -8,9 +8,7 @@ use matrix_sdk_ui::timeline::{
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::{MsgAction, Reaction, ReactionSender};
-use crate::ui::components::{
-    Avatar, MediaThumbnail, UserPopupInfo, ViewerSource,
-};
+use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, ViewerSource};
 use crate::utils::{format_timestamp, sender_color, use_app_colors};
 
 pub struct MessageRow {

@@ -29,8 +29,7 @@ impl Component for DetailModalOverlay {
         let room_id = self.room_id.clone();
         let mut modal = self.modal;
 
-        let mut popup = Popup::new()
-            .on_close_request(move |_| *modal.write() = None);
+        let mut popup = Popup::new().on_close_request(move |_| *modal.write() = None);
 
         if let Some(item) = modal_item {
             popup = popup

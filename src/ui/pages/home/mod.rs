@@ -5,7 +5,6 @@ use std::sync::atomic::Ordering;
 
 use filter_chip::{FilterChip, RoomFilter};
 use freya::prelude::*;
-use freya_material_design::prelude::Ripple;
 use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 use room_list_item::RoomListItem;
@@ -375,41 +374,6 @@ impl Component for HomePage {
                         .into_element(),
                     )
                     .into_element()
-            })
-            // New chat FAB — narrow mode only (wide has pencil in app bar)
-            .child(if !is_wide {
-                rect()
-                    .position(Position::new_global().right(16.).bottom(16.))
-                    .layer(100)
-                    .width(Size::px(56.))
-                    .height(Size::px(56.))
-                    .corner_radius(16.)
-                    .background(c.primary)
-                    .shadow((0., 4., 12., 2., (0, 0, 0, 60)))
-                    .overflow(Overflow::Clip)
-                    .on_press(|_| {
-                        let _ = RouterContext::get().push(crate::Route::NewChat);
-                    })
-                    .child(
-                        Ripple::new()
-                            .width(Size::fill())
-                            .height(Size::fill())
-                            .child(
-                                rect()
-                                    .width(Size::fill())
-                                    .height(Size::fill())
-                                    .center()
-                                    .child(
-                                        svg(freya_icons::lucide::pencil())
-                                            .width(Size::px(22.))
-                                            .height(Size::px(22.))
-                                            .color(c.on_primary),
-                                    ),
-                            ),
-                    )
-                    .into_element()
-            } else {
-                rect().into_element()
             })
     }
 }

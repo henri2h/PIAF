@@ -4,7 +4,10 @@ use freya_router::prelude::RouterContext;
 
 use crate::ui::pages::home::{ActiveRoomCtx, room_list_item::RoomListItem};
 use crate::utils::queries::FetchMutualRooms;
-use crate::{Route, utils::matrix::{CLIENT, create_or_get_dm}};
+use crate::{
+    Route,
+    utils::matrix::{CLIENT, create_or_get_dm},
+};
 
 use super::Avatar;
 
@@ -48,8 +51,7 @@ impl Component for UserPopupOverlay {
         let common_room_ids = mutual_state.state().ok().cloned().unwrap_or_default();
         drop(mutual_state);
 
-        let mut popup = Popup::new()
-            .on_close_request(move |_| *open.write() = None);
+        let mut popup = Popup::new().on_close_request(move |_| *open.write() = None);
 
         if let Some(info) = info_opt {
             let fetch_key = info.avatar_url.as_ref().map(|u| format!("mxc:{u}"));
@@ -68,11 +70,14 @@ impl Component for UserPopupOverlay {
                 vec![]
             };
 
-            let has_dm = CLIENT.get().and_then(|client| {
-                matrix_sdk::ruma::UserId::parse(&info.user_id)
-                    .ok()
-                    .and_then(|uid| client.get_dm_room(&uid))
-            }).is_some();
+            let has_dm = CLIENT
+                .get()
+                .and_then(|client| {
+                    matrix_sdk::ruma::UserId::parse(&info.user_id)
+                        .ok()
+                        .and_then(|uid| client.get_dm_room(&uid))
+                })
+                .is_some();
 
             let common_count = common_rooms.len();
             let user_id_for_press = info.user_id.clone();
@@ -131,9 +136,11 @@ impl Component for UserPopupOverlay {
                             ScrollView::new()
                                 .width(Size::fill())
                                 .height(Size::px(240.))
-                                .children(common_rooms.into_iter().map(|room| {
-                                    RoomListItem { room }.into_element()
-                                })),
+                                .children(
+                                    common_rooms
+                                        .into_iter()
+                                        .map(|room| RoomListItem { room }.into_element()),
+                                ),
                         )
                 }))
                 // ── DM button ─────────────────────────────────────────────────
@@ -154,8 +161,7 @@ impl Component for UserPopupOverlay {
                             spawn(async move {
                                 if let Some(room_id) = create_or_get_dm(user_id).await {
                                     *open.write() = None;
-                                    let _ = RouterContext::get()
-                                        .push(Route::RoomPage { room_id });
+                                    let _ = RouterContext::get().push(Route::RoomPage { room_id });
                                 }
                                 *action_loading.write() = false;
                             });

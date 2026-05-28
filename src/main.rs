@@ -13,7 +13,7 @@ use crate::utils::{
 use ui::pages::{
     home::HomePage,
     login::LoginPage,
-    new_chat::NewChat,
+    new_chat::{NewChat, NewGroup, NewGroupConfig},
     room::RoomPage,
     room_media::RoomMediaPage,
     room_members::RoomMembers,
@@ -90,6 +90,10 @@ pub enum Route {
         SettingsAppearance,
         #[route("/new-chat")]
         NewChat,
+        #[route("/new-group")]
+        NewGroup,
+        #[route("/new-group/config")]
+        NewGroupConfig,
         #[route("/room/:room_id")]
         RoomPage { room_id: String },
         #[route("/room/:room_id/search")]

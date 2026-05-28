@@ -458,8 +458,12 @@ pub async fn create_or_get_dm(user_id: String) -> Option<String> {
         req.is_direct = true;
         req.invite = vec![parsed.to_owned()];
         match client.create_room(req).await {
-            Ok(room) => { let _ = tx.send(Some(room.room_id().to_string())); }
-            Err(_) => { let _ = tx.send(None); }
+            Ok(room) => {
+                let _ = tx.send(Some(room.room_id().to_string()));
+            }
+            Err(_) => {
+                let _ = tx.send(None);
+            }
         }
     });
     rx.await.ok().flatten()

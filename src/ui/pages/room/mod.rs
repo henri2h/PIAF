@@ -58,11 +58,24 @@ pub(super) struct Reaction {
 
 #[derive(Debug)]
 pub(super) enum MsgAction {
-    React { event_id: String, key: String },
-    Delete { event_id: String },
-    Send { text: String },
-    Edit { event_id: String, text: String },
-    Reply { reply_event_id: String, text: String },
+    React {
+        event_id: String,
+        key: String,
+    },
+    Delete {
+        event_id: String,
+    },
+    Send {
+        text: String,
+    },
+    Edit {
+        event_id: String,
+        text: String,
+    },
+    Reply {
+        reply_event_id: String,
+        text: String,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -78,10 +91,16 @@ fn spawn_timeline_task(
     typing_tx: UnboundedSender<Vec<String>>,
     reached_start_tx: UnboundedSender<()>,
 ) {
-    let Some(client) = CLIENT.get().cloned() else { return };
+    let Some(client) = CLIENT.get().cloned() else {
+        return;
+    };
     tokio::task::spawn(async move {
-        let Ok(parsed_id) = RoomId::parse(&room_id) else { return };
-        let Some(room) = client.get_room(&parsed_id) else { return };
+        let Ok(parsed_id) = RoomId::parse(&room_id) else {
+            return;
+        };
+        let Some(room) = client.get_room(&parsed_id) else {
+            return;
+        };
         let name = room
             .display_name()
             .await
@@ -307,17 +326,21 @@ impl Component for RoomPage {
             let (update_tx, update_rx) =
                 tokio::sync::mpsc::unbounded_channel::<(Vec<Arc<TimelineItem>>, bool)>();
             let (typing_tx, typing_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<String>>();
-            let (reached_start_tx, reached_start_rx) =
-                tokio::sync::mpsc::unbounded_channel::<()>();
+            let (reached_start_tx, reached_start_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
 
             spawn(async move {
-                let (init_tx, init_rx) = futures::channel::oneshot::channel::<(
-                    String,
-                    bool,
-                    Vec<Arc<TimelineItem>>,
-                )>();
+                let (init_tx, init_rx) =
+                    futures::channel::oneshot::channel::<(String, bool, Vec<Arc<TimelineItem>>)>();
 
-                spawn_timeline_task(room_id, init_tx, page_rx, action_rx, update_tx, typing_tx, reached_start_tx);
+                spawn_timeline_task(
+                    room_id,
+                    init_tx,
+                    page_rx,
+                    action_rx,
+                    update_tx,
+                    typing_tx,
+                    reached_start_tx,
+                );
 
                 if let Ok((name, dm, msgs)) = init_rx.await {
                     *room_name.write() = name;
@@ -328,11 +351,19 @@ impl Component for RoomPage {
                 *auto_fill.write() = true;
 
                 run_smol_loop(
-                    reached_start_rx, update_rx, typing_rx,
-                    at_start, paginating, auto_fill,
-                    messages, pinned_to_bottom, typing_users,
-                    heights, scroll_controller,
-                ).await;
+                    reached_start_rx,
+                    update_rx,
+                    typing_rx,
+                    at_start,
+                    paginating,
+                    auto_fill,
+                    messages,
+                    pinned_to_bottom,
+                    typing_users,
+                    heights,
+                    scroll_controller,
+                )
+                .await;
             });
 
             (Arc::new(page_tx), Arc::new(action_tx))
@@ -514,7 +545,15 @@ impl Component for RoomPage {
                                 let vp_h = e.area.height();
                                 let ch = *content_height.read();
                                 *viewport_height.write() = vp_h;
-                                try_auto_fill(vp_h, ch, auto_fill, paginating, anchor_info, scroll_controller, &paginate_tx_fill);
+                                try_auto_fill(
+                                    vp_h,
+                                    ch,
+                                    auto_fill,
+                                    paginating,
+                                    anchor_info,
+                                    scroll_controller,
+                                    &paginate_tx_fill,
+                                );
                             })
                             .child(
                                 ScrollView::new_controlled(scroll_controller)
@@ -571,7 +610,15 @@ impl Component for RoomPage {
                                                 }
                                                 *content_height.write() = new_h;
                                                 let vp_h = *viewport_height.read();
-                                                try_auto_fill(vp_h, new_h, auto_fill, paginating, anchor_info, scroll_controller, &paginate_tx_inner);
+                                                try_auto_fill(
+                                                    vp_h,
+                                                    new_h,
+                                                    auto_fill,
+                                                    paginating,
+                                                    anchor_info,
+                                                    scroll_controller,
+                                                    &paginate_tx_inner,
+                                                );
                                             })
                                             .children({
                                                 let date_labels: Vec<Option<String>> = (0..msgs
@@ -618,7 +665,8 @@ impl Component for RoomPage {
                                                                 item,
                                                                 date_label,
                                                                 my_user_id: my_uid,
-                                                                action_tx: msg_action_tx_rows.clone(),
+                                                                action_tx: msg_action_tx_rows
+                                                                    .clone(),
                                                                 image_viewer,
                                                                 action_popup: action_popup_state,
                                                                 detail_modal,

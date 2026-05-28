@@ -143,7 +143,10 @@ impl Component for ComposeBar {
                 let _ = action_tx.send(MsgAction::Edit { event_id, text });
                 *edit_info.write() = None;
             } else if let Some((reply_event_id, _, _)) = reply {
-                let _ = action_tx.send(MsgAction::Reply { reply_event_id, text });
+                let _ = action_tx.send(MsgAction::Reply {
+                    reply_event_id,
+                    text,
+                });
                 *reply_info.write() = None;
             } else {
                 let _ = action_tx.send(MsgAction::Send { text });
