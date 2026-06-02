@@ -699,9 +699,14 @@ impl Component for RoomPage {
                                             .on_sized(move |e: Event<SizedEventData>| {
                                                 // Once item heights are populated after the
                                                 // first layout, perform the deferred scroll.
-                                                if let Some(eid_str) =
-                                                    pending_focus_event.read().clone()
-                                                {
+                                                // Read then immediately drop the Ref before any
+                                                // write — keeping it alive in an `if let`
+                                                // condition would hold the borrow for the whole
+                                                // block and cause a RefCell panic on .write().
+                                                let pending_eid =
+                                                    pending_focus_event.read().clone();
+                                                if let Some(eid_str) = pending_eid {
+                                                    *pending_focus_event.write() = None;
                                                     if let Ok(eid) =
                                                         OwnedEventId::try_from(eid_str.as_str())
                                                     {
@@ -739,7 +744,6 @@ impl Component for RoomPage {
                                                                 .scroll_to_y(offset as i32);
                                                         }
                                                     }
-                                                    *pending_focus_event.write() = None;
                                                 }
 
                                                 let new_h = e.inner_sizes.height;
