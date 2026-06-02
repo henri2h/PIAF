@@ -98,11 +98,13 @@ impl Component for MediaThumbnail {
             (Some(tb), _) => ImageViewer::new((format!("{item_key}-thumb"), Bytes::from(tb)))
                 .width(Size::fill())
                 .height(Size::fill())
+                .aspect_ratio(AspectRatio::Max)
                 .image_cover(ImageCover::Center)
                 .into_element(),
             (None, Some(bh)) => ImageViewer::new((format!("{item_key}-bh"), Bytes::from(bh)))
                 .width(Size::fill())
                 .height(Size::fill())
+                .aspect_ratio(AspectRatio::Max)
                 .image_cover(ImageCover::Center)
                 .into_element(),
             (None, None) => rect()

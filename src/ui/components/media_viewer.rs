@@ -111,22 +111,20 @@ impl Component for MediaViewer {
         let items_len = items.len();
         let mut known_count: State<usize> = use_state(move || items_len);
 
-        let prev_count = *known_count.read();
-        let cur_count = items.len();
-        if cur_count > prev_count {
-            let items_snap = items.clone();
-            let want = *want_next.read();
-            spawn(async move {
+        let items_for_nav = items.clone();
+        use_side_effect(move || {
+            let cur_count = items_for_nav.len();
+            let prev = *known_count.read();
+            if cur_count > prev {
                 *known_count.write() = cur_count;
-                if want {
-                    // Navigate to the first newly-loaded item.
-                    if let Some(item) = items_snap.get(prev_count) {
+                if *want_next.read() {
+                    if let Some(item) = items_for_nav.get(prev) {
                         *selected_key.write() = Some(item.key.clone());
                     }
                     *want_next.write() = false;
                 }
-            });
-        }
+            }
+        });
 
         let key_str = selected_key.read().clone();
         let idx = key_str
@@ -291,6 +289,8 @@ impl Component for MediaViewer {
             ImageViewer::new((item.key.clone(), Bytes::from(b)))
                 .width(Size::fill())
                 .height(Size::fill())
+                .aspect_ratio(AspectRatio::Min)
+                .image_cover(ImageCover::Center)
                 .into_element()
         } else {
             // Keyed rect ensures MediaThumbnail remounts on every navigation.
