@@ -22,8 +22,8 @@ use futures::StreamExt;
 use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk::ruma::{OwnedEventId, RoomId};
 use matrix_sdk_ui::timeline::{
-    RoomExt, TimelineDetails, TimelineEventItemId, TimelineItem, TimelineItemContent,
-    TimelineReadReceiptTracking,
+    RoomExt, TimelineDetails, TimelineEventFocusThreadMode, TimelineEventItemId, TimelineFocus,
+    TimelineItem, TimelineItemContent, TimelineReadReceiptTracking,
 };
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
@@ -84,6 +84,7 @@ pub(super) enum MsgAction {
 
 fn spawn_timeline_task(
     room_id: String,
+    initial_event_id: Option<String>,
     init_tx: futures::channel::oneshot::Sender<(String, bool, Vec<Arc<TimelineItem>>)>,
     mut page_rx: UnboundedReceiver<()>,
     mut action_rx: UnboundedReceiver<MsgAction>,
@@ -108,12 +109,24 @@ fn spawn_timeline_task(
             .unwrap_or_else(|_| room_id.clone());
         let dm = room.is_dm();
 
-        let Ok(timeline) = room
+        let focus_event_id: Option<OwnedEventId> = initial_event_id
+            .as_deref()
+            .and_then(|s| OwnedEventId::try_from(s).ok());
+
+        let mut tl_builder = room
             .timeline_builder()
-            .track_read_marker_and_receipts(TimelineReadReceiptTracking::MessageLikeEvents)
-            .build()
-            .await
-        else {
+            .track_read_marker_and_receipts(TimelineReadReceiptTracking::MessageLikeEvents);
+        if let Some(eid) = focus_event_id {
+            tl_builder = tl_builder.with_focus(TimelineFocus::Event {
+                target: eid,
+                num_context_events: 50,
+                thread_mode: TimelineEventFocusThreadMode::Automatic {
+                    hide_threaded_events: false,
+                },
+            });
+        }
+
+        let Ok(timeline) = tl_builder.build().await else {
             let _ = init_tx.send((name, dm, vec![]));
             return;
         };
@@ -309,9 +322,36 @@ impl Component for RoomPage {
         let mut viewport_height: State<f32> = use_state(|| 0.0f32);
         let mut heights: State<HashMap<String, f32>> = use_state(HashMap::new);
         let typing_users: State<Vec<String>> = use_state(|| vec![]);
+        // Holds the event ID to scroll to once the first layout completes.
+        let mut pending_focus_event: State<Option<String>> = use_state(|| None);
 
+        // Read any pending focus event for this room and clear the channel.
+        // The channel is cleared regardless of whether the room_id matched — any room
+        // opening supersedes a pending focus from an aborted navigation.
+        let initial_event_id: Option<String> = crate::FOCUS_EVENT_RX
+            .get()
+            .and_then(|rx| {
+                rx.borrow().as_ref().and_then(|(rid, eid)| {
+                    if rid == &room_id { Some(eid.clone()) } else { None }
+                })
+            });
+        if crate::FOCUS_EVENT_RX
+            .get()
+            .map(|rx| rx.borrow().is_some())
+            .unwrap_or(false)
+        {
+            if let Some(tx) = crate::FOCUS_EVENT_TX.get() {
+                let _ = tx.send(None);
+            }
+        }
+
+        let has_event_focus = initial_event_id.is_some();
         let mut scroll_controller = use_scroll_controller(|| ScrollConfig {
-            default_vertical_position: ScrollPosition::End,
+            default_vertical_position: if has_event_focus {
+                ScrollPosition::Start
+            } else {
+                ScrollPosition::End
+            },
             ..Default::default()
         });
 
@@ -320,6 +360,58 @@ impl Component for RoomPage {
             Arc<UnboundedSender<MsgAction>>,
         ) = use_hook(|| {
             let room_id = room_id.clone();
+
+            // Watch FOCUS_EVENT_RX for re-focus requests that arrive while this room
+            // is already mounted (same-room search result navigation in wide mode).
+            if let Some(rx) = crate::FOCUS_EVENT_RX.get() {
+                let room_id_focus = room_id.clone();
+                let mut rx_watch = rx.clone();
+                let (refocus_tx, mut refocus_rx) =
+                    futures::channel::mpsc::unbounded::<String>();
+                tokio::task::spawn(async move {
+                    while rx_watch.changed().await.is_ok() {
+                        if let Some((rid, eid)) = rx_watch.borrow().clone() {
+                            if rid == room_id_focus {
+                                let _ = refocus_tx.unbounded_send(eid);
+                            }
+                        }
+                    }
+                });
+                spawn(async move {
+                    while let Some(eid_str) = refocus_rx.next().await {
+                        if let Ok(eid) = OwnedEventId::try_from(eid_str.as_str()) {
+                            let offset: Option<i32> = {
+                                let msgs = messages.read();
+                                msgs.iter()
+                                    .position(|item| {
+                                        item.as_event()
+                                            .and_then(|ev| ev.event_id())
+                                            == Some(eid.as_ref())
+                                    })
+                                    .map(|idx| {
+                                        let h = heights.read();
+                                        let px: f32 = msgs[..idx]
+                                            .iter()
+                                            .map(|mi| {
+                                                mi.as_event()
+                                                    .and_then(|ev| ev.event_id())
+                                                    .map(|id| id.to_string())
+                                                    .and_then(|id| h.get(&id))
+                                                    .copied()
+                                                    .unwrap_or(DEFAULT_MSG_HEIGHT)
+                                            })
+                                            .sum();
+                                        px as i32
+                                    })
+                            };
+                            if let Some(offset) = offset {
+                                scroll_controller.scroll_to_y(offset);
+                                *pinned_to_bottom.write() = false;
+                            }
+                        }
+                    }
+                });
+            }
 
             let (page_tx, page_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
             let (action_tx, action_rx) = tokio::sync::mpsc::unbounded_channel::<MsgAction>();
@@ -334,6 +426,7 @@ impl Component for RoomPage {
 
                 spawn_timeline_task(
                     room_id,
+                    initial_event_id.clone(),
                     init_tx,
                     page_rx,
                     action_rx,
@@ -345,6 +438,12 @@ impl Component for RoomPage {
                 if let Ok((name, dm, msgs)) = init_rx.await {
                     *room_name.write() = name;
                     *is_dm.write() = dm;
+
+                    // Defer scroll to after the first layout so actual row heights are used.
+                    if let Some(ref eid_str) = initial_event_id {
+                        *pending_focus_event.write() = Some(eid_str.clone());
+                    }
+
                     *messages.write() = msgs;
                 }
                 *loading.write() = false;
@@ -598,6 +697,51 @@ impl Component for RoomPage {
                                                     .into_element()
                                             })
                                             .on_sized(move |e: Event<SizedEventData>| {
+                                                // Once item heights are populated after the
+                                                // first layout, perform the deferred scroll.
+                                                if let Some(eid_str) =
+                                                    pending_focus_event.read().clone()
+                                                {
+                                                    if let Ok(eid) =
+                                                        OwnedEventId::try_from(eid_str.as_str())
+                                                    {
+                                                        let msgs = messages.read();
+                                                        if let Some(idx) =
+                                                            msgs.iter().position(|item| {
+                                                                item.as_event()
+                                                                    .and_then(|ev| ev.event_id())
+                                                                    == Some(eid.as_ref())
+                                                            })
+                                                        {
+                                                            let offset: f32 = {
+                                                                let h = heights.read();
+                                                                msgs[..idx]
+                                                                    .iter()
+                                                                    .map(|mi| {
+                                                                        mi.as_event()
+                                                                            .and_then(|ev| {
+                                                                                ev.event_id()
+                                                                            })
+                                                                            .map(|id| {
+                                                                                id.to_string()
+                                                                            })
+                                                                            .and_then(|id| {
+                                                                                h.get(&id)
+                                                                            })
+                                                                            .copied()
+                                                                            .unwrap_or(
+                                                                                DEFAULT_MSG_HEIGHT,
+                                                                            )
+                                                                    })
+                                                                    .sum()
+                                                            };
+                                                            scroll_controller
+                                                                .scroll_to_y(offset as i32);
+                                                        }
+                                                    }
+                                                    *pending_focus_event.write() = None;
+                                                }
+
                                                 let new_h = e.inner_sizes.height;
                                                 let maybe_anchor = *anchor_info.read();
                                                 if let Some((old_y, old_h)) = maybe_anchor {

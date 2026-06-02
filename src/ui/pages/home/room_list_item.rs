@@ -1,7 +1,6 @@
 use freya::prelude::*;
 use freya_material_design::prelude::Ripple;
 use freya_query::prelude::*;
-use freya_router::prelude::RouterContext;
 use matrix_sdk::{
     Room, RoomHero,
     latest_events::LatestEventValue,
@@ -12,7 +11,6 @@ use matrix_sdk::{
 };
 use std::time::Duration;
 
-use crate::Route;
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
 use crate::ui::pages::home::ActiveRoomCtx;
 use crate::utils::use_app_colors;
@@ -504,16 +502,7 @@ impl Component for RoomListItem {
             .padding(Gaps::new(2., 8., 2., 8.))
             .on_pointer_enter(move |_| *hovered.write() = true)
             .on_pointer_leave(move |_| *hovered.write() = false)
-            .on_press(move |_| {
-                if crate::WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed) {
-                    if let Some(tx) = crate::ACTIVE_ROOM_TX.get() {
-                        let _ = tx.send(Some(room_id_nav.clone()));
-                    }
-                }
-                let _ = RouterContext::get().push(Route::RoomPage {
-                    room_id: room_id_nav.clone(),
-                });
-            });
+            .on_press(move |_| super::navigate_to_room(room_id_nav.clone()));
 
         #[cfg(not(target_os = "android"))]
         return outer.child(highlighted);

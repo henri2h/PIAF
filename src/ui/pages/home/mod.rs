@@ -1,19 +1,48 @@
 mod filter_chip;
 pub mod room_list_item;
+mod search;
+mod search_tile;
 
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+use std::time::Duration;
 
 use filter_chip::{FilterChip, RoomFilter};
 use freya::prelude::*;
 use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 use room_list_item::RoomListItem;
-use std::time::Duration;
+use search::{MessageResult, search_messages_remote, search_rooms_local, search_users_remote};
+use search_tile::{MessageSearchTile, RoomSearchTile, UserSearchTile};
 
 use crate::ui::components::Avatar;
 use crate::utils::queries::FetchUserDisplayName;
-use crate::utils::{use_app_colors, use_tokio_track_watcher};
-use crate::{ACTIVE_ROOM_RX, Route, SYNC_RX, WIDE_MODE, utils::matrix::CLIENT};
+use crate::utils::{matrix::CLIENT, use_app_colors};
+use crate::{ACTIVE_ROOM_RX, ACTIVE_ROOM_TX, Route, WIDE_MODE};
+
+// ---------------------------------------------------------------------------
+// Shared helpers used by submodules
+// ---------------------------------------------------------------------------
+
+/// Navigate to a room: in wide mode sends to ACTIVE_ROOM_TX, always pushes the route.
+pub(super) fn navigate_to_room(room_id: String) {
+    if WIDE_MODE.load(Ordering::Relaxed) {
+        if let Some(tx) = ACTIVE_ROOM_TX.get() {
+            let _ = tx.send(Some(room_id.clone()));
+        }
+    }
+    let _ = RouterContext::get().push(Route::RoomPage { room_id });
+}
+
+/// Sort a room slice in-place by descending recency stamp.
+fn sort_rooms_by_recency(rooms: &mut Vec<matrix_sdk::Room>) {
+    rooms.sort_unstable_by(|a, b| {
+        b.recency_stamp()
+            .map(u64::from)
+            .unwrap_or(0)
+            .cmp(&a.recency_stamp().map(u64::from).unwrap_or(0))
+    });
+}
 
 // ---------------------------------------------------------------------------
 // Shared context for the currently active room ID
@@ -71,6 +100,99 @@ impl Component for HomePage {
         let name_query =
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
 
+        // Progressive search state — each section updates independently.
+        // Non-reactive AtomicU64 avoids the reactive re-trigger loop (see fix in this file).
+        let search_ver: Arc<AtomicU64> = use_hook(|| Arc::new(AtomicU64::new(0)));
+        let mut room_results: State<Vec<(String, String)>> = use_state(Vec::new);
+        let mut user_results: State<Vec<(String, String, Option<String>)>> = use_state(Vec::new);
+        let mut msg_results: State<Vec<MessageResult>> = use_state(Vec::new);
+        let mut searching: State<bool> = use_state(|| false);
+        let mut users_searching: State<bool> = use_state(|| false);
+        let mut msgs_searching: State<bool> = use_state(|| false);
+        // Pagination state for message search
+        let mut msg_next_batch: State<Option<String>> = use_state(|| None);
+        let mut msgs_loading_more: State<bool> = use_state(|| false);
+
+        let search_text = search.read().to_lowercase();
+        use_side_effect_with_deps(&search_text, {
+            let search_ver = search_ver.clone();
+            move |query: &String| {
+                let query = query.clone();
+                // Always bump version first so in-flight stale tasks are invalidated.
+                let ver = search_ver.fetch_add(1, Ordering::Relaxed) + 1;
+                let sv = search_ver.clone();
+                if query.trim().is_empty() {
+                    *room_results.write() = vec![];
+                    *user_results.write() = vec![];
+                    *msg_results.write() = vec![];
+                    *searching.write() = false;
+                    *users_searching.write() = false;
+                    *msgs_searching.write() = false;
+                    *msg_next_batch.write() = None;
+                    *msgs_loading_more.write() = false;
+                    return;
+                }
+                *searching.write() = true;
+                let (delay_tx, delay_rx) = futures::channel::oneshot::channel::<()>();
+                tokio::task::spawn(async move {
+                    tokio::time::sleep(Duration::from_millis(400)).await;
+                    let _ = delay_tx.send(());
+                });
+                spawn(async move {
+                    let _ = delay_rx.await;
+                    if sv.load(Ordering::Relaxed) != ver {
+                        return;
+                    }
+                    *searching.write() = false;
+                    // Reset pagination from any previous search.
+                    *msg_next_batch.write() = None;
+                    *msgs_loading_more.write() = false;
+
+                    // 1. Rooms — client-side, instant.
+                    *room_results.write() = search_rooms_local(&query)
+                        .into_iter()
+                        .map(|r| (r.room_id, r.display_name))
+                        .collect();
+
+                    // 2. Users — server-side, runs concurrently.
+                    *users_searching.write() = true;
+                    let sv_u = sv.clone();
+                    let q_u = query.clone();
+                    let (tx_u, rx_u) = futures::channel::oneshot::channel();
+                    tokio::task::spawn(async move {
+                        let _ = tx_u.send(search_users_remote(q_u).await);
+                    });
+                    spawn(async move {
+                        let results = rx_u.await.unwrap_or_default();
+                        if sv_u.load(Ordering::Relaxed) == ver {
+                            *user_results.write() = results
+                                .into_iter()
+                                .map(|u| (u.user_id, u.display_name, u.avatar_mxc))
+                                .collect();
+                            *users_searching.write() = false;
+                        }
+                    });
+
+                    // 3. Messages — server-side, runs concurrently.
+                    *msgs_searching.write() = true;
+                    let sv_m = sv.clone();
+                    let (tx_m, rx_m) = futures::channel::oneshot::channel();
+                    tokio::task::spawn(async move {
+                        let _ = tx_m.send(search_messages_remote(query, None).await);
+                    });
+                    spawn(async move {
+                        let (results, next_batch) = rx_m.await.unwrap_or_default();
+                        if sv_m.load(Ordering::Relaxed) == ver {
+                            *msg_results.write() = results;
+                            *msg_next_batch.write() = next_batch;
+                            *msgs_searching.write() = false;
+                        }
+                    });
+                });
+            }
+        });
+
+        // ── Room list data (only used when search is inactive) ────────────────
         let name_reader = name_query.read();
         let initial = name_reader
             .state()
@@ -87,26 +209,12 @@ impl Component for HomePage {
                 r
             })
             .unwrap_or_default();
-        rooms.sort_unstable_by(|a, b| {
-            let a_stamp = a.recency_stamp().map(u64::from).unwrap_or(0);
-            let b_stamp = b.recency_stamp().map(u64::from).unwrap_or(0);
-            b_stamp.cmp(&a_stamp)
-        });
+        sort_rooms_by_recency(&mut rooms);
 
-        let search_text = search.read().to_lowercase();
         let active_filter = filter.read().clone();
         let filtered_rooms: Vec<_> = rooms
             .into_iter()
-            .filter(|r| {
-                let name_matches = if search_text.is_empty() {
-                    true
-                } else {
-                    r.cached_display_name()
-                        .map(|n| n.to_string().to_lowercase().contains(&search_text))
-                        .unwrap_or(false)
-                };
-                name_matches && active_filter.matches(r)
-            })
+            .filter(|r| active_filter.matches(r))
             .collect();
         let rooms_len = filtered_rooms.len();
 
@@ -114,6 +222,54 @@ impl Component for HomePage {
         let is_wide = WIDE_MODE.load(Ordering::Relaxed);
         let is_search_open = *search_open.read();
         let show_chips = *chips_visible.read();
+        let is_searching = *searching.read();
+        let is_users_searching = *users_searching.read();
+        let is_msgs_searching = *msgs_searching.read();
+        let is_msgs_loading_more = *msgs_loading_more.read();
+        let msg_next_snap: Option<String> = msg_next_batch.read().clone();
+        let search_active = !search_text.trim().is_empty();
+
+        // Build the "Load more" footer element for the messages section.
+        let load_more_msgs: Option<Element> = if is_msgs_loading_more {
+            Some(section_loader(c))
+        } else if let Some(next_token) = msg_next_snap {
+            let sv = search_ver.clone();
+            let ver = sv.load(Ordering::Relaxed);
+            let query_for_more = search_text.clone();
+            Some(
+                rect()
+                    .width(Size::fill())
+                    .height(Size::px(44.))
+                    .center()
+                    .on_press(move |_| {
+                        *msgs_loading_more.write() = true;
+                        let sv2 = sv.clone();
+                        let q = query_for_more.clone();
+                        let token = next_token.clone();
+                        let (tx, rx) = futures::channel::oneshot::channel();
+                        tokio::task::spawn(async move {
+                            let _ = tx.send(search_messages_remote(q, Some(token)).await);
+                        });
+                        spawn(async move {
+                            let (results, new_next) = rx.await.unwrap_or_default();
+                            if sv2.load(Ordering::Relaxed) == ver {
+                                msg_results.write().extend(results);
+                                *msg_next_batch.write() = new_next;
+                                *msgs_loading_more.write() = false;
+                            }
+                        });
+                    })
+                    .child(
+                        label()
+                            .text("Load more")
+                            .font_size(14.)
+                            .color(c.primary),
+                    )
+                    .into_element(),
+            )
+        } else {
+            None
+        };
 
         // ── Search input builder ───────────────────────────────────────────────
         let mk_search = || {
@@ -124,7 +280,7 @@ impl Component for HomePage {
                         .width(Size::px(15.))
                         .height(Size::px(15.)),
                 )
-                .placeholder("Search conversations…")
+                .placeholder("Search conversations, people…")
                 .width(Size::fill())
                 .theme_colors(InputColorsThemePartial {
                     background: Some(Preference::Specific(Color::from(c.surface_container))),
@@ -244,7 +400,7 @@ impl Component for HomePage {
                 )
         };
 
-        // ── Filter chip bar ────────────────────────────────────────────────────
+        // ── Filter chip bar (hidden while search active) ───────────────────────
         let filter_bar = {
             let filters = [
                 RoomFilter::All,
@@ -277,12 +433,6 @@ impl Component for HomePage {
             .content(Content::Flex)
             .background(c.surface)
             .child(app_bar)
-            // Filter chips — hidden by default on narrow (shown on scroll-up), always visible on wide
-            .child(if show_chips || is_wide {
-                filter_bar.into_element()
-            } else {
-                rect().into_element()
-            })
             // Narrow: inline search bar below app bar when toggled
             .maybe_child(if !is_wide && is_search_open {
                 Some(
@@ -295,8 +445,27 @@ impl Component for HomePage {
             } else {
                 None
             })
-            // Main content: loading / empty / room list
-            .child(if initial_loading && rooms_len == 0 {
+            // Filter chips — hidden when search is active, or on narrow until scrolled
+            .child(if !search_active && (show_chips || is_wide) {
+                filter_bar.into_element()
+            } else {
+                rect().into_element()
+            })
+            // Main content: search results or room list
+            .child(if search_active {
+                if is_searching {
+                    rect()
+                        .expanded()
+                        .center()
+                        .child(CircularLoader::new().size(36.))
+                        .into_element()
+                } else {
+                    let rooms_snap = room_results.read().clone();
+                    let users_snap = user_results.read().clone();
+                    let msgs_snap = msg_results.read().clone();
+                    build_search_results(rooms_snap, users_snap, msgs_snap, is_users_searching, is_msgs_searching, load_more_msgs, c)
+                }
+            } else if initial_loading && rooms_len == 0 {
                 rect()
                     .expanded()
                     .center()
@@ -360,9 +529,7 @@ impl Component for HomePage {
                                     rq.fetch_room_previews(vec![room.room_id().to_owned()]);
                                 }
                             }
-                            let room_id = room.room_id().to_string();
                             rect()
-                                .key(room_id)
                                 .width(Size::fill())
                                 .child(RoomListItem { room: room.clone() })
                                 .into()
@@ -376,4 +543,104 @@ impl Component for HomePage {
                     .into_element()
             })
     }
+}
+
+// ---------------------------------------------------------------------------
+// Search results rendering (pure function — no hooks; tiles are components)
+// ---------------------------------------------------------------------------
+
+fn build_search_results(
+    rooms: Vec<(String, String)>,
+    users: Vec<(String, String, Option<String>)>,
+    messages: Vec<MessageResult>,
+    users_loading: bool,
+    msgs_loading: bool,
+    load_more_msgs: Option<Element>,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
+    let mut list = ScrollView::new()
+        .width(Size::fill())
+        .height(Size::flex(1.0));
+
+    // ── Rooms section ──────────────────────────────────────────────────────
+    list = list.child(section_header("Rooms", c));
+    if rooms.is_empty() {
+        list = list.child(empty_row("No rooms found", c));
+    } else {
+        for (room_id, display_name) in rooms {
+            list = list.child(RoomSearchTile { room_id, display_name });
+        }
+    }
+
+    // ── People section ─────────────────────────────────────────────────────
+    list = list.child(section_header("People", c));
+    if users_loading {
+        list = list.child(section_loader(c));
+    } else if users.is_empty() {
+        list = list.child(empty_row("No users found", c));
+    } else {
+        for (user_id, display_name, avatar_mxc) in users {
+            list = list.child(UserSearchTile { user_id, display_name, avatar_mxc });
+        }
+    }
+
+    // ── Messages section ───────────────────────────────────────────────────
+    list = list.child(section_header("Messages", c));
+    if msgs_loading {
+        list = list.child(section_loader(c));
+    } else if messages.is_empty() {
+        list = list.child(empty_row("No messages found", c));
+    } else {
+        for m in messages {
+            list = list.child(MessageSearchTile {
+                event_id: m.event_id,
+                room_id: m.room_id,
+                room_name: m.room_name,
+                body: m.body,
+                sender_display_name: m.sender_display_name,
+                event_ts_ms: m.event_ts_ms,
+                is_dm: m.is_dm,
+            });
+        }
+        if let Some(footer) = load_more_msgs {
+            list = list.child(footer);
+        }
+    }
+
+    list.into_element()
+}
+
+fn section_header(title: &'static str, c: crate::utils::const_values::AppColors) -> Element {
+    rect()
+        .width(Size::fill())
+        .padding(Gaps::new(12., 16., 4., 16.))
+        .child(
+            label()
+                .text(title)
+                .font_size(12.)
+                .color(c.on_surface_muted),
+        )
+        .into()
+}
+
+fn section_loader(_c: crate::utils::const_values::AppColors) -> Element {
+    rect()
+        .width(Size::fill())
+        .padding(Gaps::new(12., 16., 12., 16.))
+        .center()
+        .child(CircularLoader::new().size(24.))
+        .into()
+}
+
+fn empty_row(text: &'static str, c: crate::utils::const_values::AppColors) -> Element {
+    rect()
+        .width(Size::fill())
+        .padding(Gaps::new(6., 16., 6., 16.))
+        .child(
+            label()
+                .text(text)
+                .font_size(13.)
+                .color(c.on_surface_faint),
+        )
+        .into()
 }

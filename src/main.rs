@@ -33,6 +33,8 @@ pub static SYNC_TX: OnceLock<watch::Sender<()>> = OnceLock::new();
 pub static SYNC_RX: OnceLock<watch::Receiver<()>> = OnceLock::new();
 pub static ACTIVE_ROOM_TX: OnceLock<watch::Sender<Option<String>>> = OnceLock::new();
 pub static ACTIVE_ROOM_RX: OnceLock<watch::Receiver<Option<String>>> = OnceLock::new();
+pub static FOCUS_EVENT_TX: OnceLock<watch::Sender<Option<(String, String)>>> = OnceLock::new();
+pub static FOCUS_EVENT_RX: OnceLock<watch::Receiver<Option<(String, String)>>> = OnceLock::new();
 /// Set to true by Layout when the window is wide enough for split-pane view.
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 /// True while no sync batch has completed yet (initial loading phase).
@@ -55,6 +57,10 @@ fn main() {
     let (active_room_tx, active_room_rx) = watch::channel::<Option<String>>(None);
     ACTIVE_ROOM_TX.set(active_room_tx).unwrap();
     ACTIVE_ROOM_RX.set(active_room_rx).unwrap();
+
+    let (focus_event_tx, focus_event_rx) = watch::channel::<Option<(String, String)>>(None);
+    FOCUS_EVENT_TX.set(focus_event_tx).unwrap();
+    FOCUS_EVENT_RX.set(focus_event_rx).unwrap();
 
     tokio::spawn(async {
         let base_dir = dirs::data_dir().expect("no data_dir").join("piaf");
