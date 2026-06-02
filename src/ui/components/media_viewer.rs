@@ -65,13 +65,13 @@ impl Component for MediaViewer {
         // Fetches and caches the full-res bytes for the currently selected image.
         // Resets on every navigation so the placeholder shows immediately.
         // Also used for the download button.
+        // Uses use_side_effect_with_deps so the effect sees items added after mount.
         let mut current_bytes: State<Option<Vec<u8>>> = use_state(|| None);
-        let items_for_bytes = items.clone();
-        use_side_effect(move || {
+        use_side_effect_with_deps(&items, move |items| {
             let key = selected_key.read().clone();
             *current_bytes.write() = None;
             if let Some(k) = key {
-                if let Some(item) = items_for_bytes.iter().find(|i| i.key == k) {
+                if let Some(item) = items.iter().find(|i| i.key == k) {
                     match &item.source {
                         ViewerSource::Bytes(b) => {
                             *current_bytes.write() = Some(b.clone());
@@ -111,20 +111,22 @@ impl Component for MediaViewer {
         let items_len = items.len();
         let mut known_count: State<usize> = use_state(move || items_len);
 
-        let items_for_nav = items.clone();
-        use_side_effect(move || {
-            let cur_count = items_for_nav.len();
-            let prev = *known_count.read();
-            if cur_count > prev {
+        let prev_count = *known_count.read();
+        let cur_count = items.len();
+        if cur_count > prev_count {
+            let items_snap = items.clone();
+            let want = *want_next.read();
+            spawn(async move {
                 *known_count.write() = cur_count;
-                if *want_next.read() {
-                    if let Some(item) = items_for_nav.get(prev) {
+                if want {
+                    // Navigate to the first newly-loaded item.
+                    if let Some(item) = items_snap.get(prev_count) {
                         *selected_key.write() = Some(item.key.clone());
                     }
                     *want_next.write() = false;
                 }
-            }
-        });
+            });
+        }
 
         let key_str = selected_key.read().clone();
         let idx = key_str

@@ -52,13 +52,14 @@ impl Component for MediaThumb {
                 fallback_source,
                 thumb_size: Some((240, 240)),
             })
-            .maybe_child(is_hovered.then(|| {
+            .child(
                 rect()
                     .position(Position::new_absolute().top(0.).left(0.))
                     .layer(1)
                     .width(Size::fill())
                     .height(Size::fill())
                     .background((0u8, 0u8, 0u8, 80u8))
-            }))
+                    .opacity(if is_hovered { 1.0 } else { 0.0 }),
+            )
     }
 }
