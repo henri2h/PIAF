@@ -554,7 +554,9 @@ impl Component for ComposeBar {
                                             .vertical()
                                             .width(Size::fill())
                                             .padding(Gaps::new(V_PAD, 16., V_PAD, 16.))
-                                            .maybe_child(is_empty.then(|| {
+                                            // Placeholder is hidden once the bar is focused
+                                            // so the cursor and placeholder never overlap.
+                                            .maybe_child((is_empty && !is_focused).then(|| {
                                                 label()
                                                     .text(if is_editing {
                                                         "Edit message"
@@ -572,9 +574,7 @@ impl Component for ComposeBar {
                                                     line_index: i,
                                                     editable,
                                                     c,
-                                                    // Don't show the cursor while the placeholder
-                                                    // is visible — it would appear under the text.
-                                                    is_focused: is_focused && !is_empty,
+                                                    is_focused,
                                                 }
                                                 .into()
                                             })),

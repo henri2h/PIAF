@@ -3,7 +3,8 @@ use std::sync::Arc;
 use freya::prelude::*;
 use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk_ui::timeline::{
-    MembershipChange, TimelineDetails, TimelineItem, TimelineItemContent, VirtualTimelineItem,
+    EventSendState, MembershipChange, TimelineDetails, TimelineItem, TimelineItemContent,
+    VirtualTimelineItem,
 };
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -209,6 +210,7 @@ impl Component for MessageRow {
             })
             .collect();
         let fully_read = !read_receipts.is_empty();
+        let send_state = event.send_state().cloned();
 
         let reactions: Vec<Reaction> = msg_like
             .reactions
@@ -552,15 +554,20 @@ impl Component for MessageRow {
                         .color(c.on_surface_faint),
                 )
         } else {
-            let receipt_icon = if fully_read {
-                freya_icons::lucide::check_check()
-            } else {
-                freya_icons::lucide::check()
-            };
-            let receipt_color: (u8, u8, u8) = if fully_read {
-                c.receipt_read
-            } else {
-                c.receipt_default
+            let (receipt_icon, receipt_color) = match &send_state {
+                Some(EventSendState::NotSentYet { .. }) => {
+                    (freya_icons::lucide::clock(), c.on_surface_muted)
+                }
+                Some(EventSendState::SendingFailed { .. }) => {
+                    (freya_icons::lucide::circle_alert(), c.error)
+                }
+                _ => {
+                    if fully_read {
+                        (freya_icons::lucide::check_check(), c.receipt_read)
+                    } else {
+                        (freya_icons::lucide::check(), c.receipt_default)
+                    }
+                }
             };
             bubble_inner.child(reply_el).child(content_el).child(
                 rect()
@@ -709,13 +716,14 @@ impl Component for MessageRow {
                     .next()
                     .unwrap_or('?');
                 let color = sender_color(uid);
+                let member_key = format!("{}\x00{}", self.room_id, uid);
                 r = r.child(Avatar {
                     size: 16.,
                     bytes: None,
                     initial: initial.to_string(),
                     color,
-                    image_key: uid.clone(),
-                    fetch_key: None,
+                    image_key: member_key.clone(),
+                    fetch_key: Some(member_key),
                 });
             }
             if read_receipts.len() > 5 {
@@ -739,12 +747,55 @@ impl Component for MessageRow {
             rect().into_element()
         };
 
+        // ── Inline cancel row for failed sends ───────────────────────────
+        let failed_send_row =
+            if matches!(&send_state, Some(EventSendState::SendingFailed { .. })) {
+                if let Some(handle) = event.local_echo_send_handle() {
+                    rect()
+                        .horizontal()
+                        .width(Size::fill())
+                        .main_align(Alignment::End)
+                        .padding(Gaps::new(1., 12., 2., 12.))
+                        .spacing(8.)
+                        .child(
+                            label()
+                                .text("Failed to send")
+                                .font_size(11.)
+                                .color(c.error),
+                        )
+                        .child(
+                            rect()
+                                .corner_radius(4.)
+                                .padding(Gaps::new(2., 8., 2., 8.))
+                                .background(c.error)
+                                .on_press(move |_| {
+                                    let h = handle.clone();
+                                    tokio::task::spawn(async move {
+                                        let _ = h.abort().await;
+                                    });
+                                })
+                                .child(
+                                    label()
+                                        .text("Discard")
+                                        .font_size(11.)
+                                        .color((255u8, 255u8, 255u8)),
+                                ),
+                        )
+                        .into_element()
+                } else {
+                    rect().into_element()
+                }
+            } else {
+                rect().into_element()
+            };
+
         #[cfg(not(target_os = "android"))]
         return rect()
             .vertical()
             .width(Size::fill())
             .child(date_separator)
             .child(row.child(bubble_col))
+            .child(failed_send_row)
             .child(read_receipt_row);
 
         #[cfg(target_os = "android")]
@@ -773,6 +824,7 @@ impl Component for MessageRow {
             })
             .child(date_separator)
             .child(row.child(bubble_col))
+            .child(failed_send_row)
             .child(read_receipt_row);
     }
 }
