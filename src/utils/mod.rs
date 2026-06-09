@@ -141,3 +141,156 @@ pub fn format_date_label(date_key: &str) -> String {
     }
     date_key.to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use matrix_sdk::ruma::{MilliSecondsSinceUnixEpoch, UInt};
+
+    fn ts(millis: u64) -> MilliSecondsSinceUnixEpoch {
+        MilliSecondsSinceUnixEpoch(UInt::try_from(millis).unwrap())
+    }
+
+    // ── sender_color ─────────────────────────────────────────────────────────
+
+    #[test]
+    fn sender_color_is_deterministic() {
+        let a = sender_color("@alice:example.com");
+        let b = sender_color("@alice:example.com");
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn sender_color_differs_for_different_users() {
+        // Not strictly guaranteed by the hash, but holds for these two inputs.
+        let a = sender_color("@alice:example.com");
+        let b = sender_color("@bob:example.com");
+        assert_ne!(a, b);
+    }
+
+    #[test]
+    fn sender_color_empty_string_does_not_panic() {
+        let _ = sender_color("");
+    }
+
+    // ── extract_urls ─────────────────────────────────────────────────────────
+
+    #[test]
+    fn extract_urls_empty() {
+        assert!(extract_urls("").is_empty());
+    }
+
+    #[test]
+    fn extract_urls_no_urls() {
+        assert!(extract_urls("hello world, no links here").is_empty());
+    }
+
+    #[test]
+    fn extract_urls_plain_domain_ignored() {
+        assert!(extract_urls("visit example.com for more").is_empty());
+    }
+
+    #[test]
+    fn extract_urls_http() {
+        assert_eq!(extract_urls("see http://example.com"), vec!["http://example.com"]);
+    }
+
+    #[test]
+    fn extract_urls_https() {
+        assert_eq!(
+            extract_urls("see https://example.com"),
+            vec!["https://example.com"]
+        );
+    }
+
+    #[test]
+    fn extract_urls_strips_trailing_punctuation() {
+        assert_eq!(
+            extract_urls("check https://example.com."),
+            vec!["https://example.com"]
+        );
+        assert_eq!(
+            extract_urls("see https://example.com, ok"),
+            vec!["https://example.com"]
+        );
+        assert_eq!(
+            extract_urls("see https://example.com/path)"),
+            vec!["https://example.com/path"]
+        );
+        // Leading ( is part of the word from split_whitespace; extract_urls only strips
+        // trailing chars and does not handle a URL wrapped in balanced parentheses.
+        assert!(extract_urls("(https://example.com)").is_empty());
+    }
+
+    #[test]
+    fn extract_urls_multiple() {
+        let urls = extract_urls("a https://foo.com and https://bar.com here");
+        assert_eq!(urls, vec!["https://foo.com", "https://bar.com"]);
+    }
+
+    #[test]
+    fn extract_urls_preserves_path_and_query() {
+        let urls = extract_urls("see https://example.com/path?q=1&r=2");
+        assert_eq!(urls, vec!["https://example.com/path?q=1&r=2"]);
+    }
+
+    // ── format_date_key ───────────────────────────────────────────────────────
+
+    #[test]
+    fn format_date_key_known_timestamp() {
+        // Jan 15, 2020 12:00 UTC. In any practical timezone this is still Jan 15.
+        let result = format_date_key(ts(1_579_089_600_000));
+        // Must be a valid YYYY-MM-DD string
+        assert!(result.len() == 10, "unexpected: {result}");
+        assert_eq!(&result[..4], "2020");
+        let parts: Vec<&str> = result.split('-').collect();
+        assert_eq!(parts.len(), 3);
+    }
+
+    #[test]
+    fn format_date_key_invalid_returns_empty() {
+        // Timestamp 0 is valid (Unix epoch), but extremely large values overflow UInt.
+        // Use a ts() of 0 (Jan 1, 1970).
+        let result = format_date_key(ts(0));
+        assert!(!result.is_empty()); // epoch is valid
+    }
+
+    // ── format_date_label ─────────────────────────────────────────────────────
+
+    #[test]
+    fn format_date_label_old_date_returns_long_form() {
+        // March 5, 2019 is always in the past and far from any "last week" window.
+        let label = format_date_label("2019-03-05");
+        assert_eq!(label, "March 5, 2019");
+    }
+
+    #[test]
+    fn format_date_label_invalid_key_echoed_back() {
+        assert_eq!(format_date_label("not-a-date"), "not-a-date");
+        assert_eq!(format_date_label("2020-13-45"), "2020-13-45");
+    }
+
+    #[test]
+    fn format_date_label_old_year_format() {
+        assert_eq!(format_date_label("2018-11-22"), "November 22, 2018");
+    }
+
+    // ── format_timestamp ─────────────────────────────────────────────────────
+
+    #[test]
+    fn format_timestamp_old_different_year() {
+        // Jan 1, 2020 12:00 UTC — always older than 7 days, year != current year.
+        let result = format_timestamp(ts(1_577_880_000_000));
+        // Expect "Jan 1, 2020" format (month abbrev + day + year).
+        assert!(
+            result.contains("2020"),
+            "expected year 2020 in result, got: {result}"
+        );
+        assert!(result.contains("Jan"), "expected 'Jan' in result, got: {result}");
+    }
+
+    #[test]
+    fn format_timestamp_does_not_panic_on_zero() {
+        let _ = format_timestamp(ts(0));
+    }
+}

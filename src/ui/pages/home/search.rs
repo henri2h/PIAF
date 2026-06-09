@@ -1,10 +1,9 @@
+use matrix_sdk::Client;
 use matrix_sdk::ruma::{
     UInt,
     api::client::{filter::RoomEventFilter, search::search_events::v3 as search_v3},
     events::{AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent, room::message::MessageType},
 };
-
-use crate::utils::matrix::CLIENT;
 
 pub struct RoomResult {
     pub room_id: String,
@@ -28,10 +27,7 @@ pub struct MessageResult {
     pub is_dm: bool,
 }
 
-pub fn search_rooms_local(query: &str) -> Vec<RoomResult> {
-    let Some(client) = CLIENT.get() else {
-        return vec![];
-    };
+pub fn search_rooms_local(client: &Client, query: &str) -> Vec<RoomResult> {
     let ql = query.to_lowercase();
     let mut all_rooms = client.joined_rooms();
     all_rooms.extend(client.invited_rooms());
@@ -50,10 +46,7 @@ pub fn search_rooms_local(query: &str) -> Vec<RoomResult> {
         .collect()
 }
 
-pub async fn search_users_remote(query: String) -> Vec<UserResult> {
-    let Some(client) = CLIENT.get().cloned() else {
-        return vec![];
-    };
+pub async fn search_users_remote(client: Client, query: String) -> Vec<UserResult> {
     match client.search_users(&query, 5).await {
         Ok(r) => r
             .results
@@ -78,13 +71,10 @@ pub async fn search_users_remote(query: String) -> Vec<UserResult> {
 /// Returns `(results, next_batch_token)` where `next_batch_token` is `None`
 /// when there are no further pages.
 pub async fn search_messages_remote(
+    client: Client,
     query: String,
     next_batch: Option<String>,
 ) -> (Vec<MessageResult>, Option<String>) {
-    let Some(client) = CLIENT.get().cloned() else {
-        return (vec![], None);
-    };
-
     let mut filter = RoomEventFilter::default();
     filter.limit = Some(UInt::from(10u32));
 

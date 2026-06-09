@@ -425,9 +425,23 @@ pub async fn clear_draft(room_id: &str) {
     }
 }
 
-// ── Image download ────────────────────────────────────────────────────────────
+// ── Media download ────────────────────────────────────────────────────────────
 
-pub async fn save_image_to_downloads(bytes: &[u8]) {
+fn media_extension(bytes: &[u8]) -> &'static str {
+    if bytes.starts_with(b"\x89PNG") {
+        "png"
+    } else if bytes.starts_with(b"\xFF\xD8\xFF") {
+        "jpg"
+    } else if bytes.starts_with(b"GIF8") {
+        "gif"
+    } else if bytes.len() >= 12 && &bytes[..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
+        "webp"
+    } else {
+        "bin"
+    }
+}
+
+pub async fn save_media_to_downloads(bytes: &[u8]) {
     let Some(data_dir) = DATA_DIR.get() else {
         return;
     };
@@ -437,7 +451,8 @@ pub async fn save_image_to_downloads(bytes: &[u8]) {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis();
-    let path = downloads_dir.join(format!("image_{}.jpg", ts));
+    let ext = media_extension(bytes);
+    let path = downloads_dir.join(format!("media_{}.{}", ts, ext));
     let _ = fs::write(&path, bytes).await;
 }
 
@@ -481,4 +496,57 @@ async fn persist_sync_token(session_file: &Path, sync_token: String) -> anyhow::
     fs::write(session_file, serialized_session).await?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::media_extension;
+
+    #[test]
+    fn detects_png() {
+        // PNG magic: \x89 P N G
+        assert_eq!(media_extension(b"\x89PNG\r\n\x1a\nextra"), "png");
+    }
+
+    #[test]
+    fn detects_jpeg() {
+        // JPEG SOI marker: FF D8 FF
+        assert_eq!(media_extension(b"\xFF\xD8\xFF\xE0extra"), "jpg");
+    }
+
+    #[test]
+    fn detects_gif() {
+        // GIF87a and GIF89a both start with GIF8
+        assert_eq!(media_extension(b"GIF89a..."), "gif");
+        assert_eq!(media_extension(b"GIF87a..."), "gif");
+    }
+
+    #[test]
+    fn detects_webp() {
+        // WebP: RIFF????WEBP
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(b"RIFF");
+        bytes.extend_from_slice(&[0u8; 4]); // file size (ignored)
+        bytes.extend_from_slice(b"WEBP");
+        bytes.extend_from_slice(b"VP8 extra");
+        assert_eq!(media_extension(&bytes), "webp");
+    }
+
+    #[test]
+    fn unknown_format_returns_bin() {
+        assert_eq!(media_extension(b"PK\x03\x04"), "bin"); // zip
+        assert_eq!(media_extension(b"unknown data"), "bin");
+    }
+
+    #[test]
+    fn empty_slice_returns_bin() {
+        assert_eq!(media_extension(b""), "bin");
+    }
+
+    #[test]
+    fn webp_requires_full_12_byte_header() {
+        // RIFF present but only 11 bytes — must not panic
+        let bytes = b"RIFF\x00\x00\x00\x00WEB";
+        assert_eq!(media_extension(bytes), "bin");
+    }
 }

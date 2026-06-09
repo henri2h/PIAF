@@ -7,7 +7,7 @@ use matrix_sdk::ruma::events::room::MediaSource;
 
 use crate::utils::{
     const_values::STATUS_BAR_INSET,
-    matrix::save_image_to_downloads,
+    matrix::save_media_to_downloads,
     queries::{FetchMediaContent, media_source_key},
 };
 
@@ -62,38 +62,61 @@ impl Component for MediaViewer {
         let mut selected_key = self.selected_key;
         let on_load_more = self.on_load_more.clone();
 
-        // Fetches and caches the full-res bytes for the currently selected image.
-        // Resets on every navigation so the placeholder shows immediately.
-        // Also used for the download button.
-        // Uses use_side_effect_with_deps so the effect sees items added after mount.
+        // ── current_bytes: full-res image bytes for the selected item ────────
+        //
+        // WHY two states instead of just clearing in the effect:
+        // Effects fire *after* the render that detects the dep change. Clearing
+        // bytes there means the current render still draws the old image (one
+        // stale frame). Instead we clear inline during the render, using
+        // `last_fetched_key` to detect when the selection changed. The write
+        // happens before `dl_bytes` is read further down, so the old bytes are
+        // invisible from the very first render after navigation.
         let mut current_bytes: State<Option<Vec<u8>>> = use_state(|| None);
-        use_side_effect_with_deps(&items, move |items| {
-            let key = selected_key.read().clone();
+        let mut last_fetched_key: State<Option<String>> = use_state(|| None);
+
+        let current_key = selected_key.read().clone();    // Ref dropped at ;
+        let prev_key = last_fetched_key.read().clone();   // Ref dropped at ;
+        if current_key != prev_key {
             *current_bytes.write() = None;
-            if let Some(k) = key {
-                if let Some(item) = items.iter().find(|i| i.key == k) {
-                    match &item.source {
-                        ViewerSource::Bytes(b) => {
-                            *current_bytes.write() = Some(b.clone());
-                        }
-                        ViewerSource::Remote(s) => {
-                            let fetch_key = media_source_key(s);
-                            spawn(async move {
-                                if let Ok(b) = FetchMediaContent.run(&fetch_key).await {
+            *last_fetched_key.write() = current_key.clone();
+        }
+
+        // Start the fetch whenever the selection changes.
+        // The in-flight stale guard prevents a slow earlier fetch from
+        // overwriting bytes that a faster later fetch already wrote.
+        let key_dep = current_key;
+        let items_for_fetch = items.clone();
+        use_side_effect_with_deps(&key_dep, move |key| {
+            let Some(k) = key.as_deref() else { return };
+            if let Some(item) = items_for_fetch.iter().find(|i| i.key == k) {
+                match &item.source {
+                    ViewerSource::Bytes(b) => {
+                        *current_bytes.write() = Some(b.clone());
+                    }
+                    ViewerSource::Remote(s) => {
+                        let fetch_key = media_source_key(s);
+                        let expected_key = item.key.clone();
+                        spawn(async move {
+                            if let Ok(b) = FetchMediaContent.run(&fetch_key).await {
+                                // Extract to bool before write() so the Ref is dropped.
+                                let still_current = selected_key.read().as_deref()
+                                    == Some(expected_key.as_str());
+                                if still_current {
                                     *current_bytes.write() = Some(b);
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 }
             }
         });
 
         // Preemptively load more when near the beginning of the loaded list.
+        // Dep on selected key so this fires only on navigation, not on every render.
         let items_for_prefetch = items.clone();
         let on_load_more_prefetch = on_load_more.clone();
-        use_side_effect(move || {
-            let key = selected_key.read().clone();
+        let prefetch_key_dep = selected_key.read().clone();
+        use_side_effect_with_deps(&prefetch_key_dep, move |key| {
             if let Some(k) = key.as_deref() {
                 if let Some(i) = items_for_prefetch.iter().position(|it| it.key == k) {
                     if i < PREFETCH_AHEAD {
@@ -354,7 +377,7 @@ impl Component for MediaViewer {
                                     .on_press(move |_| {
                                         if let Some(b) = dl_bytes.clone() {
                                             tokio::task::spawn(async move {
-                                                save_image_to_downloads(&b).await;
+                                                save_media_to_downloads(&b).await;
                                             });
                                         }
                                     })

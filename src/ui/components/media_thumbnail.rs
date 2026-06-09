@@ -116,3 +116,31 @@ impl Component for MediaThumbnail {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::decode_blurhash_to_png;
+
+    #[test]
+    fn valid_blurhash_produces_png_bytes() {
+        // "L6PZfSi_.AyE_3t7t7R**0o#DgR4" is a widely-used example blurhash.
+        let result = decode_blurhash_to_png("L6PZfSi_.AyE_3t7t7R**0o#DgR4", 40, 30);
+        assert!(result.is_some(), "expected Some for a valid blurhash");
+        let bytes = result.unwrap();
+        // PNG files start with the 8-byte PNG signature.
+        assert!(bytes.starts_with(b"\x89PNG"), "output should be a PNG");
+        assert!(bytes.len() > 8, "PNG should have content beyond the header");
+    }
+
+    #[test]
+    fn invalid_blurhash_returns_none() {
+        // Garbage string — decode should fail gracefully.
+        assert!(decode_blurhash_to_png("not-a-real-hash!!!!", 40, 30).is_none());
+    }
+
+    #[test]
+    fn zero_dimension_returns_none() {
+        // 0-pixel image is meaningless; encoder should reject it.
+        assert!(decode_blurhash_to_png("L6PZfSi_.AyE_3t7t7R**0o#DgR4", 0, 30).is_none());
+    }
+}

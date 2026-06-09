@@ -230,41 +230,40 @@ impl Component for Layout {
                 | Route::RoomMembers { .. }
         );
 
-        NativeRouter::new().child(
-            rect()
-                .vertical()
-                .expanded()
-                .on_global_key_down(|e: Event<KeyboardEventData>| {
-                    if e.key == Key::Named(NamedKey::BrowserBack) {
-                        let router = RouterContext::get();
-                        if router.can_go_back() {
-                            router.go_back();
-                        } else {
-                            std::process::exit(0);
-                        }
+        rect()
+            .vertical()
+            .expanded()
+            .native_router()
+            .on_global_key_down(|e: Event<KeyboardEventData>| {
+                if e.key == Key::Named(NamedKey::BrowserBack) {
+                    let router = RouterContext::get();
+                    if router.can_go_back() {
+                        router.go_back();
+                    } else {
+                        std::process::exit(0);
                     }
-                })
-                .child(
-                    rect()
-                        .width(Size::fill())
-                        .height(Size::flex(1.0))
-                        .child(Outlet::<Route>::new()),
-                )
-                .child(if show_navbar {
-                    rect()
-                        .horizontal()
-                        .width(Size::fill())
-                        .main_align(Alignment::center())
-                        .padding(Gaps::new(4., 4., 20., 4.))
-                        .spacing(4.)
-                        .background(c.surface)
-                        .child(navbar_tab(Route::HomePage, "Chats", lucide::message_circle))
-                        .child(navbar_tab(Route::Settings, "Settings", lucide::settings))
-                        .into_element()
-                } else {
-                    rect().into_element()
-                }),
-        )
+                }
+            })
+            .child(
+                rect()
+                    .width(Size::fill())
+                    .height(Size::flex(1.0))
+                    .child(Outlet::<Route>::new()),
+            )
+            .child(if show_navbar {
+                rect()
+                    .horizontal()
+                    .width(Size::fill())
+                    .main_align(Alignment::center())
+                    .padding(Gaps::new(4., 4., 20., 4.))
+                    .spacing(4.)
+                    .background(c.surface)
+                    .child(navbar_tab(Route::HomePage, "Chats", lucide::message_circle))
+                    .child(navbar_tab(Route::Settings, "Settings", lucide::settings))
+                    .into_element()
+            } else {
+                rect().into_element()
+            })
     }
 }
 

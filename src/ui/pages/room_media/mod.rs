@@ -260,7 +260,11 @@ impl Component for RoomMediaPage {
                             let found_new = media_items.len() > known_count;
                             known_count = media_items.len();
                             if found_new || hit || pages >= 10 {
-                                break hit;
+                                // If we exhausted 10 pages without finding any images, treat
+                                // this as a soft end so the scroll effect doesn't immediately
+                                // re-trigger another batch. The "Load older media" button lets
+                                // the user explicitly continue searching.
+                                break hit || (!found_new && pages >= 10);
                             }
                         };
                         let _ = update_tx2.unbounded_send((media_items.clone(), has_hit_end));
@@ -385,6 +389,18 @@ impl Component for RoomMediaPage {
             })
             .collect();
 
+        // Pass load-more to the viewer only while more history exists.
+        // The viewer is shown in place of the grid, so there is no visible
+        // paginating indicator to update — just trigger the background request.
+        let fetch_for_viewer = request_fetch_history.clone();
+        let on_load_more_viewer: Option<std::rc::Rc<dyn Fn()>> = if should_fill {
+            Some(std::rc::Rc::new(move || {
+                let _ = fetch_for_viewer.send(());
+            }))
+        } else {
+            None
+        };
+
         rect()
             .expanded()
             .vertical()
@@ -408,7 +424,7 @@ impl Component for RoomMediaPage {
                 MediaViewer {
                     items: viewer_items,
                     selected_key,
-                    on_load_more: None,
+                    on_load_more: on_load_more_viewer,
                 }
                 .into_element()
             } else if is_loading {
@@ -464,5 +480,136 @@ impl Component for RoomMediaPage {
                     )
                     .into_element()
             })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use matrix_sdk::ruma::OwnedMxcUri;
+
+    fn item(key: &str, date_key: &str) -> MediaItem {
+        MediaItem {
+            key: key.to_string(),
+            source: MediaSource::Plain(
+                OwnedMxcUri::try_from("mxc://example.org/test").unwrap(),
+            ),
+            sender_name: "Alice".to_string(),
+            timestamp: "10:00".to_string(),
+            date_key: date_key.to_string(),
+            blurhash: None,
+            thumbnail_source: None,
+        }
+    }
+
+    // ── cols_for_width ────────────────────────────────────────────────────────
+
+    #[test]
+    fn cols_minimum_three_for_narrow_widths() {
+        assert_eq!(cols_for_width(0.0), 3);
+        assert_eq!(cols_for_width(1.0), 3);
+        // 419 / 140 = 2.99 → floor = 2 → max(3) = 3
+        assert_eq!(cols_for_width(419.9), 3);
+    }
+
+    #[test]
+    fn cols_scales_with_width() {
+        assert_eq!(cols_for_width(420.0), 3); // 420/140 = 3 exactly
+        assert_eq!(cols_for_width(560.0), 4); // 560/140 = 4
+        assert_eq!(cols_for_width(700.0), 5); // 700/140 = 5
+    }
+
+    // ── row_height ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn row_height_date_header_is_constant() {
+        assert_eq!(
+            row_height(&GridRow::DateHeader("2024-01-01".to_string()), 100.0),
+            HEADER_H,
+        );
+        // cell_size is irrelevant for date headers
+        assert_eq!(
+            row_height(&GridRow::DateHeader("2024-01-01".to_string()), 0.0),
+            HEADER_H,
+        );
+    }
+
+    #[test]
+    fn row_height_images_is_cell_plus_padding() {
+        assert_eq!(row_height(&GridRow::Images(vec![]), 100.0), 100.0 + ROW_PAD);
+        assert_eq!(row_height(&GridRow::Images(vec![]), 60.0), 60.0 + ROW_PAD);
+    }
+
+    // ── build_rows ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn build_rows_empty_input() {
+        assert!(build_rows(&[], 3).is_empty());
+    }
+
+    #[test]
+    fn build_rows_single_full_row() {
+        let items = vec![
+            item("e1", "2024-01-01"),
+            item("e2", "2024-01-01"),
+            item("e3", "2024-01-01"),
+        ];
+        let rows = build_rows(&items, 3);
+        assert_eq!(rows.len(), 2); // [DateHeader, Images(3)]
+        assert!(matches!(&rows[0], GridRow::DateHeader(d) if d == "2024-01-01"));
+        assert!(matches!(&rows[1], GridRow::Images(c) if c.len() == 3));
+    }
+
+    #[test]
+    fn build_rows_overflow_splits_into_two_rows() {
+        let items: Vec<_> = (1..=4)
+            .map(|i| item(&format!("e{i}"), "2024-01-01"))
+            .collect();
+        let rows = build_rows(&items, 3);
+        // [DateHeader, Images([e1,e2,e3]), Images([e4])]
+        assert_eq!(rows.len(), 3);
+        assert!(matches!(&rows[1], GridRow::Images(c) if c.len() == 3));
+        assert!(matches!(&rows[2], GridRow::Images(c) if c.len() == 1));
+    }
+
+    #[test]
+    fn build_rows_two_dates_have_separate_headers() {
+        let items = vec![
+            item("e1", "2024-01-02"),
+            item("e2", "2024-01-02"),
+            item("e3", "2024-01-01"),
+        ];
+        let rows = build_rows(&items, 3);
+        // [Header("2024-01-02"), Images([e1,e2]), Header("2024-01-01"), Images([e3])]
+        assert_eq!(rows.len(), 4);
+        assert!(matches!(&rows[0], GridRow::DateHeader(d) if d == "2024-01-02"));
+        assert!(matches!(&rows[2], GridRow::DateHeader(d) if d == "2024-01-01"));
+    }
+
+    #[test]
+    fn build_rows_preserves_key_order_within_row() {
+        let items = vec![item("first", "2024-01-01"), item("second", "2024-01-01")];
+        let rows = build_rows(&items, 3);
+        let GridRow::Images(cells) = &rows[1] else {
+            panic!("expected Images row");
+        };
+        assert_eq!(cells[0].key, "first");
+        assert_eq!(cells[1].key, "second");
+    }
+
+    #[test]
+    fn build_rows_date_boundary_flushes_partial_row() {
+        // 2 items on day 1, then 1 item on day 2 — the partial row from day 1
+        // must be flushed before the day 2 header appears.
+        let items = vec![
+            item("a", "2024-01-01"),
+            item("b", "2024-01-01"),
+            item("c", "2024-01-02"),
+        ];
+        let rows = build_rows(&items, 3);
+        // [Header(day1), Images([a,b]), Header(day2), Images([c])]
+        assert_eq!(rows.len(), 4);
+        assert!(matches!(&rows[1], GridRow::Images(c) if c.len() == 2));
+        assert!(matches!(&rows[3], GridRow::Images(c) if c.len() == 1));
     }
 }

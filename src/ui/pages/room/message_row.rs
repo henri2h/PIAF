@@ -7,9 +7,32 @@ use matrix_sdk_ui::timeline::{
 };
 use tokio::sync::mpsc::UnboundedSender;
 
+use freya_query::prelude::QueryCapability;
+
 use super::{MsgAction, Reaction, ReactionSender};
 use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, ViewerSource};
 use crate::utils::{format_timestamp, sender_color, use_app_colors};
+use crate::utils::matrix::save_media_to_downloads;
+use crate::utils::queries::{FetchMediaContent, media_source_key};
+
+fn format_file_size(bytes: u64) -> String {
+    if bytes < 1_024 {
+        format!("{} B", bytes)
+    } else if bytes < 1_024 * 1_024 {
+        format!("{:.1} KB", bytes as f64 / 1_024.0)
+    } else {
+        format!("{:.1} MB", bytes as f64 / (1_024.0 * 1_024.0))
+    }
+}
+
+fn format_media_duration(d: std::time::Duration) -> String {
+    let s = d.as_secs();
+    if s >= 3_600 {
+        format!("{}:{:02}:{:02}", s / 3_600, (s % 3_600) / 60, s % 60)
+    } else {
+        format!("{}:{:02}", s / 60, s % 60)
+    }
+}
 
 pub struct MessageRow {
     pub room_id: String,
@@ -227,10 +250,11 @@ impl Component for MessageRow {
                         .as_message()
                         .map(|msg| {
                             let b = msg.body();
-                            if b.len() > 120 {
-                                format!("{}…", &b[..120])
+                            let truncated: String = b.chars().take(120).collect();
+                            if truncated.len() < b.len() {
+                                format!("{truncated}…")
                             } else {
-                                b.to_string()
+                                truncated
                             }
                         })
                         .unwrap_or_else(|| "[message]".to_string()),
@@ -356,6 +380,143 @@ impl Component for MessageRow {
                     )
                     .maybe_child(
                         caption.map(|cap| label().text(cap).color(text_color).into_element()),
+                    )
+                    .into_element()
+            }
+            MessageType::File(f) => {
+                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
+                let name = f.filename.as_deref().unwrap_or(f.body.as_str()).to_string();
+                let size_str = f.info.as_ref()
+                    .and_then(|i| i.size)
+                    .map(|s| format_file_size(u64::from(s)));
+                let fetch_key = media_source_key(&f.source);
+                rect()
+                    .horizontal()
+                    .cross_align(Alignment::Center)
+                    .spacing(8.)
+                    .padding(Gaps::new(4., 0., 4., 0.))
+                    .on_press(move |_| {
+                        let k = fetch_key.clone();
+                        spawn(async move {
+                            if let Ok(b) = FetchMediaContent.run(&k).await {
+                                tokio::task::spawn(async move {
+                                    save_media_to_downloads(&b).await;
+                                });
+                            }
+                        });
+                    })
+                    .child(
+                        svg(freya_icons::lucide::paperclip())
+                            .color(text_color)
+                            .width(Size::px(16.))
+                            .height(Size::px(16.)),
+                    )
+                    .child(
+                        rect()
+                            .vertical()
+                            .child(label().text(name).font_size(13.).color(text_color))
+                            .maybe_child(size_str.map(|s| {
+                                label().text(s).font_size(11.).color(c.on_surface_muted).into_element()
+                            })),
+                    )
+                    .into_element()
+            }
+            MessageType::Video(v) => {
+                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
+                let key = event_id.clone().unwrap_or_else(|| "vid-unknown".to_string());
+                let thumbnail_source = v.info.as_ref().and_then(|i| i.thumbnail_source.clone());
+                let duration = v.info.as_ref()
+                    .and_then(|i| i.duration)
+                    .map(format_media_duration);
+                let name = v.body.clone();
+                rect()
+                    .vertical()
+                    .spacing(4.)
+                    .maybe_child(thumbnail_source.map(|ts| {
+                        let key_th = key.clone();
+                        rect()
+                            .key(key_th.clone())
+                            .width(Size::px(200.))
+                            .height(Size::px(150.))
+                            .corner_radius(8.)
+                            .overflow(Overflow::Clip)
+                            .child(MediaThumbnail {
+                                item_key: key_th,
+                                blurhash: None,
+                                thumbnail_source: Some(ViewerSource::Remote(ts)),
+                                fallback_source: None,
+                                thumb_size: Some((400, 300)),
+                            })
+                            .child(
+                                rect()
+                                    .position(Position::new_absolute().top(0.).left(0.))
+                                    .layer(1)
+                                    .width(Size::fill())
+                                    .height(Size::fill())
+                                    .center()
+                                    .child(
+                                        svg(freya_icons::lucide::play())
+                                            .color((255u8, 255u8, 255u8))
+                                            .width(Size::px(32.))
+                                            .height(Size::px(32.)),
+                                    ),
+                            )
+                            .into_element()
+                    }))
+                    .child(
+                        rect()
+                            .horizontal()
+                            .cross_align(Alignment::Center)
+                            .spacing(6.)
+                            .child(
+                                svg(freya_icons::lucide::film())
+                                    .color(text_color)
+                                    .width(Size::px(14.))
+                                    .height(Size::px(14.)),
+                            )
+                            .child(label().text(name).font_size(13.).color(text_color))
+                            .maybe_child(duration.map(|d| {
+                                label().text(d).font_size(11.).color(c.on_surface_muted).into_element()
+                            }))
+                            .into_element(),
+                    )
+                    .into_element()
+            }
+            MessageType::Audio(a) => {
+                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
+                let duration = a.info.as_ref()
+                    .and_then(|i| i.duration)
+                    .map(format_media_duration);
+                let name = a.body.clone();
+                let fetch_key = media_source_key(&a.source);
+                rect()
+                    .horizontal()
+                    .cross_align(Alignment::Center)
+                    .spacing(8.)
+                    .padding(Gaps::new(4., 0., 4., 0.))
+                    .on_press(move |_| {
+                        let k = fetch_key.clone();
+                        spawn(async move {
+                            if let Ok(b) = FetchMediaContent.run(&k).await {
+                                tokio::task::spawn(async move {
+                                    save_media_to_downloads(&b).await;
+                                });
+                            }
+                        });
+                    })
+                    .child(
+                        svg(freya_icons::lucide::music())
+                            .color(text_color)
+                            .width(Size::px(16.))
+                            .height(Size::px(16.)),
+                    )
+                    .child(
+                        rect()
+                            .vertical()
+                            .child(label().text(name).font_size(13.).color(text_color))
+                            .maybe_child(duration.map(|d| {
+                                label().text(d).font_size(11.).color(c.on_surface_muted).into_element()
+                            })),
                     )
                     .into_element()
             }
@@ -613,5 +774,56 @@ impl Component for MessageRow {
             .child(date_separator)
             .child(row.child(bubble_col))
             .child(read_receipt_row);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{format_file_size, format_media_duration};
+    use std::time::Duration;
+
+    // ── format_file_size ──────────────────────────────────────────────────────
+
+    #[test]
+    fn file_size_bytes_boundary() {
+        assert_eq!(format_file_size(0), "0 B");
+        assert_eq!(format_file_size(512), "512 B");
+        assert_eq!(format_file_size(1023), "1023 B"); // last byte before KB
+    }
+
+    #[test]
+    fn file_size_kilobytes() {
+        assert_eq!(format_file_size(1024), "1.0 KB");
+        assert_eq!(format_file_size(1536), "1.5 KB"); // 1.5 * 1024
+        assert_eq!(format_file_size(2048), "2.0 KB");
+    }
+
+    #[test]
+    fn file_size_megabytes() {
+        assert_eq!(format_file_size(1024 * 1024), "1.0 MB");
+        assert_eq!(format_file_size(1024 * 1024 * 5), "5.0 MB");
+    }
+
+    // ── format_media_duration ─────────────────────────────────────────────────
+
+    #[test]
+    fn duration_seconds_only() {
+        assert_eq!(format_media_duration(Duration::ZERO), "0:00");
+        assert_eq!(format_media_duration(Duration::from_secs(9)), "0:09");
+        assert_eq!(format_media_duration(Duration::from_secs(59)), "0:59");
+    }
+
+    #[test]
+    fn duration_minutes_and_seconds() {
+        assert_eq!(format_media_duration(Duration::from_secs(60)), "1:00");
+        assert_eq!(format_media_duration(Duration::from_secs(90)), "1:30");
+        assert_eq!(format_media_duration(Duration::from_secs(3599)), "59:59");
+    }
+
+    #[test]
+    fn duration_hours() {
+        assert_eq!(format_media_duration(Duration::from_secs(3600)), "1:00:00");
+        assert_eq!(format_media_duration(Duration::from_secs(3661)), "1:01:01");
+        assert_eq!(format_media_duration(Duration::from_secs(7322)), "2:02:02");
     }
 }

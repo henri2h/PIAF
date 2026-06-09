@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use freya::prelude::*;
 use freya::text_edit::*;
+use freya_components::cursor_blink::use_cursor_blink;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::const_values::AppColors;
@@ -16,6 +17,7 @@ struct ComposeLine {
     line_index: usize,
     editable: UseEditable,
     c: AppColors,
+    is_focused: bool,
 }
 
 impl Component for ComposeLine {
@@ -29,19 +31,21 @@ impl Component for ComposeLine {
         let c = self.c;
         let holder = use_state(ParagraphHolder::default);
 
-        let editor = editable.editor().read();
-        let text = editor
-            .line(line_index)
-            .map(|l| l.text.to_string())
-            .unwrap_or_default();
-        let is_active = editor.cursor_row() == line_index;
-        let cursor_index = if is_active {
-            Some(editor.cursor_col())
-        } else {
-            None
+        let (text, is_active, cursor_index, highlights) = {
+            let editor = editable.editor().read();
+            let text = editor
+                .line(line_index)
+                .map(|l| l.text.to_string())
+                .unwrap_or_default();
+            let is_active = editor.cursor_row() == line_index;
+            let cursor_index = if is_active { Some(editor.cursor_col()) } else { None };
+            let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
+            (text, is_active, cursor_index, highlights)
         };
-        let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
-        drop(editor);
+
+        // Blink when this line is active and the composer has keyboard focus.
+        let (_, cursor_color) =
+            use_cursor_blink(is_active && self.is_focused, Color::from(c.compose_edit_text));
 
         let on_mouse_down = move |e: Event<MouseEventData>| {
             editable.process_event(EditableEvent::Down {
@@ -64,6 +68,7 @@ impl Component for ComposeLine {
             .on_mouse_down(on_mouse_down)
             .on_mouse_move(on_mouse_move)
             .cursor_index(cursor_index)
+            .cursor_color(cursor_color)
             .highlights(highlights.map(|h| vec![h]))
             .width(Size::fill())
             .font_size(14.)
@@ -414,6 +419,7 @@ impl Component for ComposeBar {
                                                     line_index: i,
                                                     editable,
                                                     c,
+                                                    is_focused,
                                                 }
                                                 .into()
                                             })),

@@ -1,6 +1,6 @@
 mod filter_chip;
 pub mod room_list_item;
-mod search;
+pub mod search;
 mod search_tile;
 
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -148,8 +148,10 @@ impl Component for HomePage {
                     *msg_next_batch.write() = None;
                     *msgs_loading_more.write() = false;
 
+                    let Some(client) = CLIENT.get().cloned() else { return; };
+
                     // 1. Rooms — client-side, instant.
-                    *room_results.write() = search_rooms_local(&query)
+                    *room_results.write() = search_rooms_local(&client, &query)
                         .into_iter()
                         .map(|r| (r.room_id, r.display_name))
                         .collect();
@@ -158,9 +160,10 @@ impl Component for HomePage {
                     *users_searching.write() = true;
                     let sv_u = sv.clone();
                     let q_u = query.clone();
+                    let client_u = client.clone();
                     let (tx_u, rx_u) = futures::channel::oneshot::channel();
                     tokio::task::spawn(async move {
-                        let _ = tx_u.send(search_users_remote(q_u).await);
+                        let _ = tx_u.send(search_users_remote(client_u, q_u).await);
                     });
                     spawn(async move {
                         let results = rx_u.await.unwrap_or_default();
@@ -178,7 +181,7 @@ impl Component for HomePage {
                     let sv_m = sv.clone();
                     let (tx_m, rx_m) = futures::channel::oneshot::channel();
                     tokio::task::spawn(async move {
-                        let _ = tx_m.send(search_messages_remote(query, None).await);
+                        let _ = tx_m.send(search_messages_remote(client, query, None).await);
                     });
                     spawn(async move {
                         let (results, next_batch) = rx_m.await.unwrap_or_default();
@@ -236,19 +239,21 @@ impl Component for HomePage {
             let sv = search_ver.clone();
             let ver = sv.load(Ordering::Relaxed);
             let query_for_more = search_text.clone();
+            let client_lm = CLIENT.get().cloned();
             Some(
                 rect()
                     .width(Size::fill())
                     .height(Size::px(44.))
                     .center()
                     .on_press(move |_| {
+                        let Some(client) = client_lm.clone() else { return };
                         *msgs_loading_more.write() = true;
                         let sv2 = sv.clone();
                         let q = query_for_more.clone();
                         let token = next_token.clone();
                         let (tx, rx) = futures::channel::oneshot::channel();
                         tokio::task::spawn(async move {
-                            let _ = tx.send(search_messages_remote(q, Some(token)).await);
+                            let _ = tx.send(search_messages_remote(client, q, Some(token)).await);
                         });
                         spawn(async move {
                             let (results, new_next) = rx.await.unwrap_or_default();
