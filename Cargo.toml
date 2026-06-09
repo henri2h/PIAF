@@ -53,6 +53,7 @@ png = "0.18.1"
 [target.'cfg(not(target_os="android"))'.dependencies]
 console-subscriber = "0.5.0"
 rfd = "0.15"
+arboard = { version = "3", default-features = false, features = ["image-data", "wayland-data-control"] }
 
 [target.'cfg(target_os="android")'.dependencies]
 freya-android = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [

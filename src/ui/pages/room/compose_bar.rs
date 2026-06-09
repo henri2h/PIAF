@@ -10,6 +10,29 @@ use crate::utils::const_values::AppColors;
 use crate::utils::matrix::{clear_draft, load_draft, save_draft};
 use crate::utils::use_app_colors;
 
+/// Encode raw RGBA pixels to a PNG byte vector.
+#[cfg(not(target_os = "android"))]
+fn encode_rgba_to_png(width: u32, height: u32, rgba: &[u8]) -> Option<Vec<u8>> {
+    let mut buf = Vec::new();
+    let mut enc = png::Encoder::new(&mut buf, width, height);
+    enc.set_color(png::ColorType::Rgba);
+    enc.set_depth(png::BitDepth::Eight);
+    let mut writer = enc.write_header().ok()?;
+    writer.write_image_data(rgba).ok()?;
+    drop(writer);
+    Some(buf)
+}
+
+/// Try to read an image from the system clipboard.
+/// Returns PNG bytes on success, `None` if clipboard has no image.
+/// Safe to call from the UI/main thread.
+#[cfg(not(target_os = "android"))]
+fn read_clipboard_image() -> Option<Vec<u8>> {
+    let mut cb = arboard::Clipboard::new().ok()?;
+    let img = cb.get_image().ok()?;
+    encode_rgba_to_png(img.width as u32, img.height as u32, &img.bytes)
+}
+
 use super::MsgAction;
 
 #[derive(PartialEq)]
@@ -38,7 +61,9 @@ impl Component for ComposeLine {
                 .map(|l| l.text.to_string())
                 .unwrap_or_default();
             let is_active = editor.cursor_row() == line_index;
-            let cursor_index = if is_active { Some(editor.cursor_col()) } else { None };
+            // Only draw the cursor when this line is active AND the bar has focus.
+            // This prevents the cursor from appearing under the placeholder text.
+            let cursor_index = if is_active && self.is_focused { Some(editor.cursor_col()) } else { None };
             let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
             (text, is_active, cursor_index, highlights)
         };
@@ -132,45 +157,93 @@ impl Component for ComposeBar {
         let is_editing = edit_info.read().is_some();
         let is_replying = reply_info.read().is_some();
 
+        // Auto-focus the compose bar when reply or edit mode is activated.
+        let focus_trigger = is_replying || is_editing;
+        use_side_effect_with_deps(&focus_trigger, move |&active| {
+            if active {
+                a11y_id.request_focus();
+            }
+        });
+
+        // Paste-image state: pending holds the PNG bytes awaiting send.
+        let mut paste_pending: State<Option<Vec<u8>>> = use_state(|| None);
+        let mut paste_sending: State<bool> = use_state(|| false);
+
         let room_id_attach = room_id.clone();
         let room_id_send = room_id.clone();
 
         let mut do_send = move || {
             let text = editable.editor().read().rope().to_string();
             let text = text.trim().to_string();
-            if text.is_empty() {
+            let paste = paste_pending.read().clone();
+
+            if text.is_empty() && paste.is_none() {
                 return;
             }
-            let edit = edit_info.read().clone();
-            let reply = reply_info.read().clone();
 
-            if let Some((event_id, _)) = edit {
-                let _ = action_tx.send(MsgAction::Edit { event_id, text });
-                *edit_info.write() = None;
-            } else if let Some((reply_event_id, _, _)) = reply {
-                let _ = action_tx.send(MsgAction::Reply {
-                    reply_event_id,
-                    text,
+            // Send text message if there is any.
+            if !text.is_empty() {
+                let edit = edit_info.read().clone();
+                let reply = reply_info.read().clone();
+
+                if let Some((event_id, _)) = edit {
+                    let _ = action_tx.send(MsgAction::Edit { event_id, text });
+                    *edit_info.write() = None;
+                } else if let Some((reply_event_id, _, _)) = reply {
+                    let _ = action_tx.send(MsgAction::Reply { reply_event_id, text });
+                    *reply_info.write() = None;
+                } else {
+                    let _ = action_tx.send(MsgAction::Send { text });
+                    let room_id_clear = room_id_send.clone();
+                    tokio::task::spawn(async move {
+                        clear_draft(&room_id_clear).await;
+                    });
+                }
+
+                editable.process_event(EditableEvent::KeyDown {
+                    key: &Key::Character("a".into()),
+                    modifiers: Modifiers::CONTROL,
                 });
-                *reply_info.write() = None;
-            } else {
-                let _ = action_tx.send(MsgAction::Send { text });
-                let room_id_clear = room_id_send.clone();
-                tokio::task::spawn(async move {
-                    clear_draft(&room_id_clear).await;
+                editable.process_event(EditableEvent::KeyDown {
+                    key: &Key::Named(NamedKey::Delete),
+                    modifiers: Modifiers::empty(),
                 });
             }
 
-            // Clear the editable content.
-            editable.process_event(EditableEvent::KeyDown {
-                key: &Key::Character("a".into()),
-                modifiers: Modifiers::CONTROL,
-            });
-            editable.process_event(EditableEvent::KeyDown {
-                key: &Key::Named(NamedKey::Delete),
-                modifiers: Modifiers::empty(),
-            });
+            // Upload pasted image if there is one.
+            if let Some(png_bytes) = paste {
+                *paste_pending.write() = None;
+                *paste_sending.write() = true;
+                let (done_tx, done_rx) = futures::channel::oneshot::channel::<()>();
+                let room_id = room_id_send.clone();
+                tokio::task::spawn(async move {
+                    use crate::utils::matrix::CLIENT;
+                    use matrix_sdk::attachment::AttachmentConfig;
+                    use matrix_sdk::ruma::RoomId;
+                    if let Ok(parsed_id) = RoomId::parse(&room_id) {
+                        if let Some(client) = CLIENT.get() {
+                            if let Some(room) = client.get_room(&parsed_id) {
+                                let _ = room
+                                    .send_attachment(
+                                        "paste.png",
+                                        &mime::IMAGE_PNG,
+                                        png_bytes,
+                                        AttachmentConfig::default(),
+                                    )
+                                    .await;
+                            }
+                        }
+                    }
+                    let _ = done_tx.send(());
+                });
+                spawn(async move {
+                    let _ = done_rx.await;
+                    *paste_sending.write() = false;
+                });
+            }
         };
+
+        let room_id_banner = room_id.clone();
 
         // Save draft on each content change (debounced).
         use_side_effect(move || {
@@ -191,10 +264,18 @@ impl Component for ComposeBar {
             if e.key == Key::Named(NamedKey::Enter) && !e.modifiers.shift() {
                 do_send();
             } else {
+                // Let the editable handle the key normally (text paste, etc.).
                 editable.process_event(EditableEvent::KeyDown {
                     key: &e.key,
                     modifiers: e.modifiers,
                 });
+                // On Ctrl+V, check clipboard for an image and stage it for sending.
+                #[cfg(not(target_os = "android"))]
+                if e.key == Key::Character("v".into()) && e.modifiers.ctrl() {
+                    if let Some(png) = read_clipboard_image() {
+                        *paste_pending.write() = Some(png);
+                    }
+                }
             }
         };
 
@@ -353,6 +434,78 @@ impl Component for ComposeBar {
             } else {
                 rect().into_element()
             })
+            // ── Paste-image banner: pending preview or sending spinner ─────
+            .child({
+                let is_sending = *paste_sending.read();
+                let pending = paste_pending.read().clone();
+                let room_key = room_id_banner.clone();
+                if is_sending {
+                    rect()
+                        .horizontal()
+                        .width(Size::fill())
+                        .padding(Gaps::new(4., 12., 0., 12.))
+                        .cross_align(Alignment::Center)
+                        .spacing(8.)
+                        .child(CircularLoader::new().size(16.))
+                        .child(
+                            label()
+                                .text("Sending image…")
+                                .font_size(12.)
+                                .color(c.on_surface_muted),
+                        )
+                        .into_element()
+                } else if let Some(png_bytes) = pending {
+                    rect()
+                        .horizontal()
+                        .width(Size::fill())
+                        .padding(Gaps::new(4., 12., 0., 12.))
+                        .cross_align(Alignment::Center)
+                        .spacing(8.)
+                        .child(
+                            rect()
+                                .width(Size::px(44.))
+                                .height(Size::px(44.))
+                                .corner_radius(4.)
+                                .overflow(Overflow::Clip)
+                                .child(
+                                    ImageViewer::new((
+                                        format!("paste-{room_key}"),
+                                        bytes::Bytes::from(png_bytes),
+                                    ))
+                                    .width(Size::fill())
+                                    .height(Size::fill())
+                                    .aspect_ratio(AspectRatio::Max)
+                                    .image_cover(ImageCover::Center),
+                                ),
+                        )
+                        .child(
+                            label()
+                                .text("Image ready to send")
+                                .font_size(12.)
+                                .color(c.on_surface_muted)
+                                .width(Size::fill_minimum()),
+                        )
+                        .child(
+                            rect()
+                                .center()
+                                .width(Size::px(20.))
+                                .height(Size::px(20.))
+                                .corner_radius(10.)
+                                .on_press(move |_| {
+                                    *paste_pending.write() = None;
+                                })
+                                .child(
+                                    svg(freya_icons::lucide::x())
+                                        .color(c.on_surface_muted)
+                                        .width(Size::px(14.))
+                                        .height(Size::px(14.)),
+                                ),
+                        )
+                        .into_element()
+                } else {
+                    rect().into_element()
+                }
+            })
             // ── Input row ─────────────────────────────────────────────────
             .child(
                 rect()
@@ -419,7 +572,9 @@ impl Component for ComposeBar {
                                                     line_index: i,
                                                     editable,
                                                     c,
-                                                    is_focused,
+                                                    // Don't show the cursor while the placeholder
+                                                    // is visible — it would appear under the text.
+                                                    is_focused: is_focused && !is_empty,
                                                 }
                                                 .into()
                                             })),
