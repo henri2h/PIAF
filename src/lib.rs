@@ -217,6 +217,7 @@ impl Component for Layout {
     fn render(&self) -> impl IntoElement {
         use_init_theme(|| effective_theme(utils::matrix::load_theme_is_dark()));
         let c = utils::use_app_colors();
+        let mut back_pressed: State<bool> = use_state(|| false);
 
         let route = use_route::<Route>();
 
@@ -246,13 +247,24 @@ impl Component for Layout {
             .vertical()
             .expanded()
             .native_router()
-            .on_global_key_down(|e: Event<KeyboardEventData>| {
+            .on_global_key_down(move |e: Event<KeyboardEventData>| {
                 if e.key == Key::Named(NamedKey::BrowserBack) {
                     let router = RouterContext::get();
                     if router.can_go_back() {
                         router.go_back();
-                    } else {
+                    } else if *back_pressed.read() {
                         std::process::exit(0);
+                    } else {
+                        *back_pressed.write() = true;
+                        let (tx, rx) = futures::channel::oneshot::channel::<()>();
+                        tokio::task::spawn(async move {
+                            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                            let _ = tx.send(());
+                        });
+                        spawn(async move {
+                            let _ = rx.await;
+                            *back_pressed.write() = false;
+                        });
                     }
                 }
             })
@@ -262,6 +274,23 @@ impl Component for Layout {
                     .height(Size::flex(1.0))
                     .child(Outlet::<Route>::new()),
             )
+            .maybe_child(if *back_pressed.read() {
+                Some(
+                    rect()
+                        .width(Size::fill())
+                        .height(Size::px(36.))
+                        .background(c.surface_container)
+                        .center()
+                        .child(
+                            label()
+                                .text("Press back again to exit")
+                                .font_size(13.)
+                                .color(c.on_surface_muted),
+                        ),
+                )
+            } else {
+                None
+            })
             .child(if show_navbar {
                 rect()
                     .horizontal()

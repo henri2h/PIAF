@@ -93,7 +93,32 @@ impl Component for RoomSearch {
                                             *loading.write() = false;
                                         });
                                     }),
-                            ),
+                            )
+                            .maybe_child(if !query_input.read().is_empty() {
+                                Some(
+                                    rect()
+                                        .width(Size::px(32.))
+                                        .height(Size::px(32.))
+                                        .corner_radius(16.)
+                                        .center()
+                                        .on_press(move |_| {
+                                            let mut query_input = query_input;
+                                            let mut results = results;
+                                            let mut has_searched = has_searched;
+                                            *query_input.write() = String::new();
+                                            *results.write() = vec![];
+                                            *has_searched.write() = false;
+                                        })
+                                        .child(
+                                            svg(freya_icons::lucide::x())
+                                                .color(c.on_surface_faint)
+                                                .width(Size::px(16.))
+                                                .height(Size::px(16.)),
+                                        ),
+                                )
+                            } else {
+                                None
+                            }),
                     ),
             )
             .child(if is_loading {
