@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
 use std::time::Duration;
 
 use freya::prelude::*;
@@ -85,7 +85,7 @@ impl Component for NewChat {
         let mut searching: State<bool> = use_state(|| false);
         let mut status: State<Option<String>> = use_state(|| None);
         let mut suggestions: State<Vec<UserInfo>> = use_state(Vec::new);
-        let mut search_ver: State<u64> = use_state(|| 0u64);
+        let search_ver = use_hook(|| Arc::new(AtomicU64::new(0)));
         // Prevents double-tap from spawning two concurrent navigation tasks,
         // which would push duplicate routes and leave stale PENDING_DM.
         let mut navigating: State<bool> = use_state(|| false);
@@ -108,19 +108,16 @@ impl Component for NewChat {
                 *searching.write() = false;
                 return;
             }
-            let ver = {
-                let v = *search_ver.read() + 1;
-                *search_ver.write() = v;
-                v
-            };
+            let ver = search_ver.fetch_add(1, Ordering::Relaxed) + 1;
             let (delay_tx, delay_rx) = futures::channel::oneshot::channel::<()>();
             tokio::task::spawn(async move {
                 tokio::time::sleep(Duration::from_millis(400)).await;
                 let _ = delay_tx.send(());
             });
+            let sv = search_ver.clone();
             spawn(async move {
                 let _ = delay_rx.await;
-                if *search_ver.read() != ver {
+                if sv.load(Ordering::Relaxed) != ver {
                     return;
                 }
                 *searching.write() = true;
@@ -148,11 +145,11 @@ impl Component for NewChat {
                     let _ = tx.send(users);
                 });
                 if let Ok(users) = rx.await {
-                    if *search_ver.read() == ver {
+                    if sv.load(Ordering::Relaxed) == ver {
                         *results.write() = users;
                     }
                 }
-                if *search_ver.read() == ver {
+                if sv.load(Ordering::Relaxed) == ver {
                     *searching.write() = false;
                 }
             });
