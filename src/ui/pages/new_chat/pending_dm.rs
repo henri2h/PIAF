@@ -31,7 +31,10 @@ impl Component for PendingDm {
         let (display_name, avatar_mxc) = PENDING_DM
             .lock()
             .ok()
-            .and_then(|g| g.as_ref().map(|u| (u.display_name.clone(), u.avatar_mxc.clone())))
+            .and_then(|g| {
+                g.as_ref()
+                    .map(|u| (u.display_name.clone(), u.avatar_mxc.clone()))
+            })
             .unwrap_or_else(|| (user_id.clone(), None));
 
         let initial = display_name
@@ -60,8 +63,7 @@ impl Component for PendingDm {
                 let result: Result<String, String> = async {
                     use matrix_sdk::ruma::RoomId;
                     use matrix_sdk::ruma::events::{
-                        AnyMessageLikeEventContent,
-                        room::message::RoomMessageEventContent,
+                        AnyMessageLikeEventContent, room::message::RoomMessageEventContent,
                     };
 
                     let room_id = crate::utils::matrix::create_or_get_dm(uid)
@@ -140,15 +142,12 @@ impl Component for PendingDm {
             )
             // Body hint
             .child(
-                rect()
-                    .expanded()
-                    .center()
-                    .child(
-                        label()
-                            .text("No messages yet")
-                            .font_size(14.)
-                            .color(c.on_surface_muted),
-                    ),
+                rect().expanded().center().child(
+                    label()
+                        .text("No messages yet")
+                        .font_size(14.)
+                        .color(c.on_surface_muted),
+                ),
             )
             // Error
             .maybe_child(err_msg.map(|msg| {
@@ -183,8 +182,9 @@ impl Component for PendingDm {
                             ),
                     )
                     .child(
-                        Button::new().on_press(move |_| do_send()).child(
-                            if is_sending {
+                        Button::new()
+                            .on_press(move |_| do_send())
+                            .child(if is_sending {
                                 rect()
                                     .center()
                                     .width(Size::px(18.))
@@ -201,8 +201,7 @@ impl Component for PendingDm {
                                     .width(Size::px(18.))
                                     .height(Size::px(18.))
                                     .into_element()
-                            },
-                        ),
+                            }),
                     ),
             )
     }

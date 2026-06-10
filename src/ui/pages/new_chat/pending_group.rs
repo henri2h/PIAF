@@ -29,7 +29,13 @@ impl Component for PendingGroup {
                 let previews: Vec<(String, String, Option<String>)> = d
                     .invitees
                     .iter()
-                    .map(|u| (u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()))
+                    .map(|u| {
+                        (
+                            u.user_id.clone(),
+                            u.display_name.clone(),
+                            u.avatar_mxc.clone(),
+                        )
+                    })
                     .collect();
                 (name, previews)
             })
@@ -59,12 +65,14 @@ impl Component for PendingGroup {
             let (tx, rx) = futures::channel::oneshot::channel::<Result<String, String>>();
             tokio::task::spawn(async move {
                 let result: Result<String, String> = async {
+                    use matrix_sdk::ruma::RoomId;
+                    use matrix_sdk::ruma::events::{
+                        AnyMessageLikeEventContent, room::message::RoomMessageEventContent,
+                    };
                     use matrix_sdk::ruma::{
                         UserId, api::client::room::create_room,
                         events::room::encryption::RoomEncryptionEventContent,
                     };
-                    use matrix_sdk::ruma::events::{AnyMessageLikeEventContent, room::message::RoomMessageEventContent};
-                    use matrix_sdk::ruma::RoomId;
 
                     let client = CLIENT.get().cloned().ok_or("No client")?;
 
@@ -83,7 +91,10 @@ impl Component for PendingGroup {
                         );
                         request.initial_state = vec![ev.to_raw_any()];
                     }
-                    let room = client.create_room(request).await.map_err(|e| e.to_string())?;
+                    let room = client
+                        .create_room(request)
+                        .await
+                        .map_err(|e| e.to_string())?;
                     let room_id = room.room_id().to_string();
 
                     // Clear the draft as soon as the room is created so back-navigation
@@ -96,7 +107,9 @@ impl Component for PendingGroup {
                     // Send the first message. If send fails we still navigate to the
                     // room — it exists and the user can resend from there.
                     let parsed = RoomId::parse(&room_id).map_err(|e| e.to_string())?;
-                    let room = client.get_room(&parsed).ok_or("Room not found after creation")?;
+                    let room = client
+                        .get_room(&parsed)
+                        .ok_or("Room not found after creation")?;
                     let content = AnyMessageLikeEventContent::RoomMessage(
                         RoomMessageEventContent::text_plain(msg),
                     );
@@ -130,9 +143,11 @@ impl Component for PendingGroup {
             .content(Content::Flex)
             .background(c.surface)
             .child(TopAppBar {
-                title: TopAppBarTitle::Text(
-                    if group_name.is_empty() { "New group".to_string() } else { group_name.clone() }
-                ),
+                title: TopAppBarTitle::Text(if group_name.is_empty() {
+                    "New group".to_string()
+                } else {
+                    group_name.clone()
+                }),
                 on_back: Some(Arc::new(|| {
                     let _ = RouterContext::get().push(Route::NewGroupConfig);
                 })),
@@ -147,13 +162,11 @@ impl Component for PendingGroup {
                     .spacing(12.)
                     .child(
                         label()
-                            .text(
-                                if group_name.is_empty() {
-                                    "New group".to_string()
-                                } else {
-                                    group_name.clone()
-                                },
-                            )
+                            .text(if group_name.is_empty() {
+                                "New group".to_string()
+                            } else {
+                                group_name.clone()
+                            })
                             .font_size(20.)
                             .font_weight(FontWeight::MEDIUM)
                             .color(c.on_surface),
@@ -182,9 +195,7 @@ impl Component for PendingGroup {
                                     })
                                     .child(
                                         label()
-                                            .text(
-                                                display_name.chars().take(8).collect::<String>(),
-                                            )
+                                            .text(display_name.chars().take(8).collect::<String>())
                                             .font_size(11.)
                                             .color(c.on_surface_variant),
                                     ),
@@ -195,15 +206,12 @@ impl Component for PendingGroup {
             )
             // Body hint
             .child(
-                rect()
-                    .expanded()
-                    .center()
-                    .child(
-                        label()
-                            .text("No messages yet")
-                            .font_size(14.)
-                            .color(c.on_surface_muted),
-                    ),
+                rect().expanded().center().child(
+                    label()
+                        .text("No messages yet")
+                        .font_size(14.)
+                        .color(c.on_surface_muted),
+                ),
             )
             // Error
             .maybe_child(err_msg.map(|msg| {
@@ -249,7 +257,11 @@ impl Component for PendingGroup {
                                     .into_element()
                             } else {
                                 svg(freya_icons::lucide::send_horizontal())
-                                    .color(if is_empty { c.on_surface_muted } else { c.primary })
+                                    .color(if is_empty {
+                                        c.on_surface_muted
+                                    } else {
+                                        c.primary
+                                    })
                                     .width(Size::px(18.))
                                     .height(Size::px(18.))
                                     .into_element()

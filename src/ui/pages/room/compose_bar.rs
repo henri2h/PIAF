@@ -63,14 +63,20 @@ impl Component for ComposeLine {
             let is_active = editor.cursor_row() == line_index;
             // Only draw the cursor when this line is active AND the bar has focus.
             // This prevents the cursor from appearing under the placeholder text.
-            let cursor_index = if is_active && self.is_focused { Some(editor.cursor_col()) } else { None };
+            let cursor_index = if is_active && self.is_focused {
+                Some(editor.cursor_col())
+            } else {
+                None
+            };
             let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
             (text, is_active, cursor_index, highlights)
         };
 
         // Blink when this line is active and the composer has keyboard focus.
-        let (_, cursor_color) =
-            use_cursor_blink(is_active && self.is_focused, Color::from(c.compose_edit_text));
+        let (_, cursor_color) = use_cursor_blink(
+            is_active && self.is_focused,
+            Color::from(c.compose_edit_text),
+        );
 
         let on_mouse_down = move |e: Event<MouseEventData>| {
             editable.process_event(EditableEvent::Down {
@@ -190,7 +196,10 @@ impl Component for ComposeBar {
                     let _ = action_tx.send(MsgAction::Edit { event_id, text });
                     *edit_info.write() = None;
                 } else if let Some((reply_event_id, _, _)) = reply {
-                    let _ = action_tx.send(MsgAction::Reply { reply_event_id, text });
+                    let _ = action_tx.send(MsgAction::Reply {
+                        reply_event_id,
+                        text,
+                    });
                     *reply_info.write() = None;
                 } else {
                     let _ = action_tx.send(MsgAction::Send { text });

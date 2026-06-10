@@ -12,9 +12,9 @@ use freya_query::prelude::QueryCapability;
 
 use super::{MsgAction, Reaction, ReactionSender};
 use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, ViewerSource};
-use crate::utils::{format_timestamp, sender_color, use_app_colors};
 use crate::utils::matrix::save_media_to_downloads;
 use crate::utils::queries::{FetchMediaContent, media_source_key};
+use crate::utils::{format_timestamp, sender_color, use_app_colors};
 
 fn format_file_size(bytes: u64) -> String {
     if bytes < 1_024 {
@@ -386,9 +386,15 @@ impl Component for MessageRow {
                     .into_element()
             }
             MessageType::File(f) => {
-                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
+                let text_color = if is_me {
+                    c.bubble_me_text
+                } else {
+                    c.bubble_other_text
+                };
                 let name = f.filename.as_deref().unwrap_or(f.body.as_str()).to_string();
-                let size_str = f.info.as_ref()
+                let size_str = f
+                    .info
+                    .as_ref()
                     .and_then(|i| i.size)
                     .map(|s| format_file_size(u64::from(s)));
                 let fetch_key = media_source_key(&f.source);
@@ -418,16 +424,28 @@ impl Component for MessageRow {
                             .vertical()
                             .child(label().text(name).font_size(13.).color(text_color))
                             .maybe_child(size_str.map(|s| {
-                                label().text(s).font_size(11.).color(c.on_surface_muted).into_element()
+                                label()
+                                    .text(s)
+                                    .font_size(11.)
+                                    .color(c.on_surface_muted)
+                                    .into_element()
                             })),
                     )
                     .into_element()
             }
             MessageType::Video(v) => {
-                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
-                let key = event_id.clone().unwrap_or_else(|| "vid-unknown".to_string());
+                let text_color = if is_me {
+                    c.bubble_me_text
+                } else {
+                    c.bubble_other_text
+                };
+                let key = event_id
+                    .clone()
+                    .unwrap_or_else(|| "vid-unknown".to_string());
                 let thumbnail_source = v.info.as_ref().and_then(|i| i.thumbnail_source.clone());
-                let duration = v.info.as_ref()
+                let duration = v
+                    .info
+                    .as_ref()
                     .and_then(|i| i.duration)
                     .map(format_media_duration);
                 let name = v.body.clone();
@@ -478,15 +496,25 @@ impl Component for MessageRow {
                             )
                             .child(label().text(name).font_size(13.).color(text_color))
                             .maybe_child(duration.map(|d| {
-                                label().text(d).font_size(11.).color(c.on_surface_muted).into_element()
+                                label()
+                                    .text(d)
+                                    .font_size(11.)
+                                    .color(c.on_surface_muted)
+                                    .into_element()
                             }))
                             .into_element(),
                     )
                     .into_element()
             }
             MessageType::Audio(a) => {
-                let text_color = if is_me { c.bubble_me_text } else { c.bubble_other_text };
-                let duration = a.info.as_ref()
+                let text_color = if is_me {
+                    c.bubble_me_text
+                } else {
+                    c.bubble_other_text
+                };
+                let duration = a
+                    .info
+                    .as_ref()
                     .and_then(|i| i.duration)
                     .map(format_media_duration);
                 let name = a.body.clone();
@@ -517,7 +545,11 @@ impl Component for MessageRow {
                             .vertical()
                             .child(label().text(name).font_size(13.).color(text_color))
                             .maybe_child(duration.map(|d| {
-                                label().text(d).font_size(11.).color(c.on_surface_muted).into_element()
+                                label()
+                                    .text(d)
+                                    .font_size(11.)
+                                    .color(c.on_surface_muted)
+                                    .into_element()
                             })),
                     )
                     .into_element()
@@ -748,46 +780,40 @@ impl Component for MessageRow {
         };
 
         // ── Inline cancel row for failed sends ───────────────────────────
-        let failed_send_row =
-            if matches!(&send_state, Some(EventSendState::SendingFailed { .. })) {
-                if let Some(handle) = event.local_echo_send_handle() {
-                    rect()
-                        .horizontal()
-                        .width(Size::fill())
-                        .main_align(Alignment::End)
-                        .padding(Gaps::new(1., 12., 2., 12.))
-                        .spacing(8.)
-                        .child(
-                            label()
-                                .text("Failed to send")
-                                .font_size(11.)
-                                .color(c.error),
-                        )
-                        .child(
-                            rect()
-                                .corner_radius(4.)
-                                .padding(Gaps::new(2., 8., 2., 8.))
-                                .background(c.error)
-                                .on_press(move |_| {
-                                    let h = handle.clone();
-                                    tokio::task::spawn(async move {
-                                        let _ = h.abort().await;
-                                    });
-                                })
-                                .child(
-                                    label()
-                                        .text("Discard")
-                                        .font_size(11.)
-                                        .color((255u8, 255u8, 255u8)),
-                                ),
-                        )
-                        .into_element()
-                } else {
-                    rect().into_element()
-                }
+        let failed_send_row = if matches!(&send_state, Some(EventSendState::SendingFailed { .. })) {
+            if let Some(handle) = event.local_echo_send_handle() {
+                rect()
+                    .horizontal()
+                    .width(Size::fill())
+                    .main_align(Alignment::End)
+                    .padding(Gaps::new(1., 12., 2., 12.))
+                    .spacing(8.)
+                    .child(label().text("Failed to send").font_size(11.).color(c.error))
+                    .child(
+                        rect()
+                            .corner_radius(4.)
+                            .padding(Gaps::new(2., 8., 2., 8.))
+                            .background(c.error)
+                            .on_press(move |_| {
+                                let h = handle.clone();
+                                tokio::task::spawn(async move {
+                                    let _ = h.abort().await;
+                                });
+                            })
+                            .child(
+                                label()
+                                    .text("Discard")
+                                    .font_size(11.)
+                                    .color((255u8, 255u8, 255u8)),
+                            ),
+                    )
+                    .into_element()
             } else {
                 rect().into_element()
-            };
+            }
+        } else {
+            rect().into_element()
+        };
 
         #[cfg(not(target_os = "android"))]
         return rect()

@@ -74,8 +74,8 @@ impl Component for MediaViewer {
         let mut current_bytes: State<Option<Vec<u8>>> = use_state(|| None);
         let mut last_fetched_key: State<Option<String>> = use_state(|| None);
 
-        let current_key = selected_key.read().clone();    // Ref dropped at ;
-        let prev_key = last_fetched_key.read().clone();   // Ref dropped at ;
+        let current_key = selected_key.read().clone(); // Ref dropped at ;
+        let prev_key = last_fetched_key.read().clone(); // Ref dropped at ;
         if current_key != prev_key {
             *current_bytes.write() = None;
             *last_fetched_key.write() = current_key.clone();
@@ -99,8 +99,8 @@ impl Component for MediaViewer {
                         spawn(async move {
                             if let Ok(b) = FetchMediaContent.run(&fetch_key).await {
                                 // Extract to bool before write() so the Ref is dropped.
-                                let still_current = selected_key.read().as_deref()
-                                    == Some(expected_key.as_str());
+                                let still_current =
+                                    selected_key.read().as_deref() == Some(expected_key.as_str());
                                 if still_current {
                                     *current_bytes.write() = Some(b);
                                 }

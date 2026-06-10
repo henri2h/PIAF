@@ -328,13 +328,15 @@ impl Component for RoomPage {
         // Read any pending focus event for this room and clear the channel.
         // The channel is cleared regardless of whether the room_id matched — any room
         // opening supersedes a pending focus from an aborted navigation.
-        let initial_event_id: Option<String> = crate::FOCUS_EVENT_RX
-            .get()
-            .and_then(|rx| {
-                rx.borrow().as_ref().and_then(|(rid, eid)| {
-                    if rid == &room_id { Some(eid.clone()) } else { None }
-                })
-            });
+        let initial_event_id: Option<String> = crate::FOCUS_EVENT_RX.get().and_then(|rx| {
+            rx.borrow().as_ref().and_then(|(rid, eid)| {
+                if rid == &room_id {
+                    Some(eid.clone())
+                } else {
+                    None
+                }
+            })
+        });
         if crate::FOCUS_EVENT_RX
             .get()
             .map(|rx| rx.borrow().is_some())
@@ -366,8 +368,7 @@ impl Component for RoomPage {
             if let Some(rx) = crate::FOCUS_EVENT_RX.get() {
                 let room_id_focus = room_id.clone();
                 let mut rx_watch = rx.clone();
-                let (refocus_tx, mut refocus_rx) =
-                    futures::channel::mpsc::unbounded::<String>();
+                let (refocus_tx, mut refocus_rx) = futures::channel::mpsc::unbounded::<String>();
                 tokio::task::spawn(async move {
                     while rx_watch.changed().await.is_ok() {
                         if let Some((rid, eid)) = rx_watch.borrow().clone() {
@@ -384,8 +385,7 @@ impl Component for RoomPage {
                                 let msgs = messages.read();
                                 msgs.iter()
                                     .position(|item| {
-                                        item.as_event()
-                                            .and_then(|ev| ev.event_id())
+                                        item.as_event().and_then(|ev| ev.event_id())
                                             == Some(eid.as_ref())
                                     })
                                     .map(|idx| {

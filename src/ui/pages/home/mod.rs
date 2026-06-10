@@ -3,8 +3,8 @@ pub mod room_list_item;
 pub mod search;
 mod search_tile;
 
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use filter_chip::{FilterChip, RoomFilter};
@@ -155,7 +155,9 @@ impl Component for HomePage {
                     *msg_next_batch.write() = None;
                     *msgs_loading_more.write() = false;
 
-                    let Some(client) = CLIENT.get().cloned() else { return; };
+                    let Some(client) = CLIENT.get().cloned() else {
+                        return;
+                    };
 
                     // 1. Rooms — client-side, instant.
                     *room_results.write() = search_rooms_local(&client, &query)
@@ -253,7 +255,9 @@ impl Component for HomePage {
                     .height(Size::px(44.))
                     .center()
                     .on_press(move |_| {
-                        let Some(client) = client_lm.clone() else { return };
+                        let Some(client) = client_lm.clone() else {
+                            return;
+                        };
                         *msgs_loading_more.write() = true;
                         let sv2 = sv.clone();
                         let q = query_for_more.clone();
@@ -271,12 +275,7 @@ impl Component for HomePage {
                             }
                         });
                     })
-                    .child(
-                        label()
-                            .text("Load more")
-                            .font_size(14.)
-                            .color(c.primary),
-                    )
+                    .child(label().text("Load more").font_size(14.).color(c.primary))
                     .into_element(),
             )
         } else {
@@ -492,7 +491,15 @@ impl Component for HomePage {
                     let rooms_snap = room_results.read().clone();
                     let users_snap = user_results.read().clone();
                     let msgs_snap = msg_results.read().clone();
-                    build_search_results(rooms_snap, users_snap, msgs_snap, is_users_searching, is_msgs_searching, load_more_msgs, c)
+                    build_search_results(
+                        rooms_snap,
+                        users_snap,
+                        msgs_snap,
+                        is_users_searching,
+                        is_msgs_searching,
+                        load_more_msgs,
+                        c,
+                    )
                 }
             } else if initial_loading && rooms_len == 0 {
                 rect()
@@ -597,7 +604,10 @@ fn build_search_results(
         list = list.child(empty_row("No rooms found", c));
     } else {
         for (room_id, display_name) in rooms {
-            list = list.child(RoomSearchTile { room_id, display_name });
+            list = list.child(RoomSearchTile {
+                room_id,
+                display_name,
+            });
         }
     }
 
@@ -609,7 +619,11 @@ fn build_search_results(
         list = list.child(empty_row("No users found", c));
     } else {
         for (user_id, display_name, avatar_mxc) in users {
-            list = list.child(UserSearchTile { user_id, display_name, avatar_mxc });
+            list = list.child(UserSearchTile {
+                user_id,
+                display_name,
+                avatar_mxc,
+            });
         }
     }
 
@@ -643,12 +657,7 @@ fn section_header(title: &'static str, c: crate::utils::const_values::AppColors)
     rect()
         .width(Size::fill())
         .padding(Gaps::new(12., 16., 4., 16.))
-        .child(
-            label()
-                .text(title)
-                .font_size(12.)
-                .color(c.on_surface_muted),
-        )
+        .child(label().text(title).font_size(12.).color(c.on_surface_muted))
         .into()
 }
 
@@ -665,11 +674,6 @@ fn empty_row(text: &'static str, c: crate::utils::const_values::AppColors) -> El
     rect()
         .width(Size::fill())
         .padding(Gaps::new(6., 16., 6., 16.))
-        .child(
-            label()
-                .text(text)
-                .font_size(13.)
-                .color(c.on_surface_faint),
-        )
+        .child(label().text(text).font_size(13.).color(c.on_surface_faint))
         .into()
 }

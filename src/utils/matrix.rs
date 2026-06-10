@@ -11,9 +11,7 @@ use matrix_sdk::{
         api::client::filter::FilterDefinition,
         events::{
             AnySyncMessageLikeEvent, AnySyncTimelineEvent, OriginalSyncMessageLikeEvent,
-            SyncMessageLikeEvent,
-            reaction::ReactionEventContent,
-            room::message::MessageType,
+            SyncMessageLikeEvent, reaction::ReactionEventContent, room::message::MessageType,
         },
         exports::serde_json,
     },
@@ -168,16 +166,24 @@ async fn collect_reaction(
     client: Client,
 ) {
     let Some(me) = client.user_id() else { return };
-    if ev.sender == me { return; }
+    if ev.sender == me {
+        return;
+    }
 
     let target_event_id = ev.content.relates_to.event_id.clone();
     let emoji = ev.content.relates_to.key.clone();
     let timestamp_ms: u64 = ev.origin_server_ts.0.into();
 
-    let Ok(target_event) = room.event(&target_event_id, None).await else { return };
-    let Ok(deserialized) = target_event.kind.raw().deserialize() else { return };
+    let Ok(target_event) = room.event(&target_event_id, None).await else {
+        return;
+    };
+    let Ok(deserialized) = target_event.kind.raw().deserialize() else {
+        return;
+    };
 
-    if deserialized.sender() != me { return; }
+    if deserialized.sender() != me {
+        return;
+    }
 
     let message_preview = extract_message_preview(&deserialized);
 
@@ -206,21 +212,24 @@ async fn collect_reaction(
         timestamp_ms,
     };
 
-    crate::REACTIONS_TX.get().expect("REACTIONS_TX not initialized").send_modify(|v| {
-        // Dedup: the list is sorted descending by timestamp; binary-search for the
-        // insertion point so we avoid a full O(n log n) re-sort on every reaction.
-        let ts = reaction.timestamp_ms;
-        let already_exists = v.iter().any(|r| {
-            r.sender_id == reaction.sender_id
-                && r.target_event_id == reaction.target_event_id
-                && r.emoji == reaction.emoji
+    crate::REACTIONS_TX
+        .get()
+        .expect("REACTIONS_TX not initialized")
+        .send_modify(|v| {
+            // Dedup: the list is sorted descending by timestamp; binary-search for the
+            // insertion point so we avoid a full O(n log n) re-sort on every reaction.
+            let ts = reaction.timestamp_ms;
+            let already_exists = v.iter().any(|r| {
+                r.sender_id == reaction.sender_id
+                    && r.target_event_id == reaction.target_event_id
+                    && r.emoji == reaction.emoji
+            });
+            if !already_exists {
+                // partition_point on descending order: first index where ts[i] < ts.
+                let pos = v.partition_point(|r| r.timestamp_ms > ts);
+                v.insert(pos, reaction);
+            }
         });
-        if !already_exists {
-            // partition_point on descending order: first index where ts[i] < ts.
-            let pos = v.partition_point(|r| r.timestamp_ms > ts);
-            v.insert(pos, reaction);
-        }
-    });
 }
 
 fn extract_message_preview(event: &AnySyncTimelineEvent) -> String {

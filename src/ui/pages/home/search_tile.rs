@@ -35,7 +35,11 @@ impl Component for RoomSearchTile {
             .map(|ch| ch.to_uppercase().to_string())
             .unwrap_or_else(|| "?".to_string());
         let color = user_color(&room_id);
-        let bg = if *hovered.read() { c.surface_container } else { c.surface };
+        let bg = if *hovered.read() {
+            c.surface_container
+        } else {
+            c.surface
+        };
         let rid = room_id.clone();
 
         rect()
@@ -46,33 +50,30 @@ impl Component for RoomSearchTile {
             .on_pointer_leave(move |_| *hovered.write() = false)
             .on_press(move |_| super::navigate_to_room(rid.clone()))
             .child(
-                Ripple::new()
-                    .color(c.primary)
-                    .width(Size::fill())
-                    .child(
-                        rect()
-                            .horizontal()
-                            .content(Content::Flex)
-                            .width(Size::fill())
-                            .padding(Gaps::new(10., 16., 10., 16.))
-                            .spacing(12.)
-                            .cross_align(Alignment::Center)
-                            .child(Avatar {
-                                size: 44.,
-                                bytes: None,
-                                fetch_key: Some(room_id.clone()),
-                                initial,
-                                color,
-                                image_key: room_id.clone(),
-                            })
-                            .child(
-                                label()
-                                    .text(display_name)
-                                    .font_size(15.)
-                                    .color(c.on_surface)
-                                    .width(Size::flex(1.0)),
-                            ),
-                    ),
+                Ripple::new().color(c.primary).width(Size::fill()).child(
+                    rect()
+                        .horizontal()
+                        .content(Content::Flex)
+                        .width(Size::fill())
+                        .padding(Gaps::new(10., 16., 10., 16.))
+                        .spacing(12.)
+                        .cross_align(Alignment::Center)
+                        .child(Avatar {
+                            size: 44.,
+                            bytes: None,
+                            fetch_key: Some(room_id.clone()),
+                            initial,
+                            color,
+                            image_key: room_id.clone(),
+                        })
+                        .child(
+                            label()
+                                .text(display_name)
+                                .font_size(15.)
+                                .color(c.on_surface)
+                                .width(Size::flex(1.0)),
+                        ),
+                ),
             )
     }
 }
@@ -102,7 +103,11 @@ impl Component for UserSearchTile {
             .map(|ch| ch.to_uppercase().to_string())
             .unwrap_or_else(|| "?".to_string());
         let color = user_color(&user_id);
-        let bg = if *hovered.read() { c.surface_container } else { c.surface };
+        let bg = if *hovered.read() {
+            c.surface_container
+        } else {
+            c.surface
+        };
         let uid = user_id.clone();
 
         rect()
@@ -114,58 +119,53 @@ impl Component for UserSearchTile {
             .on_press(move |_| {
                 let uid = uid.clone();
                 spawn(async move {
-                    if let Some(room_id) =
-                        crate::utils::matrix::create_or_get_dm(uid).await
-                    {
+                    if let Some(room_id) = crate::utils::matrix::create_or_get_dm(uid).await {
                         super::navigate_to_room(room_id);
                     }
                 });
             })
             .child(
-                Ripple::new()
-                    .color(c.primary)
-                    .width(Size::fill())
-                    .child(
-                        rect()
-                            .horizontal()
-                            .content(Content::Flex)
-                            .width(Size::fill())
-                            .padding(Gaps::new(10., 16., 10., 16.))
-                            .spacing(12.)
-                            .cross_align(Alignment::Center)
-                            .child(Avatar {
-                                size: 42.,
-                                bytes: None,
-                                fetch_key: avatar_mxc,
-                                initial,
-                                color,
-                                image_key: user_id.clone(),
-                            })
-                            .child(
-                                rect()
-                                    .vertical()
-                                    .width(Size::flex(1.0))
-                                    .spacing(2.)
-                                    .child(
-                                        label()
-                                            .text(display_name)
-                                            .font_size(15.)
-                                            .color(c.on_surface),
-                                    )
-                                    .child(
-                                        label()
-                                            .text(user_id)
-                                            .font_size(12.)
-                                            .color(c.on_surface_muted),
-                                    ),
-                            )
-                            .child(
-                                svg(freya_icons::lucide::message_circle())
-                                    .width(Size::px(18.))
-                                    .height(Size::px(18.))
-                                    .color(c.primary),
-                            ),
-                    ),
+                Ripple::new().color(c.primary).width(Size::fill()).child(
+                    rect()
+                        .horizontal()
+                        .content(Content::Flex)
+                        .width(Size::fill())
+                        .padding(Gaps::new(10., 16., 10., 16.))
+                        .spacing(12.)
+                        .cross_align(Alignment::Center)
+                        .child(Avatar {
+                            size: 42.,
+                            bytes: None,
+                            fetch_key: avatar_mxc,
+                            initial,
+                            color,
+                            image_key: user_id.clone(),
+                        })
+                        .child(
+                            rect()
+                                .vertical()
+                                .width(Size::flex(1.0))
+                                .spacing(2.)
+                                .child(
+                                    label()
+                                        .text(display_name)
+                                        .font_size(15.)
+                                        .color(c.on_surface),
+                                )
+                                .child(
+                                    label()
+                                        .text(user_id)
+                                        .font_size(12.)
+                                        .color(c.on_surface_muted),
+                                ),
+                        )
+                        .child(
+                            svg(freya_icons::lucide::message_circle())
+                                .width(Size::px(18.))
+                                .height(Size::px(18.))
+                                .color(c.primary),
+                        ),
+                ),
             )
     }
 }
@@ -206,7 +206,11 @@ impl Component for MessageSearchTile {
             .map(|ch| ch.to_uppercase().to_string())
             .unwrap_or_else(|| "?".to_string());
         let color = user_color(&room_id);
-        let bg = if *hovered.read() { c.surface_container } else { c.surface };
+        let bg = if *hovered.read() {
+            c.surface_container
+        } else {
+            c.surface
+        };
         let rid = room_id.clone();
         let eid = event_id.clone();
 
@@ -218,69 +222,61 @@ impl Component for MessageSearchTile {
             .on_pointer_leave(move |_| *hovered.write() = false)
             .on_press(move |_| navigate_to_room_at_event(rid.clone(), eid.clone()))
             .child(
-                Ripple::new()
-                    .color(c.primary)
-                    .width(Size::fill())
-                    .child(
-                        rect()
-                            .horizontal()
-                            .content(Content::Flex)
-                            .width(Size::fill())
-                            .padding(Gaps::new(10., 16., 10., 16.))
-                            .spacing(12.)
-                            .cross_align(Alignment::Center)
-                            .child(Avatar {
-                                size: 38.,
-                                bytes: None,
-                                fetch_key: Some(room_id.clone()),
-                                initial,
-                                color,
-                                image_key: room_id.clone(),
-                            })
-                            .child(
-                                rect()
-                                    .vertical()
-                                    .width(Size::flex(1.0))
-                                    .spacing(2.)
-                                    .child(
-                                        // Top row: room name + timestamp
-                                        rect()
-                                            .horizontal()
-                                            .content(Content::Flex)
-                                            .width(Size::fill())
-                                            .cross_align(Alignment::Center)
-                                            .child(
-                                                label()
-                                                    .text(room_name)
-                                                    .font_size(13.)
-                                                    .color(c.on_surface_muted)
-                                                    .width(Size::flex(1.0)),
-                                            )
-                                            .child(
-                                                label()
-                                                    .text(date_str)
-                                                    .font_size(11.)
-                                                    .color(c.on_surface_muted),
-                                            ),
-                                    )
-                                    .child(
-                                        label()
-                                            .text(body)
-                                            .font_size(14.)
-                                            .color(c.on_surface),
-                                    )
-                                    .maybe_child(if !is_dm {
-                                        Some(
+                Ripple::new().color(c.primary).width(Size::fill()).child(
+                    rect()
+                        .horizontal()
+                        .content(Content::Flex)
+                        .width(Size::fill())
+                        .padding(Gaps::new(10., 16., 10., 16.))
+                        .spacing(12.)
+                        .cross_align(Alignment::Center)
+                        .child(Avatar {
+                            size: 38.,
+                            bytes: None,
+                            fetch_key: Some(room_id.clone()),
+                            initial,
+                            color,
+                            image_key: room_id.clone(),
+                        })
+                        .child(
+                            rect()
+                                .vertical()
+                                .width(Size::flex(1.0))
+                                .spacing(2.)
+                                .child(
+                                    // Top row: room name + timestamp
+                                    rect()
+                                        .horizontal()
+                                        .content(Content::Flex)
+                                        .width(Size::fill())
+                                        .cross_align(Alignment::Center)
+                                        .child(
                                             label()
-                                                .text(sender_display_name)
-                                                .font_size(12.)
-                                                .color(c.on_surface_muted),
+                                                .text(room_name)
+                                                .font_size(13.)
+                                                .color(c.on_surface_muted)
+                                                .width(Size::flex(1.0)),
                                         )
-                                    } else {
-                                        None
-                                    }),
-                            ),
-                    ),
+                                        .child(
+                                            label()
+                                                .text(date_str)
+                                                .font_size(11.)
+                                                .color(c.on_surface_muted),
+                                        ),
+                                )
+                                .child(label().text(body).font_size(14.).color(c.on_surface))
+                                .maybe_child(if !is_dm {
+                                    Some(
+                                        label()
+                                            .text(sender_display_name)
+                                            .font_size(12.)
+                                            .color(c.on_surface_muted),
+                                    )
+                                } else {
+                                    None
+                                }),
+                        ),
+                ),
             )
     }
 }

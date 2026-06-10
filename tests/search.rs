@@ -50,7 +50,10 @@ async fn search_users_remote_parses_results() {
     assert_eq!(results[0].display_name, "Alice Smith");
     assert!(results[0].avatar_mxc.is_none());
     assert_eq!(results[1].user_id, "@bob:example.org");
-    assert_eq!(results[1].avatar_mxc.as_deref(), Some("mxc://example.org/abc123"));
+    assert_eq!(
+        results[1].avatar_mxc.as_deref(),
+        Some("mxc://example.org/abc123")
+    );
 }
 
 #[tokio::test]
@@ -324,15 +327,27 @@ async fn search_rooms_local_filters_by_name() {
         .mount(&server)
         .await;
 
-    client.sync_once(SyncSettings::default()).await.expect("sync failed");
+    client
+        .sync_once(SyncSettings::default())
+        .await
+        .expect("sync failed");
 
     let results = search_rooms_local(&client, "alice");
 
     assert_eq!(results.len(), 2);
     let names: Vec<&str> = results.iter().map(|r| r.display_name.as_str()).collect();
-    assert!(names.contains(&"Alice Room"), "expected Alice Room in {names:?}");
-    assert!(names.contains(&"Alice's Second Place"), "expected Alice's Second Place in {names:?}");
-    assert!(!names.contains(&"Bob Room"), "Bob Room should not appear for 'alice' query");
+    assert!(
+        names.contains(&"Alice Room"),
+        "expected Alice Room in {names:?}"
+    );
+    assert!(
+        names.contains(&"Alice's Second Place"),
+        "expected Alice's Second Place in {names:?}"
+    );
+    assert!(
+        !names.contains(&"Bob Room"),
+        "Bob Room should not appear for 'alice' query"
+    );
 }
 
 #[tokio::test]
@@ -347,7 +362,10 @@ async fn search_rooms_local_returns_empty_for_no_match() {
         .mount(&server)
         .await;
 
-    client.sync_once(SyncSettings::default()).await.expect("sync failed");
+    client
+        .sync_once(SyncSettings::default())
+        .await
+        .expect("sync failed");
 
     let results = search_rooms_local(&client, "xyz_no_match");
     assert!(results.is_empty());

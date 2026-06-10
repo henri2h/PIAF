@@ -3,9 +3,9 @@ use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 use std::sync::Arc;
 
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::utils::{format_timestamp, use_app_colors, ReceivedReaction};
 use crate::REACTIONS_RX;
+use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::utils::{ReceivedReaction, format_timestamp, use_app_colors};
 
 #[derive(PartialEq)]
 pub struct ReactionsPage {}

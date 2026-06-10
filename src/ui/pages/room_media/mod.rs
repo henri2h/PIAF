@@ -491,9 +491,7 @@ mod tests {
     fn item(key: &str, date_key: &str) -> MediaItem {
         MediaItem {
             key: key.to_string(),
-            source: MediaSource::Plain(
-                OwnedMxcUri::try_from("mxc://example.org/test").unwrap(),
-            ),
+            source: MediaSource::Plain(OwnedMxcUri::try_from("mxc://example.org/test").unwrap()),
             sender_name: "Alice".to_string(),
             timestamp: "10:00".to_string(),
             date_key: date_key.to_string(),

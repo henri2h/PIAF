@@ -36,7 +36,13 @@ impl Component for NewGroupConfig {
             .map(|d| {
                 d.invitees
                     .iter()
-                    .map(|u| (u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()))
+                    .map(|u| {
+                        (
+                            u.user_id.clone(),
+                            u.display_name.clone(),
+                            u.avatar_mxc.clone(),
+                        )
+                    })
                     .collect()
             })
             .unwrap_or_default();
@@ -112,9 +118,7 @@ impl Component for NewGroupConfig {
                                     })
                                     .child(
                                         label()
-                                            .text(
-                                                display_name.chars().take(8).collect::<String>(),
-                                            )
+                                            .text(display_name.chars().take(8).collect::<String>())
                                             .font_size(11.)
                                             .color(c.on_surface_variant),
                                     ),
@@ -195,20 +199,18 @@ impl Component for NewGroupConfig {
                     .width(Size::fill())
                     .padding(Gaps::new(8., 16., 16., 16.))
                     .child(
-                        Button::new()
-                            .on_press(move |_| do_next())
-                            .child(
-                                rect()
-                                    .horizontal()
-                                    .spacing(8.)
-                                    .cross_align(Alignment::Center)
-                                    .child(label().text("Next"))
-                                    .child(
-                                        svg(freya_icons::lucide::arrow_right())
-                                            .width(Size::px(16.))
-                                            .height(Size::px(16.)),
-                                    ),
-                            ),
+                        Button::new().on_press(move |_| do_next()).child(
+                            rect()
+                                .horizontal()
+                                .spacing(8.)
+                                .cross_align(Alignment::Center)
+                                .child(label().text("Next"))
+                                .child(
+                                    svg(freya_icons::lucide::arrow_right())
+                                        .width(Size::px(16.))
+                                        .height(Size::px(16.)),
+                                ),
+                        ),
                     ),
             )
     }

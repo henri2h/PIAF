@@ -204,7 +204,10 @@ mod tests {
 
     #[test]
     fn extract_urls_http() {
-        assert_eq!(extract_urls("see http://example.com"), vec!["http://example.com"]);
+        assert_eq!(
+            extract_urls("see http://example.com"),
+            vec!["http://example.com"]
+        );
     }
 
     #[test]
@@ -298,7 +301,10 @@ mod tests {
             result.contains("2020"),
             "expected year 2020 in result, got: {result}"
         );
-        assert!(result.contains("Jan"), "expected 'Jan' in result, got: {result}");
+        assert!(
+            result.contains("Jan"),
+            "expected 'Jan' in result, got: {result}"
+        );
     }
 
     #[test]

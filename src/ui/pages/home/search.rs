@@ -37,7 +37,10 @@ pub fn search_rooms_local(client: &Client, query: &str) -> Vec<RoomResult> {
         .filter_map(|r| {
             let name = r.cached_display_name().map(|n| n.to_string())?;
             if name.to_lowercase().contains(&ql) {
-                Some(RoomResult { room_id: r.room_id().to_string(), display_name: name })
+                Some(RoomResult {
+                    room_id: r.room_id().to_string(),
+                    display_name: name,
+                })
             } else {
                 None
             }
