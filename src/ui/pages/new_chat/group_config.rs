@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::{
     Route,
     ui::components::{Avatar, TopAppBar, TopAppBarTitle, user_color},
-    utils::{matrix::CLIENT, use_app_colors},
+    utils::use_app_colors,
 };
 
 use super::draft::GROUP_DRAFT;
@@ -17,12 +17,17 @@ impl Component for NewGroupConfig {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
 
-        let name: State<String> = use_state(String::new);
-        let mut encrypted: State<bool> = use_state(|| true);
-        let mut creating: State<bool> = use_state(|| false);
+        // Pre-fill from draft in a single lock acquisition so name and encrypted
+        // always come from the same consistent snapshot.
+        let (saved_name, saved_enc) = GROUP_DRAFT
+            .lock()
+            .map(|d| (d.name.clone(), d.encrypted))
+            .unwrap_or_else(|_| (String::new(), true));
+
+        let name: State<String> = use_state(|| saved_name);
+        let mut encrypted: State<bool> = use_state(|| saved_enc);
         let mut error: State<Option<String>> = use_state(|| None);
 
-        let is_creating = *creating.read();
         let is_encrypted = *encrypted.read();
         let err_msg = error.read().clone();
 
@@ -31,83 +36,31 @@ impl Component for NewGroupConfig {
             .map(|d| {
                 d.invitees
                     .iter()
-                    .map(|u| {
-                        (
-                            u.user_id.clone(),
-                            u.display_name.clone(),
-                            u.avatar_mxc.clone(),
-                        )
-                    })
+                    .map(|u| (u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()))
                     .collect()
             })
             .unwrap_or_default();
 
-        let mut do_create = move || {
+        // Save name + encryption to draft, then navigate to PendingGroup.
+        let mut do_next = move || {
             let room_name = name.read().trim().to_string();
             if room_name.is_empty() {
                 *error.write() = Some("Please enter a group name.".to_string());
                 return;
             }
-            let invite_ids: Vec<String> = GROUP_DRAFT
+            let has_invitees = GROUP_DRAFT
                 .lock()
-                .map(|d| d.invitees.iter().map(|u| u.user_id.clone()).collect())
-                .unwrap_or_default();
-            if invite_ids.is_empty() {
+                .map(|d| !d.invitees.is_empty())
+                .unwrap_or(false);
+            if !has_invitees {
                 *error.write() = Some("No participants selected.".to_string());
                 return;
             }
-            *creating.write() = true;
-            *error.write() = None;
-            spawn(async move {
-                let Some(client) = CLIENT.get().cloned() else {
-                    return;
-                };
-                let (tx, rx) = futures::channel::oneshot::channel::<Result<String, String>>();
-                tokio::task::spawn(async move {
-                    let result = (|| async {
-                        use matrix_sdk::ruma::{
-                            UserId, api::client::room::create_room,
-                            events::room::encryption::RoomEncryptionEventContent,
-                        };
-
-                        let mut request = create_room::v3::Request::new();
-                        request.name = Some(room_name);
-                        request.invite = invite_ids
-                            .iter()
-                            .filter_map(|id| UserId::parse(id).ok())
-                            .collect();
-                        if is_encrypted {
-                            use matrix_sdk::ruma::events::{EmptyStateKey, InitialStateEvent};
-                            let ev = InitialStateEvent::new(
-                                EmptyStateKey,
-                                RoomEncryptionEventContent::with_recommended_defaults(),
-                            );
-                            request.initial_state = vec![ev.to_raw_any()];
-                        }
-                        let room = client
-                            .create_room(request)
-                            .await
-                            .map_err(|e| e.to_string())?;
-                        Ok::<String, String>(room.room_id().to_string())
-                    })()
-                    .await;
-                    let _ = tx.send(result);
-                });
-                match rx.await {
-                    Ok(Ok(room_id)) => {
-                        if let Ok(mut draft) = GROUP_DRAFT.lock() {
-                            draft.invitees.clear();
-                            draft.name.clear();
-                        }
-                        let _ = RouterContext::get().push(Route::RoomPage { room_id });
-                    }
-                    Ok(Err(e)) => {
-                        *error.write() = Some(format!("Error: {e}"));
-                    }
-                    Err(_) => {}
-                }
-                *creating.write() = false;
-            });
+            if let Ok(mut draft) = GROUP_DRAFT.lock() {
+                draft.name = room_name;
+                draft.encrypted = is_encrypted;
+            }
+            let _ = RouterContext::get().push(Route::PendingGroup);
         };
 
         rect()
@@ -159,7 +112,9 @@ impl Component for NewGroupConfig {
                                     })
                                     .child(
                                         label()
-                                            .text(display_name.chars().take(8).collect::<String>())
+                                            .text(
+                                                display_name.chars().take(8).collect::<String>(),
+                                            )
                                             .font_size(11.)
                                             .color(c.on_surface_variant),
                                     ),
@@ -168,7 +123,7 @@ impl Component for NewGroupConfig {
                         row
                     }),
             )
-            // Group name
+            // Group name input
             .child(
                 rect()
                     .vertical()
@@ -190,9 +145,10 @@ impl Component for NewGroupConfig {
                             .child(
                                 Input::new(name)
                                     .flat()
+                                    .auto_focus(true)
                                     .placeholder("Enter group name…")
                                     .width(Size::fill())
-                                    .on_submit(move |_: String| do_create()),
+                                    .on_submit(move |_: String| do_next()),
                             ),
                     ),
             )
@@ -226,26 +182,33 @@ impl Component for NewGroupConfig {
                         *encrypted.write() = !*encrypted.read();
                     })),
             )
-            // Error message
+            // Error
             .maybe_child(err_msg.map(|msg| {
                 rect()
                     .width(Size::fill())
                     .padding(Gaps::new(0., 16., 4., 16.))
                     .child(label().text(msg).font_size(13.).color(c.error))
             }))
-            // Create button
+            // Next button
             .child(
                 rect()
                     .width(Size::fill())
                     .padding(Gaps::new(8., 16., 16., 16.))
                     .child(
                         Button::new()
-                            .on_press(move |_| do_create())
-                            .child(if is_creating {
-                                "Creating…"
-                            } else {
-                                "Create group"
-                            }),
+                            .on_press(move |_| do_next())
+                            .child(
+                                rect()
+                                    .horizontal()
+                                    .spacing(8.)
+                                    .cross_align(Alignment::Center)
+                                    .child(label().text("Next"))
+                                    .child(
+                                        svg(freya_icons::lucide::arrow_right())
+                                            .width(Size::px(16.))
+                                            .height(Size::px(16.)),
+                                    ),
+                            ),
                     ),
             )
     }

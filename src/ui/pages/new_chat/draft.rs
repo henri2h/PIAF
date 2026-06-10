@@ -17,3 +17,6 @@ pub static GROUP_DRAFT: Mutex<GroupDraft> = Mutex::new(GroupDraft {
     name: String::new(),
     encrypted: true,
 });
+
+/// Holds the display info for a pending DM (set before navigating to PendingDm).
+pub static PENDING_DM: Mutex<Option<UserInfo>> = Mutex::new(None);

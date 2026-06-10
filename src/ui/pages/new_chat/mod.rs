@@ -14,11 +14,15 @@ use crate::{
 pub mod draft;
 mod group_config;
 mod group_invite;
+mod pending_dm;
+mod pending_group;
 
 pub use group_config::NewGroupConfig;
 pub use group_invite::NewGroup;
+pub use pending_dm::PendingDm;
+pub use pending_group::PendingGroup;
 
-use draft::UserInfo;
+use draft::{PENDING_DM, UserInfo};
 
 async fn load_dm_suggestions() -> Vec<UserInfo> {
     use matrix_sdk::ruma::events::direct::DirectEventContent;
@@ -82,6 +86,9 @@ impl Component for NewChat {
         let mut status: State<Option<String>> = use_state(|| None);
         let mut suggestions: State<Vec<UserInfo>> = use_state(Vec::new);
         let mut search_ver: State<u64> = use_state(|| 0u64);
+        // Prevents double-tap from spawning two concurrent navigation tasks,
+        // which would push duplicate routes and leave stale PENDING_DM.
+        let mut navigating: State<bool> = use_state(|| false);
 
         // Load DM suggestions on mount
         use_hook(|| {
@@ -273,6 +280,8 @@ impl Component for NewChat {
                 }
                 for (uid, display_name, avatar_mxc) in display_list {
                     let uid_press = uid.clone();
+                    let dn_press = display_name.clone();
+                    let av_press = avatar_mxc.clone();
                     let initial = display_name
                         .chars()
                         .next()
@@ -289,38 +298,37 @@ impl Component for NewChat {
                             .cross_align(Alignment::Center)
                             .overflow(Overflow::Clip)
                             .on_press(move |_| {
+                                if *navigating.read() {
+                                    return;
+                                }
+                                *navigating.write() = true;
                                 let uid = uid_press.clone();
-                                let mut status = status;
+                                let dn = dn_press.clone();
+                                let av = av_press.clone();
                                 spawn(async move {
-                                    let Some(client) = CLIENT.get().cloned() else {
-                                        return;
-                                    };
-                                    let (tx, rx) = futures::channel::oneshot::channel::<
-                                        Result<String, String>,
-                                    >();
-                                    tokio::task::spawn(async move {
-                                        let result = (|| async {
-                                            let user_id =
-                                                UserId::parse(&uid).map_err(|e| e.to_string())?;
-                                            let room = client
-                                                .create_dm(&user_id)
-                                                .await
-                                                .map_err(|e| e.to_string())?;
-                                            Ok::<String, String>(room.room_id().to_string())
-                                        })()
-                                        .await;
-                                        let _ = tx.send(result);
-                                    });
-                                    match rx.await {
-                                        Ok(Ok(room_id)) => {
-                                            let _ = RouterContext::get()
-                                                .push(Route::RoomPage { room_id });
+                                    // If a DM room already exists, go to it directly.
+                                    if let Some(client) = CLIENT.get().cloned() {
+                                        if let Ok(user_id) = UserId::parse(&uid) {
+                                            if let Some(room) = client.get_dm_room(&user_id) {
+                                                crate::ui::pages::home::navigate_to_room(
+                                                    room.room_id().to_string(),
+                                                );
+                                                *navigating.write() = false;
+                                                return;
+                                            }
                                         }
-                                        Ok(Err(e)) => {
-                                            *status.write() = Some(format!("Error: {e}"));
-                                        }
-                                        Err(_) => {}
                                     }
+                                    // No existing DM — store display info and go to pending page.
+                                    if let Ok(mut pending) = PENDING_DM.lock() {
+                                        *pending = Some(UserInfo {
+                                            user_id: uid.clone(),
+                                            display_name: dn,
+                                            avatar_mxc: av,
+                                        });
+                                    }
+                                    let _ = RouterContext::get()
+                                        .push(Route::PendingDm { user_id: uid });
+                                    *navigating.write() = false;
                                 });
                             })
                             .child(Avatar {

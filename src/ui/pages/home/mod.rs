@@ -17,7 +17,7 @@ use search_tile::{MessageSearchTile, RoomSearchTile, UserSearchTile};
 
 use crate::ui::components::Avatar;
 use crate::utils::queries::FetchUserDisplayName;
-use crate::utils::{matrix::CLIENT, use_app_colors};
+use crate::utils::{matrix::CLIENT, use_app_colors, use_tokio_track_watcher};
 use crate::{ACTIVE_ROOM_RX, ACTIVE_ROOM_TX, Route, WIDE_MODE};
 
 // ---------------------------------------------------------------------------
@@ -25,7 +25,7 @@ use crate::{ACTIVE_ROOM_RX, ACTIVE_ROOM_TX, Route, WIDE_MODE};
 // ---------------------------------------------------------------------------
 
 /// Navigate to a room: in wide mode sends to ACTIVE_ROOM_TX, always pushes the route.
-pub(super) fn navigate_to_room(room_id: String) {
+pub(crate) fn navigate_to_room(room_id: String) {
     if WIDE_MODE.load(Ordering::Relaxed) {
         if let Some(tx) = ACTIVE_ROOM_TX.get() {
             let _ = tx.send(Some(room_id.clone()));
@@ -91,6 +91,13 @@ impl Component for HomePage {
             }
         });
         use_provide_context(|| ActiveRoomCtx(active_room));
+
+        // Re-render the room list on every sync tick so ordering stays current.
+        let mut _sync_tick: State<u64> = use_state(|| 0u64);
+        use_tokio_track_watcher(
+            crate::SYNC_RX.get().expect("SYNC_RX not initialized"),
+            _sync_tick,
+        );
 
         let mut search: State<String> = use_state(String::new);
         // Narrow mode: search toggle
@@ -385,6 +392,23 @@ impl Component for HomePage {
                         } else {
                             None
                         })
+                        // Reactions button (both modes)
+                        .child(
+                            rect()
+                                .width(Size::px(48.))
+                                .height(Size::px(48.))
+                                .corner_radius(24.)
+                                .center()
+                                .on_press(|_| {
+                                    let _ = RouterContext::get().push(crate::Route::ReactionsPage);
+                                })
+                                .child(
+                                    svg(freya_icons::lucide::heart())
+                                        .color(c.on_surface_variant)
+                                        .width(Size::px(22.))
+                                        .height(Size::px(22.)),
+                                ),
+                        )
                         // Pencil button (both modes)
                         .child(
                             rect()

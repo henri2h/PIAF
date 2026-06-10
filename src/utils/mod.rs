@@ -5,6 +5,18 @@ pub mod push;
 pub mod queries;
 pub mod worker;
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct ReceivedReaction {
+    pub room_id: String,
+    pub room_name: String,
+    pub target_event_id: String,
+    pub message_preview: String,
+    pub emoji: String,
+    pub sender_id: String,
+    pub sender_display: String,
+    pub timestamp_ms: u64,
+}
+
 use chrono::{DateTime, Datelike, Local, NaiveDate, TimeZone, Utc};
 use freya::prelude::*;
 use futures::StreamExt;

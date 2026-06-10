@@ -2,11 +2,21 @@ use std::sync::atomic::Ordering;
 
 use futures::channel::oneshot;
 use matrix_sdk::{
-    Client, ClientBuilder, LoopCtrl, ServerName,
+    Client, ClientBuilder, LoopCtrl, Room, ServerName,
     authentication::matrix::MatrixSession,
     config::SyncSettings,
     encryption::{BackupDownloadStrategy, EncryptionSettings},
-    ruma::{UserId, api::client::filter::FilterDefinition, exports::serde_json},
+    ruma::{
+        UserId,
+        api::client::filter::FilterDefinition,
+        events::{
+            AnySyncMessageLikeEvent, AnySyncTimelineEvent, OriginalSyncMessageLikeEvent,
+            SyncMessageLikeEvent,
+            reaction::ReactionEventContent,
+            room::message::MessageType,
+        },
+        exports::serde_json,
+    },
 };
 use matrix_sdk_ui::RoomListService;
 use rand::{RngExt, rng};
@@ -24,6 +34,9 @@ pub static CLIENT: OnceLock<Client> = OnceLock::new();
 pub static ROOM_LIST_SERVICE: OnceLock<RoomListService> = OnceLock::new();
 pub static SESSION_FILE: OnceLock<PathBuf> = OnceLock::new();
 pub static DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
+/// Ensures the reaction event handler is registered at most once across all
+/// calls to `activate_client` (login + restore can both call it).
+static REACTION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ClientSession {
@@ -132,9 +145,99 @@ async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_di
     #[cfg(target_os = "android")]
     crate::utils::push::register_pusher_if_stored(client, _pusher_dir).await;
 
+    // Track reactions to the current user's messages for the Reactions feed.
+    // The OnceLock guard ensures the handler is registered exactly once even if
+    // activate_client is called on both the restore and login paths.
+    if REQUESTER.get().is_some() && REACTION_HANDLER_GUARD.set(()).is_ok() {
+        client.add_event_handler(
+            |ev: OriginalSyncMessageLikeEvent<ReactionEventContent>, room: Room, client: Client| async move {
+                collect_reaction(ev, room, client).await;
+            },
+        );
+    }
+
     if let Some(rq) = REQUESTER.get() {
         rq.start_sync(sync_token);
         rq.start_room_list_sync();
+    }
+}
+
+async fn collect_reaction(
+    ev: OriginalSyncMessageLikeEvent<ReactionEventContent>,
+    room: Room,
+    client: Client,
+) {
+    let Some(me) = client.user_id() else { return };
+    if ev.sender == me { return; }
+
+    let target_event_id = ev.content.relates_to.event_id.clone();
+    let emoji = ev.content.relates_to.key.clone();
+    let timestamp_ms: u64 = ev.origin_server_ts.0.into();
+
+    let Ok(target_event) = room.event(&target_event_id, None).await else { return };
+    let Ok(deserialized) = target_event.kind.raw().deserialize() else { return };
+
+    if deserialized.sender() != me { return; }
+
+    let message_preview = extract_message_preview(&deserialized);
+
+    let room_name = room
+        .display_name()
+        .await
+        .map(|n| n.to_string())
+        .unwrap_or_default();
+
+    let sender_display = room
+        .get_member_no_sync(&ev.sender)
+        .await
+        .ok()
+        .flatten()
+        .and_then(|m| m.display_name().map(|s| s.to_string()))
+        .unwrap_or_else(|| ev.sender.localpart().to_string());
+
+    let reaction = crate::utils::ReceivedReaction {
+        room_id: room.room_id().to_string(),
+        room_name,
+        target_event_id: target_event_id.to_string(),
+        message_preview,
+        emoji,
+        sender_id: ev.sender.to_string(),
+        sender_display,
+        timestamp_ms,
+    };
+
+    crate::REACTIONS_TX.get().expect("REACTIONS_TX not initialized").send_modify(|v| {
+        // Dedup: the list is sorted descending by timestamp; binary-search for the
+        // insertion point so we avoid a full O(n log n) re-sort on every reaction.
+        let ts = reaction.timestamp_ms;
+        let already_exists = v.iter().any(|r| {
+            r.sender_id == reaction.sender_id
+                && r.target_event_id == reaction.target_event_id
+                && r.emoji == reaction.emoji
+        });
+        if !already_exists {
+            // partition_point on descending order: first index where ts[i] < ts.
+            let pos = v.partition_point(|r| r.timestamp_ms > ts);
+            v.insert(pos, reaction);
+        }
+    });
+}
+
+fn extract_message_preview(event: &AnySyncTimelineEvent) -> String {
+    if let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
+        SyncMessageLikeEvent::Original(msg),
+    )) = event
+    {
+        match &msg.content.msgtype {
+            MessageType::Text(t) => t.body.chars().take(60).collect(),
+            MessageType::Image(_) => "📷 Image".to_string(),
+            MessageType::File(_) => "📎 File".to_string(),
+            MessageType::Audio(_) => "🎵 Audio".to_string(),
+            MessageType::Video(_) => "🎬 Video".to_string(),
+            _ => "Message".to_string(),
+        }
+    } else {
+        "Message".to_string()
     }
 }
 

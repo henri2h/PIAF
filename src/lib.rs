@@ -18,7 +18,8 @@ pub mod utils;
 use ui::pages::{
     home::HomePage,
     login::LoginPage,
-    new_chat::{NewChat, NewGroup, NewGroupConfig},
+    new_chat::{NewChat, NewGroup, NewGroupConfig, PendingDm, PendingGroup},
+    reactions::ReactionsPage,
     room::RoomPage,
     room_media::RoomMediaPage,
     room_members::RoomMembers,
@@ -39,6 +40,8 @@ pub static ACTIVE_ROOM_RX: OnceLock<watch::Receiver<Option<String>>> = OnceLock:
 /// Set before navigating to open a room at a specific event. Tuple is (room_id, event_id).
 pub static FOCUS_EVENT_TX: OnceLock<watch::Sender<Option<(String, String)>>> = OnceLock::new();
 pub static FOCUS_EVENT_RX: OnceLock<watch::Receiver<Option<(String, String)>>> = OnceLock::new();
+pub static REACTIONS_TX: OnceLock<watch::Sender<Vec<utils::ReceivedReaction>>> = OnceLock::new();
+pub static REACTIONS_RX: OnceLock<watch::Receiver<Vec<utils::ReceivedReaction>>> = OnceLock::new();
 /// Set to true by Layout when the window is wide enough for split-pane view.
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "android")]
@@ -81,6 +84,10 @@ pub enum Route {
         NewGroup,
         #[route("/new-group/config")]
         NewGroupConfig,
+        #[route("/pending-dm/:user_id")]
+        PendingDm { user_id: String },
+        #[route("/pending-group")]
+        PendingGroup,
         #[route("/room/:room_id")]
         RoomPage { room_id: String },
         #[route("/room/:room_id/search")]
@@ -91,6 +98,8 @@ pub enum Route {
         RoomMediaPage { room_id: String },
         #[route("/room/:room_id/members")]
         RoomMembers { room_id: String },
+        #[route("/reactions")]
+        ReactionsPage,
 }
 
 #[derive(PartialEq)]
@@ -223,11 +232,14 @@ impl Component for Layout {
                 | Route::NewChat
                 | Route::NewGroup
                 | Route::NewGroupConfig
+                | Route::PendingDm { .. }
+                | Route::PendingGroup
                 | Route::RoomPage { .. }
                 | Route::RoomSearch { .. }
                 | Route::RoomSettings { .. }
                 | Route::RoomMediaPage { .. }
                 | Route::RoomMembers { .. }
+                | Route::ReactionsPage
         );
 
         rect()
@@ -798,6 +810,11 @@ fn android_main(droid_app: AndroidApp) {
             tokio::sync::watch::channel::<Option<(String, String)>>(None);
         FOCUS_EVENT_TX.set(focus_event_tx).unwrap();
         FOCUS_EVENT_RX.set(focus_event_rx).unwrap();
+
+        let (reactions_tx, reactions_rx) =
+            tokio::sync::watch::channel::<Vec<utils::ReceivedReaction>>(vec![]);
+        REACTIONS_TX.set(reactions_tx).unwrap();
+        REACTIONS_RX.set(reactions_rx).unwrap();
 
         tokio::spawn(async move {
             match utils::matrix::restore_matrix_client(data_path).await {
