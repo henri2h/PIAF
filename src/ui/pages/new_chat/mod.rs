@@ -161,31 +161,35 @@ impl Component for NewChat {
         let is_searching = *searching.read();
         let is_empty_search = search.read().trim().is_empty();
 
-        // Show search results, or suggestions when search box is empty
+        // Show search results, or suggestions when search box is empty.
+        // When a query is active, also include matching m.direct contacts (bridged accounts are
+        // never in the user directory but do appear in m.direct).
         let display_list: Vec<(String, String, Option<String>)> = if is_empty_search {
             suggestions
                 .read()
                 .iter()
-                .map(|u| {
-                    (
-                        u.user_id.clone(),
-                        u.display_name.clone(),
-                        u.avatar_mxc.clone(),
-                    )
-                })
+                .map(|u| (u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()))
                 .collect()
         } else {
-            results
-                .read()
-                .iter()
-                .map(|u| {
-                    (
-                        u.user_id.clone(),
-                        u.display_name.clone(),
-                        u.avatar_mxc.clone(),
-                    )
-                })
-                .collect()
+            let q = search.read().to_lowercase();
+            let mut seen = std::collections::HashSet::new();
+            let mut list: Vec<(String, String, Option<String>)> = Vec::new();
+            // Local contacts first (includes bridged users).
+            for u in suggestions.read().iter() {
+                if u.user_id.to_lowercase().contains(&q)
+                    || u.display_name.to_lowercase().contains(&q)
+                {
+                    seen.insert(u.user_id.clone());
+                    list.push((u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()));
+                }
+            }
+            // Network results after, skipping duplicates.
+            for u in results.read().iter() {
+                if seen.insert(u.user_id.clone()) {
+                    list.push((u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()));
+                }
+            }
+            list
         };
         let status_msg = status.read().clone();
         let has_suggestions = !suggestions.read().is_empty();
@@ -273,11 +277,14 @@ impl Component for NewChat {
                     .child(CircularLoader::new().size(28.))
                     .into_element()
             } else {
-                let show_label = is_empty_search && has_suggestions && !display_list.is_empty();
+                let count = display_list.len();
+                let show_label = is_empty_search && has_suggestions && count > 0;
+                let dl = Arc::new(display_list);
                 let mut list = rect()
                     .vertical()
                     .width(Size::fill())
-                    .height(Size::flex(1.0));
+                    .height(Size::flex(1.0))
+                    .content(Content::Flex);
                 if show_label {
                     list = list.child(
                         rect()
@@ -291,21 +298,28 @@ impl Component for NewChat {
                             ),
                     );
                 }
-                for (uid, display_name, avatar_mxc) in display_list {
-                    let uid_press = uid.clone();
-                    let dn_press = display_name.clone();
-                    let av_press = avatar_mxc.clone();
-                    let initial = display_name
-                        .chars()
-                        .next()
-                        .map(|ch| ch.to_uppercase().to_string())
-                        .unwrap_or_else(|| "?".to_string());
-                    let color = user_color(&uid);
-                    list = list.child(
+                list.child(
+                    VirtualScrollView::new(move |i, _| {
+                        let Some((uid, display_name, avatar_mxc)) = dl.get(i) else {
+                            return rect().into_element();
+                        };
+                        let uid = uid.clone();
+                        let display_name = display_name.clone();
+                        let avatar_mxc = avatar_mxc.clone();
+                        let uid_press = uid.clone();
+                        let dn_press = display_name.clone();
+                        let av_press = avatar_mxc.clone();
+                        let initial = display_name
+                            .chars()
+                            .next()
+                            .map(|ch| ch.to_uppercase().to_string())
+                            .unwrap_or_else(|| "?".to_string());
+                        let color = user_color(&uid);
                         rect()
                             .horizontal()
                             .content(Content::Flex)
                             .width(Size::fill())
+                            .height(Size::px(62.))
                             .padding(Gaps::new(10., 16., 10., 16.))
                             .spacing(12.)
                             .cross_align(Alignment::Center)
@@ -319,7 +333,6 @@ impl Component for NewChat {
                                 let dn = dn_press.clone();
                                 let av = av_press.clone();
                                 spawn(async move {
-                                    // If a DM room already exists, go to it directly.
                                     if let Some(client) = CLIENT.get().cloned() {
                                         if let Ok(user_id) = UserId::parse(&uid) {
                                             if let Some(room) = client.get_dm_room(&user_id) {
@@ -331,7 +344,6 @@ impl Component for NewChat {
                                             }
                                         }
                                     }
-                                    // No existing DM — store display info and go to pending page.
                                     if let Ok(mut pending) = PENDING_DM.lock() {
                                         *pending = Some(UserInfo {
                                             user_id: uid.clone(),
@@ -364,7 +376,10 @@ impl Component for NewChat {
                                             .color(c.on_surface),
                                     )
                                     .child(
-                                        label().text(uid).font_size(12.).color(c.on_surface_muted),
+                                        label()
+                                            .text(uid)
+                                            .font_size(12.)
+                                            .color(c.on_surface_muted),
                                     ),
                             )
                             .child(
@@ -372,10 +387,14 @@ impl Component for NewChat {
                                     .width(Size::px(18.))
                                     .height(Size::px(18.))
                                     .color(c.primary),
-                            ),
-                    );
-                }
-                list.into_element()
+                            )
+                            .into_element()
+                    })
+                    .length(count)
+                    .item_size(62.)
+                    .height(Size::flex(1.0)),
+                )
+                .into_element()
             })
             // Error status
             .maybe_child(status_msg.map(|msg| {
