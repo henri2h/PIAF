@@ -98,6 +98,7 @@ impl Component for HomePage {
             crate::SYNC_RX.get().expect("SYNC_RX not initialized"),
             _sync_tick,
         );
+        println!("[TIMING] HomePage re-render (sync_tick={})", *_sync_tick.read());
 
         let mut search: State<String> = use_state(String::new);
         // Narrow mode: search toggle

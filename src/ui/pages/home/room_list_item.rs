@@ -9,7 +9,8 @@ use matrix_sdk::{
         room::message::MessageType,
     },
 };
-use std::time::Duration;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Duration, Instant};
 
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
 use crate::ui::pages::home::ActiveRoomCtx;
@@ -56,6 +57,7 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
                 MessageType::Location(_) => "📍 Location".to_string(),
                 MessageType::VerificationRequest(_) => "🔐 Verification request".to_string(),
                 ref other => {
+                    #[cfg(debug_assertions)]
                     println!(
                         "[piaf] unhandled MessageType in room {}: {:?}",
                         room.room_id(),
@@ -76,6 +78,7 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
             SyncMessageLikeEvent::Redacted(r),
         ))) => ("🗑 Message deleted".to_string(), r.sender.to_string()),
         _ => {
+            #[cfg(debug_assertions)]
             println!(
                 "[{}] {}",
                 room.name().unwrap_or_default(),
@@ -88,6 +91,7 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
                 .raw()
                 .deserialize_as::<matrix_sdk::ruma::exports::serde_json::Value>()
             else {
+                #[cfg(debug_assertions)]
                 println!(
                     "[piaf] failed to deserialize last event as JSON in room {}",
                     room.room_id()
@@ -119,6 +123,7 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
                 | "m.room.create" => "Room settings updated".to_string(),
                 "m.reaction" => return (String::new(), SenderPrefix::None),
                 _ => {
+                    #[cfg(debug_assertions)]
                     println!(
                         "[piaf] unhandled last event type: {event_type:?} in room {}",
                         room.room_id()
@@ -178,6 +183,23 @@ fn cancel_long_press(mut press_gen: State<u64>, mut long_pressed: State<bool>) {
 }
 
 // ---------------------------------------------------------------------------
+// Timing helpers (active in all builds; grep adb logcat for [TIMING])
+// ---------------------------------------------------------------------------
+
+static MOUNT_COUNT: AtomicU64 = AtomicU64::new(0);
+
+struct RenderTimer(Instant, u64);
+impl Drop for RenderTimer {
+    fn drop(&mut self) {
+        println!(
+            "[TIMING] RoomListItem render {}µs (mount #{})",
+            self.0.elapsed().as_micros(),
+            self.1
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
 // RoomListItem
 // ---------------------------------------------------------------------------
 
@@ -200,6 +222,8 @@ impl PartialEq for RoomListItem {
 
 impl Component for RoomListItem {
     fn render(&self) -> impl IntoElement {
+        let _render_timer = RenderTimer(Instant::now(), MOUNT_COUNT.load(Ordering::Relaxed));
+
         let c = use_app_colors();
 
         let room = self.room.clone();
@@ -227,6 +251,8 @@ impl Component for RoomListItem {
         });
 
         use_hook(|| {
+            let mount_no = MOUNT_COUNT.fetch_add(1, Ordering::Relaxed);
+            println!("[TIMING] RoomListItem mount #{mount_no} for {room_id}");
             let room_id = room_id.clone();
             let mut is_muted = is_muted;
             spawn(async move {
@@ -239,7 +265,12 @@ impl Component for RoomListItem {
                         let _ = tx.send(false);
                         return;
                     };
+                    let t = Instant::now();
                     let ns = client.notification_settings().await;
+                    println!(
+                        "[TIMING] notification_settings() {}ms (mount #{mount_no})",
+                        t.elapsed().as_millis()
+                    );
                     let mode = ns.get_user_defined_room_notification_mode(&parsed_id).await;
                     let _ = tx.send(
                         mode == Some(matrix_sdk::notification_settings::RoomNotificationMode::Mute),
