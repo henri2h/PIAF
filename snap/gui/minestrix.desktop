@@ -1,9 +1,0 @@
-[DesktopEntry]
-Name=MinesTRIX
-Icon=${SNAP}/meta/gui/icon_200.png
-Comment=A privacy focused social media based on MATRIX
-Categories=InstantMessaging;
-Type=Application
-Terminal=false
-Exec=minestrix
-Categories=SocialMedia;
