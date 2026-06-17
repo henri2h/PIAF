@@ -570,10 +570,10 @@ impl Component for HomePage {
                 rect()
                     .expanded()
                     .on_wheel(move |e: Event<WheelEventData>| {
-                        if e.delta_y < 0.0 {
-                            *chips_visible.write() = true;
-                        } else if e.delta_y > 0.0 {
-                            *chips_visible.write() = false;
+                        if e.delta_y < 0.0 && !*chips_visible.peek() {
+                            chips_visible.set(true);
+                        } else if e.delta_y > 0.0 && *chips_visible.peek() {
+                            chips_visible.set(false);
                         }
                     })
                     .child(

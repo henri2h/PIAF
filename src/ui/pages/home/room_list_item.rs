@@ -24,9 +24,10 @@ enum SenderPrefix {
 }
 
 fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix) {
-    match room.latest_event() {
+    let latest_event = room.latest_event();
+    match &latest_event {
         LatestEventValue::RemoteInvite { inviter, .. } => {
-            let body = if let Some(ref inviter_id) = inviter {
+            let body = if let Some(inviter_id) = inviter {
                 format!("You were invited by {}", inviter_id.localpart())
             } else {
                 "You were invited".to_string()
@@ -38,7 +39,7 @@ fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix)
             return (String::new(), SenderPrefix::None);
         }
     }
-    let LatestEventValue::Remote(latest) = room.latest_event() else {
+    let LatestEventValue::Remote(latest) = latest_event else {
         return (String::new(), SenderPrefix::None);
     };
 
@@ -219,6 +220,8 @@ impl PartialEq for RoomListItem {
             && self.room.num_unread_messages() == other.room.num_unread_messages()
             && self.room.num_unread_notifications() == other.room.num_unread_notifications()
             && self.room.latest_event().timestamp() == other.room.latest_event().timestamp()
+            && self.room.cached_user_defined_notification_mode()
+                == other.room.cached_user_defined_notification_mode()
     }
 }
 
@@ -231,7 +234,9 @@ impl Component for RoomListItem {
         let room = self.room.clone();
         let room_id = room.room_id().to_string();
         let mut hovered: State<bool> = use_state(|| false);
-        let is_muted: State<bool> = use_state(|| false);
+        let room_is_muted = room.cached_user_defined_notification_mode()
+            == Some(matrix_sdk::notification_settings::RoomNotificationMode::Mute);
+
         let is_active = try_consume_context::<ActiveRoomCtx>()
             .map(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()))
             .unwrap_or(false);
@@ -249,41 +254,21 @@ impl Component for RoomListItem {
         #[cfg(target_os = "android")]
         let mut long_pressed: State<bool> = use_state(|| false);
 
-        use_hook(|| {
-            if room.latest_event().is_none() {
-                let room_id = room.room_id().to_owned();
-                tokio::task::spawn(async move {
-                    if let Some(rq) = crate::REQUESTER.get() {
-                        rq.fetch_room_previews(vec![room_id]);
-                    }
-                });
-            }
-        });
-
-        use_hook(|| {
-            let mount_no = MOUNT_COUNT.fetch_add(1, Ordering::Relaxed);
-            #[cfg(debug_assertions)]
-            println!("[TIMING] RoomListItem mount #{mount_no} for {room_id}");
-            let room_id = room_id.clone();
-            let mut is_muted = is_muted;
-            spawn(async move {
-                let Some(client) = crate::utils::matrix::CLIENT.get().cloned() else {
+        use_side_effect_with_deps(&room_id, move |rid: &String| {
+            let rid = rid.clone();
+            tokio::task::spawn(async move {
+                let Some(client) = crate::utils::matrix::CLIENT.get() else {
                     return;
                 };
-                let (tx, rx) = futures::channel::oneshot::channel::<bool>();
-                tokio::task::spawn(async move {
-                    let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id) else {
-                        let _ = tx.send(false);
-                        return;
-                    };
-                    let ns = client.notification_settings().await;
-                    let mode = ns.get_user_defined_room_notification_mode(&parsed_id).await;
-                    let _ = tx.send(
-                        mode == Some(matrix_sdk::notification_settings::RoomNotificationMode::Mute),
-                    );
-                });
-                if let Ok(muted) = rx.await {
-                    *is_muted.write() = muted;
+                let Ok(parsed) = matrix_sdk::ruma::RoomId::parse(&rid) else {
+                    return;
+                };
+                if let Some(room) = client.get_room(&parsed) {
+                    if room.latest_event().is_none() {
+                        if let Some(rq) = crate::REQUESTER.get() {
+                            rq.fetch_room_previews(vec![parsed.to_owned()]);
+                        }
+                    }
                 }
             });
         });
@@ -362,7 +347,6 @@ impl Component for RoomListItem {
             c.on_surface_faint
         };
 
-        let room_is_muted = *is_muted.read();
         let room_id_nav = room_id.clone();
 
         #[cfg(not(target_os = "android"))]
