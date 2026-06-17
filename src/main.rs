@@ -2,6 +2,8 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use freya::prelude::*;
+#[cfg(feature = "perf-overlay")]
+use freya_performance_plugin::PerformanceOverlayPlugin;
 use freya_router::prelude::{Outlet, Routable, Router, RouterConfig, RouterContext, use_route};
 use tokio::runtime::Builder;
 use tokio::sync::watch;
@@ -78,7 +80,13 @@ fn main() {
         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
     });
 
-    launch(LaunchConfig::new().with_window(WindowConfig::new(app).with_size(500., 450.)))
+    let launch_config = LaunchConfig::new().with_window(WindowConfig::new(app).with_size(500., 450.));
+
+    #[cfg(feature = "perf-overlay")]
+    let launch_config =
+        launch_config.with_plugin(PerformanceOverlayPlugin::default().with_visible(true));
+
+    launch(launch_config)
 }
 
 #[derive(Routable, Clone, PartialEq)]

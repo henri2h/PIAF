@@ -34,14 +34,19 @@ pub(crate) fn navigate_to_room(room_id: String) {
     let _ = RouterContext::get().push(Route::RoomPage { room_id });
 }
 
-/// Sort a room slice in-place by descending recency stamp.
+/// Primary key for room sorting: latest-event timestamp (client-side, always
+/// accurate), with recency_stamp (server-side sliding-sync bump) as fallback.
+fn room_sort_key(r: &matrix_sdk::Room) -> u64 {
+    r.latest_event()
+        .timestamp()
+        .map(|ts| ts.get().into())
+        .or_else(|| r.recency_stamp().map(u64::from))
+        .unwrap_or(0)
+}
+
+/// Sort a room slice in-place by descending recency.
 fn sort_rooms_by_recency(rooms: &mut Vec<matrix_sdk::Room>) {
-    rooms.sort_unstable_by(|a, b| {
-        b.recency_stamp()
-            .map(u64::from)
-            .unwrap_or(0)
-            .cmp(&a.recency_stamp().map(u64::from).unwrap_or(0))
-    });
+    rooms.sort_unstable_by(|a, b| room_sort_key(b).cmp(&room_sort_key(a)));
 }
 
 // ---------------------------------------------------------------------------
@@ -98,6 +103,7 @@ impl Component for HomePage {
             crate::SYNC_RX.get().expect("SYNC_RX not initialized"),
             _sync_tick,
         );
+        #[cfg(debug_assertions)]
         println!("[TIMING] HomePage re-render (sync_tick={})", *_sync_tick.read());
 
         let mut search: State<String> = use_state(String::new);
@@ -223,6 +229,18 @@ impl Component for HomePage {
             })
             .unwrap_or_default();
         sort_rooms_by_recency(&mut rooms);
+
+        #[cfg(debug_assertions)]
+        {
+            let tick = *_sync_tick.read();
+            if tick < 5 {
+                for (i, r) in rooms.iter().enumerate().take(10) {
+                    let key = room_sort_key(r);
+                    let name = r.cached_display_name().map(|n| n.to_string()).unwrap_or_default();
+                    println!("[SORT] tick={tick} #{i} key={key} {name}");
+                }
+            }
+        }
 
         let active_filter = filter.read().clone();
         let filtered_rooms: Vec<_> = rooms
@@ -542,11 +560,7 @@ impl Component for HomePage {
                     )
                     .into_element()
             } else {
-                let list_key: u64 = filtered_rooms
-                    .first()
-                    .and_then(|r| r.recency_stamp().map(u64::from))
-                    .unwrap_or(0)
-                    .wrapping_add(rooms_len as u64);
+                let sync_stamp = *_sync_tick.read();
                 rect()
                     .expanded()
                     .on_wheel(move |e: Event<WheelEventData>| {
@@ -557,21 +571,18 @@ impl Component for HomePage {
                         }
                     })
                     .child(
-                        VirtualScrollView::new(move |i, _| {
-                            let Some(room) = filtered_rooms.get(i) else {
-                                return rect().into_element();
-                            };
-                            if room.latest_event().is_none() {
-                                if let Some(rq) = crate::REQUESTER.get() {
-                                    rq.fetch_room_previews(vec![room.room_id().to_owned()]);
-                                }
-                            }
-                            rect()
-                                .width(Size::fill())
-                                .child(RoomListItem { room: room.clone() })
-                                .into()
-                        })
-                        .key(format!("vscroll-{list_key}"))
+                        VirtualScrollView::new_with_data(
+                            sync_stamp,
+                            move |i, _| {
+                                let Some(room) = filtered_rooms.get(i) else {
+                                    return rect().into_element();
+                                };
+                                rect()
+                                    .width(Size::fill())
+                                    .child(RoomListItem { room: room.clone() })
+                                    .into()
+                            },
+                        )
                         .length(rooms_len)
                         .item_size(80.)
                         .height(Size::fill())

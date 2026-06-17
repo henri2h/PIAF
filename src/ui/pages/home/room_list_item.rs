@@ -183,7 +183,7 @@ fn cancel_long_press(mut press_gen: State<u64>, mut long_pressed: State<bool>) {
 }
 
 // ---------------------------------------------------------------------------
-// Timing helpers (active in all builds; grep adb logcat for [TIMING])
+// Timing helpers (debug builds only; grep adb logcat for [TIMING])
 // ---------------------------------------------------------------------------
 
 static MOUNT_COUNT: AtomicU64 = AtomicU64::new(0);
@@ -191,11 +191,13 @@ static MOUNT_COUNT: AtomicU64 = AtomicU64::new(0);
 struct RenderTimer(Instant, u64);
 impl Drop for RenderTimer {
     fn drop(&mut self) {
-        println!(
-            "[TIMING] RoomListItem render {}µs (mount #{})",
-            self.0.elapsed().as_micros(),
-            self.1
-        );
+        #[cfg(debug_assertions)]
+        {
+            let dt = self.0.elapsed().as_micros();
+            if dt > 200 {
+                println!("[TIMING] RoomListItem render {}µs (mount #{})", dt, self.1);
+            }
+        };
     }
 }
 
@@ -233,6 +235,14 @@ impl Component for RoomListItem {
         let is_active = try_consume_context::<ActiveRoomCtx>()
             .map(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()))
             .unwrap_or(false);
+        let is_scrolling = try_consume_context::<IsScrollingCtx>()
+            .map(|ctx| *ctx.0.read())
+            .unwrap_or(false);
+
+        // Clear stale hover immediately when a scroll begins.
+        if is_scrolling && *hovered.peek() {
+            hovered.set(false);
+        }
 
         #[cfg(target_os = "android")]
         let mut press_gen: State<u64> = use_state(|| 0u64);
@@ -252,6 +262,7 @@ impl Component for RoomListItem {
 
         use_hook(|| {
             let mount_no = MOUNT_COUNT.fetch_add(1, Ordering::Relaxed);
+            #[cfg(debug_assertions)]
             println!("[TIMING] RoomListItem mount #{mount_no} for {room_id}");
             let room_id = room_id.clone();
             let mut is_muted = is_muted;
@@ -265,12 +276,7 @@ impl Component for RoomListItem {
                         let _ = tx.send(false);
                         return;
                     };
-                    let t = Instant::now();
                     let ns = client.notification_settings().await;
-                    println!(
-                        "[TIMING] notification_settings() {}ms (mount #{mount_no})",
-                        t.elapsed().as_millis()
-                    );
                     let mode = ns.get_user_defined_room_notification_mode(&parsed_id).await;
                     let _ = tx.send(
                         mode == Some(matrix_sdk::notification_settings::RoomNotificationMode::Mute),
@@ -531,7 +537,11 @@ impl Component for RoomListItem {
             .height(Size::px(80.))
             .width(Size::fill())
             .padding(Gaps::new(2., 8., 2., 8.))
-            .on_pointer_enter(move |_| *hovered.write() = true)
+            .on_pointer_enter(move |_| {
+                if !is_scrolling {
+                    *hovered.write() = true;
+                }
+            })
             .on_pointer_leave(move |_| *hovered.write() = false)
             .on_press(move |_| super::navigate_to_room(room_id_nav.clone()));
 

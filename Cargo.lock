@@ -2495,7 +2495,6 @@ dependencies = [
 [[package]]
 name = "freya"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "cfg-if",
  "freya-android",
@@ -2515,7 +2514,6 @@ dependencies = [
 [[package]]
 name = "freya-android"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "freya-components",
  "freya-core",
@@ -2528,7 +2526,6 @@ dependencies = [
 [[package]]
 name = "freya-animation"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "async-io",
  "easer",
@@ -2538,7 +2535,6 @@ dependencies = [
 [[package]]
 name = "freya-clipboard"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "copypasta",
  "freya-core",
@@ -2547,7 +2543,6 @@ dependencies = [
 [[package]]
 name = "freya-components"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -2572,7 +2567,6 @@ dependencies = [
 [[package]]
 name = "freya-core"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "accesskit",
  "async-broadcast",
@@ -2602,7 +2596,6 @@ dependencies = [
 [[package]]
 name = "freya-edit"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "bitflags 2.13.0",
  "freya-clipboard",
@@ -2616,7 +2609,6 @@ dependencies = [
 [[package]]
 name = "freya-engine"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "freya-skia-safe",
 ]
@@ -2624,7 +2616,6 @@ dependencies = [
 [[package]]
 name = "freya-icons"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "bytes",
 ]
@@ -2632,7 +2623,6 @@ dependencies = [
 [[package]]
 name = "freya-material-design"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "freya-animation",
  "freya-components",
@@ -2644,7 +2634,6 @@ dependencies = [
 [[package]]
 name = "freya-performance-plugin"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "freya-core",
  "freya-engine",
@@ -2654,7 +2643,6 @@ dependencies = [
 [[package]]
 name = "freya-query"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2664,7 +2652,6 @@ dependencies = [
 [[package]]
 name = "freya-radio"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "freya-core",
 ]
@@ -2672,7 +2659,6 @@ dependencies = [
 [[package]]
 name = "freya-router"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "freya-core",
  "freya-router-macro",
@@ -2684,7 +2670,6 @@ dependencies = [
 [[package]]
 name = "freya-router-macro"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2695,7 +2680,6 @@ dependencies = [
 [[package]]
 name = "freya-sdk"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "async-io",
  "freya-core",
@@ -2746,7 +2730,6 @@ dependencies = [
 [[package]]
 name = "freya-winit"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -5468,7 +5451,6 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 [[package]]
 name = "pathgraph"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 
 [[package]]
 name = "pbkdf2"
@@ -5613,6 +5595,7 @@ dependencies = [
  "freya-engine",
  "freya-icons",
  "freya-material-design",
+ "freya-performance-plugin",
  "freya-query",
  "freya-radio",
  "freya-router",
@@ -6000,7 +5983,6 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 [[package]]
 name = "ragnarok"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "euclid",
  "hotpath",
@@ -7793,7 +7775,6 @@ dependencies = [
 [[package]]
 name = "torin"
 version = "0.4.0-rc.23"
-source = "git+https://github.com/henri2h/freya?branch=henri2h%2Fmomentum#530f633209788f56160e3c4d821cafd06982af92"
 dependencies = [
  "euclid",
  "itertools 0.14.0",

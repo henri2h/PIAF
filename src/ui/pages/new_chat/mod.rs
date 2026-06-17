@@ -107,6 +107,7 @@ impl Component for NewChat {
         use_side_effect_with_deps(&search_text, move |query: &String| {
             let query = query.clone();
             if query.trim().is_empty() {
+                search_ver.fetch_add(1, Ordering::Relaxed); // invalidate any in-flight request
                 *results.write() = vec![];
                 *searching.write() = false;
                 return;
@@ -279,7 +280,6 @@ impl Component for NewChat {
             } else {
                 let count = display_list.len();
                 let show_label = is_empty_search && has_suggestions && count > 0;
-                let dl = Arc::new(display_list);
                 let mut list = rect()
                     .vertical()
                     .width(Size::fill())
@@ -299,7 +299,7 @@ impl Component for NewChat {
                     );
                 }
                 list.child(
-                    VirtualScrollView::new(move |i, _| {
+                    VirtualScrollView::new_with_data(display_list, move |i, dl| {
                         let Some((uid, display_name, avatar_mxc)) = dl.get(i) else {
                             return rect().into_element();
                         };

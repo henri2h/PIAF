@@ -12,6 +12,9 @@ use freya_icons::lucide;
 #[cfg(target_os = "android")]
 use freya_material_design::prelude::FloatingTabRippleExt;
 
+#[cfg(all(target_os = "android", feature = "perf-overlay"))]
+use freya_performance_plugin::PerformanceOverlayPlugin;
+
 pub mod ui;
 pub mod utils;
 
@@ -862,12 +865,16 @@ fn android_main(droid_app: AndroidApp) {
         .build()
         .expect("Failed to build event loop");
 
-    launch(
-        LaunchConfig::new()
-            .with_plugin(AndroidPlugin::new(droid_app))
-            .with_window(WindowConfig::new(app))
-            .with_event_loop(event_loop),
-    )
+    let launch_config = LaunchConfig::new()
+        .with_plugin(AndroidPlugin::new(droid_app))
+        .with_window(WindowConfig::new(app))
+        .with_event_loop(event_loop);
+
+    #[cfg(feature = "perf-overlay")]
+    let launch_config =
+        launch_config.with_plugin(PerformanceOverlayPlugin::default().with_visible(true));
+
+    launch(launch_config)
 }
 
 pub(crate) fn effective_theme(is_dark: bool) -> Theme {

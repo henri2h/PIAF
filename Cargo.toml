@@ -9,6 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 hotreload = ["freya/hotreload"]
+perf-overlay = []
 
 [dependencies]
 freya = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
@@ -23,6 +24,7 @@ freya-material-design = { git = "https://github.com/henri2h/freya", branch = "he
 freya-icons = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
   "lucide",
 ] }
+freya-performance-plugin = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-router = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-query = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-radio = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
@@ -53,7 +55,10 @@ png = "0.18.1"
 [target.'cfg(not(target_os="android"))'.dependencies]
 console-subscriber = "0.5.0"
 rfd = "0.15"
-arboard = { version = "3", default-features = false, features = ["image-data", "wayland-data-control"] }
+arboard = { version = "3", default-features = false, features = [
+  "image-data",
+  "wayland-data-control",
+] }
 
 [target.'cfg(target_os="android")'.dependencies]
 freya-android = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
@@ -67,7 +72,10 @@ jni = { version = "0.21", default-features = false }
 [dev-dependencies]
 # matrix-sdk "testing" feature enables test_utils (mock server, pre-built clients).
 # Cargo unions this with the [dependencies] features for test builds only.
-matrix-sdk = { version = "0.17.0", default-features = false, features = ["testing", "bundled-sqlite"] }
+matrix-sdk = { version = "0.17.0", default-features = false, features = [
+  "testing",
+  "bundled-sqlite",
+] }
 wiremock = { version = "0.6.5", default-features = false }
 serde_json = "1"
 tempfile = "3"
@@ -75,3 +83,17 @@ tempfile = "3"
 # Compile dependencies with light optimization so they don't bottleneck incremental builds
 [profile.dev.package."*"]
 opt-level = 1
+
+[patch."https://github.com/henri2h/freya"]
+freya                    = { path = "/home/user/dev/rust/freya/crates/freya" }
+freya-components         = { path = "/home/user/dev/rust/freya/crates/freya-components" }
+freya-core               = { path = "/home/user/dev/rust/freya/crates/freya-core" }
+freya-engine             = { path = "/home/user/dev/rust/freya/crates/freya-engine" }
+freya-material-design    = { path = "/home/user/dev/rust/freya/crates/freya-material-design" }
+freya-icons              = { path = "/home/user/dev/rust/freya/crates/freya-icons" }
+freya-performance-plugin = { path = "/home/user/dev/rust/freya/crates/freya-performance-plugin" }
+freya-router             = { path = "/home/user/dev/rust/freya/crates/freya-router" }
+freya-query              = { path = "/home/user/dev/rust/freya/crates/freya-query" }
+freya-radio              = { path = "/home/user/dev/rust/freya/crates/freya-radio" }
+freya-android            = { path = "/home/user/dev/rust/freya/crates/freya-android" }
+freya-winit              = { path = "/home/user/dev/rust/freya/crates/freya-winit" }
