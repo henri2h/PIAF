@@ -35,6 +35,8 @@ pub static DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
 /// Ensures the reaction event handler is registered at most once across all
 /// calls to `activate_client` (login + restore can both call it).
 static REACTION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
+#[cfg(not(target_os = "android"))]
+static NOTIFICATION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ClientSession {
@@ -154,6 +156,19 @@ async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_di
         );
     }
 
+    // Desktop notifications for incoming messages.
+    #[cfg(not(target_os = "android"))]
+    if REQUESTER.get().is_some() && NOTIFICATION_HANDLER_GUARD.set(()).is_ok() {
+        use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
+        client.add_event_handler(
+            |ev: OriginalSyncMessageLikeEvent<RoomMessageEventContent>,
+             room: Room,
+             client: Client| async move {
+                send_desktop_notification(ev, room, client).await;
+            },
+        );
+    }
+
     if let Some(rq) = REQUESTER.get() {
         rq.start_sync(sync_token);
         rq.start_room_list_sync();
@@ -248,6 +263,71 @@ fn extract_message_preview(event: &AnySyncTimelineEvent) -> String {
     } else {
         "Message".to_string()
     }
+}
+
+#[cfg(not(target_os = "android"))]
+async fn send_desktop_notification(
+    ev: OriginalSyncMessageLikeEvent<
+        matrix_sdk::ruma::events::room::message::RoomMessageEventContent,
+    >,
+    room: Room,
+    client: Client,
+) {
+    if crate::SYNCING.load(Ordering::Relaxed) {
+        return;
+    }
+    let Some(me) = client.user_id() else { return };
+    if ev.sender == me {
+        return;
+    }
+
+    // Skip muted rooms.
+    let ns = client.notification_settings().await;
+    let mode = ns
+        .get_user_defined_room_notification_mode(room.room_id())
+        .await;
+    if mode == Some(matrix_sdk::notification_settings::RoomNotificationMode::Mute) {
+        return;
+    }
+
+    let room_name = room
+        .cached_display_name()
+        .map(|n| n.to_string())
+        .unwrap_or_else(|| room.room_id().to_string());
+
+    let sender_name = room
+        .get_member_no_sync(&ev.sender)
+        .await
+        .ok()
+        .flatten()
+        .and_then(|m| m.display_name().map(|s| s.to_string()))
+        .unwrap_or_else(|| ev.sender.localpart().to_string());
+
+    let body = match &ev.content.msgtype {
+        MessageType::Text(t) => t.body.clone(),
+        MessageType::Notice(n) => n.body.clone(),
+        MessageType::Image(_) => "📷 Image".to_string(),
+        MessageType::File(_) => "📎 File".to_string(),
+        MessageType::Audio(_) => "🎵 Audio".to_string(),
+        MessageType::Video(_) => "🎬 Video".to_string(),
+        MessageType::Emote(e) => format!("* {} {}", sender_name, e.body),
+        MessageType::Location(_) => "📍 Location".to_string(),
+        _ => "New message".to_string(),
+    };
+
+    let summary = if room.is_dm() {
+        sender_name.clone()
+    } else {
+        format!("{sender_name} · {room_name}")
+    };
+
+    let _ = notify_rust::Notification::new()
+        .appname("Piaf")
+        .summary(&summary)
+        .body(&body)
+        .icon("dialog-information")
+        .timeout(notify_rust::Timeout::Milliseconds(5000))
+        .show();
 }
 
 pub async fn login_matrix(username: String, password: String) -> anyhow::Result<()> {
