@@ -80,7 +80,8 @@ fn main() {
         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
     });
 
-    let launch_config = LaunchConfig::new().with_window(WindowConfig::new(app).with_size(500., 450.));
+    let launch_config =
+        LaunchConfig::new().with_window(WindowConfig::new(app).with_size(500., 450.));
 
     #[cfg(feature = "perf-overlay")]
     let launch_config =

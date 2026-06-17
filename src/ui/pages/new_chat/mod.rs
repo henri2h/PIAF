@@ -169,7 +169,13 @@ impl Component for NewChat {
             suggestions
                 .read()
                 .iter()
-                .map(|u| (u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()))
+                .map(|u| {
+                    (
+                        u.user_id.clone(),
+                        u.display_name.clone(),
+                        u.avatar_mxc.clone(),
+                    )
+                })
                 .collect()
         } else {
             let q = search.read().to_lowercase();
@@ -181,13 +187,21 @@ impl Component for NewChat {
                     || u.display_name.to_lowercase().contains(&q)
                 {
                     seen.insert(u.user_id.clone());
-                    list.push((u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()));
+                    list.push((
+                        u.user_id.clone(),
+                        u.display_name.clone(),
+                        u.avatar_mxc.clone(),
+                    ));
                 }
             }
             // Network results after, skipping duplicates.
             for u in results.read().iter() {
                 if seen.insert(u.user_id.clone()) {
-                    list.push((u.user_id.clone(), u.display_name.clone(), u.avatar_mxc.clone()));
+                    list.push((
+                        u.user_id.clone(),
+                        u.display_name.clone(),
+                        u.avatar_mxc.clone(),
+                    ));
                 }
             }
             list
@@ -376,10 +390,7 @@ impl Component for NewChat {
                                             .color(c.on_surface),
                                     )
                                     .child(
-                                        label()
-                                            .text(uid)
-                                            .font_size(12.)
-                                            .color(c.on_surface_muted),
+                                        label().text(uid).font_size(12.).color(c.on_surface_muted),
                                     ),
                             )
                             .child(

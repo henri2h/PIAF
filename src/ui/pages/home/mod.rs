@@ -104,7 +104,10 @@ impl Component for HomePage {
             _sync_tick,
         );
         #[cfg(debug_assertions)]
-        println!("[TIMING] HomePage re-render (sync_tick={})", *_sync_tick.read());
+        println!(
+            "[TIMING] HomePage re-render (sync_tick={})",
+            *_sync_tick.read()
+        );
 
         let mut search: State<String> = use_state(String::new);
         // Narrow mode: search toggle
@@ -236,7 +239,10 @@ impl Component for HomePage {
             if tick < 5 {
                 for (i, r) in rooms.iter().enumerate().take(10) {
                     let key = room_sort_key(r);
-                    let name = r.cached_display_name().map(|n| n.to_string()).unwrap_or_default();
+                    let name = r
+                        .cached_display_name()
+                        .map(|n| n.to_string())
+                        .unwrap_or_default();
                     println!("[SORT] tick={tick} #{i} key={key} {name}");
                 }
             }
@@ -571,18 +577,15 @@ impl Component for HomePage {
                         }
                     })
                     .child(
-                        VirtualScrollView::new_with_data(
-                            sync_stamp,
-                            move |i, _| {
-                                let Some(room) = filtered_rooms.get(i) else {
-                                    return rect().into_element();
-                                };
-                                rect()
-                                    .width(Size::fill())
-                                    .child(RoomListItem { room: room.clone() })
-                                    .into()
-                            },
-                        )
+                        VirtualScrollView::new_with_data(sync_stamp, move |i, _| {
+                            let Some(room) = filtered_rooms.get(i) else {
+                                return rect().into_element();
+                            };
+                            rect()
+                                .width(Size::fill())
+                                .child(RoomListItem { room: room.clone() })
+                                .into()
+                        })
                         .length(rooms_len)
                         .item_size(80.)
                         .height(Size::fill())
