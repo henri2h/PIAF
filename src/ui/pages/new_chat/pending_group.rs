@@ -256,7 +256,7 @@ impl Component for PendingGroup {
                                     .child(CircularLoader::new().size(16.))
                                     .into_element()
                             } else {
-                                svg(freya_icons::lucide::send_horizontal())
+                                SvgViewer::new(freya_icons::lucide::send_horizontal())
                                     .color(if is_empty {
                                         c.on_surface_muted
                                     } else {

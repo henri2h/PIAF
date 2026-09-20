@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
 use bytes::Bytes;
 use freya::prelude::*;
@@ -6,7 +6,7 @@ use freya_components::{
     cache::{Asset, AssetAge, AssetCacher, AssetConfiguration, use_asset},
     image_viewer::ImageSource,
 };
-use freya_core::elements::image::ImageHolder;
+use freya_core::elements::image::{ImageHandle, SamplingMode};
 
 use crate::utils::queries::fetch_avatar_for_key;
 
@@ -90,7 +90,7 @@ impl Component for Avatar {
         let fetch_key = self.fetch_key.clone();
 
         let asset_config = AssetConfiguration::new(&source, AssetAge::default());
-        let asset = use_asset(&asset_config);
+        use_asset(&asset_config);
         let mut asset_cacher = use_hook(AssetCacher::get);
         let mut tasks: State<Vec<TaskHandle>> = use_state(Vec::new);
 
@@ -132,12 +132,9 @@ impl Component for Avatar {
 
                         // Decode via the ImageSource path (handles blocking decode correctly).
                         let decode_source: ImageSource = (key, Bytes::from(bytes_vec)).into();
-                        match decode_source.bytes().await {
+                        match decode_source.load(None, SamplingMode::default()).await {
                             Ok((sk_image, bytes)) => {
-                                let holder = ImageHolder {
-                                    image: Rc::new(RefCell::new(sk_image)),
-                                    bytes,
-                                };
+                                let holder = ImageHandle::new(sk_image, bytes);
                                 asset_cacher
                                     .update_asset(asset_config, Asset::Cached(Rc::new(holder)));
                             }
@@ -154,12 +151,9 @@ impl Component for Avatar {
                     let source = source.clone();
                     let asset_config = asset_config.clone();
                     let task = spawn(async move {
-                        match source.bytes().await {
+                        match source.load(None, SamplingMode::default()).await {
                             Ok((sk_image, bytes)) => {
-                                let holder = ImageHolder {
-                                    image: Rc::new(RefCell::new(sk_image)),
-                                    bytes,
-                                };
+                                let holder = ImageHandle::new(sk_image, bytes);
                                 asset_cacher
                                     .update_asset(asset_config, Asset::Cached(Rc::new(holder)));
                             }
@@ -177,9 +171,13 @@ impl Component for Avatar {
             },
         );
 
+        let asset = asset_cacher
+            .read_asset(&asset_config)
+            .expect("Asset should exist by now");
+
         match asset {
             Asset::Cached(holder) => {
-                let holder = holder.downcast_ref::<ImageHolder>().unwrap().clone();
+                let holder = holder.downcast_ref::<ImageHandle>().unwrap().clone();
                 freya_core::elements::image::image(holder)
                     .width(Size::px(size))
                     .height(Size::px(size))

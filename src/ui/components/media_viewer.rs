@@ -242,7 +242,7 @@ impl Component for MediaViewer {
                     *selected_key.write() = Some(items_prev[idx - 1].key.clone());
                 })
                 .child(
-                    svg(freya_icons::lucide::chevron_left())
+                    SvgViewer::new(freya_icons::lucide::chevron_left())
                         .width(Size::px(28.))
                         .height(Size::px(28.))
                         .color((255u8, 255u8, 255u8)),
@@ -256,7 +256,7 @@ impl Component for MediaViewer {
                     }
                 })
                 .child(
-                    svg(freya_icons::lucide::chevron_left())
+                    SvgViewer::new(freya_icons::lucide::chevron_left())
                         .width(Size::px(28.))
                         .height(Size::px(28.))
                         .color((80u8, 80u8, 80u8)),
@@ -273,7 +273,7 @@ impl Component for MediaViewer {
                     *selected_key.write() = Some(items_next[idx + 1].key.clone());
                 })
                 .child(
-                    svg(freya_icons::lucide::chevron_right())
+                    SvgViewer::new(freya_icons::lucide::chevron_right())
                         .width(Size::px(28.))
                         .height(Size::px(28.))
                         .color((255u8, 255u8, 255u8)),
@@ -288,7 +288,7 @@ impl Component for MediaViewer {
                     }
                 })
                 .child(
-                    svg(freya_icons::lucide::chevron_right())
+                    SvgViewer::new(freya_icons::lucide::chevron_right())
                         .width(Size::px(28.))
                         .height(Size::px(28.))
                         .color((80u8, 80u8, 80u8)),
@@ -365,7 +365,7 @@ impl Component for MediaViewer {
                                         *want_next.write() = false;
                                     })
                                     .child(
-                                        svg(freya_icons::lucide::arrow_left())
+                                        SvgViewer::new(freya_icons::lucide::arrow_left())
                                             .width(Size::px(20.))
                                             .height(Size::px(20.))
                                             .color((255u8, 255u8, 255u8)),
@@ -382,7 +382,7 @@ impl Component for MediaViewer {
                                         }
                                     })
                                     .child(
-                                        svg(freya_icons::lucide::download())
+                                        SvgViewer::new(freya_icons::lucide::download())
                                             .width(Size::px(20.))
                                             .height(Size::px(20.))
                                             .color(if dl_available {

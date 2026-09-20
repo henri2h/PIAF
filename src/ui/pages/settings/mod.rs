@@ -178,7 +178,7 @@ fn nav_row(
                         .spacing(12.)
                         .cross_align(Alignment::Center)
                         .child(
-                            svg(icon)
+                            SvgViewer::new(icon)
                                 .width(Size::px(20.))
                                 .height(Size::px(20.))
                                 .color(c.on_surface_variant),
@@ -205,7 +205,7 @@ fn nav_row(
                                 }),
                         )
                         .child(
-                            svg(freya_icons::lucide::chevron_right())
+                            SvgViewer::new(freya_icons::lucide::chevron_right())
                                 .width(Size::px(16.))
                                 .height(Size::px(16.))
                                 .color(c.outline_variant_light),

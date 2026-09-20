@@ -313,8 +313,8 @@ impl Component for NewChat {
                     );
                 }
                 list.child(
-                    VirtualScrollView::new_with_data(display_list, move |i, dl| {
-                        let Some((uid, display_name, avatar_mxc)) = dl.get(i) else {
+                    VirtualScrollView::new_with_data(display_list, move |item, dl| {
+                        let Some((uid, display_name, avatar_mxc)) = dl.get(item.index) else {
                             return rect().into_element();
                         };
                         let uid = uid.clone();
@@ -394,7 +394,7 @@ impl Component for NewChat {
                                     ),
                             )
                             .child(
-                                svg(freya_icons::lucide::message_circle())
+                                SvgViewer::new(freya_icons::lucide::message_circle())
                                     .width(Size::px(18.))
                                     .height(Size::px(18.))
                                     .color(c.primary),

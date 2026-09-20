@@ -55,7 +55,7 @@ impl Component for M3ListItem {
                             .cross_align(Alignment::Center)
                             .content(Content::Flex)
                             .child(
-                                svg(icon)
+                                SvgViewer::new(icon)
                                     .color(icon_color)
                                     .width(Size::px(24.))
                                     .height(Size::px(24.)),
@@ -73,7 +73,7 @@ impl Component for M3ListItem {
                                     })),
                             )
                             .child(
-                                svg(freya_icons::lucide::chevron_right())
+                                SvgViewer::new(freya_icons::lucide::chevron_right())
                                     .color(c.on_surface_variant)
                                     .width(Size::px(20.))
                                     .height(Size::px(20.)),

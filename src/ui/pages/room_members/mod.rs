@@ -176,7 +176,7 @@ impl Component for RoomMembers {
                             .cross_align(Alignment::Center)
                             .background(c.surface_container)
                             .child(
-                                svg(freya_icons::lucide::search())
+                                SvgViewer::new(freya_icons::lucide::search())
                                     .color(c.on_surface_variant)
                                     .width(Size::px(18.))
                                     .height(Size::px(18.)),
@@ -279,7 +279,7 @@ impl Component for RoomMembers {
                                                                         *confirm_remove.write() = Some(m_for_remove.clone());
                                                                     })
                                                                     .child(
-                                                                        svg(freya_icons::lucide::user_minus())
+                                                                        SvgViewer::new(freya_icons::lucide::user_minus())
                                                                             .color(c.error)
                                                                             .width(Size::px(20.))
                                                                             .height(Size::px(20.)),

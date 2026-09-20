@@ -183,7 +183,8 @@ impl Component for NewGroupConfig {
                             ),
                     )
                     .child(Switch::new().toggled(is_encrypted).on_toggle(move |_| {
-                        *encrypted.write() = !*encrypted.read();
+                        let new_value = !*encrypted.read();
+                        *encrypted.write() = new_value;
                     })),
             )
             // Error
@@ -206,7 +207,7 @@ impl Component for NewGroupConfig {
                                 .cross_align(Alignment::Center)
                                 .child(label().text("Next"))
                                 .child(
-                                    svg(freya_icons::lucide::arrow_right())
+                                    SvgViewer::new(freya_icons::lucide::arrow_right())
                                         .width(Size::px(16.))
                                         .height(Size::px(16.)),
                                 ),

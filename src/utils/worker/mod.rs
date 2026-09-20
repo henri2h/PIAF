@@ -30,6 +30,8 @@ impl Requester {
 
     pub fn start_room_list_sync(&self) {
         tokio::spawn(async move {
+            use std::sync::atomic::Ordering;
+
             use futures::StreamExt;
             let Some(service) = ROOM_LIST_SERVICE.get() else {
                 return;
@@ -39,9 +41,14 @@ impl Requester {
             while let Some(result) = sync.next().await {
                 if let Err(e) = result {
                     eprintln!("Room list sync error: {e}");
+                    // Wake the UI so it can show the offline banner; rooms
+                    // still render from the local cache while disconnected.
+                    crate::DISCONNECTED.store(true, Ordering::Relaxed);
+                    let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
                     continue;
                 }
-                crate::SYNCING.store(false, std::sync::atomic::Ordering::Relaxed);
+                crate::SYNCING.store(false, Ordering::Relaxed);
+                crate::DISCONNECTED.store(false, Ordering::Relaxed);
                 let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
             }
         });

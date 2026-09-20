@@ -821,7 +821,7 @@ impl Component for RoomPage {
                                                                 is_dm: room_is_dm,
                                                                 user_popup,
                                                             })
-                                                            .into()
+                                                            .into_element()
                                                     })
                                             }),
                                     ),

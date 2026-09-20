@@ -275,10 +275,12 @@ impl Component for RoomSettings {
                                                             .ok();
                                                     })
                                                     .child(
-                                                        svg(freya_icons::lucide::external_link())
-                                                            .color(c.primary)
-                                                            .width(Size::px(12.))
-                                                            .height(Size::px(12.)),
+                                                        SvgViewer::new(
+                                                            freya_icons::lucide::external_link(),
+                                                        )
+                                                        .color(c.primary)
+                                                        .width(Size::px(12.))
+                                                        .height(Size::px(12.)),
                                                     )
                                                     .child(
                                                         label()

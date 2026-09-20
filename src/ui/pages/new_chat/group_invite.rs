@@ -233,7 +233,7 @@ impl Component for NewGroup {
                                         *invitees_tick.write() += 1;
                                     })
                                     .child(
-                                        svg(freya_icons::lucide::x())
+                                        SvgViewer::new(freya_icons::lucide::x())
                                             .color(c.on_surface_variant)
                                             .width(Size::px(10.))
                                             .height(Size::px(10.)),
@@ -318,7 +318,7 @@ impl Component for NewGroup {
                                     ),
                             )
                             .child(if already_added {
-                                svg(freya_icons::lucide::check())
+                                SvgViewer::new(freya_icons::lucide::check())
                                     .color(c.primary)
                                     .width(Size::px(20.))
                                     .height(Size::px(20.))
@@ -344,7 +344,7 @@ impl Component for NewGroup {
                                         *invitees_tick.write() += 1;
                                     })
                                     .child(
-                                        svg(freya_icons::lucide::plus())
+                                        SvgViewer::new(freya_icons::lucide::plus())
                                             .color(c.primary)
                                             .width(Size::px(18.))
                                             .height(Size::px(18.)),
@@ -372,7 +372,7 @@ impl Component for NewGroup {
                                     .cross_align(Alignment::Center)
                                     .child(label().text("Next"))
                                     .child(
-                                        svg(freya_icons::lucide::arrow_right())
+                                        SvgViewer::new(freya_icons::lucide::arrow_right())
                                             .width(Size::px(16.))
                                             .height(Size::px(16.)),
                                     ),

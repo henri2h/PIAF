@@ -414,7 +414,7 @@ impl Component for MessageRow {
                         });
                     })
                     .child(
-                        svg(freya_icons::lucide::paperclip())
+                        SvgViewer::new(freya_icons::lucide::paperclip())
                             .color(text_color)
                             .width(Size::px(16.))
                             .height(Size::px(16.)),
@@ -475,7 +475,7 @@ impl Component for MessageRow {
                                     .height(Size::fill())
                                     .center()
                                     .child(
-                                        svg(freya_icons::lucide::play())
+                                        SvgViewer::new(freya_icons::lucide::play())
                                             .color((255u8, 255u8, 255u8))
                                             .width(Size::px(32.))
                                             .height(Size::px(32.)),
@@ -489,7 +489,7 @@ impl Component for MessageRow {
                             .cross_align(Alignment::Center)
                             .spacing(6.)
                             .child(
-                                svg(freya_icons::lucide::film())
+                                SvgViewer::new(freya_icons::lucide::film())
                                     .color(text_color)
                                     .width(Size::px(14.))
                                     .height(Size::px(14.)),
@@ -535,7 +535,7 @@ impl Component for MessageRow {
                         });
                     })
                     .child(
-                        svg(freya_icons::lucide::music())
+                        SvgViewer::new(freya_icons::lucide::music())
                             .color(text_color)
                             .width(Size::px(16.))
                             .height(Size::px(16.)),
@@ -608,7 +608,7 @@ impl Component for MessageRow {
                     .spacing(4.)
                     .child(label().text(timestamp).font_size(11.).color(c.timestamp_me))
                     .child(
-                        svg(receipt_icon)
+                        SvgViewer::new(receipt_icon)
                             .color(receipt_color)
                             .width(Size::px(13.))
                             .height(Size::px(13.)),

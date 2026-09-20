@@ -40,20 +40,27 @@ pub fn use_tokio_track_watcher<T: Send + Sync + 'static>(
     mut tick: State<u64>,
 ) {
     use_hook(|| {
+        eprintln!("[piaf] use_tokio_track_watcher: subscribing");
         let mut watcher = watcher.clone();
         watcher.mark_unchanged();
         let (tx, mut rx_chan) = futures::channel::mpsc::unbounded::<()>();
         tokio::task::spawn(async move {
             while watcher.changed().await.is_ok() {
+                eprintln!("[piaf] use_tokio_track_watcher: watch fired");
                 if tx.unbounded_send(()).is_err() {
+                    eprintln!("[piaf] use_tokio_track_watcher: mpsc send failed, stopping");
                     break;
                 }
             }
+            eprintln!("[piaf] use_tokio_track_watcher: watch task ended");
         });
         spawn(async move {
             while rx_chan.next().await.is_some() {
+                let new_val = *tick.read() + 1;
                 *tick.write() += 1;
+                eprintln!("[piaf] use_tokio_track_watcher: tick -> {new_val}");
             }
+            eprintln!("[piaf] use_tokio_track_watcher: tick task ended");
         });
     });
 }

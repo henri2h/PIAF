@@ -104,7 +104,7 @@ impl Component for WelcomePage {
                                 .center()
                                 .spacing(10.)
                                 .child(
-                                    svg(freya_icons::lucide::log_in())
+                                    SvgViewer::new(freya_icons::lucide::log_in())
                                         .width(Size::px(20.))
                                         .height(Size::px(20.)),
                                 )
@@ -118,7 +118,7 @@ impl Component for WelcomePage {
                             .center()
                             .spacing(10.)
                             .child(
-                                svg(freya_icons::lucide::user_plus())
+                                SvgViewer::new(freya_icons::lucide::user_plus())
                                     .width(Size::px(20.))
                                     .height(Size::px(20.)),
                             )

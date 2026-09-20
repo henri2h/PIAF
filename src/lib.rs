@@ -13,7 +13,7 @@ use freya_icons::lucide;
 use freya_material_design::prelude::FloatingTabRippleExt;
 
 #[cfg(all(target_os = "android", feature = "perf-overlay"))]
-use freya_performance_plugin::PerformanceOverlayPlugin;
+use freya_metrics_plugin::MetricsPlugin;
 
 pub mod ui;
 pub mod utils;
@@ -56,6 +56,11 @@ pub static PUSH_RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
 /// True while no sync batch has completed yet (initial loading phase).
 /// Set to false by matrix_sync after the first successful batch.
 pub static SYNCING: AtomicBool = AtomicBool::new(true);
+/// True whenever the last sync attempt failed (network/homeserver
+/// unreachable). The UI shows an offline banner while this is set; it clears
+/// on the next successful sync batch. Rooms still render from the local
+/// cache while disconnected.
+pub static DISCONNECTED: AtomicBool = AtomicBool::new(false);
 
 pub fn app() -> impl IntoElement {
     Router::<Route>::new(|| RouterConfig::default().with_initial_path(Route::WelcomePage))
@@ -325,7 +330,11 @@ fn navbar_tab(
                     .center()
                     .vertical()
                     .spacing(2.)
-                    .child(svg(icon()).width(Size::px(22.)).height(Size::px(22.)))
+                    .child(
+                        SvgViewer::new(icon())
+                            .width(Size::px(22.))
+                            .height(Size::px(22.)),
+                    )
                     .child(label().text(tab_label).font_size(11.)),
             ),
         ),
@@ -872,7 +881,7 @@ fn android_main(droid_app: AndroidApp) {
 
     #[cfg(feature = "perf-overlay")]
     let launch_config =
-        launch_config.with_plugin(PerformanceOverlayPlugin::default().with_visible(true));
+        launch_config.with_plugin(MetricsPlugin::default().with_visible_performance(true));
 
     launch(launch_config)
 }

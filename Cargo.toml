@@ -24,7 +24,7 @@ freya-material-design = { git = "https://github.com/henri2h/freya", branch = "he
 freya-icons = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
   "lucide",
 ] }
-freya-performance-plugin = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-metrics-plugin = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-router = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-query = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
 freya-radio = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
@@ -92,7 +92,7 @@ freya-core               = { path = "/home/user/dev/rust/freya/crates/freya-core
 freya-engine             = { path = "/home/user/dev/rust/freya/crates/freya-engine" }
 freya-material-design    = { path = "/home/user/dev/rust/freya/crates/freya-material-design" }
 freya-icons              = { path = "/home/user/dev/rust/freya/crates/freya-icons" }
-freya-performance-plugin = { path = "/home/user/dev/rust/freya/crates/freya-performance-plugin" }
+freya-metrics-plugin     = { path = "/home/user/dev/rust/freya/crates/freya-metrics-plugin" }
 freya-router             = { path = "/home/user/dev/rust/freya/crates/freya-router" }
 freya-query              = { path = "/home/user/dev/rust/freya/crates/freya-query" }
 freya-radio              = { path = "/home/user/dev/rust/freya/crates/freya-radio" }

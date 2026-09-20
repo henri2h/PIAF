@@ -65,7 +65,7 @@ impl Component for RoomSearch {
                             .cross_align(Alignment::Center)
                             .spacing(6.)
                             .child(
-                                svg(freya_icons::lucide::search())
+                                SvgViewer::new(freya_icons::lucide::search())
                                     .color(c.on_surface_faint)
                                     .width(Size::px(16.))
                                     .height(Size::px(16.)),
@@ -110,7 +110,7 @@ impl Component for RoomSearch {
                                             *has_searched.write() = false;
                                         })
                                         .child(
-                                            svg(freya_icons::lucide::x())
+                                            SvgViewer::new(freya_icons::lucide::x())
                                                 .color(c.on_surface_faint)
                                                 .width(Size::px(16.))
                                                 .height(Size::px(16.)),
@@ -150,7 +150,7 @@ impl Component for RoomSearch {
                     .children(
                         results_data
                             .into_iter()
-                            .map(|item| SearchResultRow { item }.into()),
+                            .map(|item| SearchResultRow { item }.into_element()),
                     )
                     .into_element()
             })

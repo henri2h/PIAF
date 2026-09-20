@@ -284,7 +284,7 @@ pub(super) fn device_row(d: &DeviceInfo, c: AppColors) -> Element {
         .cross_align(Alignment::Center)
         .spacing(8.)
         .child(
-            svg(freya_icons::lucide::monitor())
+            SvgViewer::new(freya_icons::lucide::monitor())
                 .width(Size::px(18.))
                 .height(Size::px(18.))
                 .color(c.on_surface_variant),

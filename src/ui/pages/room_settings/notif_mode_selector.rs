@@ -141,7 +141,7 @@ pub(super) fn notif_popup_overlay(
                                         ),
                                 )
                                 .maybe_child(is_selected.then(|| {
-                                    svg(freya_icons::lucide::check())
+                                    SvgViewer::new(freya_icons::lucide::check())
                                         .color(c.primary)
                                         .width(Size::px(20.))
                                         .height(Size::px(20.))

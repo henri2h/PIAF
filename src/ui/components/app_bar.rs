@@ -156,7 +156,7 @@ impl Component for TopAppBar {
                     cb();
                 })
                 .child(
-                    svg(freya_icons::lucide::arrow_left())
+                    SvgViewer::new(freya_icons::lucide::arrow_left())
                         .color(c.on_surface_variant)
                         .width(Size::px(ICON_SIZE))
                         .height(Size::px(ICON_SIZE)),
@@ -209,7 +209,7 @@ impl Component for TopAppBar {
                 .cross_align(Alignment::Center)
                 .spacing(6.)
                 .child(
-                    svg(freya_icons::lucide::search())
+                    SvgViewer::new(freya_icons::lucide::search())
                         .color(c.on_surface_variant)
                         .width(Size::px(18.))
                         .height(Size::px(18.)),
@@ -235,7 +235,7 @@ impl Component for TopAppBar {
                         on_press();
                     })
                     .child(
-                        svg(icon)
+                        SvgViewer::new(icon)
                             .color(c.on_surface_variant)
                             .width(Size::px(ICON_SIZE))
                             .height(Size::px(ICON_SIZE)),

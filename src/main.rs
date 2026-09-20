@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use freya::prelude::*;
 #[cfg(feature = "perf-overlay")]
-use freya_performance_plugin::PerformanceOverlayPlugin;
+use freya_metrics_plugin::MetricsPlugin;
 use freya_router::prelude::{Outlet, Routable, Router, RouterConfig, RouterContext, use_route};
 use tokio::runtime::Builder;
 use tokio::sync::watch;
@@ -44,6 +44,11 @@ pub static REACTIONS_RX: OnceLock<watch::Receiver<Vec<utils::ReceivedReaction>>>
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 /// True while no sync batch has completed yet (initial loading phase).
 pub static SYNCING: AtomicBool = AtomicBool::new(true);
+/// True whenever the last sync attempt failed (network/homeserver
+/// unreachable). The UI shows an offline banner while this is set; it clears
+/// on the next successful sync batch. Rooms still render from the local
+/// cache while disconnected.
+pub static DISCONNECTED: AtomicBool = AtomicBool::new(false);
 
 fn main() {
     println!("Starting PIAF client");
@@ -85,7 +90,7 @@ fn main() {
 
     #[cfg(feature = "perf-overlay")]
     let launch_config =
-        launch_config.with_plugin(PerformanceOverlayPlugin::default().with_visible(true));
+        launch_config.with_plugin(MetricsPlugin::default().with_visible_performance(true));
 
     launch(launch_config)
 }

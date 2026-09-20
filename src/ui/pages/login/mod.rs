@@ -74,7 +74,7 @@ impl Component for LoginPage {
                                         let _ = RouterContext::get().go_back();
                                     })
                                     .child(
-                                        svg(freya_icons::lucide::arrow_left())
+                                        SvgViewer::new(freya_icons::lucide::arrow_left())
                                             .width(Size::px(22.))
                                             .height(Size::px(22.))
                                             .color(c.on_primary),
@@ -96,7 +96,7 @@ impl Component for LoginPage {
                                     .center()
                                     .background((255, 255, 255, 30u8))
                                     .child(
-                                        svg(freya_icons::lucide::message_circle())
+                                        SvgViewer::new(freya_icons::lucide::message_circle())
                                             .width(Size::px(38.))
                                             .height(Size::px(38.))
                                             .color(c.on_primary),
@@ -171,10 +171,12 @@ impl Component for LoginPage {
                                                     .spacing(8.)
                                                     .cross_align(Alignment::center())
                                                     .child(
-                                                        svg(freya_icons::lucide::circle_alert())
-                                                            .width(Size::px(16.))
-                                                            .height(Size::px(16.))
-                                                            .color(c.error),
+                                                        SvgViewer::new(
+                                                            freya_icons::lucide::circle_alert(),
+                                                        )
+                                                        .width(Size::px(16.))
+                                                        .height(Size::px(16.))
+                                                        .color(c.error),
                                                     )
                                                     .child(
                                                         label()
@@ -210,9 +212,11 @@ impl Component for LoginPage {
                                                     .center()
                                                     .spacing(10.)
                                                     .child(
-                                                        svg(freya_icons::lucide::log_in())
-                                                            .width(Size::px(20.))
-                                                            .height(Size::px(20.)),
+                                                        SvgViewer::new(
+                                                            freya_icons::lucide::log_in(),
+                                                        )
+                                                        .width(Size::px(20.))
+                                                        .height(Size::px(20.)),
                                                     )
                                                     .child(label().text("Sign in").font_size(16.))
                                                     .into_element()

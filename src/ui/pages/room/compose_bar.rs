@@ -212,10 +212,14 @@ impl Component for ComposeBar {
                 editable.process_event(EditableEvent::KeyDown {
                     key: &Key::Character("a".into()),
                     modifiers: Modifiers::CONTROL,
+                    editor_line: None,
+                    holder: None,
                 });
                 editable.process_event(EditableEvent::KeyDown {
                     key: &Key::Named(NamedKey::Delete),
                     modifiers: Modifiers::empty(),
+                    editor_line: None,
+                    holder: None,
                 });
             }
 
@@ -277,6 +281,8 @@ impl Component for ComposeBar {
                 editable.process_event(EditableEvent::KeyDown {
                     key: &e.key,
                     modifiers: e.modifiers,
+                    editor_line: None,
+                    holder: None,
                 });
                 // On Ctrl+V, check clipboard for an image and stage it for sending.
                 #[cfg(not(target_os = "android"))]
@@ -389,7 +395,7 @@ impl Component for ComposeBar {
                     .cross_align(Alignment::Center)
                     .spacing(8.)
                     .child(
-                        svg(icon)
+                        SvgViewer::new(icon)
                             .color(label_color)
                             .width(Size::px(14.))
                             .height(Size::px(14.)),
@@ -433,7 +439,7 @@ impl Component for ComposeBar {
                             .corner_radius(10.)
                             .on_press(on_cancel)
                             .child(
-                                svg(freya_icons::lucide::x())
+                                SvgViewer::new(freya_icons::lucide::x())
                                     .color(c.on_surface_muted)
                                     .width(Size::px(14.))
                                     .height(Size::px(14.)),
@@ -504,7 +510,7 @@ impl Component for ComposeBar {
                                     *paste_pending.write() = None;
                                 })
                                 .child(
-                                    svg(freya_icons::lucide::x())
+                                    SvgViewer::new(freya_icons::lucide::x())
                                         .color(c.on_surface_muted)
                                         .width(Size::px(14.))
                                         .height(Size::px(14.)),
@@ -526,7 +532,7 @@ impl Component for ComposeBar {
                     .spacing(8.)
                     .child(
                         Button::new().on_press(on_attach).child(
-                            svg(freya_icons::lucide::paperclip())
+                            SvgViewer::new(freya_icons::lucide::paperclip())
                                 .color(c.compose_edit_text)
                                 .width(Size::px(18.))
                                 .height(Size::px(18.)),
@@ -585,14 +591,14 @@ impl Component for ComposeBar {
                                                     c,
                                                     is_focused,
                                                 }
-                                                .into()
+                                                .into_element()
                                             })),
                                     ),
                             ),
                     )
                     .child(
                         Button::new().on_press(move |_| on_submit_btn()).child(
-                            svg(if is_editing {
+                            SvgViewer::new(if is_editing {
                                 freya_icons::lucide::check()
                             } else {
                                 freya_icons::lucide::send_horizontal()

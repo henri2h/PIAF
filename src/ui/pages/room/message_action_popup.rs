@@ -72,7 +72,7 @@ fn action_button_list(c: AppColors, actions: Vec<PopupAction>) -> Vec<Element> {
                 .width(Size::fill())
                 .on_press(move |_| (a.on_press)())
                 .child(
-                    svg(a.icon)
+                    SvgViewer::new(a.icon)
                         .color(a.color)
                         .width(Size::px(18.))
                         .height(Size::px(18.)),

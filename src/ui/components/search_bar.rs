@@ -44,7 +44,7 @@ impl Component for SearchBar {
                     .cross_align(Alignment::Center)
                     .spacing(6.)
                     .child(
-                        svg(freya_icons::lucide::search())
+                        SvgViewer::new(freya_icons::lucide::search())
                             .color((130u8, 130u8, 130u8))
                             .width(Size::px(16.))
                             .height(Size::px(16.)),
@@ -62,7 +62,7 @@ impl Component for SearchBar {
                                 *input.write() = String::new();
                             })
                             .child(
-                                svg(freya_icons::lucide::x())
+                                SvgViewer::new(freya_icons::lucide::x())
                                     .color((80u8, 80u8, 80u8))
                                     .width(Size::px(12.))
                                     .height(Size::px(12.)),

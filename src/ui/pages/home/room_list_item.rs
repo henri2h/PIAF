@@ -240,15 +240,6 @@ impl Component for RoomListItem {
         let is_active = try_consume_context::<ActiveRoomCtx>()
             .map(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()))
             .unwrap_or(false);
-        let is_scrolling = try_consume_context::<IsScrollingCtx>()
-            .map(|ctx| *ctx.0.read())
-            .unwrap_or(false);
-
-        // Clear stale hover immediately when a scroll begins.
-        if is_scrolling && *hovered.peek() {
-            hovered.set(false);
-        }
-
         #[cfg(target_os = "android")]
         let mut press_gen: State<u64> = use_state(|| 0u64);
         #[cfg(target_os = "android")]
@@ -435,7 +426,7 @@ impl Component for RoomListItem {
                                             .spacing(4.)
                                             .cross_align(Alignment::Center)
                                             .child(if room_is_muted {
-                                                svg(freya_icons::lucide::bell_off())
+                                                SvgViewer::new(freya_icons::lucide::bell_off())
                                                     .width(Size::px(12.))
                                                     .height(Size::px(12.))
                                                     .color(c.on_surface_faint)
@@ -521,12 +512,16 @@ impl Component for RoomListItem {
             .height(Size::px(80.))
             .width(Size::fill())
             .padding(Gaps::new(2., 8., 2., 8.))
-            .on_pointer_enter(move |_| {
-                if !is_scrolling {
-                    *hovered.write() = true;
+            .on_pointer_over(move |_| {
+                if !*hovered.peek() {
+                    hovered.set(true);
                 }
             })
-            .on_pointer_leave(move |_| *hovered.write() = false)
+            .on_pointer_out(move |_| {
+                if *hovered.peek() {
+                    hovered.set(false);
+                }
+            })
             .on_press(move |_| super::navigate_to_room(room_id_nav.clone()));
 
         #[cfg(not(target_os = "android"))]

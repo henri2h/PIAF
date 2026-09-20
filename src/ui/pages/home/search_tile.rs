@@ -160,7 +160,7 @@ impl Component for UserSearchTile {
                                 ),
                         )
                         .child(
-                            svg(freya_icons::lucide::message_circle())
+                            SvgViewer::new(freya_icons::lucide::message_circle())
                                 .width(Size::px(18.))
                                 .height(Size::px(18.))
                                 .color(c.primary),

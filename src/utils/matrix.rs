@@ -87,16 +87,23 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
         } else {
             let (c, t) = restore_session(&session_file).await?;
             let _ = CLIENT.set(c.clone());
+            eprintln!("[piaf] restore_matrix_client: CLIENT set");
             (c, t)
         };
 
         // Signal immediately so the UI can navigate to the room list and show
         // cached rooms from the local store without waiting for the network.
+        eprintln!("[piaf] restore_matrix_client: sending initial SYNC_TX signal");
         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
 
         // Start sync only when the main app worker is available.
         // In the push context REQUESTER is not set, so this is skipped.
+        eprintln!(
+            "[piaf] restore_matrix_client: calling activate_client (REQUESTER present={})",
+            REQUESTER.get().is_some()
+        );
         activate_client(&client, sync_token, &base_dir).await;
+        eprintln!("[piaf] restore_matrix_client: activate_client returned");
 
         return Ok(true);
     }
@@ -119,10 +126,13 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<
         sync_token,
     } = serde_json::from_str(&serialized_session)?;
 
+    // discover: false — homeserver is already a resolved base URL from the
+    // prior login, so this builds instantly with no network I/O and works offline.
     let client = get_client_builder(
         &client_session.homeserver,
         &client_session.db_path,
         &client_session.passphrase,
+        false,
     )
     .build()
     .await?;
@@ -137,9 +147,15 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<
 
 async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_dir: &Path) {
     if ROOM_LIST_SERVICE.get().is_none() {
-        if let Ok(room_list_s) = RoomListService::new(client.clone()).await {
-            ROOM_LIST_SERVICE.set(room_list_s).ok();
+        match RoomListService::new(client.clone()).await {
+            Ok(room_list_s) => {
+                eprintln!("[piaf] activate_client: RoomListService created");
+                ROOM_LIST_SERVICE.set(room_list_s).ok();
+            }
+            Err(e) => eprintln!("[piaf] activate_client: RoomListService::new failed: {e:#}"),
         }
+    } else {
+        eprintln!("[piaf] activate_client: ROOM_LIST_SERVICE already set");
     }
 
     #[cfg(target_os = "android")]
@@ -170,8 +186,11 @@ async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_di
     }
 
     if let Some(rq) = REQUESTER.get() {
+        eprintln!("[piaf] activate_client: starting sync + room_list_sync");
         rq.start_sync(sync_token);
         rq.start_room_list_sync();
+    } else {
+        eprintln!("[piaf] activate_client: REQUESTER not set, sync not started");
     }
 }
 
@@ -378,14 +397,26 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
     }
 }
 
+/// `discover`: whether to resolve `homeserver` via a `.well-known` network
+/// lookup. This blocks on network I/O with no timeout, so it must be `false`
+/// when restoring a session — `homeserver` is already the fully-resolved
+/// base URL saved from a prior successful login/discovery, and skipping
+/// discovery lets the client build (and the room list render from the local
+/// cache) even while offline. Fresh logins (where the user may have typed a
+/// bare server name) still need `discover: true`.
 fn get_client_builder(
     homeserver: &String,
     db_path: &PathBuf,
     passphrase: &String,
+    discover: bool,
 ) -> ClientBuilder {
+    let builder = if discover {
+        Client::builder().server_name_or_homeserver_url(homeserver)
+    } else {
+        Client::builder().homeserver_url(homeserver)
+    };
     // Build the client with the previous settings from the session.
-    Client::builder()
-        .server_name_or_homeserver_url(homeserver)
+    builder
         .sqlite_store(db_path, Some(&passphrase))
         .with_encryption_settings(EncryptionSettings {
             auto_enable_cross_signing: true,
@@ -425,7 +456,7 @@ async fn new_client(
 
     println!("\nChecking homeserver {homeserver}");
 
-    let client_build = get_client_builder(&homeserver.to_string(), &db_path, &passphrase)
+    let client_build = get_client_builder(&homeserver.to_string(), &db_path, &passphrase, true)
         .build()
         .await;
 
