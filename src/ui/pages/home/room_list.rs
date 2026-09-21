@@ -38,23 +38,37 @@ impl Component for RoomList {
         let c = use_app_colors();
         let mut chips_visible = self.chips_visible;
 
-        let mut rooms: Vec<matrix_sdk::Room> = CLIENT
-            .get()
-            .map(|c| {
-                let mut r = c.joined_rooms();
-                r.extend(c.invited_rooms());
-                r
-            })
-            .unwrap_or_default();
-        sort_rooms_by_recency(&mut rooms);
+        // Fetching + sorting the full room list only actually needs to happen
+        // when `sync_tick` moves; a mailbox_tick-only render (recontact/archive
+        // toggle) never changes membership or order, just the filter below, so
+        // it reuses the cached, already-sorted list instead of redoing both.
+        let fetch_sort_start = std::time::Instant::now();
+        let rooms: std::rc::Rc<Vec<matrix_sdk::Room>> =
+            crate::utils::use_keyed_cache(self.sync_tick, || {
+                let mut rooms: Vec<matrix_sdk::Room> = CLIENT
+                    .get()
+                    .map(|c| {
+                        let mut r = c.joined_rooms();
+                        r.extend(c.invited_rooms());
+                        r
+                    })
+                    .unwrap_or_default();
+                sort_rooms_by_recency(&mut rooms);
+                std::rc::Rc::new(rooms)
+            });
+        let fetch_sort_elapsed = fetch_sort_start.elapsed();
 
         let mailbox = ROOM_MAILBOX_RX
             .get()
             .map(|rx| rx.borrow().clone())
             .unwrap_or_default();
 
+        // Only the rooms that survive filtering get cloned out of the cached
+        // `Rc<Vec<Room>>` — a cache hit above is now O(1), and this clones at
+        // most the visible-list size instead of the full room count.
+        let filter_start = std::time::Instant::now();
         let filtered_rooms: Vec<_> = rooms
-            .into_iter()
+            .iter()
             .filter(|r| self.filter.matches(r))
             .filter(|r| {
                 let archived_until_ts = mailbox
@@ -63,13 +77,23 @@ impl Component for RoomList {
                 let latest_ts = r.latest_event().timestamp().map(|ts| ts.get().into());
                 !is_archived_hidden(latest_ts, archived_until_ts)
             })
+            .cloned()
             .collect();
+        let filter_elapsed = filter_start.elapsed();
+
         let rooms_len = filtered_rooms.len();
         let initial_loading = CLIENT.get().is_none();
 
         eprintln!(
             "[piaf] RoomList::render sync_tick={} client_present={} rooms_len={} filter={:?}",
             self.sync_tick, !initial_loading, rooms_len, self.filter
+        );
+        eprintln!(
+            "[TIMING] RoomList rebuild total={}µs (fetch+sort={}µs filter={}µs) rooms={}",
+            (fetch_sort_elapsed + filter_elapsed).as_micros(),
+            fetch_sort_elapsed.as_micros(),
+            filter_elapsed.as_micros(),
+            rooms_len,
         );
 
         if initial_loading && rooms_len == 0 {

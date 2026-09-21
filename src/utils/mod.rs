@@ -67,6 +67,37 @@ pub fn use_tokio_track_watcher<T: Send + Sync + 'static>(
     });
 }
 
+/// Memoizes an expensive computation across renders, recomputing only when
+/// `key` changes from the previous call.
+///
+/// Freya's own `use_memo` auto-tracks `State` reads instead of taking an
+/// explicit key, but requires `T: PartialEq` — many SDK types (e.g.
+/// `matrix_sdk::Room`) don't implement that, so this is the escape hatch:
+/// key on something cheap and comparable (a tick counter, a filter enum)
+/// instead of the expensive value itself.
+///
+/// Must be called unconditionally at the top of `render`, like any hook.
+pub fn use_keyed_cache<K, T>(key: K, compute: impl FnOnce() -> T) -> T
+where
+    K: PartialEq + 'static,
+    T: Clone + 'static,
+{
+    let mut cache: State<Option<(K, T)>> = use_state(|| None);
+
+    let is_stale = match &*cache.read() {
+        Some((cached_key, _)) => cached_key != &key,
+        None => true,
+    };
+
+    if is_stale {
+        let value = compute();
+        cache.set(Some((key, value.clone())));
+        value
+    } else {
+        cache.read().as_ref().unwrap().1.clone()
+    }
+}
+
 /// Derives `AppColors` from the current freya theme. Use inside Component::render().
 pub fn use_app_colors() -> AppColors {
     let theme = use_theme();

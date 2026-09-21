@@ -35,6 +35,9 @@ pub static DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
 /// Ensures the reaction event handler is registered at most once across all
 /// calls to `activate_client` (login + restore can both call it).
 static REACTION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
+/// Fingerprint of the room list as of the last `SYNC_TX` fire, used by
+/// `notify_sync_if_changed` to suppress redundant UI wakeups.
+static LAST_ROOM_FINGERPRINT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 #[cfg(not(target_os = "android"))]
 static NOTIFICATION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
 
@@ -507,6 +510,43 @@ async fn new_client(
     }
 }
 
+/// Cheap fingerprint of "does the room list look any different from last
+/// time we woke the UI". Sync loops (raw `/sync` and the sliding-sync room
+/// list service) both complete periodically even when nothing changed (e.g.
+/// long-poll timeouts); firing `SYNC_TX` on every one of those forces
+/// `RoomList` to rebuild and sort its full room vector for no reason. This
+/// intentionally skips `latest_event().timestamp()` (expensive: walks the
+/// room's timeline) in favor of `recency_stamp`, which the server already
+/// bumps whenever it considers the room updated.
+fn room_list_fingerprint(client: &Client) -> u64 {
+    use std::hash::{Hash, Hasher};
+
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    let mut rooms = client.joined_rooms();
+    rooms.extend(client.invited_rooms());
+    rooms.len().hash(&mut hasher);
+    for room in &rooms {
+        room.room_id().hash(&mut hasher);
+        room.recency_stamp().map(u64::from).hash(&mut hasher);
+        room.num_unread_messages().hash(&mut hasher);
+        room.num_unread_notifications().hash(&mut hasher);
+        room.cached_user_defined_notification_mode()
+            .map(|m| m as u8)
+            .hash(&mut hasher);
+    }
+    hasher.finish()
+}
+
+/// Fires `SYNC_TX` only if the room list actually looks different since the
+/// last time this was called. See `room_list_fingerprint`.
+pub fn notify_sync_if_changed(client: &Client) {
+    let fp = room_list_fingerprint(client);
+    let prev = LAST_ROOM_FINGERPRINT.swap(fp, Ordering::Relaxed);
+    if prev != fp {
+        let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+    }
+}
+
 pub async fn matrix_sync(
     client: Client,
     initial_sync_token: Option<String>,
@@ -567,6 +607,7 @@ pub async fn matrix_sync(
         .sync_with_result_callback(sync_settings, |sync_result| {
             // Clone before `async move`: each Fn invocation borrows `client` to
             // clone it, then moves the owned clone into the future.
+            let sc = client.clone();
             #[cfg(target_os = "android")]
             let nc = client.clone();
             async move {
@@ -577,7 +618,7 @@ pub async fn matrix_sync(
                     .map_err(|err| matrix_sdk::Error::UnknownError(err.into()))?;
 
                 crate::SYNCING.store(false, Ordering::Relaxed);
-                let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+                notify_sync_if_changed(&sc);
 
                 // Dismiss notifications for rooms that were read on any device since last sync.
                 #[cfg(target_os = "android")]

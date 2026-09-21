@@ -49,7 +49,12 @@ impl Requester {
                 }
                 crate::SYNCING.store(false, Ordering::Relaxed);
                 crate::DISCONNECTED.store(false, Ordering::Relaxed);
-                let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+                // The sliding-sync stream completes periodically even when
+                // nothing changed (long-poll timeouts); only wake the UI when
+                // the room list actually looks different.
+                if let Some(client) = crate::utils::matrix::CLIENT.get() {
+                    crate::utils::matrix::notify_sync_if_changed(client);
+                }
             }
         });
     }

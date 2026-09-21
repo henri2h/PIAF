@@ -58,7 +58,13 @@ fn room_sort_key(r: &matrix_sdk::Room) -> u64 {
 
 /// Sort a room slice in-place by descending recency.
 fn sort_rooms_by_recency(rooms: &mut Vec<matrix_sdk::Room>) {
-    rooms.sort_unstable_by(|a, b| room_sort_key(b).cmp(&room_sort_key(a)));
+    // Decorate-sort-undecorate: `room_sort_key` walks the room's latest
+    // event, so computing it inside the comparator recomputes it O(n log n)
+    // times instead of once per room.
+    let mut keyed: Vec<(u64, matrix_sdk::Room)> =
+        rooms.drain(..).map(|r| (room_sort_key(&r), r)).collect();
+    keyed.sort_unstable_by(|a, b| b.0.cmp(&a.0));
+    rooms.extend(keyed.into_iter().map(|(_, r)| r));
 }
 
 // ---------------------------------------------------------------------------
