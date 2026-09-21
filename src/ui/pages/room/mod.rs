@@ -1,4 +1,5 @@
 mod action_popup_overlay;
+mod bookmark_picker_overlay;
 mod compose_bar;
 mod detail_modal;
 mod message_action_popup;
@@ -7,6 +8,7 @@ mod room_start_banner;
 mod timeline;
 
 use action_popup_overlay::action_popup_overlay;
+use bookmark_picker_overlay::BookmarkPickerOverlay;
 use compose_bar::ComposeBar;
 use message_row::MessageRow;
 
@@ -315,6 +317,8 @@ impl Component for RoomPage {
         let image_viewer: State<Option<String>> = use_state(|| None);
         let detail_modal: State<Option<Arc<TimelineItem>>> = use_state(|| None);
         let action_popup_state: State<Option<Arc<TimelineItem>>> = use_state(|| None);
+        let bookmark_picker: State<Option<crate::utils::bookmarks::BookmarkEntry>> =
+            use_state(|| None);
         let user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
         let mut content_height: State<f32> = use_state(|| 0.0f32);
         let mut anchor_info: State<Option<(i32, f32)>> = use_state(|| None);
@@ -574,6 +578,8 @@ impl Component for RoomPage {
                     .child(UserPopupOverlay { open: user_popup })
                     .child(action_popup_overlay(
                         action_popup_state,
+                        room_id.clone(),
+                        room_name.read().clone(),
                         CLIENT
                             .get()
                             .and_then(|cl| cl.user_id())
@@ -582,8 +588,12 @@ impl Component for RoomPage {
                         reply_info,
                         edit_info,
                         detail_modal,
+                        bookmark_picker,
                         c,
                     ))
+                    .child(BookmarkPickerOverlay {
+                        pending: bookmark_picker,
+                    })
                     .child({
                         let room_id_search = room_id.clone();
                         let room_id_settings = room_id.clone();

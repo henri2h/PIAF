@@ -125,6 +125,57 @@ impl Component for HomeAppBar {
                     } else {
                         None
                     })
+                    // Bookmarks button (both modes)
+                    .child(
+                        rect()
+                            .width(Size::px(48.))
+                            .height(Size::px(48.))
+                            .corner_radius(24.)
+                            .center()
+                            .on_press(|_| {
+                                let _ = RouterContext::get().push(crate::Route::BookmarksPage);
+                            })
+                            .child(
+                                SvgViewer::new(freya_icons::lucide::bookmark())
+                                    .color(c.on_surface_variant)
+                                    .width(Size::px(22.))
+                                    .height(Size::px(22.)),
+                            ),
+                    )
+                    // Recontact button (both modes)
+                    .child(
+                        rect()
+                            .width(Size::px(48.))
+                            .height(Size::px(48.))
+                            .corner_radius(24.)
+                            .center()
+                            .on_press(|_| {
+                                let _ = RouterContext::get().push(crate::Route::RecontactPage);
+                            })
+                            .child(
+                                SvgViewer::new(freya_icons::lucide::user_check())
+                                    .color(c.on_surface_variant)
+                                    .width(Size::px(22.))
+                                    .height(Size::px(22.)),
+                            ),
+                    )
+                    // Archived button (both modes)
+                    .child(
+                        rect()
+                            .width(Size::px(48.))
+                            .height(Size::px(48.))
+                            .corner_radius(24.)
+                            .center()
+                            .on_press(|_| {
+                                let _ = RouterContext::get().push(crate::Route::ArchivedPage);
+                            })
+                            .child(
+                                SvgViewer::new(freya_icons::lucide::archive())
+                                    .color(c.on_surface_variant)
+                                    .width(Size::px(22.))
+                                    .height(Size::px(22.)),
+                            ),
+                    )
                     // Reactions button (both modes)
                     .child(
                         rect()

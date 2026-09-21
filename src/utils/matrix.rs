@@ -172,6 +172,24 @@ async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_di
         );
     }
 
+    // Load bookmark lists from account_data once the client is ready.
+    if let Some(tx) = crate::BOOKMARKS_TX.get() {
+        let client = client.clone();
+        let tx = tx.clone();
+        tokio::spawn(async move {
+            let bookmarks = crate::utils::bookmarks::load_bookmarks(&client).await;
+            let _ = tx.send(bookmarks);
+        });
+    }
+
+    // Load per-room mailbox state (recontact tag + archived flag) once the client is ready.
+    if crate::ROOM_MAILBOX_TX.get().is_some() {
+        let client = client.clone();
+        tokio::spawn(async move {
+            crate::utils::room_mailbox::load_room_mailbox(&client).await;
+        });
+    }
+
     // Desktop notifications for incoming messages.
     #[cfg(not(target_os = "android"))]
     if REQUESTER.get().is_some() && NOTIFICATION_HANDLER_GUARD.set(()).is_ok() {

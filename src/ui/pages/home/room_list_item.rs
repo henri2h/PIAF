@@ -158,32 +158,6 @@ fn hero_initial(hero: &RoomHero) -> String {
 }
 
 // ---------------------------------------------------------------------------
-// Android long-press helpers
-// ---------------------------------------------------------------------------
-
-#[cfg(target_os = "android")]
-fn start_long_press(mut press_gen: State<u64>, mut long_pressed: State<bool>) {
-    let next_gen = *press_gen.read() + 1;
-    *press_gen.write() = next_gen;
-    spawn(async move {
-        tokio::time::sleep(std::time::Duration::from_millis(350)).await;
-        if *press_gen.read() == next_gen {
-            *long_pressed.write() = true;
-            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-            if *press_gen.read() == next_gen {
-                *long_pressed.write() = false;
-            }
-        }
-    });
-}
-
-#[cfg(target_os = "android")]
-fn cancel_long_press(mut press_gen: State<u64>, mut long_pressed: State<bool>) {
-    *press_gen.write() += 1;
-    *long_pressed.write() = false;
-}
-
-// ---------------------------------------------------------------------------
 // Timing helpers (debug builds only; grep adb logcat for [TIMING])
 // ---------------------------------------------------------------------------
 
@@ -241,9 +215,11 @@ impl Component for RoomListItem {
             .map(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()))
             .unwrap_or(false);
         #[cfg(target_os = "android")]
-        let mut press_gen: State<u64> = use_state(|| 0u64);
-        #[cfg(target_os = "android")]
-        let mut long_pressed: State<bool> = use_state(|| false);
+        let swipe_state = super::room_swipe::use_swipe_state();
+        #[cfg(not(target_os = "android"))]
+        let recontact_hovered: State<bool> = use_state(|| false);
+        #[cfg(not(target_os = "android"))]
+        let archive_hovered: State<bool> = use_state(|| false);
 
         use_side_effect_with_deps(&room_id, move |rid: &String| {
             let rid = rid.clone();
@@ -351,7 +327,7 @@ impl Component for RoomListItem {
         #[cfg(target_os = "android")]
         let bg = if is_active {
             c.surface_container_high
-        } else if *long_pressed.read() {
+        } else if *swipe_state.long_pressed.read() {
             c.surface_container
         } else {
             c.surface
@@ -524,23 +500,29 @@ impl Component for RoomListItem {
             })
             .on_press(move |_| super::navigate_to_room(room_id_nav.clone()));
 
+        // Desktop: hovering a row reveals two small action buttons (recontact /
+        // archive) at its trailing edge instead of a swipe gesture.
         #[cfg(not(target_os = "android"))]
-        return outer.child(highlighted);
+        {
+            let hover_actions = hovered.read().then(|| {
+                super::room_row_actions::hover_action_buttons(
+                    c,
+                    &room_id,
+                    recontact_hovered,
+                    archive_hovered,
+                )
+            });
+            return outer.child(highlighted).maybe_child(hover_actions);
+        }
 
+        // Android: real swipe-to-reveal, handled entirely by `room_swipe`.
         #[cfg(target_os = "android")]
-        return outer
-            .on_touch_start(move |_: Event<TouchEventData>| {
-                start_long_press(press_gen, long_pressed)
-            })
-            .on_touch_move(move |_: Event<TouchEventData>| {
-                cancel_long_press(press_gen, long_pressed)
-            })
-            .on_touch_end(move |_: Event<TouchEventData>| {
-                cancel_long_press(press_gen, long_pressed)
-            })
-            .on_touch_cancel(move |_: Event<TouchEventData>| {
-                cancel_long_press(press_gen, long_pressed)
-            })
-            .child(highlighted);
+        return super::room_swipe::attach_swipe(
+            outer,
+            swipe_state,
+            room_id.clone(),
+            c,
+            highlighted,
+        );
     }
 }

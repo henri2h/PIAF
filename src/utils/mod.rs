@@ -1,8 +1,10 @@
+pub mod bookmarks;
 pub mod const_values;
 pub mod matrix;
 #[cfg(target_os = "android")]
 pub mod push;
 pub mod queries;
+pub mod room_mailbox;
 pub mod worker;
 
 #[derive(Clone, Debug, PartialEq)]

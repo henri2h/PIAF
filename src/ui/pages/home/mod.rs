@@ -3,6 +3,10 @@ mod filter_bar;
 mod filter_chip;
 mod room_list;
 pub mod room_list_item;
+#[cfg(not(target_os = "android"))]
+mod room_row_actions;
+#[cfg(target_os = "android")]
+mod room_swipe;
 pub mod search;
 mod search_panel;
 mod search_tile;
@@ -32,6 +36,14 @@ pub(crate) fn navigate_to_room(room_id: String) {
         }
     }
     let _ = RouterContext::get().push(Route::RoomPage { room_id });
+}
+
+/// Navigate to a room and scroll to a specific event once it's mounted.
+pub(crate) fn navigate_to_room_at_event(room_id: String, event_id: String) {
+    if let Some(tx) = crate::FOCUS_EVENT_TX.get() {
+        let _ = tx.send(Some((room_id.clone(), event_id)));
+    }
+    navigate_to_room(room_id);
 }
 
 /// Primary key for room sorting: latest-event timestamp (client-side, always
@@ -111,10 +123,20 @@ impl Component for HomePage {
             sync_tick,
         );
 
+        // Re-render whenever a room's recontact/archived state changes.
+        let mailbox_tick: State<u64> = use_state(|| 0u64);
+        use_tokio_track_watcher(
+            crate::ROOM_MAILBOX_RX
+                .get()
+                .expect("ROOM_MAILBOX_RX not initialized"),
+            mailbox_tick,
+        );
+
         let is_wide = WIDE_MODE.load(Ordering::Relaxed);
         let search_active = !search.read().trim().is_empty();
         let show_filters = !search_active && (*chips_visible.read() || is_wide);
         let sync_tick_val = *sync_tick.read();
+        let mailbox_tick_val = *mailbox_tick.read();
 
         eprintln!(
             "[piaf] HomePage::render is_wide={is_wide} search_active={search_active} show_filters={show_filters} sync_tick={sync_tick_val}"
@@ -125,7 +147,10 @@ impl Component for HomePage {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(HomeAppBar { search, search_open })
+            .child(HomeAppBar {
+                search,
+                search_open,
+            })
             .child(if show_filters {
                 RoomFilterBar { filter }.into_element()
             } else {
@@ -138,6 +163,7 @@ impl Component for HomePage {
                     filter: filter.read().clone(),
                     chips_visible,
                     sync_tick: sync_tick_val,
+                    mailbox_tick: mailbox_tick_val,
                 }
                 .into_element()
             })

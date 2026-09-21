@@ -5,6 +5,7 @@ use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk_ui::timeline::{TimelineDetails, TimelineItem, TimelineItemContent};
 use tokio::sync::mpsc::UnboundedSender;
 
+use crate::utils::bookmarks::BookmarkEntry;
 use crate::utils::const_values::AppColors;
 
 use super::{MsgAction, message_action_popup};
@@ -12,11 +13,14 @@ use super::{MsgAction, message_action_popup};
 #[allow(clippy::too_many_arguments)]
 pub(super) fn action_popup_overlay(
     mut popup_state: State<Option<Arc<TimelineItem>>>,
+    room_id: String,
+    room_name: String,
     my_user_id: Option<String>,
     action_tx: Arc<UnboundedSender<MsgAction>>,
     mut reply_info: State<Option<(String, String, String)>>,
     mut edit_info: State<Option<(String, String)>>,
     mut detail_modal: State<Option<Arc<TimelineItem>>>,
+    mut bookmark_picker: State<Option<BookmarkEntry>>,
     c: AppColors,
 ) -> Element {
     use message_action_popup::PopupAction;
@@ -77,8 +81,8 @@ pub(super) fn action_popup_overlay(
             color: c.on_surface,
             on_press: Box::new({
                 let eid = event_id.clone();
-                let sender = sender_name;
-                let body = reply_body;
+                let sender = sender_name.clone();
+                let body = reply_body.clone();
                 move || {
                     if let Some(event_id) = &eid {
                         *reply_info.write() =
@@ -96,6 +100,35 @@ pub(super) fn action_popup_overlay(
                 let item_clone = popup_item.clone();
                 move || {
                     *detail_modal.write() = Some(item_clone.clone());
+                    *popup_state.write() = None;
+                }
+            }),
+        },
+        PopupAction {
+            icon: freya_icons::lucide::bookmark(),
+            label: "Bookmark",
+            color: c.on_surface,
+            on_press: Box::new({
+                let eid = event_id.clone();
+                let room_id = room_id.clone();
+                let room_name = room_name.clone();
+                let sender_display = sender_name.clone();
+                let message_preview = reply_body.clone();
+                move || {
+                    if let Some(event_id) = eid.clone() {
+                        let added_ts_ms = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_millis() as u64;
+                        bookmark_picker.set(Some(BookmarkEntry {
+                            room_id: room_id.clone(),
+                            event_id,
+                            room_name: room_name.clone(),
+                            sender_display: sender_display.clone(),
+                            message_preview: message_preview.clone(),
+                            added_ts_ms,
+                        }));
+                    }
                     *popup_state.write() = None;
                 }
             }),

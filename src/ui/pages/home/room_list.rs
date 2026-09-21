@@ -3,8 +3,10 @@ use freya::prelude::*;
 use super::filter_chip::RoomFilter;
 use super::room_list_item::RoomListItem;
 use super::sort_rooms_by_recency;
+use crate::ROOM_MAILBOX_RX;
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::CLIENT;
+use crate::utils::room_mailbox::is_archived_hidden;
 use crate::utils::use_app_colors;
 
 /// Loading / empty states, or the virtualized, filtered, recency-sorted list
@@ -13,16 +15,21 @@ use crate::utils::use_app_colors;
 /// `sync_tick` is owned by `HomePage` and bumped on every Matrix sync, so
 /// passing it in (rather than subscribing here) makes the re-render trigger
 /// explicit. `chips_visible` is also `HomePage`-owned, so scrolling here can
-/// drive the filter bar's visibility above this component.
+/// drive the filter bar's visibility above this component. `mailbox_tick`
+/// bumps on every recontact/archive change so archived rooms drop out (or
+/// reappear) without waiting for the next sync tick.
 pub struct RoomList {
     pub filter: RoomFilter,
     pub chips_visible: State<bool>,
     pub sync_tick: u64,
+    pub mailbox_tick: u64,
 }
 
 impl PartialEq for RoomList {
     fn eq(&self, other: &Self) -> bool {
-        self.filter == other.filter && self.sync_tick == other.sync_tick
+        self.filter == other.filter
+            && self.sync_tick == other.sync_tick
+            && self.mailbox_tick == other.mailbox_tick
     }
 }
 
@@ -41,9 +48,21 @@ impl Component for RoomList {
             .unwrap_or_default();
         sort_rooms_by_recency(&mut rooms);
 
+        let mailbox = ROOM_MAILBOX_RX
+            .get()
+            .map(|rx| rx.borrow().clone())
+            .unwrap_or_default();
+
         let filtered_rooms: Vec<_> = rooms
             .into_iter()
             .filter(|r| self.filter.matches(r))
+            .filter(|r| {
+                let archived_until_ts = mailbox
+                    .get(r.room_id().as_str())
+                    .and_then(|s| s.archived_until_ts);
+                let latest_ts = r.latest_event().timestamp().map(|ts| ts.get().into());
+                !is_archived_hidden(latest_ts, archived_until_ts)
+            })
             .collect();
         let rooms_len = filtered_rooms.len();
         let initial_loading = CLIENT.get().is_none();

@@ -5,12 +5,7 @@ use matrix_sdk::ruma::{MilliSecondsSinceUnixEpoch, UInt};
 use crate::ui::components::{Avatar, user_color};
 use crate::utils::{format_timestamp, use_app_colors};
 
-fn navigate_to_room_at_event(room_id: String, event_id: String) {
-    if let Some(tx) = crate::FOCUS_EVENT_TX.get() {
-        let _ = tx.send(Some((room_id.clone(), event_id)));
-    }
-    super::navigate_to_room(room_id);
-}
+use super::navigate_to_room_at_event;
 
 // ---------------------------------------------------------------------------
 // RoomSearchTile

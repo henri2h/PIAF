@@ -19,10 +19,13 @@ pub mod ui;
 pub mod utils;
 
 use ui::pages::{
+    archived::ArchivedPage,
+    bookmarks::BookmarksPage,
     home::HomePage,
     login::LoginPage,
     new_chat::{NewChat, NewGroup, NewGroupConfig, PendingDm, PendingGroup},
     reactions::ReactionsPage,
+    recontact::RecontactPage,
     room::RoomPage,
     room_media::RoomMediaPage,
     room_members::RoomMembers,
@@ -45,6 +48,16 @@ pub static FOCUS_EVENT_TX: OnceLock<watch::Sender<Option<(String, String)>>> = O
 pub static FOCUS_EVENT_RX: OnceLock<watch::Receiver<Option<(String, String)>>> = OnceLock::new();
 pub static REACTIONS_TX: OnceLock<watch::Sender<Vec<utils::ReceivedReaction>>> = OnceLock::new();
 pub static REACTIONS_RX: OnceLock<watch::Receiver<Vec<utils::ReceivedReaction>>> = OnceLock::new();
+pub static BOOKMARKS_TX: OnceLock<watch::Sender<utils::bookmarks::BookmarksEventContent>> =
+    OnceLock::new();
+pub static BOOKMARKS_RX: OnceLock<watch::Receiver<utils::bookmarks::BookmarksEventContent>> =
+    OnceLock::new();
+pub static ROOM_MAILBOX_TX: OnceLock<
+    watch::Sender<std::collections::HashMap<String, utils::room_mailbox::RoomMailboxState>>,
+> = OnceLock::new();
+pub static ROOM_MAILBOX_RX: OnceLock<
+    watch::Receiver<std::collections::HashMap<String, utils::room_mailbox::RoomMailboxState>>,
+> = OnceLock::new();
 /// Set to true by Layout when the window is wide enough for split-pane view.
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "android")]
@@ -108,6 +121,12 @@ pub enum Route {
         RoomMembers { room_id: String },
         #[route("/reactions")]
         ReactionsPage,
+        #[route("/bookmarks")]
+        BookmarksPage,
+        #[route("/recontact")]
+        RecontactPage,
+        #[route("/archived")]
+        ArchivedPage,
 }
 
 #[derive(PartialEq)]
@@ -856,6 +875,16 @@ fn android_main(droid_app: AndroidApp) {
             tokio::sync::watch::channel::<Vec<utils::ReceivedReaction>>(vec![]);
         REACTIONS_TX.set(reactions_tx).unwrap();
         REACTIONS_RX.set(reactions_rx).unwrap();
+
+        let (bookmarks_tx, bookmarks_rx) =
+            tokio::sync::watch::channel(utils::bookmarks::BookmarksEventContent::default());
+        BOOKMARKS_TX.set(bookmarks_tx).unwrap();
+        BOOKMARKS_RX.set(bookmarks_rx).unwrap();
+
+        let (room_mailbox_tx, room_mailbox_rx) =
+            tokio::sync::watch::channel(std::collections::HashMap::new());
+        ROOM_MAILBOX_TX.set(room_mailbox_tx).unwrap();
+        ROOM_MAILBOX_RX.set(room_mailbox_rx).unwrap();
 
         tokio::spawn(async move {
             match utils::matrix::restore_matrix_client(data_path).await {
