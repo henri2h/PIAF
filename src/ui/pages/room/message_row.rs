@@ -12,6 +12,7 @@ use freya_query::prelude::QueryCapability;
 
 use super::ui_ctx::{RoomUiCtx, use_room_ui_ctx};
 use super::{MsgAction, Reaction, ReactionSender};
+use crate::logging::RenderTimer;
 use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, ViewerSource};
 use crate::utils::matrix::save_media_to_downloads;
 use crate::utils::queries::{FetchMediaContent, media_source_key};
@@ -56,6 +57,8 @@ impl PartialEq for MessageRow {
 
 impl Component for MessageRow {
     fn render(&self) -> impl IntoElement {
+        let _timer =
+            RenderTimer::with_threshold("MessageRow", std::time::Duration::from_micros(200));
         let c = use_app_colors();
         let item = self.item.clone();
         let action_tx = self.action_tx.clone();

@@ -40,6 +40,48 @@ pub fn get_room(room_id: &str) -> Option<Room> {
     CLIENT.get()?.get_room(&room_id)
 }
 
+/// Whether `error` means the server no longer accepts our access token.
+pub fn is_unknown_token(error: &matrix_sdk::Error) -> bool {
+    matches!(
+        error.client_api_error_kind(),
+        Some(matrix_sdk::ruma::api::error::ErrorKind::UnknownToken(_))
+    )
+}
+
+/// Stops using a revoked session: flags it, sets the session file aside so the
+/// next launch goes to login, and wakes the UI. Idempotent.
+pub async fn on_session_expired() {
+    if crate::SESSION_EXPIRED.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    tracing::warn!("access token revoked, session expired");
+    if let Some(file) = SESSION_FILE.get() {
+        if let Err(e) = fs::rename(file, file.with_extension("expired")).await {
+            tracing::warn!("could not set expired session file aside: {e}");
+        }
+    }
+    let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+}
+
+/// Catches token revocation on any request, not just sync.
+fn watch_session_expiry(client: &Client) {
+    use matrix_sdk::SessionChange;
+    use tokio::sync::broadcast::error::RecvError;
+    let mut changes = client.subscribe_to_session_changes();
+    tokio::spawn(async move {
+        loop {
+            match changes.recv().await {
+                Ok(SessionChange::UnknownToken(_)) => {
+                    on_session_expired().await;
+                    break;
+                }
+                Ok(_) | Err(RecvError::Lagged(_)) => {}
+                Err(RecvError::Closed) => break,
+            }
+        }
+    });
+}
+
 /// Timestamp (ms) of the room's latest event, if known.
 pub fn latest_event_ts(room: &Room) -> Option<u64> {
     room.latest_event().timestamp().map(|ts| ts.get().into())
@@ -107,23 +149,23 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
         } else {
             let (c, t) = restore_session(&session_file).await?;
             let _ = CLIENT.set(c.clone());
-            eprintln!("[piaf] restore_matrix_client: CLIENT set");
+            tracing::debug!("restore_matrix_client: CLIENT set");
             (c, t)
         };
 
         // Signal immediately so the UI can navigate to the room list and show
         // cached rooms from the local store without waiting for the network.
-        eprintln!("[piaf] restore_matrix_client: sending initial SYNC_TX signal");
+        tracing::debug!("restore_matrix_client: sending initial SYNC_TX signal");
         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
 
         // Start sync only when the main app worker is available.
         // In the push context REQUESTER is not set, so this is skipped.
-        eprintln!(
-            "[piaf] restore_matrix_client: calling activate_client (REQUESTER present={})",
+        tracing::debug!(
+            "restore_matrix_client: calling activate_client (REQUESTER present={})",
             REQUESTER.get().is_some()
         );
         activate_client(&client, sync_token, &base_dir).await;
-        eprintln!("[piaf] restore_matrix_client: activate_client returned");
+        tracing::debug!("restore_matrix_client: activate_client returned");
 
         return Ok(true);
     }
@@ -133,7 +175,7 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
 
 /// Restore a previous session.
 async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<String>)> {
-    println!(
+    tracing::info!(
         "Previous session found in '{}'",
         session_file.to_string_lossy()
     );
@@ -157,7 +199,7 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<
     .build()
     .await?;
 
-    println!("Restoring session for {}…", user_session.meta.user_id);
+    tracing::info!("Restoring session for {}…", user_session.meta.user_id);
 
     // Restore the Matrix user session.
     client.restore_session(user_session).await?;
@@ -166,16 +208,17 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<
 }
 
 async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_dir: &Path) {
+    watch_session_expiry(client);
     if ROOM_LIST_SERVICE.get().is_none() {
         match RoomListService::new(client.clone()).await {
             Ok(room_list_s) => {
-                eprintln!("[piaf] activate_client: RoomListService created");
+                tracing::debug!("activate_client: RoomListService created");
                 ROOM_LIST_SERVICE.set(room_list_s).ok();
             }
-            Err(e) => eprintln!("[piaf] activate_client: RoomListService::new failed: {e:#}"),
+            Err(e) => tracing::error!("activate_client: RoomListService::new failed: {e:#}"),
         }
     } else {
-        eprintln!("[piaf] activate_client: ROOM_LIST_SERVICE already set");
+        tracing::debug!("activate_client: ROOM_LIST_SERVICE already set");
     }
 
     #[cfg(target_os = "android")]
@@ -224,11 +267,11 @@ async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_di
     }
 
     if let Some(rq) = REQUESTER.get() {
-        eprintln!("[piaf] activate_client: starting sync + room_list_sync");
+        tracing::debug!("activate_client: starting sync + room_list_sync");
         rq.start_sync(sync_token);
         rq.start_room_list_sync();
     } else {
-        eprintln!("[piaf] activate_client: REQUESTER not set, sync not started");
+        tracing::warn!("activate_client: REQUESTER not set, sync not started");
     }
 }
 
@@ -385,7 +428,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
 
     let matrix_auth = client.matrix_auth();
 
-    println!("Trying login in user {username}");
+    tracing::info!("Trying login in user {username}");
 
     match matrix_auth
         .login_username(&username, &password)
@@ -393,7 +436,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
         .await
     {
         Ok(_) => {
-            println!("Logged in as {username}");
+            tracing::info!("Logged in as {username}");
 
             // Persist session
             let user_session = matrix_auth
@@ -406,7 +449,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
             })?;
             fs::write(session_file, serialized_session).await?;
 
-            println!("Session persisted in {}", session_file.to_string_lossy());
+            tracing::debug!("session persisted in {}", session_file.to_string_lossy());
 
             // Saving client
             CLIENT.set(client).expect("Client already set");
@@ -416,8 +459,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
             Ok(())
         }
         Err(error) => {
-            println!("Error logging in: {error}");
-            println!("Please try again\n");
+            tracing::warn!("login failed: {error}");
             Err(anyhow::anyhow!("Invalid username"))
         }
     }
@@ -480,7 +522,7 @@ async fn new_client(
         (db_path, passphrase)
     };
 
-    println!("\nChecking homeserver {homeserver}");
+    tracing::info!("checking homeserver {homeserver}");
 
     let client_build = get_client_builder(&homeserver.to_string(), &db_path, &passphrase, true)
         .build()
@@ -502,13 +544,12 @@ async fn new_client(
             matrix_sdk::ClientBuildError::AutoDiscovery(_)
             | matrix_sdk::ClientBuildError::Url(_)
             | matrix_sdk::ClientBuildError::Http(_) => {
-                println!("Error checking the homeserver: {error}");
-                println!("Please try again\n");
+                tracing::warn!("homeserver check failed: {error}");
                 Err(anyhow::anyhow!("Invalid homeserver"))
             }
             _ => {
                 // Forward other errors, it's unlikely we can retry with a different outcome.
-                println!("Error: {error}");
+                tracing::error!("homeserver error: {error}");
                 return Err(error.into());
             }
         },
@@ -544,12 +585,21 @@ fn room_list_fingerprint(client: &Client) -> u64 {
 
 /// Fires `SYNC_TX` only if the room list actually looks different since the
 /// last time this was called. See `room_list_fingerprint`.
-pub fn notify_sync_if_changed(client: &Client) {
+pub fn notify_sync_if_changed(client: &Client, source: &'static str) {
+    let start = std::time::Instant::now();
     let fp = room_list_fingerprint(client);
     let prev = LAST_ROOM_FINGERPRINT.swap(fp, Ordering::Relaxed);
-    if prev != fp {
+    let changed = prev != fp;
+    if changed {
         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
     }
+    tracing::debug!(
+        target: crate::logging::PERF,
+        source,
+        changed,
+        "sync batch, fingerprint {}µs",
+        start.elapsed().as_micros()
+    );
 }
 
 pub async fn matrix_sync(
@@ -557,7 +607,7 @@ pub async fn matrix_sync(
     initial_sync_token: Option<String>,
     session_file: &Path,
 ) -> anyhow::Result<()> {
-    println!("Launching a first sync to ignore past messages…");
+    tracing::info!("Launching a first sync to ignore past messages…");
 
     // Enable room members lazy-loading, it will speed up the initial sync a lot
     // with accounts in lots of rooms.
@@ -586,15 +636,18 @@ pub async fn matrix_sync(
                 persist_sync_token(session_file, response.next_batch).await?;
                 break;
             }
+            Err(error) if is_unknown_token(&error) => {
+                on_session_expired().await;
+                return Ok(());
+            }
             Err(error) => {
-                println!("An error occurred during initial sync: {error}");
-                println!("Trying again in 5s…");
+                tracing::warn!("initial sync failed, retrying in 5s: {error}");
                 tokio::time::sleep(std::time::Duration::from_secs(5)).await;
             }
         }
     }
 
-    println!("The client is ready! Listening to new messages…");
+    tracing::info!("The client is ready! Listening to new messages…");
 
     // Retry pusher registration now that we know the homeserver is reachable.
     // The startup attempt may have failed due to no network connectivity yet.
@@ -616,6 +669,12 @@ pub async fn matrix_sync(
             #[cfg(target_os = "android")]
             let nc = client.clone();
             async move {
+                if let Err(e) = &sync_result
+                    && is_unknown_token(e)
+                {
+                    on_session_expired().await;
+                    return Ok(LoopCtrl::Break);
+                }
                 let response = sync_result?;
 
                 persist_sync_token(session_file, response.next_batch)
@@ -623,7 +682,7 @@ pub async fn matrix_sync(
                     .map_err(|err| matrix_sdk::Error::UnknownError(err.into()))?;
 
                 crate::SYNCING.store(false, Ordering::Relaxed);
-                notify_sync_if_changed(&sc);
+                notify_sync_if_changed(&sc, "sync");
 
                 // Dismiss notifications for rooms that were read on any device since last sync.
                 #[cfg(target_os = "android")]

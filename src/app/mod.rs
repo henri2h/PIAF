@@ -2,6 +2,7 @@
 mod active_room_panel;
 mod layout;
 pub mod navigation;
+pub mod restart;
 mod routes;
 pub mod state;
 pub mod theme;

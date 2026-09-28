@@ -3,6 +3,7 @@ use freya::prelude::*;
 use super::room_list_item::{ROOM_ROW_HEIGHT, RoomListItem};
 use super::room_list_model::{RoomFilter, RoomSummary, all_room_summaries, visible_rooms};
 use crate::ROOM_MAILBOX_RX;
+use crate::logging::{PERF, RenderTimer};
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::CLIENT;
 use crate::utils::use_app_colors;
@@ -26,9 +27,9 @@ impl PartialEq for RoomList {
 
 impl Component for RoomList {
     fn render(&self) -> impl IntoElement {
+        let _timer = RenderTimer::new("RoomList");
         let c = use_app_colors();
         let mut chips_visible = self.chips_visible;
-        let scroll_controller = use_scroll_controller(ScrollConfig::default);
 
         // Refetch + sort only on sync; mailbox changes only affect filtering.
         let fetch_sort_start = std::time::Instant::now();
@@ -51,21 +52,15 @@ impl Component for RoomList {
         let rooms_len = filtered_rooms.len();
         let initial_loading = CLIENT.get().is_none();
 
-        println!(
-            "[piaf] RoomList::render sync_tick={} mailbox_tick={} client_present={} rooms_len={} filter={:?} chips_visible={}",
-            self.sync_tick,
-            self.mailbox_tick,
-            !initial_loading,
-            rooms_len,
-            self.filter,
-            *chips_visible.peek(),
-        );
-        println!(
-            "[TIMING] RoomList rebuild total={}µs (fetch+sort={}µs filter={}µs) rooms={}",
-            (fetch_sort_elapsed + filter_elapsed).as_micros(),
+        tracing::debug!(
+            target: PERF,
+            sync_tick = self.sync_tick,
+            mailbox_tick = self.mailbox_tick,
+            rooms = rooms.len(),
+            visible = rooms_len,
+            "RoomList fetch+sort {}µs, filter {}µs",
             fetch_sort_elapsed.as_micros(),
             filter_elapsed.as_micros(),
-            rooms_len,
         );
 
         if initial_loading && rooms_len == 0 {
@@ -81,10 +76,8 @@ impl Component for RoomList {
             .expanded()
             .on_wheel(move |e: Event<WheelEventData>| {
                 if e.delta_y < 0.0 && !*chips_visible.peek() {
-                    println!("[ROOMLIST] chips -> visible (delta_y={:.1})", e.delta_y);
                     chips_visible.set(true);
                 } else if e.delta_y > 0.0 && *chips_visible.peek() {
-                    println!("[ROOMLIST] chips -> hidden (delta_y={:.1})", e.delta_y);
                     chips_visible.set(false);
                 }
             })
@@ -101,17 +94,6 @@ impl Component for RoomList {
                 .length(rooms_len)
                 .item_size(ROOM_ROW_HEIGHT)
                 .height(Size::fill())
-                .scroll_controller(scroll_controller)
-                .on_sized(move |e: Event<SizedEventData>| {
-                    let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
-                    println!(
-                        "[ROOMLIST] sized viewport={:.1} content={:.1} y={} rooms={}",
-                        e.area.height(),
-                        e.inner_sizes.height,
-                        y,
-                        rooms_len,
-                    );
-                })
                 .into_element(),
             )
             .into_element()

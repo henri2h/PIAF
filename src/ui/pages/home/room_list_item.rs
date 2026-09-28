@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use freya::prelude::*;
 use freya_query::prelude::*;
@@ -8,6 +8,7 @@ use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 pub use super::room_list_model::RoomSummary;
 use super::row_interaction::use_row_interaction;
 use crate::app::navigation::navigate_to_room;
+use crate::logging::RenderTimer;
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
 use crate::ui::pages::home::ActiveRoomCtx;
 use crate::utils::const_values::AppColors;
@@ -17,20 +18,6 @@ use crate::utils::{format_timestamp, queries::FetchSenderName, use_app_colors};
 
 pub const ROOM_ROW_HEIGHT: f32 = 80.;
 
-/// Logs slow renders in debug builds (`[TIMING]`).
-struct RenderTimer(Instant);
-impl Drop for RenderTimer {
-    fn drop(&mut self) {
-        #[cfg(debug_assertions)]
-        {
-            let dt = self.0.elapsed().as_micros();
-            if dt > 200 {
-                println!("[TIMING] RoomListItem render {dt}µs");
-            }
-        }
-    }
-}
-
 #[derive(Clone, PartialEq)]
 pub struct RoomListItem {
     pub summary: RoomSummary,
@@ -38,7 +25,7 @@ pub struct RoomListItem {
 
 impl Component for RoomListItem {
     fn render(&self) -> impl IntoElement {
-        let _render_timer = RenderTimer(Instant::now());
+        let _timer = RenderTimer::with_threshold("RoomListItem", Duration::from_micros(200));
         let c = use_app_colors();
         let s = &self.summary;
         let room_id = s.room_id.clone();

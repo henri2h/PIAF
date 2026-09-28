@@ -4,21 +4,24 @@ pub struct MatrixSyncWorker {}
 
 impl MatrixSyncWorker {
     pub async fn run(&mut self, initial_sync_token: Option<String>) {
-        println!("Asked to run");
+        tracing::debug!("sync worker started");
         let mut token = initial_sync_token;
         loop {
             let Some(client) = CLIENT.get() else {
-                eprintln!("Sync: client not available, stopping");
+                tracing::warn!("sync: client not available, stopping");
                 break;
             };
             let Some(session_file) = SESSION_FILE.get() else {
-                eprintln!("Sync: session file not available, stopping");
+                tracing::warn!("sync: session file not available, stopping");
                 break;
             };
             match matrix_sync(client.clone(), token.take(), session_file).await {
                 Ok(()) => break,
+                Err(_) if crate::SESSION_EXPIRED.load(std::sync::atomic::Ordering::Relaxed) => {
+                    break;
+                }
                 Err(e) => {
-                    eprintln!("Sync error: {e:#}, retrying in 5s…");
+                    tracing::warn!("sync error, retrying in 5s: {e:#}");
                     tokio::time::sleep(std::time::Duration::from_secs(5)).await;
                 }
             }

@@ -38,7 +38,7 @@ impl Component for SettingsNotifications {
                 let Some(client) = crate::utils::matrix::CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) = tokio::sync::oneshot::channel::<(
+                let (tx, rx) = futures::channel::oneshot::channel::<(
                     Option<String>,
                     bool,
                     String,

@@ -41,7 +41,8 @@ impl Component for SettingsSecurity {
                 let Some(client) = CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) = tokio::sync::oneshot::channel::<(Vec<DeviceInfo>, EncryptionInfo)>();
+                let (tx, rx) =
+                    futures::channel::oneshot::channel::<(Vec<DeviceInfo>, EncryptionInfo)>();
                 tokio::task::spawn(async move {
                     let enc_info = {
                         let enc = client.encryption();

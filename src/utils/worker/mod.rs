@@ -40,7 +40,10 @@ impl Requester {
             futures::pin_mut!(sync);
             while let Some(result) = sync.next().await {
                 if let Err(e) = result {
-                    eprintln!("Room list sync error: {e}");
+                    if crate::SESSION_EXPIRED.load(Ordering::Relaxed) {
+                        break;
+                    }
+                    tracing::warn!("room list sync error: {e}");
                     // Wake the UI so it can show the offline banner; rooms
                     // still render from the local cache while disconnected.
                     crate::DISCONNECTED.store(true, Ordering::Relaxed);
@@ -53,7 +56,7 @@ impl Requester {
                 // nothing changed (long-poll timeouts); only wake the UI when
                 // the room list actually looks different.
                 if let Some(client) = crate::utils::matrix::CLIENT.get() {
-                    crate::utils::matrix::notify_sync_if_changed(client);
+                    crate::utils::matrix::notify_sync_if_changed(client, "room_list");
                 }
             }
         });

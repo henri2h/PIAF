@@ -8,6 +8,7 @@ use super::focus::{event_offset, row_key, watch_focus_events};
 use super::message_row::MessageRow;
 use super::room_start_banner::RoomStartBanner;
 use super::use_room_timeline::RoomTimeline;
+use crate::logging::RenderTimer;
 use crate::utils::matrix::my_user_id;
 use crate::utils::{format_date_key, format_date_label, use_app_colors};
 
@@ -27,6 +28,7 @@ pub(super) struct TimelineView {
 
 impl Component for TimelineView {
     fn render(&self) -> impl IntoElement {
+        let _timer = RenderTimer::new("TimelineView");
         let c = use_app_colors();
         let tl = self.timeline.clone();
         let st = tl.state;

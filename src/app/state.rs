@@ -30,8 +30,11 @@ pub static ROOM_MAILBOX_RX: OnceLock<watch::Receiver<HashMap<String, RoomMailbox
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 /// No sync batch completed yet.
 pub static SYNCING: AtomicBool = AtomicBool::new(true);
-/// Last sync attempt failed; shows the offline banner.
+/// Last sync attempt failed.
 pub static DISCONNECTED: AtomicBool = AtomicBool::new(false);
+/// The server revoked our access token (e.g. device removed elsewhere).
+/// Sync stops; the user must restart and sign in again.
+pub static SESSION_EXPIRED: AtomicBool = AtomicBool::new(false);
 
 /// Initializes all globals, then restores the session in the background.
 /// Must run inside a Tokio runtime context.
@@ -64,8 +67,8 @@ pub fn init(data_dir: PathBuf) {
 
     tokio::spawn(async move {
         match utils::matrix::restore_matrix_client(data_dir).await {
-            Ok(available) => println!("Client available: {available}"),
-            Err(e) => println!("Could not restore client: {e:#}"),
+            Ok(available) => tracing::info!("session restored: {available}"),
+            Err(e) => tracing::warn!("could not restore session: {e:#}"),
         }
         let _ = SYNC_TX.get().map(|tx| tx.send(()));
     });

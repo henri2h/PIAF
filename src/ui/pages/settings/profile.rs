@@ -31,7 +31,7 @@ impl Component for SettingsProfile {
                 let Some(client) = CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) = tokio::sync::oneshot::channel::<(String, Option<Vec<u8>>)>();
+                let (tx, rx) = futures::channel::oneshot::channel::<(String, Option<Vec<u8>>)>();
                 tokio::task::spawn(async move {
                     let name = client
                         .account()
@@ -235,7 +235,7 @@ async fn save_display_name(name: String) -> anyhow::Result<()> {
     let client = CLIENT
         .get()
         .ok_or_else(|| anyhow::anyhow!("Not logged in"))?;
-    let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
+    let (tx, rx) = futures::channel::oneshot::channel::<anyhow::Result<()>>();
     let client = client.clone();
     tokio::task::spawn(async move {
         let result = client
@@ -277,7 +277,7 @@ async fn pick_and_upload_avatar(avatar_state: &mut State<Option<Vec<u8>>>) -> an
     let client = CLIENT
         .get()
         .ok_or_else(|| anyhow::anyhow!("Not logged in"))?;
-    let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
+    let (tx, rx) = futures::channel::oneshot::channel::<anyhow::Result<()>>();
     let client = client.clone();
     let data_clone = data.clone();
     tokio::task::spawn(async move {

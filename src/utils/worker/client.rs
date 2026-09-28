@@ -44,14 +44,13 @@ impl MatrixClientWorker {
     pub async fn run(&mut self, task: WorkerTask) {
         match task {
             WorkerTask::Login(username, password, reply) => {
-                println!("Call worker login");
+                tracing::debug!("worker: login");
                 let response = login_matrix(username, password).await;
                 let _ = reply.send(response);
             }
             WorkerTask::FetchRoomAvatar(room_id, reply) => {
-                println!("Get room: {room_id}");
+                tracing::trace!("worker: fetch room avatar {room_id}");
                 let result = do_fetch_room_avatar(&room_id).await;
-                println!("Get room (done): {room_id}");
                 let _ = reply.send(result);
             }
             WorkerTask::FetchUserAvatar(reply) => {

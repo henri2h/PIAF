@@ -65,7 +65,7 @@ impl Component for RoomSettings {
                 let Some(client) = CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) = tokio::sync::oneshot::channel::<Option<u8>>();
+                let (tx, rx) = futures::channel::oneshot::channel::<Option<u8>>();
                 tokio::task::spawn(async move {
                     let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id_notif) else {
                         let _ = tx.send(None);
@@ -90,7 +90,7 @@ impl Component for RoomSettings {
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let (tx, rx) = tokio::sync::oneshot::channel::<(
+                let (tx, rx) = futures::channel::oneshot::channel::<(
                     String,
                     u64,
                     Vec<MemberItem>,
@@ -552,7 +552,7 @@ fn leave_confirm_overlay(
                                     *leaving.write() = true;
                                     let room_id = room_id_leave.clone();
                                     spawn(async move {
-                                                                                let (tx, rx) = tokio::sync::oneshot::channel::<bool>();
+                                                                                let (tx, rx) = futures::channel::oneshot::channel::<bool>();
                                         tokio::task::spawn(async move {
                                             let ok = crate::utils::matrix::get_room(&room_id)
                                                 .map(|room| async move { room.leave().await.is_ok() });

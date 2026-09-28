@@ -80,7 +80,7 @@ pub async fn register_pusher_if_stored(client: &Client, base_dir: &Path) {
         Ok(endpoint) => {
             let endpoint = endpoint.trim().to_string();
             if !endpoint.is_empty() {
-                println!("Registering persisted UP pusher: {endpoint}");
+                tracing::info!("Registering persisted UP pusher: {endpoint}");
                 register_pusher(client, &endpoint).await;
             }
         }
@@ -94,7 +94,7 @@ pub async fn register_pusher_if_stored(client: &Client, base_dir: &Path) {
 /// the notification back to the correct UP subscriber.
 pub async fn register_pusher(client: &Client, endpoint: &str) {
     let gw = resolve_gateway().await;
-    println!("Registering UP pusher: gateway={gw}");
+    tracing::info!("Registering UP pusher: gateway={gw}");
 
     let mut http_data = HttpPusherData::new(gw);
     http_data.format = Some(PushFormat::EventIdOnly);
@@ -113,8 +113,8 @@ pub async fn register_pusher(client: &Client, endpoint: &str) {
     };
 
     match client.pusher().set(pusher.into()).await {
-        Ok(_) => println!("UP pusher registered successfully"),
-        Err(e) => println!("Failed to register UP pusher: {e}"),
+        Ok(_) => tracing::info!("UP pusher registered successfully"),
+        Err(e) => tracing::warn!("failed to register UP pusher: {e}"),
     }
 }
 
@@ -130,7 +130,7 @@ pub async fn unregister_pusher(client: &Client, base_dir: &Path) {
 
     let ids = PusherIds::new(endpoint, APP_ID.to_string());
     if let Err(e) = client.pusher().delete(ids).await {
-        println!("Failed to delete UP pusher: {e}");
+        tracing::warn!("failed to delete UP pusher: {e}");
     }
 
     let _ = fs::remove_file(endpoint_file(base_dir)).await;

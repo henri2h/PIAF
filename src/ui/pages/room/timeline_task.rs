@@ -181,6 +181,7 @@ async fn run(
             }
             diffs = stream.next() => {
                 let Some(diffs) = diffs else { break; };
+                tracing::debug!(target: crate::logging::PERF, diffs = diffs.len(), items = tl_items.len(), "timeline update");
                 for diff in diffs { apply_diff(&mut tl_items, diff); }
                 let _ = update_tx.send(tl_items.clone());
             }

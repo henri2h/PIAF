@@ -50,7 +50,7 @@ impl Component for RoomMembers {
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let (tx, rx) = tokio::sync::oneshot::channel::<(Vec<MemberItem>, i64)>();
+                let (tx, rx) = futures::channel::oneshot::channel::<(Vec<MemberItem>, i64)>();
                 tokio::task::spawn(async move {
                     let Some(room) = crate::utils::matrix::get_room(&room_id) else {
                         let _ = tx.send((vec![], 0));

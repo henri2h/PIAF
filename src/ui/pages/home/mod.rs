@@ -18,6 +18,8 @@ use room_list::RoomList;
 use room_list_model::RoomFilter;
 use search_panel::SearchResults;
 
+use crate::logging::RenderTimer;
+use crate::utils::const_values::AppColors;
 use crate::utils::{use_app_colors, use_watch, use_watch_tick};
 use crate::{ACTIVE_ROOM_RX, WIDE_MODE};
 
@@ -45,6 +47,7 @@ pub struct HomePage {}
 
 impl Component for HomePage {
     fn render(&self) -> impl IntoElement {
+        let _timer = RenderTimer::new("HomePage");
         let c = use_app_colors();
         provide_active_room_context();
 
@@ -62,10 +65,7 @@ impl Component for HomePage {
         let show_filters = !search_active && (*chips_visible.read() || is_wide);
         let sync_tick_val = *sync_tick.read();
         let mailbox_tick_val = *mailbox_tick.read();
-
-        eprintln!(
-            "[piaf] HomePage::render is_wide={is_wide} search_active={search_active} show_filters={show_filters} sync_tick={sync_tick_val}"
-        );
+        let session_expired = crate::SESSION_EXPIRED.load(Ordering::Relaxed);
 
         rect()
             .expanded()
@@ -75,6 +75,11 @@ impl Component for HomePage {
             .child(HomeAppBar {
                 search,
                 search_open,
+            })
+            .child(if session_expired {
+                session_expired_banner(c)
+            } else {
+                rect().into_element()
             })
             .child(if show_filters {
                 RoomFilterBar { filter }.into_element()
@@ -93,4 +98,39 @@ impl Component for HomePage {
                 .into_element()
             })
     }
+}
+
+/// Shown once the server revokes our token; sync has stopped. The session file
+/// is already set aside, so a restart lands on the login page.
+fn session_expired_banner(c: AppColors) -> Element {
+    rect()
+        .horizontal()
+        .content(Content::Flex)
+        .width(Size::fill())
+        .padding(Gaps::new(8., 8., 8., 16.))
+        .spacing(12.)
+        .cross_align(Alignment::Center)
+        .background(c.error)
+        .child(
+            label()
+                .width(Size::flex(1.))
+                .text("Session expired: this device was signed out.")
+                .font_size(13.)
+                .color(c.on_primary),
+        )
+        .child(
+            rect()
+                .padding(Gaps::new(8., 14., 8., 14.))
+                .corner_radius(16.)
+                .background(c.on_primary)
+                .on_press(|_| crate::app::restart::restart())
+                .child(
+                    label()
+                        .text("Sign in again")
+                        .font_size(13.)
+                        .font_weight(FontWeight::MEDIUM)
+                        .color(c.error),
+                ),
+        )
+        .into()
 }

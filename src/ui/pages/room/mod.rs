@@ -13,8 +13,6 @@ mod timeline_view;
 mod ui_ctx;
 mod use_room_timeline;
 
-use std::sync::atomic::{AtomicU64, Ordering};
-
 use freya::prelude::*;
 
 use action_popup_overlay::action_popup_overlay;
@@ -28,6 +26,7 @@ use timeline_view::TimelineView;
 use ui_ctx::{RoomUiCtx, use_provide_room_ui_ctx};
 use use_room_timeline::use_room_timeline;
 
+use crate::logging::{PERF, RenderTimer};
 use crate::ui::components::{MediaViewer, UserPopupOverlay};
 use crate::utils::matrix::my_user_id;
 use crate::utils::use_app_colors;
@@ -59,11 +58,8 @@ impl Component for RoomPage {
         let c = use_app_colors();
         let room_id = self.room_id.clone();
 
-        use_hook(|| {
-            static MOUNTS: AtomicU64 = AtomicU64::new(0);
-            let n = MOUNTS.fetch_add(1, Ordering::Relaxed) + 1;
-            println!("[ROOMMOUNT] #{n} room={room_id}");
-        });
+        let _timer = RenderTimer::new("RoomPage");
+        use_hook(|| tracing::debug!(target: PERF, room_id, "mount RoomPage"));
 
         let ui = use_provide_room_ui_ctx();
         let focus_event_id = use_hook(|| take_focus_event(&room_id));

@@ -1,4 +1,5 @@
 pub mod app;
+pub mod logging;
 pub mod ui;
 pub mod utils;
 
@@ -13,6 +14,8 @@ pub fn run_desktop() {
     use freya::prelude::*;
     #[cfg(feature = "perf-overlay")]
     use freya_metrics_plugin::MetricsPlugin;
+
+    logging::init();
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()

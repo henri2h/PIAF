@@ -17,9 +17,7 @@ pub static PUSH_RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
 
 #[unsafe(no_mangle)]
 fn android_main(droid_app: AndroidApp) {
-    android_logger::init_once(
-        android_logger::Config::default().with_max_level(log::LevelFilter::Debug),
-    );
+    crate::logging::init();
 
     let data_path = droid_app
         .internal_data_path()

@@ -174,6 +174,17 @@ Avatar and display-name lookups use `freya-query` for caching. Implement `QueryC
 
 All colors are Material Design 3 tokens as `(u8, u8, u8)` RGB tuples: `PRIMARY`, `ON_SURFACE`, `ON_SURFACE_VARIANT`, `ERROR`, `OUTLINE_VARIANT`, etc. The `Ripple` component from `freya-material-design` is the standard interactive feedback for tappable items. Use `Overflow::Clip` on the outer container.
 
+## Logging
+
+Use `tracing` (`tracing::info!` etc.), never `println!`. Setup in `src/logging.rs`: desktop filters with `RUST_LOG` (default `warn,piaf=info`); Android forwards to logcat through the `log` bridge.
+
+Perf diagnostics use the `piaf::perf` target (`crate::logging::PERF`): hold a `RenderTimer::new("Name")` for a component's whole `render` (trace = every render, debug = slow renders). Sync batches and timeline updates also log there.
+
+```bash
+RUST_LOG=warn,piaf=info,piaf::perf=debug cargo run   # timings
+RUST_LOG=warn,piaf=info,piaf::perf=trace cargo run   # + every render
+```
+
 ## Tests
 
 ```bash
