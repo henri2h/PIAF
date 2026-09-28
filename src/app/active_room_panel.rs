@@ -6,7 +6,7 @@ use super::state::ACTIVE_ROOM_RX;
 use crate::ui::pages::{
     room::RoomPage, room_members::RoomMembers, room_search::RoomSearch, room_settings::RoomSettings,
 };
-use crate::utils::{use_app_colors, use_tokio_track_watcher};
+use crate::utils::{use_app_colors, use_watch};
 
 /// Right panel in wide mode: a room sub-page from the route, else the active room.
 #[derive(PartialEq)]
@@ -15,8 +15,7 @@ pub struct ActiveRoomPanel;
 impl Component for ActiveRoomPanel {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let room_tick: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(ACTIVE_ROOM_RX.get().expect("not initialized"), room_tick);
+        let active_room = use_watch(ACTIVE_ROOM_RX.get().expect("not initialized"));
 
         let route = use_route::<Route>();
 
@@ -45,16 +44,12 @@ impl Component for ActiveRoomPanel {
             _ => {}
         }
 
-        let active_room = match route {
+        let room_id = match route {
             Route::RoomPage { room_id } => Some(room_id),
-            _ => ACTIVE_ROOM_RX
-                .get()
-                .expect("not initialized")
-                .borrow()
-                .clone(),
+            _ => active_room.read().clone(),
         };
 
-        if let Some(room_id) = active_room {
+        if let Some(room_id) = room_id {
             rect()
                 .key(room_id.clone())
                 .expanded()

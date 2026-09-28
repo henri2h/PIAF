@@ -2,7 +2,7 @@ use freya::prelude::*;
 use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 
-use crate::ui::pages::home::{ActiveRoomCtx, room_list_item::RoomListItem};
+use crate::ui::pages::home::room_list_item::{RoomListItem, RoomSummary};
 use crate::utils::queries::FetchMutualRooms;
 use crate::{
     Route,
@@ -33,12 +33,6 @@ impl Component for UserPopupOverlay {
         let info_opt = self.open.read().clone();
 
         let mut action_loading: State<bool> = use_state(|| false);
-
-        // Provide a dummy ActiveRoomCtx so RoomListItem works inside the popup.
-        let dummy_active: State<Option<String>> = use_state(|| None);
-        use_hook(move || {
-            provide_context_for_scope_id(ActiveRoomCtx(dummy_active), ScopeId::ROOT);
-        });
 
         // Hooks must always be called; use empty key when no user is selected.
         let user_id_key = info_opt
@@ -128,11 +122,12 @@ impl Component for UserPopupOverlay {
                             ScrollView::new()
                                 .width(Size::fill())
                                 .height(Size::px(240.))
-                                .children(
-                                    common_rooms
-                                        .into_iter()
-                                        .map(|room| RoomListItem { room }.into_element()),
-                                ),
+                                .children(common_rooms.into_iter().map(|room| {
+                                    RoomListItem {
+                                        summary: RoomSummary::new(room),
+                                    }
+                                    .into_element()
+                                })),
                         )
                 }))
                 // ── DM button ─────────────────────────────────────────────────

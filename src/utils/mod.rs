@@ -28,44 +28,53 @@ use tokio::sync::watch;
 use const_values::AppColors;
 use freya::prelude::use_theme;
 
-/// Safe replacement for `freya::sdk::use_track_watcher`.
+/// Calls `on_change` on the UI executor with each new value of a tokio watch channel.
 ///
-/// The original runs `changed().await` in a Freya (smol) spawn. Tokio's
-/// cooperative budget check (`poll_proceed`) fires the Freya task waker on
-/// every poll, creating a 100% CPU spin loop whenever the channel is active.
-///
-/// This version runs `changed()` in a real `tokio::task::spawn` and signals
-/// back via an executor-agnostic `futures::channel::mpsc`. The Freya spawn
-/// only reads from that channel and increments `tick`, which triggers the
-/// re-render.
-pub fn use_tokio_track_watcher<T: Send + Sync + 'static>(
-    watcher: &watch::Receiver<T>,
-    mut tick: State<u64>,
+/// `changed()` is awaited in a tokio task: polled from Freya's smol executor,
+/// tokio's coop budget re-wakes the task on every poll and spins at 100% CPU.
+/// Bound to the calling component: when it unmounts, Freya drops the UI task,
+/// which drops `_stop` and ends the tokio task right away.
+pub fn bridge_watch<T: Clone + Send + Sync + 'static>(
+    rx: &watch::Receiver<T>,
+    mut on_change: impl FnMut(T) + 'static,
 ) {
-    use_hook(|| {
-        eprintln!("[piaf] use_tokio_track_watcher: subscribing");
-        let mut watcher = watcher.clone();
-        watcher.mark_unchanged();
-        let (tx, mut rx_chan) = futures::channel::mpsc::unbounded::<()>();
-        tokio::task::spawn(async move {
-            while watcher.changed().await.is_ok() {
-                eprintln!("[piaf] use_tokio_track_watcher: watch fired");
-                if tx.unbounded_send(()).is_err() {
-                    eprintln!("[piaf] use_tokio_track_watcher: mpsc send failed, stopping");
-                    break;
+    let mut rx = rx.clone();
+    rx.mark_unchanged();
+    let (tx, mut values) = futures::channel::mpsc::unbounded::<T>();
+    let (_stop, mut stopped) = futures::channel::oneshot::channel::<()>();
+    tokio::task::spawn(async move {
+        loop {
+            tokio::select! {
+                changed = rx.changed() => {
+                    if changed.is_err() { break; }
+                    let value = rx.borrow_and_update().clone();
+                    if tx.unbounded_send(value).is_err() { break; }
                 }
+                _ = &mut stopped => break,
             }
-            eprintln!("[piaf] use_tokio_track_watcher: watch task ended");
-        });
-        spawn(async move {
-            while rx_chan.next().await.is_some() {
-                let new_val = *tick.read() + 1;
-                *tick.write() += 1;
-                eprintln!("[piaf] use_tokio_track_watcher: tick -> {new_val}");
-            }
-            eprintln!("[piaf] use_tokio_track_watcher: tick task ended");
-        });
+        }
     });
+    spawn(async move {
+        let _stop = _stop;
+        while let Some(value) = values.next().await {
+            on_change(value);
+        }
+    });
+}
+
+/// Mirrors a tokio watch channel into reactive state.
+pub fn use_watch<T: Clone + Send + Sync + 'static>(rx: &watch::Receiver<T>) -> State<T> {
+    let mut state = use_state(|| rx.borrow().clone());
+    use_hook(|| bridge_watch(rx, move |value| state.set(value)));
+    state
+}
+
+/// Counts changes of a watch channel, for "something changed" signals like sync.
+/// Useful as a memo key.
+pub fn use_watch_tick<T: Clone + Send + Sync + 'static>(rx: &watch::Receiver<T>) -> State<u64> {
+    let mut tick = use_state(|| 0u64);
+    use_hook(|| bridge_watch(rx, move |_| *tick.write() += 1));
+    tick
 }
 
 /// Memoizes an expensive computation across renders, recomputing only when

@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use crate::REACTIONS_RX;
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::utils::{ReceivedReaction, format_timestamp, use_app_colors};
+use crate::utils::{ReceivedReaction, format_timestamp, use_app_colors, use_watch};
 
 #[derive(PartialEq)]
 pub struct ReactionsPage {}
@@ -13,17 +13,8 @@ pub struct ReactionsPage {}
 impl Component for ReactionsPage {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let tick: State<u64> = use_state(|| 0u64);
-        crate::utils::use_tokio_track_watcher(
-            REACTIONS_RX.get().expect("REACTIONS_RX not initialized"),
-            tick,
-        );
-
-        let reactions = REACTIONS_RX
-            .get()
-            .expect("REACTIONS_RX not initialized")
-            .borrow()
-            .clone();
+        let reactions = use_watch(REACTIONS_RX.get().expect("not initialized"));
+        let reactions = reactions.read().clone();
 
         rect()
             .vertical()

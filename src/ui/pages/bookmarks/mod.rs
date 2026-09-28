@@ -11,7 +11,7 @@ use crate::utils::bookmarks::{
     BookmarkEntry, BookmarkList, delete_list, mutate_bookmarks, remove_entry, rename_list,
 };
 use crate::utils::const_values::AppColors;
-use crate::utils::{format_timestamp, use_app_colors};
+use crate::utils::{format_timestamp, use_app_colors, use_watch};
 
 #[derive(PartialEq)]
 pub struct BookmarksPage {}
@@ -19,18 +19,8 @@ pub struct BookmarksPage {}
 impl Component for BookmarksPage {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let tick: State<u64> = use_state(|| 0u64);
-        crate::utils::use_tokio_track_watcher(
-            BOOKMARKS_RX.get().expect("BOOKMARKS_RX not initialized"),
-            tick,
-        );
-
-        let lists = BOOKMARKS_RX
-            .get()
-            .expect("BOOKMARKS_RX not initialized")
-            .borrow()
-            .lists
-            .clone();
+        let bookmarks = use_watch(BOOKMARKS_RX.get().expect("not initialized"));
+        let lists = bookmarks.read().lists.clone();
 
         let selected: State<Option<String>> = use_state(|| None);
         let manage_open: State<bool> = use_state(|| false);

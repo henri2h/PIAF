@@ -55,7 +55,15 @@ FOCUS_EVENT_TX/RX: OnceLock<watch::Option<(String, String)>> // (room_id, event_
 WIDE_MODE: AtomicBool                                        // Current layout mode
 ```
 
-`FOCUS_EVENT_TX/RX` passes a search-result target event to `RoomPage` across a navigation. It is **always cleared unconditionally** by the first `RoomPage` render after it is set (whether or not the room_id matches), which prevents stale events from persisting if navigation is aborted. `RoomPage` also installs a watcher in `use_hook` to handle re-focus when the same room is already mounted (wide mode).
+`FOCUS_EVENT_TX/RX` passes a search-result target event to `RoomPage` across a navigation. Handled in `room/focus.rs`: `take_focus_event` runs once when a `RoomPage` mounts and **always clears** the channel (whether or not the room_id matches), so an aborted navigation can't leak a stale focus. `watch_focus_events` (installed by `TimelineView`) handles re-focus when the same room is already mounted (wide mode) and clears the channel after handling.
+
+### Room page (`src/ui/pages/room/`)
+
+- `timeline_task.rs` — tokio side: builds the matrix timeline, applies diffs, runs `MsgAction`s. UI talks to it through `TimelineHandle` (`paginate()`, `actions()`); dropping the handle stops the task.
+- `use_room_timeline.rs` — hook returning `RoomTimeline { handle, state }`; `state` is a `Copy` bundle of `State`s (messages, loading, paginating, …). The smol receive loop must never hold the handle.
+- `timeline_view.rs` — `TimelineView`: scroll view, rows, row height measuring, pagination triggers. Only it reads `messages`, so timeline updates don't re-render `RoomPage`.
+- `ui_ctx.rs` — `RoomUiCtx` (popup/overlay states) provided as context; rows use `use_room_ui_ctx()` instead of props.
+- The `ScrollController` and `pending_focus` live in `RoomPage` scope so they survive the media viewer unmounting `TimelineView`.
 
 All OnceLocks are initialized by `app::state::init()` before `launch()` (desktop and Android), so `.get()` always returns `Some`. Call with `.expect("not initialized")` — never wrap in `if let Some(...)`.
 
@@ -83,7 +91,12 @@ Three search functions:
 - `search_users_remote(query)` — calls `client.search_users()` (network)
 - `search_messages_remote(query, next_batch)` — calls Matrix search API with pagination
 
-Room list logic lives in `src/ui/pages/home/room_list_model.rs`: `RoomFilter`, `sort_rooms_by_recency` (shared by search and the room list), `all_rooms_sorted`, `visible_rooms`.
+Room list logic lives in `src/ui/pages/home/room_list_model.rs`:
+- `RoomSummary`: per-room fields read once per sync (name, latest_ts, unread counts, dm, muted). `RoomListItem { summary }` is memoized on it (`PartialEq` ignores the carried `Room`); only the preview text is derived lazily in the row.
+- `all_room_summaries()` (sorted), `visible_rooms(summaries, filter, mailbox)`, `RoomFilter`.
+- `sort_rooms_by_recency(&mut Vec<Room>)` for code working on raw `Room`s (search).
+
+Row gestures are in `home/row_interaction/{desktop,android}.rs`, same API on both: `use_row_interaction()`, `is_highlighted()`, `feedback()`, `attach()`. Put platform differences there, not `#[cfg]` in `RoomListItem`.
 
 ### Shared helpers
 
@@ -109,11 +122,11 @@ impl Component for MyComponent {
 }
 ```
 
-Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use_side_effect_with_deps`, `use_tokio_track_watcher` (re-renders on watch channel change).
+Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use_side_effect_with_deps`, and ours in `utils/mod.rs`: `use_watch(rx) -> State<T>` (mirrors a tokio watch channel), `use_watch_tick(rx) -> State<u64>` (change counter, for memo keys), `bridge_watch(rx, on_change)` (callback form). Never await `watch::Receiver::changed()` from a Freya `spawn` (tokio coop budget makes it spin at 100% CPU); these helpers await it on tokio and stop when the component unmounts.
 
 #### Hooks rules (Freya)
 
-**Hooks must be called unconditionally at the top of `render`, every time, in the same order.** Never inside `if`/`else`, loops, or after an early `return`. This includes `use_state`, `use_hook`, `use_query`, and `use_tokio_track_watcher`.
+**Hooks must be called unconditionally at the top of `render`, every time, in the same order.** Never inside `if`/`else`, loops, or after an early `return`. This includes `use_state`, `use_hook`, `use_query`, `use_watch` and `use_watch_tick`.
 
 **`Size::flex()` requires `.content(Content::Flex)` on the parent** — any rect whose children use `Size::flex(n)` must have `.content(Content::Flex)`, or the flex sizing is silently ignored.
 

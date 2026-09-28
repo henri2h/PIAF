@@ -4,10 +4,7 @@ mod filter_chip;
 mod room_list;
 pub mod room_list_item;
 mod room_list_model;
-#[cfg(not(target_os = "android"))]
-mod room_row_actions;
-#[cfg(target_os = "android")]
-mod room_swipe;
+mod row_interaction;
 pub mod search;
 mod search_panel;
 mod search_tile;
@@ -21,7 +18,7 @@ use room_list::RoomList;
 use room_list_model::RoomFilter;
 use search_panel::SearchResults;
 
-use crate::utils::{use_app_colors, use_tokio_track_watcher};
+use crate::utils::{use_app_colors, use_watch, use_watch_tick};
 use crate::{ACTIVE_ROOM_RX, WIDE_MODE};
 
 // ---------------------------------------------------------------------------
@@ -32,33 +29,10 @@ use crate::{ACTIVE_ROOM_RX, WIDE_MODE};
 #[derive(Clone, Copy)]
 pub struct ActiveRoomCtx(pub State<Option<String>>);
 
-/// Mirrors ACTIVE_ROOM_RX into reactive state and provides it as context, so
-/// RoomListItem re-renders in-place (highlighting the active room) without
-/// remounting VirtualScrollView, which would reset scroll position.
+/// Mirrors ACTIVE_ROOM_RX as context so rows re-render in place (highlight)
+/// without remounting VirtualScrollView, which would reset scroll position.
 fn provide_active_room_context() {
-    let active_room: State<Option<String>> =
-        use_state(|| ACTIVE_ROOM_RX.get().and_then(|rx| rx.borrow().clone()));
-    use_hook(|| {
-        let mut active_room = active_room;
-        if let Some(rx) = ACTIVE_ROOM_RX.get() {
-            let (tx, mut chan) = futures::channel::mpsc::unbounded::<Option<String>>();
-            let mut rx = rx.clone();
-            tokio::task::spawn(async move {
-                while rx.changed().await.is_ok() {
-                    let val = rx.borrow().clone();
-                    if tx.unbounded_send(val).is_err() {
-                        break;
-                    }
-                }
-            });
-            spawn(async move {
-                use futures::StreamExt;
-                while let Some(val) = chan.next().await {
-                    *active_room.write() = val;
-                }
-            });
-        }
-    });
+    let active_room = use_watch(ACTIVE_ROOM_RX.get().expect("not initialized"));
     use_provide_context(|| ActiveRoomCtx(active_room));
 }
 
@@ -79,21 +53,9 @@ impl Component for HomePage {
         let filter: State<RoomFilter> = use_state(|| RoomFilter::All);
         let chips_visible: State<bool> = use_state(|| false);
 
-        // Re-render on every sync tick so room ordering stays current.
-        let sync_tick: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(
-            crate::SYNC_RX.get().expect("SYNC_RX not initialized"),
-            sync_tick,
-        );
-
-        // Re-render whenever a room's recontact/archived state changes.
-        let mailbox_tick: State<u64> = use_state(|| 0u64);
-        use_tokio_track_watcher(
-            crate::ROOM_MAILBOX_RX
-                .get()
-                .expect("ROOM_MAILBOX_RX not initialized"),
-            mailbox_tick,
-        );
+        // Room order changes on sync; archive/recontact on mailbox updates.
+        let sync_tick = use_watch_tick(crate::SYNC_RX.get().expect("not initialized"));
+        let mailbox_tick = use_watch_tick(crate::ROOM_MAILBOX_RX.get().expect("not initialized"));
 
         let is_wide = WIDE_MODE.load(Ordering::Relaxed);
         let search_active = !search.read().trim().is_empty();

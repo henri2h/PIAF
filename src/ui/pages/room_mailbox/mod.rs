@@ -5,7 +5,7 @@ use freya_router::prelude::RouterContext;
 use matrix_sdk::Room;
 
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::ui::pages::home::room_list_item::RoomListItem;
+use crate::ui::pages::home::room_list_item::{RoomListItem, RoomSummary};
 use crate::utils::use_app_colors;
 
 /// Shared list view for the Recontact and Archived pages: a title, back
@@ -70,7 +70,9 @@ impl Component for MailboxRoomList {
                     .width(Size::fill())
                     .height(Size::flex(1.0));
                 for room in self.rooms.clone() {
-                    scroll = scroll.child(RoomListItem { room });
+                    scroll = scroll.child(RoomListItem {
+                        summary: RoomSummary::new(room),
+                    });
                 }
                 scroll.into_element()
             })

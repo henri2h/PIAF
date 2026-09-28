@@ -2,27 +2,30 @@ use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use freya::prelude::*;
 use matrix_sdk::ruma::events::room::message::MessageType;
-use matrix_sdk_ui::timeline::{TimelineDetails, TimelineItem, TimelineItemContent};
+use matrix_sdk_ui::timeline::{TimelineDetails, TimelineItemContent};
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::bookmarks::BookmarkEntry;
 use crate::utils::const_values::AppColors;
 
-use super::{MsgAction, message_action_popup};
+use super::{MsgAction, RoomUiCtx, message_action_popup};
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn action_popup_overlay(
-    mut popup_state: State<Option<Arc<TimelineItem>>>,
+    ui: RoomUiCtx,
     room_id: String,
     room_name: String,
     my_user_id: Option<String>,
     action_tx: Arc<UnboundedSender<MsgAction>>,
-    mut reply_info: State<Option<(String, String, String)>>,
-    mut edit_info: State<Option<(String, String)>>,
-    mut detail_modal: State<Option<Arc<TimelineItem>>>,
-    mut bookmark_picker: State<Option<BookmarkEntry>>,
     c: AppColors,
 ) -> Element {
+    let RoomUiCtx {
+        action_popup: mut popup_state,
+        mut reply_info,
+        mut edit_info,
+        mut detail_modal,
+        mut bookmark_picker,
+        ..
+    } = ui;
     use message_action_popup::PopupAction;
 
     let popup_item = popup_state.read().clone();

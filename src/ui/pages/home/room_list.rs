@@ -1,7 +1,7 @@
 use freya::prelude::*;
 
-use super::room_list_item::RoomListItem;
-use super::room_list_model::{RoomFilter, all_rooms_sorted, visible_rooms};
+use super::room_list_item::{ROOM_ROW_HEIGHT, RoomListItem};
+use super::room_list_model::{RoomFilter, RoomSummary, all_room_summaries, visible_rooms};
 use crate::ROOM_MAILBOX_RX;
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::CLIENT;
@@ -32,8 +32,10 @@ impl Component for RoomList {
 
         // Refetch + sort only on sync; mailbox changes only affect filtering.
         let fetch_sort_start = std::time::Instant::now();
-        let rooms: std::rc::Rc<Vec<matrix_sdk::Room>> =
-            crate::utils::use_keyed_cache(self.sync_tick, || std::rc::Rc::new(all_rooms_sorted()));
+        let rooms: std::rc::Rc<Vec<RoomSummary>> = crate::utils::use_keyed_cache(
+            self.sync_tick,
+            || std::rc::Rc::new(all_room_summaries()),
+        );
         let fetch_sort_elapsed = fetch_sort_start.elapsed();
 
         let mailbox = ROOM_MAILBOX_RX
@@ -88,16 +90,16 @@ impl Component for RoomList {
             })
             .child(
                 VirtualScrollView::new_with_data(list_key, move |item, _| {
-                    let Some(room) = filtered_rooms.get(item.index) else {
+                    let Some(summary) = filtered_rooms.get(item.index) else {
                         return rect().into_element();
                     };
-                    rect()
-                        .width(Size::fill())
-                        .child(RoomListItem { room: room.clone() })
-                        .into()
+                    RoomListItem {
+                        summary: summary.clone(),
+                    }
+                    .into_element()
                 })
                 .length(rooms_len)
-                .item_size(80.)
+                .item_size(ROOM_ROW_HEIGHT)
                 .height(Size::fill())
                 .scroll_controller(scroll_controller)
                 .on_sized(move |e: Event<SizedEventData>| {

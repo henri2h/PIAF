@@ -3,14 +3,57 @@ use freya_material_design::prelude::Ripple;
 
 use crate::utils::const_values::AppColors;
 
-/// Small recontact/archive icon buttons revealed when a room row is hovered
-/// on desktop. Mobile gets a swipe gesture instead — see `room_swipe`.
-///
-/// `recontact_hovered`/`archive_hovered` are owned by the caller (`RoomListItem`)
-/// and must come from `use_state` called unconditionally there — this function
-/// itself is only invoked while the row is hovered, so any hook called in here
-/// would be a conditional hook call and panic at runtime.
-pub fn hover_action_buttons(
+/// Desktop row: hover highlight, ripple, and recontact/archive buttons on hover.
+#[derive(Clone, Copy)]
+pub struct RowInteraction {
+    hovered: State<bool>,
+    recontact_hovered: State<bool>,
+    archive_hovered: State<bool>,
+}
+
+pub fn use_row_interaction() -> RowInteraction {
+    RowInteraction {
+        hovered: use_state(|| false),
+        recontact_hovered: use_state(|| false),
+        archive_hovered: use_state(|| false),
+    }
+}
+
+impl RowInteraction {
+    pub fn is_highlighted(&self) -> bool {
+        *self.hovered.read()
+    }
+
+    pub fn feedback(&self, inner: Rect) -> Element {
+        Ripple::new()
+            .width(Size::fill())
+            .height(Size::fill())
+            .child(inner)
+            .into()
+    }
+
+    pub fn attach(self, outer: Rect, room_id: String, c: AppColors, highlighted: Element) -> Rect {
+        let mut hovered = self.hovered;
+        let hover_actions = hovered.read().then(|| {
+            hover_action_buttons(c, &room_id, self.recontact_hovered, self.archive_hovered)
+        });
+        outer
+            .on_pointer_over(move |_| {
+                if !*hovered.peek() {
+                    hovered.set(true);
+                }
+            })
+            .on_pointer_out(move |_| {
+                if *hovered.peek() {
+                    hovered.set(false);
+                }
+            })
+            .child(highlighted)
+            .maybe_child(hover_actions)
+    }
+}
+
+fn hover_action_buttons(
     c: AppColors,
     room_id: &str,
     recontact_hovered: State<bool>,

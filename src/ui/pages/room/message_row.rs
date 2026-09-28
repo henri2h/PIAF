@@ -10,6 +10,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use freya_query::prelude::QueryCapability;
 
+use super::ui_ctx::{RoomUiCtx, use_room_ui_ctx};
 use super::{MsgAction, Reaction, ReactionSender};
 use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, ViewerSource};
 use crate::utils::matrix::save_media_to_downloads;
@@ -41,11 +42,7 @@ pub struct MessageRow {
     pub date_label: Option<String>,
     pub my_user_id: Option<String>,
     pub action_tx: Arc<UnboundedSender<MsgAction>>,
-    pub image_viewer: State<Option<String>>,
-    pub action_popup: State<Option<Arc<TimelineItem>>>,
-    pub detail_modal: State<Option<Arc<TimelineItem>>>,
     pub is_dm: bool,
-    pub user_popup: State<Option<UserPopupInfo>>,
 }
 
 impl PartialEq for MessageRow {
@@ -54,7 +51,6 @@ impl PartialEq for MessageRow {
             && self.date_label == other.date_label
             && self.is_dm == other.is_dm
             && Arc::ptr_eq(&self.action_tx, &other.action_tx)
-            && self.user_popup == other.user_popup
     }
 }
 
@@ -63,13 +59,16 @@ impl Component for MessageRow {
         let c = use_app_colors();
         let item = self.item.clone();
         let action_tx = self.action_tx.clone();
-        let mut image_viewer = self.image_viewer;
+        let RoomUiCtx {
+            mut image_viewer,
+            mut action_popup,
+            mut detail_modal,
+            mut user_popup,
+            ..
+        } = use_room_ui_ctx();
         let is_dm = self.is_dm;
         let my_user_id = self.my_user_id.clone();
-        let mut action_popup = self.action_popup;
-        let mut detail_modal = self.detail_modal;
         let date_label = self.date_label.clone();
-        let mut user_popup = self.user_popup;
         #[cfg(target_os = "android")]
         let mut press_gen: State<u32> = use_state(|| 0u32);
 
