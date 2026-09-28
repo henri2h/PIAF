@@ -38,11 +38,14 @@ impl SwipeState {
         let mut long_pressed = self.long_pressed;
         let next_gen = *press_gen.read() + 1;
         *press_gen.write() = next_gen;
+        // `timer` and not `tokio::time::sleep`: this runs on Freya's smol
+        // executor, which has no tokio timer in context, so a tokio sleep
+        // kills the task and the long press never fires.
         spawn(async move {
-            tokio::time::sleep(LONG_PRESS_DELAY).await;
+            timer(LONG_PRESS_DELAY).await;
             if *press_gen.read() == next_gen {
                 *long_pressed.write() = true;
-                tokio::time::sleep(LONG_PRESS_HIGHLIGHT).await;
+                timer(LONG_PRESS_HIGHLIGHT).await;
                 if *press_gen.read() == next_gen {
                     *long_pressed.write() = false;
                 }
@@ -72,7 +75,18 @@ pub fn attach_swipe(
     let reveal_recontact = offset > 4.0;
     let reveal_archive = offset < -4.0;
 
+    // Absolutely positioned so the row is drawn *over* these rather than
+    // under them: as normal children both would take a share of the row's
+    // height, which showed the two panels split down the middle with the
+    // message itself pushed out of view.
     let action_panels = rect()
+        .position(
+            Position::new_absolute()
+                .top(0.)
+                .bottom(0.)
+                .left(0.)
+                .right(0.),
+        )
         .width(Size::fill())
         .height(Size::fill())
         .horizontal()
@@ -140,9 +154,14 @@ pub fn attach_swipe(
 
             offset_x.set(dx.clamp(-MAX_OFFSET, MAX_OFFSET) as f32);
         })
-        .on_touch_end(move |_: Event<TouchEventData>| {
+        .on_touch_end(move |e: Event<TouchEventData>| {
             state.cancel_long_press();
             if *is_swiping.peek() {
+                // The lift that ends a swipe is not a tap: `TouchEnd` cancels
+                // `PointerPress`, so without this the row's `on_press` also
+                // fires and the swipe opens the room it just archived.
+                e.prevent_default();
+
                 let dx = *offset_x.peek();
                 if dx > COMMIT_THRESHOLD {
                     let room_id = room_id_recontact.clone();
@@ -173,7 +192,9 @@ pub fn attach_swipe(
                 .width(Size::fill())
                 .height(Size::fill())
                 .overflow(Overflow::Clip)
-                .child(action_panels)
+                // Only while a swipe is actually in progress: at rest the row
+                // covers them completely, so drawing them is pure cost.
+                .maybe_child((reveal_recontact || reveal_archive).then(|| action_panels))
                 .child(shifted),
         )
 }

@@ -211,8 +211,15 @@ impl Component for RoomListItem {
         let room_is_muted = room.cached_user_defined_notification_mode()
             == Some(matrix_sdk::notification_settings::RoomNotificationMode::Mute);
 
+        // `try_read` instead of `read`: the context may point at a State whose
+        // owning scope was dropped (e.g. the dummy ctx UserPopupOverlay installs
+        // at ScopeId::ROOT outlives the popup), which would panic on `read()`.
         let is_active = try_consume_context::<ActiveRoomCtx>()
-            .map(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()))
+            .and_then(|ctx| {
+                ctx.0
+                    .try_read()
+                    .map(|v| v.as_deref() == Some(room_id.as_str()))
+            })
             .unwrap_or(false);
         #[cfg(target_os = "android")]
         let swipe_state = super::room_swipe::use_swipe_state();

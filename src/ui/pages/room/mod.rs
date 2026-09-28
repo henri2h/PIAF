@@ -14,10 +14,10 @@ use message_row::MessageRow;
 
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 const DEFAULT_MSG_HEIGHT: f32 = 60.0;
 
-use eyeball_im::VectorDiff;
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 use futures::StreamExt;
@@ -90,7 +90,7 @@ fn spawn_timeline_task(
     init_tx: futures::channel::oneshot::Sender<(String, bool, Vec<Arc<TimelineItem>>)>,
     mut page_rx: UnboundedReceiver<()>,
     mut action_rx: UnboundedReceiver<MsgAction>,
-    update_tx: UnboundedSender<(Vec<Arc<TimelineItem>>, bool)>,
+    update_tx: UnboundedSender<Vec<Arc<TimelineItem>>>,
     typing_tx: UnboundedSender<Vec<String>>,
     reached_start_tx: UnboundedSender<()>,
 ) {
@@ -199,9 +199,9 @@ fn spawn_timeline_task(
                 }
                 diffs_opt = stream.next() => {
                     let Some(diffs) = diffs_opt else { break; };
-                    let has_new = diffs.iter().any(|d| matches!(d, VectorDiff::PushBack { .. }));
+
                     for diff in diffs { timeline::apply_diff(&mut tl_items, diff); }
-                    let _ = update_tx.send((tl_items.clone(), has_new));
+                    let _ = update_tx.send(tl_items.clone());
                 }
             }
         }
@@ -210,16 +210,13 @@ fn spawn_timeline_task(
 
 async fn run_smol_loop(
     mut reached_start_rx: UnboundedReceiver<()>,
-    mut update_rx: UnboundedReceiver<(Vec<Arc<TimelineItem>>, bool)>,
+    mut update_rx: UnboundedReceiver<Vec<Arc<TimelineItem>>>,
     mut typing_rx: UnboundedReceiver<Vec<String>>,
     mut at_start: State<bool>,
     mut paginating: State<bool>,
     mut auto_fill: State<bool>,
     mut messages: State<Vec<Arc<TimelineItem>>>,
-    pinned_to_bottom: State<bool>,
     mut typing_users: State<Vec<String>>,
-    heights: State<HashMap<String, f32>>,
-    mut scroll_controller: ScrollController,
 ) {
     loop {
         tokio::select! {
@@ -229,39 +226,18 @@ async fn run_smol_loop(
                 *auto_fill.write() = false;
             }
             update_opt = update_rx.recv() => {
-                let Some((msgs, has_new)) = update_opt else { break; };
+                let Some(msgs) = update_opt else { break; };
                 let old_len = messages.read().len();
                 let new_len = msgs.len();
-                let prepend_count = new_len.saturating_sub(old_len);
 
-                if prepend_count > 0 && !has_new {
-                    let estimated: f32 = {
-                        let h = heights.read();
-                        msgs[..prepend_count]
-                            .iter()
-                            .map(|item| {
-                                item.as_event()
-                                    .and_then(|e| e.event_id())
-                                    .map(|id| id.to_string())
-                                    .and_then(|id| h.get(&id))
-                                    .copied()
-                                    .unwrap_or(DEFAULT_MSG_HEIGHT)
-                            })
-                            .sum()
-                    };
-                    let (_, y) = scroll_controller.into();
-                    *messages.write() = msgs;
-                    scroll_controller.scroll_to_y(y - estimated as i32);
-                } else {
-                    *messages.write() = msgs;
-                }
+                // No scroll bookkeeping here: the view is anchored to the
+                // newest message, so prepended history lands above without
+                // moving anything on screen.
+                *messages.write() = msgs;
 
                 *paginating.write() = false;
                 if new_len == old_len {
                     *auto_fill.write() = false;
-                }
-                if has_new && *pinned_to_bottom.read() {
-                    scroll_controller.scroll_to(ScrollPosition::End, Direction::Vertical);
                 }
             }
             typing_opt = typing_rx.recv() => {
@@ -277,15 +253,11 @@ fn try_auto_fill(
     content_h: f32,
     auto_fill: State<bool>,
     mut paginating: State<bool>,
-    mut anchor_info: State<Option<(i32, f32)>>,
-    scroll_controller: ScrollController,
     paginate_tx: &Arc<UnboundedSender<()>>,
 ) {
     let should_fill = *auto_fill.read();
     let is_paging = *paginating.read();
     if should_fill && !is_paging && vp_h > 0.0 && content_h > 0.0 && content_h < vp_h {
-        let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
-        *anchor_info.write() = Some((y, content_h));
         *paginating.write() = true;
         let _ = paginate_tx.send(());
     }
@@ -305,13 +277,21 @@ impl Component for RoomPage {
         let c = use_app_colors();
         let room_id = self.room_id.clone();
 
+        {
+            let rid = room_id.clone();
+            use_hook(move || {
+                static MOUNTS: AtomicU64 = AtomicU64::new(0);
+                let n = MOUNTS.fetch_add(1, Ordering::Relaxed) + 1;
+                println!("[ROOMMOUNT] #{n} room={rid}");
+            });
+        }
+
         let mut messages: State<Vec<Arc<TimelineItem>>> = use_state(|| vec![]);
         let mut room_name: State<String> = use_state(|| room_id.clone());
         let mut is_dm: State<bool> = use_state(|| false);
         let mut loading: State<bool> = use_state(|| true);
         let mut paginating: State<bool> = use_state(|| false);
         let at_start: State<bool> = use_state(|| false);
-        let mut pinned_to_bottom: State<bool> = use_state(|| true);
         let edit_info: State<Option<(String, String)>> = use_state(|| None);
         let reply_info: State<Option<(String, String, String)>> = use_state(|| None);
         let image_viewer: State<Option<String>> = use_state(|| None);
@@ -321,7 +301,6 @@ impl Component for RoomPage {
             use_state(|| None);
         let user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
         let mut content_height: State<f32> = use_state(|| 0.0f32);
-        let mut anchor_info: State<Option<(i32, f32)>> = use_state(|| None);
         let mut auto_fill: State<bool> = use_state(|| false);
         let mut viewport_height: State<f32> = use_state(|| 0.0f32);
         let mut heights: State<HashMap<String, f32>> = use_state(HashMap::new);
@@ -358,6 +337,14 @@ impl Component for RoomPage {
             } else {
                 ScrollPosition::End
             },
+            // The timeline measures its scroll position from the newest message
+            // rather than the oldest, so backfilled history cannot drag the
+            // conversation out from under the reader, and a room too short to
+            // fill the screen rests on the composer instead of hanging from the
+            // top. Everything this file used to do to fake that — re-snapping
+            // after growth, pre-arming the End sentinel, holding position by
+            // height deltas — is handled by the anchor now.
+            vertical_anchor: ScrollAnchor::Bottom,
             ..Default::default()
         });
 
@@ -409,8 +396,8 @@ impl Component for RoomPage {
                                     })
                             };
                             if let Some(offset) = offset {
+                                println!("[SCROLLSET] refocus -> y={offset}");
                                 scroll_controller.scroll_to_y(offset);
-                                *pinned_to_bottom.write() = false;
                             }
                         }
                     }
@@ -420,7 +407,7 @@ impl Component for RoomPage {
             let (page_tx, page_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
             let (action_tx, action_rx) = tokio::sync::mpsc::unbounded_channel::<MsgAction>();
             let (update_tx, update_rx) =
-                tokio::sync::mpsc::unbounded_channel::<(Vec<Arc<TimelineItem>>, bool)>();
+                tokio::sync::mpsc::unbounded_channel::<Vec<Arc<TimelineItem>>>();
             let (typing_tx, typing_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<String>>();
             let (reached_start_tx, reached_start_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
 
@@ -461,10 +448,7 @@ impl Component for RoomPage {
                     paginating,
                     auto_fill,
                     messages,
-                    pinned_to_bottom,
                     typing_users,
-                    heights,
-                    scroll_controller,
                 )
                 .await;
             });
@@ -472,9 +456,33 @@ impl Component for RoomPage {
             (Arc::new(page_tx), Arc::new(action_tx))
         });
 
-        let paginate_tx_wheel = paginate_tx.clone();
         let paginate_tx_fill = paginate_tx.clone();
         let paginate_tx_inner = paginate_tx.clone();
+        let paginate_tx_scroll = paginate_tx.clone();
+
+        // Backward pagination hangs off the scroll position itself rather than
+        // off input events, so wheel, touch drag, scrollbar and keyboard all
+        // behave identically — `ScrollView` exposes no scroll callback to hook
+        // instead. It used to be driven from `on_wheel` alone, which never
+        // fires for touch: on Android, scrolling up could not load older
+        // messages at all.
+        //
+        // Only the position is `read` (subscribing); everything else is
+        // `peek`ed, so this runs when the view moves rather than whenever the
+        // timeline changes size.
+        use_side_effect(move || {
+            let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
+            println!(
+                "[SCROLLPOS] y={y} natural={:.0} vp={:.0}",
+                *content_height.peek(),
+                *viewport_height.peek(),
+            );
+
+            if y >= -400 && !*paginating.peek() && !*at_start.peek() {
+                *paginating.write() = true;
+                let _ = paginate_tx_scroll.send(());
+            }
+        });
 
         let (compose_key, initial_text) = match edit_info.read().as_ref() {
             Some((eid, body)) => (format!("edit-{eid}"), body.clone()),
@@ -538,6 +546,7 @@ impl Component for RoomPage {
 
         let is_loading = *loading.read();
         let is_paginating = *paginating.read();
+
         let typing_label = {
             let users = typing_users.read();
             match users.len() {
@@ -653,14 +662,18 @@ impl Component for RoomPage {
                             .on_sized(move |e: Event<SizedEventData>| {
                                 let vp_h = e.area.height();
                                 let ch = *content_height.read();
+                                if (*viewport_height.peek() - vp_h).abs() > 0.5 {
+                                    println!(
+                                        "[VIEWPORT] {:.0} -> {vp_h:.0} (natural={ch:.0})",
+                                        *viewport_height.peek()
+                                    );
+                                }
                                 *viewport_height.write() = vp_h;
                                 try_auto_fill(
                                     vp_h,
                                     ch,
                                     auto_fill,
                                     paginating,
-                                    anchor_info,
-                                    scroll_controller,
                                     &paginate_tx_fill,
                                 );
                             })
@@ -672,21 +685,11 @@ impl Component for RoomPage {
                                         rect()
                                             .vertical()
                                             .width(Size::fill())
+                                            .child(
+                                                rect()
+                                            .vertical()
+                                            .width(Size::fill())
                                             .padding(Gaps::new(4., 0., 4., 0.))
-                                            .on_wheel(move |e: Event<WheelEventData>| {
-                                                let (_, y) =
-                                                    Into::<(i32, i32)>::into(scroll_controller);
-                                                if y >= -400
-                                                    && e.delta_y > 0.
-                                                    && !*paginating.read()
-                                                {
-                                                    *paginating.write() = true;
-                                                    *pinned_to_bottom.write() = false;
-                                                    *anchor_info.write() =
-                                                        Some((y, *content_height.read()));
-                                                    let _ = paginate_tx_wheel.send(());
-                                                }
-                                            })
                                             .child(if is_at_start {
                                                 room_start_banner::RoomStartBanner {
                                                     room_id: room_id.clone(),
@@ -750,6 +753,10 @@ impl Component for RoomPage {
                                                                     })
                                                                     .sum()
                                                             };
+                                                            println!(
+                                                                "[SCROLLSET] pending-focus -> y={}",
+                                                                offset as i32
+                                                            );
                                                             scroll_controller
                                                                 .scroll_to_y(offset as i32);
                                                         }
@@ -757,24 +764,39 @@ impl Component for RoomPage {
                                                 }
 
                                                 let new_h = e.inner_sizes.height;
-                                                let maybe_anchor = *anchor_info.read();
-                                                if let Some((old_y, old_h)) = maybe_anchor {
-                                                    let delta = new_h - old_h;
-                                                    if delta > 1.0 {
-                                                        scroll_controller
-                                                            .scroll_to_y(old_y - delta as i32);
-                                                        *anchor_info.write() = None;
+                                                // Any change, not just growth: a prepend can also
+                                                // shrink the timeline (the message that was first
+                                                // loses its date separator), which leaves a stored
+                                                // pixel offset pointing past the new bottom.
+                                                let changed =
+                                                    (new_h - *content_height.read()).abs() > 0.5;
+
+                                                {
+                                                    let prev_h = *content_height.read();
+                                                    let vp_h = *viewport_height.read();
+                                                    let (_, y) =
+                                                        Into::<(i32, i32)>::into(scroll_controller);
+                                                    if (new_h - prev_h).abs() > 0.5 {
+                                                        println!(
+                                                            "[SHIFT] natural {prev_h:.0}->{new_h:.0} d={:+.0} box={:.0} vp={vp_h:.0} y={y}",
+                                                            new_h - prev_h,
+                                                            e.area.height(),
+                                                        );
                                                     }
                                                 }
-                                                *content_height.write() = new_h;
+
+                                                // Guarded so an unconditional write does not
+                                                // schedule a render for every layout pass.
+                                                if changed {
+                                                    *content_height.write() = new_h;
+                                                }
                                                 let vp_h = *viewport_height.read();
+
                                                 try_auto_fill(
                                                     vp_h,
                                                     new_h,
                                                     auto_fill,
                                                     paginating,
-                                                    anchor_info,
-                                                    scroll_controller,
                                                     &paginate_tx_inner,
                                                 );
                                             })
@@ -791,14 +813,23 @@ impl Component for RoomPage {
                                                 let msg_action_tx_rows = msg_action_tx.clone();
                                                 msgs.into_iter()
                                                     .zip(date_labels.into_iter())
-                                                    .enumerate()
-                                                    .map(move |(idx, (item, date_label))| {
+                                                    .map(move |(item, date_label)| {
+                                                        // Virtual items (date dividers, read
+                                                        // markers) have no event id. Keying them
+                                                        // by position meant every prepend shifted
+                                                        // the keys, so rows were recycled into the
+                                                        // wrong elements and the measured heights
+                                                        // were attributed to the wrong messages.
+                                                        // `unique_id` is stable across prepends.
                                                         let key = item
                                                             .as_event()
                                                             .and_then(|e| e.event_id())
                                                             .map(|id| id.to_string())
                                                             .unwrap_or_else(|| {
-                                                                format!("virtual-{}", idx)
+                                                                format!(
+                                                                    "virtual-{}",
+                                                                    item.unique_id().0
+                                                                )
                                                             });
                                                         let my_uid = my_uid.clone();
                                                         rect()
@@ -812,6 +843,12 @@ impl Component for RoomPage {
                                                                         .get(&key)
                                                                         .copied();
                                                                     if old != Some(h) {
+                                                                        if let Some(old_h) = old {
+                                                                            println!(
+                                                                                "[ROWGROW] {key} {old_h:.0}->{h:.0} d={:+.0}",
+                                                                                h - old_h
+                                                                            );
+                                                                        }
                                                                         heights
                                                                             .write()
                                                                             .insert(key.clone(), h);
@@ -834,6 +871,7 @@ impl Component for RoomPage {
                                                             .into_element()
                                                     })
                                             }),
+                                            ),
                                     ),
                             )
                             .into_element()

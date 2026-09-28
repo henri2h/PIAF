@@ -87,6 +87,11 @@ pub async fn toggle_recontact(room_id: &str) {
         .and_then(|rx| rx.borrow().get(room_id).map(|s| s.recontact))
         .unwrap_or(false);
 
+    // Publish before the request, not after: the row is meant to leave the list
+    // the instant it is swiped, and waiting on the homeserver makes the gesture
+    // feel like it did nothing. Rolled back below if the request fails.
+    set_recontact(room_id, !currently_on);
+
     let tag = TagName::from(RECONTACT_TAG);
     let ok = if currently_on {
         room.remove_tag(tag).await.is_ok()
@@ -94,12 +99,24 @@ pub async fn toggle_recontact(room_id: &str) {
         room.set_tag(tag, TagInfo::new()).await.is_ok()
     };
     if !ok {
-        return;
+        set_recontact(room_id, currently_on);
     }
+}
 
+fn set_recontact(room_id: &str, recontact: bool) {
     if let Some(tx) = crate::ROOM_MAILBOX_TX.get() {
         tx.send_modify(|map| {
-            map.entry(room_id.to_string()).or_default().recontact = !currently_on;
+            map.entry(room_id.to_string()).or_default().recontact = recontact;
+        });
+    }
+}
+
+fn set_archived_until(room_id: &str, until_ts: Option<u64>) {
+    if let Some(tx) = crate::ROOM_MAILBOX_TX.get() {
+        tx.send_modify(|map| {
+            map.entry(room_id.to_string())
+                .or_default()
+                .archived_until_ts = until_ts;
         });
     }
 }
@@ -123,20 +140,19 @@ pub async fn archive_room(room_id: &str) {
         .map(|ts| ts.get().into())
         .unwrap_or(0);
 
+    let previous = crate::ROOM_MAILBOX_RX
+        .get()
+        .and_then(|rx| rx.borrow().get(room_id).and_then(|s| s.archived_until_ts));
+
+    // Optimistic, same as `toggle_recontact`.
+    set_archived_until(room_id, Some(until_ts));
+
     if room
         .set_account_data(ArchivedEventContent { until_ts })
         .await
         .is_err()
     {
-        return;
-    }
-
-    if let Some(tx) = crate::ROOM_MAILBOX_TX.get() {
-        tx.send_modify(|map| {
-            map.entry(room_id.to_string())
-                .or_default()
-                .archived_until_ts = Some(until_ts);
-        });
+        set_archived_until(room_id, previous);
     }
 }
 

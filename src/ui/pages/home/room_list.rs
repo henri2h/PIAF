@@ -37,6 +37,9 @@ impl Component for RoomList {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
         let mut chips_visible = self.chips_visible;
+        // Diagnostics only: gives the scroll offset a name so [ROOMLIST] lines
+        // can be correlated with viewport changes.
+        let scroll_controller = use_scroll_controller(ScrollConfig::default);
 
         // Fetching + sorting the full room list only actually needs to happen
         // when `sync_tick` moves; a mailbox_tick-only render (recontact/archive
@@ -84,11 +87,16 @@ impl Component for RoomList {
         let rooms_len = filtered_rooms.len();
         let initial_loading = CLIENT.get().is_none();
 
-        eprintln!(
-            "[piaf] RoomList::render sync_tick={} client_present={} rooms_len={} filter={:?}",
-            self.sync_tick, !initial_loading, rooms_len, self.filter
+        println!(
+            "[piaf] RoomList::render sync_tick={} mailbox_tick={} client_present={} rooms_len={} filter={:?} chips_visible={}",
+            self.sync_tick,
+            self.mailbox_tick,
+            !initial_loading,
+            rooms_len,
+            self.filter,
+            *chips_visible.peek(),
         );
-        eprintln!(
+        println!(
             "[TIMING] RoomList rebuild total={}µs (fetch+sort={}µs filter={}µs) rooms={}",
             (fetch_sort_elapsed + filter_elapsed).as_micros(),
             fetch_sort_elapsed.as_micros(),
@@ -103,18 +111,25 @@ impl Component for RoomList {
             return empty_state(c);
         }
 
-        let sync_tick = self.sync_tick;
+        // Keyed on both ticks, not just `sync_tick`: the builder closure below
+        // captures `filtered_rooms`, which `mailbox_tick` changes too. Keying
+        // on `sync_tick` alone left the scroll view holding the old closure
+        // while `length` had already moved, so indices pointed into a stale
+        // list and an archived row stayed on screen.
+        let list_key = (self.sync_tick, self.mailbox_tick);
         rect()
             .expanded()
             .on_wheel(move |e: Event<WheelEventData>| {
                 if e.delta_y < 0.0 && !*chips_visible.peek() {
+                    println!("[ROOMLIST] chips -> visible (delta_y={:.1})", e.delta_y);
                     chips_visible.set(true);
                 } else if e.delta_y > 0.0 && *chips_visible.peek() {
+                    println!("[ROOMLIST] chips -> hidden (delta_y={:.1})", e.delta_y);
                     chips_visible.set(false);
                 }
             })
             .child(
-                VirtualScrollView::new_with_data(sync_tick, move |item, _| {
+                VirtualScrollView::new_with_data(list_key, move |item, _| {
                     let Some(room) = filtered_rooms.get(item.index) else {
                         return rect().into_element();
                     };
@@ -126,6 +141,17 @@ impl Component for RoomList {
                 .length(rooms_len)
                 .item_size(80.)
                 .height(Size::fill())
+                .scroll_controller(scroll_controller)
+                .on_sized(move |e: Event<SizedEventData>| {
+                    let (_, y) = Into::<(i32, i32)>::into(scroll_controller);
+                    println!(
+                        "[ROOMLIST] sized viewport={:.1} content={:.1} y={} rooms={}",
+                        e.area.height(),
+                        e.inner_sizes.height,
+                        y,
+                        rooms_len,
+                    );
+                })
                 .into_element(),
             )
             .into_element()
