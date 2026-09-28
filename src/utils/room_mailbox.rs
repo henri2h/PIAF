@@ -5,8 +5,6 @@ use matrix_sdk::ruma::events::macros::EventContent;
 use matrix_sdk::ruma::events::tag::{TagInfo, TagName};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::matrix::CLIENT;
-
 const RECONTACT_TAG: &str = "u.cc.carnot.piaf.recontact";
 
 /// Room-scoped account_data recording that a room was archived (swiped away
@@ -32,6 +30,17 @@ pub fn is_archived_hidden(latest_ts: Option<u64>, archived_until_ts: Option<u64>
         (Some(_), None) => true,
         (None, _) => false,
     }
+}
+
+/// [`is_archived_hidden`] for a room, looked up in the mailbox state map.
+pub fn is_room_archived(room: &Room, mailbox: &HashMap<String, RoomMailboxState>) -> bool {
+    let archived_until_ts = mailbox
+        .get(room.room_id().as_str())
+        .and_then(|s| s.archived_until_ts);
+    is_archived_hidden(
+        crate::utils::matrix::latest_event_ts(room),
+        archived_until_ts,
+    )
 }
 
 async fn read_room_state(room: &Room) -> RoomMailboxState {
@@ -72,13 +81,7 @@ pub async fn load_room_mailbox(client: &matrix_sdk::Client) {
 
 /// Toggle the "recontact" tag on a room and publish the updated cache.
 pub async fn toggle_recontact(room_id: &str) {
-    let Some(client) = CLIENT.get().cloned() else {
-        return;
-    };
-    let Ok(parsed) = matrix_sdk::ruma::RoomId::parse(room_id) else {
-        return;
-    };
-    let Some(room) = client.get_room(&parsed) else {
+    let Some(room) = crate::utils::matrix::get_room(room_id) else {
         return;
     };
 
@@ -124,13 +127,7 @@ fn set_archived_until(room_id: &str, until_ts: Option<u64>) {
 /// Archive a room: record its current latest-event timestamp so it stays
 /// hidden from the main list until a newer message arrives.
 pub async fn archive_room(room_id: &str) {
-    let Some(client) = CLIENT.get().cloned() else {
-        return;
-    };
-    let Ok(parsed) = matrix_sdk::ruma::RoomId::parse(room_id) else {
-        return;
-    };
-    let Some(room) = client.get_room(&parsed) else {
+    let Some(room) = crate::utils::matrix::get_room(room_id) else {
         return;
     };
 

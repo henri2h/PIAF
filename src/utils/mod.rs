@@ -5,6 +5,7 @@ pub mod matrix;
 pub mod push;
 pub mod queries;
 pub mod room_mailbox;
+pub mod room_preview;
 pub mod worker;
 
 #[derive(Clone, Debug, PartialEq)]

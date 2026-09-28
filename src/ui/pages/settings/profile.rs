@@ -63,10 +63,7 @@ impl Component for SettingsProfile {
         let is_uploading = *uploading_avatar.read();
         let status_msg = status.read().clone();
 
-        let user_id = CLIENT
-            .get()
-            .and_then(|c| c.user_id().map(|id| id.to_string()))
-            .unwrap_or_default();
+        let user_id = crate::utils::matrix::my_user_id().unwrap_or_default();
 
         rect()
             .expanded()

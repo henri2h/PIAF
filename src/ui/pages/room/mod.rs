@@ -21,8 +21,8 @@ const DEFAULT_MSG_HEIGHT: f32 = 60.0;
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 use futures::StreamExt;
+use matrix_sdk::ruma::OwnedEventId;
 use matrix_sdk::ruma::events::room::message::MessageType;
-use matrix_sdk::ruma::{OwnedEventId, RoomId};
 use matrix_sdk_ui::timeline::{
     RoomExt, TimelineDetails, TimelineEventFocusThreadMode, TimelineEventItemId, TimelineFocus,
     TimelineItem, TimelineItemContent, TimelineReadReceiptTracking,
@@ -30,7 +30,7 @@ use matrix_sdk_ui::timeline::{
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 use crate::utils::format_timestamp;
-use crate::utils::matrix::CLIENT;
+use crate::utils::matrix::{get_room, my_user_id};
 use crate::{
     ui::components::{
         MediaViewer, MediaViewerItem, TopAppBar, TopAppBarAction, TopAppBarTitle, UserPopupInfo,
@@ -94,14 +94,8 @@ fn spawn_timeline_task(
     typing_tx: UnboundedSender<Vec<String>>,
     reached_start_tx: UnboundedSender<()>,
 ) {
-    let Some(client) = CLIENT.get().cloned() else {
-        return;
-    };
     tokio::task::spawn(async move {
-        let Ok(parsed_id) = RoomId::parse(&room_id) else {
-            return;
-        };
-        let Some(room) = client.get_room(&parsed_id) else {
+        let Some(room) = get_room(&room_id) else {
             return;
         };
         let name = room
@@ -589,10 +583,7 @@ impl Component for RoomPage {
                         action_popup_state,
                         room_id.clone(),
                         room_name.read().clone(),
-                        CLIENT
-                            .get()
-                            .and_then(|cl| cl.user_id())
-                            .map(|id| id.to_string()),
+                        my_user_id(),
                         msg_action_tx.clone(),
                         reply_info,
                         edit_info,
@@ -805,10 +796,7 @@ impl Component for RoomPage {
                                                     .len())
                                                     .map(|i| timeline::date_label_for(&msgs, i))
                                                     .collect();
-                                                let my_uid = CLIENT
-                                                    .get()
-                                                    .and_then(|cl| cl.user_id())
-                                                    .map(|id| id.to_string());
+                                                let my_uid = my_user_id();
                                                 let room_id_rows = room_id.clone();
                                                 let msg_action_tx_rows = msg_action_tx.clone();
                                                 msgs.into_iter()

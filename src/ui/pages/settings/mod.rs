@@ -3,10 +3,10 @@ use std::sync::Arc;
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
+use crate::Route;
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
-use crate::{Route, utils::matrix::CLIENT};
 
 mod appearance;
 mod notifications;
@@ -28,10 +28,7 @@ impl Component for Settings {
         let is_dark = use_theme().read().name == "dark";
         let theme_label = if is_dark { "Dark" } else { "Light" };
 
-        let user_id = CLIENT
-            .get()
-            .and_then(|c| c.user_id().map(|id| id.to_string()))
-            .unwrap_or_default();
+        let user_id = crate::utils::matrix::my_user_id().unwrap_or_default();
 
         rect()
             .expanded()

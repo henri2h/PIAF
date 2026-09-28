@@ -9,7 +9,7 @@ cargo run          # Run the app (debug)
 cargo build        # Build (debug)
 cargo build --release
 cargo check        # Fast type-check without linking (use this to verify edits)
-cargo check --target aarch64-linux-android  # Verify Android build (always run after editing src/app/, src/android/ or cfg(android) code)
+just -f AndroidApp/Justfile check  # Verify Android build via cargo-ndk (always run after editing src/app/, src/android/ or cfg(android) code)
 cargo test                  # Run all unit tests
 cargo test <name>           # Run tests whose name contains <name>
 ```
@@ -83,7 +83,13 @@ Three search functions:
 - `search_users_remote(query)` — calls `client.search_users()` (network)
 - `search_messages_remote(query, next_batch)` — calls Matrix search API with pagination
 
-Room sorting is shared: `sort_rooms_by_recency(&mut Vec<Room>)` in `src/ui/pages/home/mod.rs` is used by both the search and the normal room list. Submodules call it as `super::sort_rooms_by_recency(...)`.
+Room list logic lives in `src/ui/pages/home/room_list_model.rs`: `RoomFilter`, `sort_rooms_by_recency` (shared by search and the room list), `all_rooms_sorted`, `visible_rooms`.
+
+### Shared helpers
+
+- `utils/matrix.rs`: `get_room(&str)`, `my_user_id()`, `latest_event_ts(&Room)` — use instead of `RoomId::parse` + `CLIENT.get_room`.
+- `utils/room_preview.rs`: `message_body(&MessageType)` (one label per msgtype, used by room list, notifications, reactions, search), `event_preview`, `last_message`, `preview_text`.
+- `utils/room_mailbox.rs`: `is_room_archived(&Room, &mailbox)`.
 
 Search state in `HomePage` uses an `Arc<AtomicU64>` version counter to invalidate stale in-flight requests. Version is incremented on each new query; async tasks compare against the version before writing results.
 
@@ -164,7 +170,7 @@ cargo test --lib               # Unit tests only (src/utils/mod.rs)
 cargo test --test search       # Integration tests only (tests/search.rs)
 ```
 
-**Unit tests** (`src/utils/mod.rs`) cover pure utility functions with no Matrix client or Freya context.
+**Unit tests** (`#[cfg(test)]` modules, e.g. `src/utils/mod.rs`, `utils/room_preview.rs`, `home/room_list_model.rs`) cover pure functions with no Matrix client or Freya context. Build events for tests with `Raw::from_json_string(json!({...}).to_string())`.
 
 **Integration tests** (`tests/search.rs`) use `matrix_sdk::test_utils::logged_in_client_with_server()` to spin up a `wiremock::MockServer` and exercise the search functions at the HTTP layer — no real homeserver needed.
 

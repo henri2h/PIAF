@@ -6,7 +6,7 @@ use freya_router::prelude::RouterContext;
 use crate::{
     Route,
     ui::components::{Avatar, TopAppBar, TopAppBarTitle, user_color},
-    utils::{matrix::CLIENT, use_app_colors},
+    utils::use_app_colors,
 };
 
 use super::draft::PENDING_DM;
@@ -61,7 +61,6 @@ impl Component for PendingDm {
             let (tx, rx) = futures::channel::oneshot::channel::<Result<String, String>>();
             tokio::task::spawn(async move {
                 let result: Result<String, String> = async {
-                    use matrix_sdk::ruma::RoomId;
                     use matrix_sdk::ruma::events::{
                         AnyMessageLikeEventContent, room::message::RoomMessageEventContent,
                     };
@@ -69,9 +68,7 @@ impl Component for PendingDm {
                     let room_id = crate::utils::matrix::create_or_get_dm(uid)
                         .await
                         .ok_or_else(|| "Failed to create DM".to_string())?;
-                    let parsed = RoomId::parse(&room_id).map_err(|e| e.to_string())?;
-                    let client = CLIENT.get().cloned().ok_or("No client")?;
-                    let room = client.get_room(&parsed).ok_or("Room not found")?;
+                    let room = crate::utils::matrix::get_room(&room_id).ok_or("Room not found")?;
                     let content = AnyMessageLikeEventContent::RoomMessage(
                         RoomMessageEventContent::text_plain(msg),
                     );

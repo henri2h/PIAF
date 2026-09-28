@@ -11,7 +11,7 @@ use matrix_sdk::{
         api::client::filter::FilterDefinition,
         events::{
             AnySyncMessageLikeEvent, AnySyncTimelineEvent, OriginalSyncMessageLikeEvent,
-            SyncMessageLikeEvent, reaction::ReactionEventContent, room::message::MessageType,
+            SyncMessageLikeEvent, reaction::ReactionEventContent,
         },
         exports::serde_json,
     },
@@ -27,11 +27,28 @@ use std::{
 use tokio::fs;
 
 use crate::REQUESTER;
+use crate::utils::room_preview::message_body;
 
 pub static CLIENT: OnceLock<Client> = OnceLock::new();
 pub static ROOM_LIST_SERVICE: OnceLock<RoomListService> = OnceLock::new();
 pub static SESSION_FILE: OnceLock<PathBuf> = OnceLock::new();
 pub static DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
+
+/// Looks up a room on the global client.
+pub fn get_room(room_id: &str) -> Option<Room> {
+    let room_id = matrix_sdk::ruma::RoomId::parse(room_id).ok()?;
+    CLIENT.get()?.get_room(&room_id)
+}
+
+/// Timestamp (ms) of the room's latest event, if known.
+pub fn latest_event_ts(room: &Room) -> Option<u64> {
+    room.latest_event().timestamp().map(|ts| ts.get().into())
+}
+
+/// Logged-in user's ID, e.g. `@alice:example.org`.
+pub fn my_user_id() -> Option<String> {
+    CLIENT.get()?.user_id().map(|id| id.to_string())
+}
 /// Ensures the reaction event handler is registered at most once across all
 /// calls to `activate_client` (login + restore can both call it).
 static REACTION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
@@ -288,21 +305,14 @@ async fn collect_reaction(
 }
 
 fn extract_message_preview(event: &AnySyncTimelineEvent) -> String {
-    if let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
-        SyncMessageLikeEvent::Original(msg),
-    )) = event
-    {
-        match &msg.content.msgtype {
-            MessageType::Text(t) => t.body.chars().take(60).collect(),
-            MessageType::Image(_) => "📷 Image".to_string(),
-            MessageType::File(_) => "📎 File".to_string(),
-            MessageType::Audio(_) => "🎵 Audio".to_string(),
-            MessageType::Video(_) => "🎬 Video".to_string(),
-            _ => "Message".to_string(),
-        }
-    } else {
-        "Message".to_string()
-    }
+    let body = match event {
+        AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
+            SyncMessageLikeEvent::Original(msg),
+        )) => message_body(&msg.content.msgtype),
+        _ => None,
+    };
+    body.map(|b| b.chars().take(60).collect())
+        .unwrap_or_else(|| "Message".to_string())
 }
 
 #[cfg(not(target_os = "android"))]
@@ -344,15 +354,10 @@ async fn send_desktop_notification(
         .unwrap_or_else(|| ev.sender.localpart().to_string());
 
     let body = match &ev.content.msgtype {
-        MessageType::Text(t) => t.body.clone(),
-        MessageType::Notice(n) => n.body.clone(),
-        MessageType::Image(_) => "📷 Image".to_string(),
-        MessageType::File(_) => "📎 File".to_string(),
-        MessageType::Audio(_) => "🎵 Audio".to_string(),
-        MessageType::Video(_) => "🎬 Video".to_string(),
-        MessageType::Emote(e) => format!("* {} {}", sender_name, e.body),
-        MessageType::Location(_) => "📍 Location".to_string(),
-        _ => "New message".to_string(),
+        matrix_sdk::ruma::events::room::message::MessageType::Emote(e) => {
+            format!("* {} {}", sender_name, e.body)
+        }
+        other => message_body(other).unwrap_or_else(|| "New message".to_string()),
     };
 
     let summary = if room.is_dm() {

@@ -230,22 +230,16 @@ impl Component for ComposeBar {
                 let (done_tx, done_rx) = futures::channel::oneshot::channel::<()>();
                 let room_id = room_id_send.clone();
                 tokio::task::spawn(async move {
-                    use crate::utils::matrix::CLIENT;
                     use matrix_sdk::attachment::AttachmentConfig;
-                    use matrix_sdk::ruma::RoomId;
-                    if let Ok(parsed_id) = RoomId::parse(&room_id) {
-                        if let Some(client) = CLIENT.get() {
-                            if let Some(room) = client.get_room(&parsed_id) {
-                                let _ = room
-                                    .send_attachment(
-                                        "paste.png",
-                                        &mime::IMAGE_PNG,
-                                        png_bytes,
-                                        AttachmentConfig::default(),
-                                    )
-                                    .await;
-                            }
-                        }
+                    if let Some(room) = crate::utils::matrix::get_room(&room_id) {
+                        let _ = room
+                            .send_attachment(
+                                "paste.png",
+                                &mime::IMAGE_PNG,
+                                png_bytes,
+                                AttachmentConfig::default(),
+                            )
+                            .await;
                     }
                     let _ = done_tx.send(());
                 });
@@ -315,9 +309,7 @@ impl Component for ComposeBar {
             {
                 let room_id = room_id_attach.clone();
                 tokio::task::spawn(async move {
-                    use crate::utils::matrix::CLIENT;
                     use matrix_sdk::attachment::AttachmentConfig;
-                    use matrix_sdk::ruma::RoomId;
 
                     let Some(path) = rfd::AsyncFileDialog::new()
                         .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"])
@@ -344,13 +336,7 @@ impl Component for ComposeBar {
                         _ => mime::APPLICATION_OCTET_STREAM,
                     };
 
-                    let Ok(parsed_id) = RoomId::parse(&room_id) else {
-                        return;
-                    };
-                    let Some(client) = CLIENT.get() else {
-                        return;
-                    };
-                    let Some(room) = client.get_room(&parsed_id) else {
+                    let Some(room) = crate::utils::matrix::get_room(&room_id) else {
                         return;
                     };
 

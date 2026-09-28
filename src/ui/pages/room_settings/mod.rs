@@ -90,9 +90,6 @@ impl Component for RoomSettings {
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let Some(client) = CLIENT.get().cloned() else {
-                    return;
-                };
                 let (tx, rx) = tokio::sync::oneshot::channel::<(
                     String,
                     u64,
@@ -101,11 +98,7 @@ impl Component for RoomSettings {
                     Option<String>,
                 )>();
                 tokio::task::spawn(async move {
-                    let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id) else {
-                        let _ = tx.send((room_id, 0, vec![], None, None));
-                        return;
-                    };
-                    let Some(room) = client.get_room(&parsed_id) else {
+                    let Some(room) = crate::utils::matrix::get_room(&room_id) else {
                         let _ = tx.send((String::new(), 0, vec![], None, None));
                         return;
                     };
@@ -559,12 +552,9 @@ fn leave_confirm_overlay(
                                     *leaving.write() = true;
                                     let room_id = room_id_leave.clone();
                                     spawn(async move {
-                                        let Some(client) = CLIENT.get().cloned() else { return };
-                                        let (tx, rx) = tokio::sync::oneshot::channel::<bool>();
+                                                                                let (tx, rx) = tokio::sync::oneshot::channel::<bool>();
                                         tokio::task::spawn(async move {
-                                            let ok = matrix_sdk::ruma::RoomId::parse(&room_id)
-                                                .ok()
-                                                .and_then(|id| client.get_room(&id))
+                                            let ok = crate::utils::matrix::get_room(&room_id)
                                                 .map(|room| async move { room.leave().await.is_ok() });
                                             let success = if let Some(fut) = ok { fut.await } else { false };
                                             let _ = tx.send(success);

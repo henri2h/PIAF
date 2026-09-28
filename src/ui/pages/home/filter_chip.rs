@@ -1,40 +1,8 @@
+use super::room_list_model::RoomFilter;
 use freya::prelude::*;
 use freya_material_design::prelude::Ripple;
-use matrix_sdk::Room;
 
 use crate::utils::use_app_colors;
-
-// ---------------------------------------------------------------------------
-// RoomFilter
-// ---------------------------------------------------------------------------
-
-#[derive(Clone, PartialEq, Debug)]
-pub enum RoomFilter {
-    All,
-    Groups,
-    Dms,
-    Unread,
-}
-
-impl RoomFilter {
-    pub fn label(&self) -> &'static str {
-        match self {
-            Self::All => "All",
-            Self::Groups => "Groups",
-            Self::Dms => "DMs",
-            Self::Unread => "Unread",
-        }
-    }
-
-    pub fn matches(&self, room: &Room) -> bool {
-        match self {
-            Self::All => true,
-            Self::Groups => !room.is_dm(),
-            Self::Dms => room.is_dm(),
-            Self::Unread => room.num_unread_messages() > 0 || room.num_unread_notifications() > 0,
-        }
-    }
-}
 
 // ---------------------------------------------------------------------------
 // FilterChip — Signal-style compact pill

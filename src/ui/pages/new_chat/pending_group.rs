@@ -65,7 +65,6 @@ impl Component for PendingGroup {
             let (tx, rx) = futures::channel::oneshot::channel::<Result<String, String>>();
             tokio::task::spawn(async move {
                 let result: Result<String, String> = async {
-                    use matrix_sdk::ruma::RoomId;
                     use matrix_sdk::ruma::events::{
                         AnyMessageLikeEventContent, room::message::RoomMessageEventContent,
                     };
@@ -106,10 +105,6 @@ impl Component for PendingGroup {
 
                     // Send the first message. If send fails we still navigate to the
                     // room — it exists and the user can resend from there.
-                    let parsed = RoomId::parse(&room_id).map_err(|e| e.to_string())?;
-                    let room = client
-                        .get_room(&parsed)
-                        .ok_or("Room not found after creation")?;
                     let content = AnyMessageLikeEventContent::RoomMessage(
                         RoomMessageEventContent::text_plain(msg),
                     );

@@ -1,152 +1,17 @@
 use freya::prelude::*;
 use freya_material_design::prelude::Ripple;
 use freya_query::prelude::*;
-use matrix_sdk::{
-    Room, RoomHero,
-    latest_events::LatestEventValue,
-    ruma::events::{
-        AnySyncMessageLikeEvent, AnySyncTimelineEvent, SyncMessageLikeEvent,
-        room::message::MessageType,
-    },
-};
+use matrix_sdk::{Room, RoomHero};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
+use super::room_list_model::is_unread;
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
 use crate::ui::pages::home::ActiveRoomCtx;
+use crate::utils::matrix::{get_room, my_user_id};
+use crate::utils::room_preview::{SenderPrefix, last_message, preview_text};
 use crate::utils::use_app_colors;
 use crate::utils::{format_timestamp, queries::FetchSenderName};
-
-enum SenderPrefix {
-    None,
-    Me,
-    Other(String),
-}
-
-fn last_message(room: &Room, my_user_id: Option<&str>) -> (String, SenderPrefix) {
-    let latest_event = room.latest_event();
-    match &latest_event {
-        LatestEventValue::RemoteInvite { inviter, .. } => {
-            let body = if let Some(inviter_id) = inviter {
-                format!("You were invited by {}", inviter_id.localpart())
-            } else {
-                "You were invited".to_string()
-            };
-            return (body, SenderPrefix::None);
-        }
-        LatestEventValue::Remote(_) => {}
-        _ => {
-            return (String::new(), SenderPrefix::None);
-        }
-    }
-    let LatestEventValue::Remote(latest) = latest_event else {
-        return (String::new(), SenderPrefix::None);
-    };
-
-    let (body, sender_id) = match latest.raw().deserialize() {
-        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
-            SyncMessageLikeEvent::Original(msg),
-        ))) => {
-            let body = match msg.content.msgtype {
-                MessageType::Text(t) => t.body,
-                MessageType::Notice(n) => n.body,
-                MessageType::Image(_) => "📷 Image".to_string(),
-                MessageType::File(_) => "📎 File".to_string(),
-                MessageType::Audio(_) => "🎵 Audio".to_string(),
-                MessageType::Video(_) => "🎬 Video".to_string(),
-                MessageType::Emote(e) => format!("* {}", e.body),
-                MessageType::Location(_) => "📍 Location".to_string(),
-                MessageType::VerificationRequest(_) => "🔐 Verification request".to_string(),
-                ref other => {
-                    #[cfg(debug_assertions)]
-                    println!(
-                        "[piaf] unhandled MessageType in room {}: {:?}",
-                        room.room_id(),
-                        other.msgtype()
-                    );
-                    return (String::new(), SenderPrefix::None);
-                }
-            };
-            (body, msg.sender.to_string())
-        }
-        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
-            SyncMessageLikeEvent::Redacted(r),
-        ))) => ("🗑 Message deleted".to_string(), r.sender.to_string()),
-        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomEncrypted(
-            SyncMessageLikeEvent::Original(r),
-        ))) => ("🔐 Encrypted message".to_string(), r.sender.to_string()),
-        Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomEncrypted(
-            SyncMessageLikeEvent::Redacted(r),
-        ))) => ("🗑 Message deleted".to_string(), r.sender.to_string()),
-        _ => {
-            #[cfg(debug_assertions)]
-            println!(
-                "[{}] {}",
-                room.name().unwrap_or_default(),
-                latest.raw().json().to_string()
-            );
-
-            // Fallback: read sender + event type from raw JSON for unhandled events
-            // (state events, call events, etc.) so old rooms show something.
-            let Ok(val) = latest
-                .raw()
-                .deserialize_as::<matrix_sdk::ruma::exports::serde_json::Value>()
-            else {
-                #[cfg(debug_assertions)]
-                println!(
-                    "[piaf] failed to deserialize last event as JSON in room {}",
-                    room.room_id()
-                );
-                return (String::new(), SenderPrefix::None);
-            };
-            let sender = val
-                .get("sender")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .to_string();
-            let event_type = val.get("type").and_then(|v| v.as_str()).unwrap_or("");
-            let body = match event_type {
-                "m.sticker" => "🎉 Sticker".to_string(),
-                "m.call.invite" | "m.call.answer" | "m.call.hangup" => "📞 Call".to_string(),
-                "m.room.member" => "Activity".to_string(),
-                "m.poll.start" | "org.matrix.msc3381.poll.start" => "📊 Poll".to_string(),
-                "m.location" | "org.matrix.msc3488.location" => "📍 Location".to_string(),
-                "m.room.tombstone" => "🚪 Room upgraded".to_string(),
-                "m.room.name"
-                | "m.room.topic"
-                | "m.room.avatar"
-                | "m.room.canonical_alias"
-                | "m.room.power_levels"
-                | "m.room.join_rules"
-                | "m.room.guest_access"
-                | "m.room.history_visibility"
-                | "m.room.server_acl"
-                | "m.room.create" => "Room settings updated".to_string(),
-                "m.reaction" => return (String::new(), SenderPrefix::None),
-                _ => {
-                    #[cfg(debug_assertions)]
-                    println!(
-                        "[piaf] unhandled last event type: {event_type:?} in room {}",
-                        room.room_id()
-                    );
-                    return (String::new(), SenderPrefix::None);
-                }
-            };
-            if sender.is_empty() {
-                return (String::new(), SenderPrefix::None);
-            }
-            (body, sender)
-        }
-    };
-
-    if my_user_id == Some(sender_id.as_str()) {
-        (body, SenderPrefix::Me)
-    } else if room.is_dm() {
-        (body, SenderPrefix::None)
-    } else {
-        (body, SenderPrefix::Other(sender_id))
-    }
-}
 
 fn hero_initial(hero: &RoomHero) -> String {
     hero.display_name
@@ -228,31 +93,25 @@ impl Component for RoomListItem {
         #[cfg(not(target_os = "android"))]
         let archive_hovered: State<bool> = use_state(|| false);
 
+        // Rooms without a cached latest event need a preview fetch.
         use_side_effect_with_deps(&room_id, move |rid: &String| {
             let rid = rid.clone();
             tokio::task::spawn(async move {
-                let Some(client) = crate::utils::matrix::CLIENT.get() else {
-                    return;
-                };
-                let Ok(parsed) = matrix_sdk::ruma::RoomId::parse(&rid) else {
-                    return;
-                };
-                if let Some(room) = client.get_room(&parsed) {
-                    if room.latest_event().is_none() {
-                        if let Some(rq) = crate::REQUESTER.get() {
-                            rq.fetch_room_previews(vec![parsed.to_owned()]);
-                        }
-                    }
+                if let Some(room) = get_room(&rid)
+                    && room.latest_event().is_none()
+                {
+                    crate::REQUESTER
+                        .get()
+                        .expect("not initialized")
+                        .fetch_room_previews(vec![room.room_id().to_owned()]);
                 }
             });
         });
 
         let fetch_key = room_id.clone();
 
-        let my_user_id = crate::utils::matrix::CLIENT
-            .get()
-            .and_then(|c| c.user_id().map(|id| id.to_string()));
-        let (msg_body, sender_prefix) = last_message(&room, my_user_id.as_deref());
+        let (msg_body, sender_prefix) = last_message(&room, my_user_id().as_deref())
+            .unwrap_or((String::new(), SenderPrefix::None));
 
         let sender_query_key = match &sender_prefix {
             SenderPrefix::Other(uid) => format!("{}\x00{}", room_id, uid),
@@ -266,26 +125,8 @@ impl Component for RoomListItem {
         let msg = if msg_body.is_empty() {
             String::new()
         } else {
-            match &sender_prefix {
-                SenderPrefix::None => msg_body.clone(),
-                SenderPrefix::Me => format!("You: {msg_body}"),
-                SenderPrefix::Other(_) => {
-                    let sender_reader = sender_query.read();
-                    let display_name =
-                        sender_reader.state().ok().cloned().unwrap_or_else(
-                            || match &sender_prefix {
-                                SenderPrefix::Other(uid) => uid
-                                    .trim_start_matches('@')
-                                    .split(':')
-                                    .next()
-                                    .unwrap_or(uid)
-                                    .to_string(),
-                                _ => String::new(),
-                            },
-                        );
-                    format!("{display_name}: {msg_body}")
-                }
-            }
+            let sender_name = sender_query.read().state().ok().cloned();
+            preview_text(&msg_body, &sender_prefix, sender_name.as_deref())
         };
 
         let heroes = room.heroes();
@@ -309,7 +150,7 @@ impl Component for RoomListItem {
             .map(format_timestamp)
             .unwrap_or_default();
         let notif_count = room.num_unread_notifications();
-        let is_unread = room.num_unread_messages() > 0 || notif_count > 0;
+        let is_unread = is_unread(&room);
         let font_weight = if is_unread {
             FontWeight::BOLD
         } else {

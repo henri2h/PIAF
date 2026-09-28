@@ -75,15 +75,7 @@ impl MatrixClientWorker {
 // ---------------------------------------------------------------------------
 
 async fn do_fetch_room_avatar(room_id: &str) -> Result<Vec<u8>, ()> {
-    let Some(client) = CLIENT.get().cloned() else {
-        return Err(());
-    };
-    let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(room_id) else {
-        return Err(());
-    };
-    let Some(room) = client.get_room(&parsed_id) else {
-        return Err(());
-    };
+    let room = crate::utils::matrix::get_room(room_id).ok_or(())?;
     room.avatar(MediaFormat::File)
         .await
         .ok()

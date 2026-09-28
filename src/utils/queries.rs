@@ -69,9 +69,8 @@ async fn fetch_member_avatar_direct(key: &str) -> Result<Vec<u8>, ()> {
     let room_id = parts.next().unwrap_or("");
     let user_id = parts.next().unwrap_or("");
     let client = CLIENT.get().cloned().ok_or(())?;
-    let parsed_room = matrix_sdk::ruma::RoomId::parse(room_id).map_err(|_| ())?;
     let parsed_user = matrix_sdk::ruma::UserId::parse(user_id).map_err(|_| ())?;
-    let room = client.get_room(&parsed_room).ok_or(())?;
+    let room = crate::utils::matrix::get_room(room_id).ok_or(())?;
     let member = room
         .get_member_no_sync(&parsed_user)
         .await
@@ -164,10 +163,8 @@ async fn fetch_sender_name_direct(key: &str) -> Result<String, ()> {
     let mut parts = key.splitn(2, '\x00');
     let room_id = parts.next().unwrap_or("").to_owned();
     let user_id = parts.next().unwrap_or("").to_owned();
-    let client = CLIENT.get().cloned().ok_or(())?;
-    let parsed_room = matrix_sdk::ruma::RoomId::parse(&room_id).map_err(|_| ())?;
     let parsed_user = matrix_sdk::ruma::UserId::parse(&user_id).map_err(|_| ())?;
-    let room = client.get_room(&parsed_room).ok_or(())?;
+    let room = crate::utils::matrix::get_room(&room_id).ok_or(())?;
     let name = room
         .get_member_no_sync(&parsed_user)
         .await

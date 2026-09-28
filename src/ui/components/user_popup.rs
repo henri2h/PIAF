@@ -57,18 +57,10 @@ impl Component for UserPopupOverlay {
             let fetch_key = info.avatar_url.as_ref().map(|u| format!("mxc:{u}"));
 
             // Resolve room IDs to Room objects.
-            let common_rooms: Vec<_> = if let Some(client) = CLIENT.get() {
-                common_room_ids
-                    .iter()
-                    .filter_map(|id| {
-                        matrix_sdk::ruma::RoomId::parse(id)
-                            .ok()
-                            .and_then(|rid| client.get_room(&rid))
-                    })
-                    .collect()
-            } else {
-                vec![]
-            };
+            let common_rooms: Vec<_> = common_room_ids
+                .iter()
+                .filter_map(|id| crate::utils::matrix::get_room(id))
+                .collect();
 
             let has_dm = CLIENT
                 .get()

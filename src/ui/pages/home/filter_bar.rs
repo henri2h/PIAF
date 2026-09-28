@@ -1,6 +1,7 @@
 use freya::prelude::*;
 
-use super::filter_chip::{FilterChip, RoomFilter};
+use super::filter_chip::FilterChip;
+use super::room_list_model::RoomFilter;
 use crate::utils::use_app_colors;
 
 /// Horizontal row of room filter chips (All / Groups / DMs / Unread).
@@ -19,12 +20,6 @@ impl Component for RoomFilterBar {
         let c = use_app_colors();
         let filter = self.filter;
 
-        let filters = [
-            RoomFilter::All,
-            RoomFilter::Groups,
-            RoomFilter::Dms,
-            RoomFilter::Unread,
-        ];
         let mut row = rect()
             .horizontal()
             .width(Size::fill())
@@ -32,7 +27,7 @@ impl Component for RoomFilterBar {
             .padding(Gaps::new(6., 16., 6., 16.))
             .spacing(6.)
             .background(c.surface);
-        for f in &filters {
+        for f in &RoomFilter::ALL {
             let is_selected = *filter.read() == *f;
             row = row.child(FilterChip {
                 chip_label: f.label(),

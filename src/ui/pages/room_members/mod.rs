@@ -6,9 +6,9 @@ use freya_router::prelude::RouterContext;
 use matrix_sdk::RoomMemberships;
 use matrix_sdk::ruma::events::room::power_levels::UserPowerLevel;
 
+use crate::Route;
 use crate::ui::components::{Avatar, TopAppBar, TopAppBarTitle, UserPopupInfo, UserPopupOverlay};
 use crate::utils::{sender_color, use_app_colors};
-use crate::{Route, utils::matrix::CLIENT};
 
 fn power_to_i64(pl: UserPowerLevel) -> i64 {
     match pl {
@@ -50,21 +50,14 @@ impl Component for RoomMembers {
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let Some(client) = CLIENT.get().cloned() else {
-                    return;
-                };
                 let (tx, rx) = tokio::sync::oneshot::channel::<(Vec<MemberItem>, i64)>();
                 tokio::task::spawn(async move {
-                    let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id) else {
-                        let _ = tx.send((vec![], 0));
-                        return;
-                    };
-                    let Some(room) = client.get_room(&parsed_id) else {
+                    let Some(room) = crate::utils::matrix::get_room(&room_id) else {
                         let _ = tx.send((vec![], 0));
                         return;
                     };
 
-                    let my_id = client.user_id().map(|u| u.to_string()).unwrap_or_default();
+                    let my_id = crate::utils::matrix::my_user_id().unwrap_or_default();
 
                     let mut member_list: Vec<MemberItem> = room
                         .members(RoomMemberships::JOIN)
@@ -356,11 +349,9 @@ impl Component for RoomMembers {
                                                 let room_id = room_id_kick.clone();
                                                 let user_id = target_id.clone();
                                                 spawn(async move {
-                                                    let Some(client) = CLIENT.get().cloned() else { return };
-                                                    tokio::task::spawn(async move {
-                                                        let Ok(parsed_room) = matrix_sdk::ruma::RoomId::parse(&room_id) else { return };
+                                                                                                        tokio::task::spawn(async move {
                                                         let Ok(parsed_user) = matrix_sdk::ruma::UserId::parse(&user_id) else { return };
-                                                        if let Some(room) = client.get_room(&parsed_room) {
+                                                        if let Some(room) = crate::utils::matrix::get_room(&room_id) {
                                                             let _ = room.kick_user(&parsed_user, None).await;
                                                         }
                                                     });

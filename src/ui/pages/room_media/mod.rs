@@ -3,7 +3,6 @@ use std::sync::Arc;
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 use futures::StreamExt;
-use matrix_sdk::ruma::RoomId;
 use matrix_sdk::ruma::events::room::{MediaSource, message::MessageType};
 use matrix_sdk_ui::timeline::{RoomExt, TimelineDetails, TimelineItemContent};
 
@@ -213,14 +212,11 @@ impl Component for RoomMediaPage {
 
             let (init_tx, init_rx) = futures::channel::oneshot::channel::<Vec<MediaItem>>();
 
-            if let Some(client) = CLIENT.get().cloned() {
+            if CLIENT.get().is_some() {
                 let room_id2 = room_id.clone();
                 let update_tx2 = update_tx.clone();
                 tokio::task::spawn(async move {
-                    let Ok(parsed_id) = RoomId::parse(&room_id2) else {
-                        return;
-                    };
-                    let Some(room) = client.get_room(&parsed_id) else {
+                    let Some(room) = crate::utils::matrix::get_room(&room_id2) else {
                         let _ = init_tx.send(vec![]);
                         return;
                     };

@@ -3,7 +3,7 @@ use freya::prelude::*;
 use crate::ROOM_MAILBOX_RX;
 use crate::ui::pages::room_mailbox::MailboxRoomList;
 use crate::utils::matrix::CLIENT;
-use crate::utils::room_mailbox::is_archived_hidden;
+use crate::utils::room_mailbox::is_room_archived;
 
 #[derive(PartialEq)]
 pub struct ArchivedPage {}
@@ -29,14 +29,7 @@ impl Component for ArchivedPage {
             .map(|c| {
                 c.joined_rooms()
                     .into_iter()
-                    .filter(|r| {
-                        let archived_until_ts = mailbox
-                            .get(r.room_id().as_str())
-                            .and_then(|s| s.archived_until_ts);
-                        let latest_ts = r.latest_event().timestamp().map(|ts| ts.get().into());
-                        archived_until_ts.is_some()
-                            && is_archived_hidden(latest_ts, archived_until_ts)
-                    })
+                    .filter(|r| is_room_archived(r, &mailbox))
                     .collect()
             })
             .unwrap_or_default();

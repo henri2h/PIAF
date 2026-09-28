@@ -3,6 +3,7 @@ mod filter_bar;
 mod filter_chip;
 mod room_list;
 pub mod room_list_item;
+mod room_list_model;
 #[cfg(not(target_os = "android"))]
 mod room_row_actions;
 #[cfg(target_os = "android")]
@@ -15,38 +16,13 @@ use std::sync::atomic::Ordering;
 
 use app_bar::HomeAppBar;
 use filter_bar::RoomFilterBar;
-use filter_chip::RoomFilter;
 use freya::prelude::*;
 use room_list::RoomList;
+use room_list_model::RoomFilter;
 use search_panel::SearchResults;
 
 use crate::utils::{use_app_colors, use_tokio_track_watcher};
 use crate::{ACTIVE_ROOM_RX, WIDE_MODE};
-
-// ---------------------------------------------------------------------------
-// Shared helpers used by submodules
-// ---------------------------------------------------------------------------
-
-/// Primary key for room sorting: latest-event timestamp (client-side, always
-/// accurate), with recency_stamp (server-side sliding-sync bump) as fallback.
-fn room_sort_key(r: &matrix_sdk::Room) -> u64 {
-    r.latest_event()
-        .timestamp()
-        .map(|ts| ts.get().into())
-        .or_else(|| r.recency_stamp().map(u64::from))
-        .unwrap_or(0)
-}
-
-/// Sort a room slice in-place by descending recency.
-fn sort_rooms_by_recency(rooms: &mut Vec<matrix_sdk::Room>) {
-    // Decorate-sort-undecorate: `room_sort_key` walks the room's latest
-    // event, so computing it inside the comparator recomputes it O(n log n)
-    // times instead of once per room.
-    let mut keyed: Vec<(u64, matrix_sdk::Room)> =
-        rooms.drain(..).map(|r| (room_sort_key(&r), r)).collect();
-    keyed.sort_unstable_by(|a, b| b.0.cmp(&a.0));
-    rooms.extend(keyed.into_iter().map(|(_, r)| r));
-}
 
 // ---------------------------------------------------------------------------
 // Shared context for the currently active room ID

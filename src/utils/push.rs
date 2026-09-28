@@ -240,14 +240,8 @@ pub async fn fetch_notification_payload(
         AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
             SyncMessageLikeEvent::Original(msg),
         )) => {
-            let (body, is_image) = match msg.content.msgtype {
-                MessageType::Text(t) => (t.body, false),
-                MessageType::Image(_) => ("📷 Image".to_string(), true),
-                MessageType::File(_) => ("📎 File".to_string(), false),
-                MessageType::Audio(_) => ("🎵 Audio".to_string(), false),
-                MessageType::Video(_) => ("🎬 Video".to_string(), false),
-                _ => return None,
-            };
+            let body = crate::utils::room_preview::message_body(&msg.content.msgtype)?;
+            let is_image = matches!(msg.content.msgtype, MessageType::Image(_));
             (msg.sender.to_string(), body, is_image)
         }
         _ => return None,

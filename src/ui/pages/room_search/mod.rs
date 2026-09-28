@@ -5,11 +5,11 @@ use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::{
     OwnedRoomId,
     api::client::{filter::RoomEventFilter, search::search_events::v3 as search_v3},
-    events::{AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent, room::message::MessageType},
+    events::{AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent},
 };
 
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::utils::{format_timestamp, matrix::CLIENT, sender_color};
+use crate::utils::{format_timestamp, matrix::CLIENT, room_preview::message_body, sender_color};
 use crate::{Route, utils::use_app_colors};
 
 mod search_result_row;
@@ -189,10 +189,8 @@ async fn search_room_messages(room_id: &str, query: &str) -> Vec<SearchResultIte
                     else {
                         continue;
                     };
-                    let body = match &msg.content.msgtype {
-                        MessageType::Text(t) => t.body.clone(),
-                        MessageType::Image(_) => "📷 Image".to_string(),
-                        _ => continue,
+                    let Some(body) = message_body(&msg.content.msgtype) else {
+                        continue;
                     };
                     let sender = msg.sender.to_string();
                     let color = sender_color(&sender);
