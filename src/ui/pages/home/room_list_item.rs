@@ -54,7 +54,11 @@ impl Component for RoomListItem {
             Query::new(sender_query_key, FetchSenderName).stale_time(Duration::from_secs(3600)),
         );
         let preview = if body.is_empty() {
-            String::new()
+            if s.is_invite {
+                "Invitation".to_string()
+            } else {
+                String::new()
+            }
         } else {
             let sender_name = sender_query.read().state().ok().cloned();
             preview_text(&body, &prefix, sender_name.as_deref())
@@ -159,8 +163,21 @@ fn room_avatar(s: &RoomSummary, c: AppColors, bg: (u8, u8, u8)) -> Element {
     .into()
 }
 
-/// Mute icon + timestamp, with the unread badge below.
+/// Mute icon + timestamp, with the unread badge below. Invites get a pill instead.
 fn trailing(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
+    if s.is_invite {
+        return rect()
+            .padding(Gaps::new(3., 10., 3., 10.))
+            .corner_radius(10.)
+            .background(c.primary)
+            .child(
+                label()
+                    .text("Invite")
+                    .font_size(11.)
+                    .font_weight(FontWeight::MEDIUM)
+                    .color(c.on_primary),
+            );
+    }
     let timestamp = s
         .latest_ts
         .and_then(|ts| ts.try_into().ok())

@@ -24,3 +24,10 @@ pub fn navigate_to_room_at_event(room_id: String, event_id: String) {
         .send(Some((room_id.clone(), event_id)));
     navigate_to_room(room_id);
 }
+
+/// Leaves the current room view (e.g. after declining an invite): clears the
+/// wide-mode panel and returns to the room list.
+pub fn close_room() {
+    let _ = ACTIVE_ROOM_TX.get().expect("not initialized").send(None);
+    let _ = RouterContext::get().replace(Route::HomePage);
+}

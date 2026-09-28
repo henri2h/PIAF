@@ -5523,6 +5523,7 @@ dependencies = [
  "log",
  "matrix-sdk",
  "matrix-sdk-crypto",
+ "matrix-sdk-test",
  "matrix-sdk-ui",
  "mime",
  "notify-rust",

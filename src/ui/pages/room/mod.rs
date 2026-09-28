@@ -3,6 +3,7 @@ mod bookmark_picker_overlay;
 mod compose_bar;
 mod detail_modal;
 mod focus;
+mod invite_view;
 mod media_items;
 mod message_action_popup;
 mod message_row;
@@ -19,6 +20,8 @@ use action_popup_overlay::action_popup_overlay;
 use bookmark_picker_overlay::BookmarkPickerOverlay;
 use compose_bar::ComposeBar;
 use focus::take_focus_event;
+use invite_view::InviteView;
+use matrix_sdk::RoomState;
 use media_items::media_items;
 use room_app_bar::room_app_bar;
 use timeline_task::MsgAction;
@@ -28,8 +31,9 @@ use use_room_timeline::use_room_timeline;
 
 use crate::logging::{PERF, RenderTimer};
 use crate::ui::components::{MediaViewer, UserPopupOverlay};
-use crate::utils::matrix::my_user_id;
+use crate::utils::matrix::{get_room, my_user_id};
 use crate::utils::use_app_colors;
+use crate::utils::use_watch_tick;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(super) struct ReactionSender {
@@ -46,8 +50,7 @@ pub(super) struct Reaction {
     pub senders: Vec<ReactionSender>,
 }
 
-/// A room: app bar, timeline, composer, and their overlays.
-/// Timeline updates re-render `TimelineView`, not this component.
+/// A room, or its invite screen while the invite is pending.
 #[derive(PartialEq)]
 pub struct RoomPage {
     pub room_id: String,
@@ -55,11 +58,40 @@ pub struct RoomPage {
 
 impl Component for RoomPage {
     fn render(&self) -> impl IntoElement {
+        // Sync ticks catch invites accepted or declined on another device.
+        let _sync = use_watch_tick(crate::SYNC_RX.get().expect("not initialized"));
+        let joined = use_state(|| false);
+        let is_invite = !*joined.read()
+            && get_room(&self.room_id).is_some_and(|r| r.state() == RoomState::Invited);
+        if is_invite {
+            InviteView {
+                room_id: self.room_id.clone(),
+                joined,
+            }
+            .into_element()
+        } else {
+            RoomView {
+                room_id: self.room_id.clone(),
+            }
+            .into_element()
+        }
+    }
+}
+
+/// A joined room: app bar, timeline, composer, and their overlays.
+/// Timeline updates re-render `TimelineView`, not this component.
+#[derive(PartialEq)]
+struct RoomView {
+    room_id: String,
+}
+
+impl Component for RoomView {
+    fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
         let room_id = self.room_id.clone();
 
-        let _timer = RenderTimer::new("RoomPage");
-        use_hook(|| tracing::debug!(target: PERF, room_id, "mount RoomPage"));
+        let _timer = RenderTimer::new("RoomView");
+        use_hook(|| tracing::debug!(target: PERF, room_id, "mount RoomView"));
 
         let ui = use_provide_room_ui_ctx();
         let focus_event_id = use_hook(|| take_focus_event(&room_id));
@@ -106,7 +138,7 @@ impl Component for RoomPage {
                 .child(BookmarkPickerOverlay {
                     pending: ui.bookmark_picker,
                 })
-                .child(room_app_bar(&room_id, &name, c))
+                .child(room_app_bar(&room_id, &name, c, true))
                 .child(TimelineView {
                     room_id: room_id.clone(),
                     timeline: timeline.clone(),

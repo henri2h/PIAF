@@ -618,6 +618,7 @@ fn room_list_fingerprint(client: &Client) -> u64 {
     for room in &rooms {
         room.room_id().hash(&mut hasher);
         room.recency_stamp().map(u64::from).hash(&mut hasher);
+        (room.state() == matrix_sdk::RoomState::Invited).hash(&mut hasher);
         room.num_unread_messages().hash(&mut hasher);
         room.num_unread_notifications().hash(&mut hasher);
         room.cached_user_defined_notification_mode()

@@ -59,6 +59,8 @@ WIDE_MODE: AtomicBool                                        // Current layout m
 
 ### Room page (`src/ui/pages/room/`)
 
+`RoomPage` is a wrapper: rooms in `RoomState::Invited` render `InviteView` (inviter, Accept / Decline via `room.join()` / `room.leave()`), joined rooms render `RoomView`. Never build a timeline or composer for an invited room. For invites use `room.is_direct().await`, not `room.is_dm()` (unreliable before joining).
+
 - `timeline_task.rs` — tokio side: builds the matrix timeline, applies diffs, runs `MsgAction`s. UI talks to it through `TimelineHandle` (`paginate()`, `actions()`); dropping the handle stops the task.
 - `use_room_timeline.rs` — hook returning `RoomTimeline { handle, state }`; `state` is a `Copy` bundle of `State`s (messages, loading, paginating, …). The smol receive loop must never hold the handle.
 - `timeline_view.rs` — `TimelineView`: scroll view, rows, row height measuring, pagination triggers. Only it reads `messages`, so timeline updates don't re-render `RoomPage`.
