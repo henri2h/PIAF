@@ -89,7 +89,7 @@ impl Component for PendingDm {
                         if let Ok(mut pending) = PENDING_DM.lock() {
                             *pending = None;
                         }
-                        crate::ui::pages::home::navigate_to_room(room_id);
+                        crate::app::navigation::navigate_to_room(room_id);
                     }
                     Ok(Err(e)) => {
                         *error.write() = Some(format!("Error: {e}"));

@@ -88,7 +88,7 @@ impl Component for ReactionItem {
             .width(Size::fill())
             .padding(Gaps::new(2., 8., 2., 8.))
             .on_press(move |_| {
-                super::home::navigate_to_room(room_id.clone());
+                crate::app::navigation::navigate_to_room(room_id.clone());
             })
             .child(
                 rect()

@@ -17,34 +17,15 @@ use app_bar::HomeAppBar;
 use filter_bar::RoomFilterBar;
 use filter_chip::RoomFilter;
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
 use room_list::RoomList;
 use search_panel::SearchResults;
 
 use crate::utils::{use_app_colors, use_tokio_track_watcher};
-use crate::{ACTIVE_ROOM_RX, ACTIVE_ROOM_TX, Route, WIDE_MODE};
+use crate::{ACTIVE_ROOM_RX, WIDE_MODE};
 
 // ---------------------------------------------------------------------------
 // Shared helpers used by submodules
 // ---------------------------------------------------------------------------
-
-/// Navigate to a room: in wide mode sends to ACTIVE_ROOM_TX, always pushes the route.
-pub(crate) fn navigate_to_room(room_id: String) {
-    if WIDE_MODE.load(Ordering::Relaxed) {
-        if let Some(tx) = ACTIVE_ROOM_TX.get() {
-            let _ = tx.send(Some(room_id.clone()));
-        }
-    }
-    let _ = RouterContext::get().push(Route::RoomPage { room_id });
-}
-
-/// Navigate to a room and scroll to a specific event once it's mounted.
-pub(crate) fn navigate_to_room_at_event(room_id: String, event_id: String) {
-    if let Some(tx) = crate::FOCUS_EVENT_TX.get() {
-        let _ = tx.send(Some((room_id.clone(), event_id)));
-    }
-    navigate_to_room(room_id);
-}
 
 /// Primary key for room sorting: latest-event timestamp (client-side, always
 /// accurate), with recency_stamp (server-side sliding-sync bump) as fallback.

@@ -9,7 +9,7 @@ cargo run          # Run the app (debug)
 cargo build        # Build (debug)
 cargo build --release
 cargo check        # Fast type-check without linking (use this to verify edits)
-cargo check --target aarch64-linux-android  # Verify Android build (always run after editing lib.rs or Android-specific code)
+cargo check --target aarch64-linux-android  # Verify Android build (always run after editing src/app/, src/android/ or cfg(android) code)
 cargo test                  # Run all unit tests
 cargo test <name>           # Run tests whose name contains <name>
 ```
@@ -22,7 +22,18 @@ The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo
 
 **Freya dependency is a local path** (`../freya/crates/freya`), not from crates.io. Changes to Freya itself are in the sibling repo.
 
-### Routing & Layout (`src/main.rs`)
+### Crate layout
+
+`src/main.rs` only calls `piaf::run_desktop()`; everything lives in the lib (`src/lib.rs`). Android enters via `android_main` in `src/android/mod.rs` (JNI push exports in `src/android/jni_push.rs`).
+
+- `src/app/routes.rs` — `Route`
+- `src/app/layout/{desktop,android}.rs` — `Layout` per platform
+- `src/app/active_room_panel.rs` — wide-mode right panel
+- `src/app/navigation.rs` — navigation helpers
+- `src/app/state.rs` — global singletons + `init()`
+- `src/app/theme.rs` — `effective_theme`
+
+### Routing & Layout (`src/app/`)
 
 `Route` is a `Routable` enum covering all screens. The `Layout` component measures window width and decides how many panels to show:
 
@@ -32,9 +43,9 @@ The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo
 
 Navigation uses `RouterContext::get().push(Route::...)`. In wide mode, the right panel is driven by `ACTIVE_ROOM_TX`/`ACTIVE_ROOM_RX` (watch channel) rather than router navigation.
 
-**Always navigate rooms via the shared helper** `navigate_to_room(room_id)` defined in `src/ui/pages/home/mod.rs` — it handles both wide-mode (`ACTIVE_ROOM_TX`) and narrow-mode (router push) correctly. Submodules of `home` call it as `super::navigate_to_room(...)`.
+**Always navigate rooms via the shared helper** `navigate_to_room(room_id)` (and `navigate_to_room_at_event`) in `src/app/navigation.rs` — it handles both wide-mode (`ACTIVE_ROOM_TX`) and narrow-mode (router push) correctly.
 
-### Global Singletons (`src/main.rs` and `src/lib.rs`)
+### Global Singletons (`src/app/state.rs`, re-exported at crate root)
 
 ```rust
 REQUESTER: OnceLock<Requester>                               // Send tasks to the background worker
@@ -46,7 +57,7 @@ WIDE_MODE: AtomicBool                                        // Current layout m
 
 `FOCUS_EVENT_TX/RX` passes a search-result target event to `RoomPage` across a navigation. It is **always cleared unconditionally** by the first `RoomPage` render after it is set (whether or not the room_id matches), which prevents stale events from persisting if navigation is aborted. `RoomPage` also installs a watcher in `use_hook` to handle re-focus when the same room is already mounted (wide mode).
 
-All OnceLocks are initialized in `main()` before `launch()`, so `.get()` always returns `Some`. Call with `.expect("not initialized")` — never wrap in `if let Some(...)`.
+All OnceLocks are initialized by `app::state::init()` before `launch()` (desktop and Android), so `.get()` always returns `Some`. Call with `.expect("not initialized")` — never wrap in `if let Some(...)`.
 
 ### Background Worker (`src/utils/worker/`)
 

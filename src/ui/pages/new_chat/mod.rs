@@ -350,7 +350,7 @@ impl Component for NewChat {
                                     if let Some(client) = CLIENT.get().cloned() {
                                         if let Ok(user_id) = UserId::parse(&uid) {
                                             if let Some(room) = client.get_dm_room(&user_id) {
-                                                crate::ui::pages::home::navigate_to_room(
+                                                crate::app::navigation::navigate_to_room(
                                                     room.room_id().to_string(),
                                                 );
                                                 *navigating.write() = false;

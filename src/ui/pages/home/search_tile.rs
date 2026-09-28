@@ -5,7 +5,7 @@ use matrix_sdk::ruma::{MilliSecondsSinceUnixEpoch, UInt};
 use crate::ui::components::{Avatar, user_color};
 use crate::utils::{format_timestamp, use_app_colors};
 
-use super::navigate_to_room_at_event;
+use crate::app::navigation::{navigate_to_room, navigate_to_room_at_event};
 
 // ---------------------------------------------------------------------------
 // RoomSearchTile
@@ -43,7 +43,7 @@ impl Component for RoomSearchTile {
             .overflow(Overflow::Clip)
             .on_pointer_enter(move |_| *hovered.write() = true)
             .on_pointer_leave(move |_| *hovered.write() = false)
-            .on_press(move |_| super::navigate_to_room(rid.clone()))
+            .on_press(move |_| navigate_to_room(rid.clone()))
             .child(
                 Ripple::new().color(c.primary).width(Size::fill()).child(
                     rect()
@@ -115,7 +115,7 @@ impl Component for UserSearchTile {
                 let uid = uid.clone();
                 spawn(async move {
                     if let Some(room_id) = crate::utils::matrix::create_or_get_dm(uid).await {
-                        super::navigate_to_room(room_id);
+                        navigate_to_room(room_id);
                     }
                 });
             })

@@ -194,7 +194,10 @@ impl Component for BookmarkItem {
                     .corner_radius(12.)
                     .cross_align(Alignment::Center)
                     .on_press(move |_| {
-                        super::home::navigate_to_room_at_event(room_id.clone(), event_id.clone());
+                        crate::app::navigation::navigate_to_room_at_event(
+                            room_id.clone(),
+                            event_id.clone(),
+                        );
                     })
                     .child(
                         rect()

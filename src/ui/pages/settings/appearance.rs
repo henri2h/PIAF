@@ -68,7 +68,7 @@ fn theme_selector(is_dark: bool, c: AppColors, mut theme: State<Theme>) -> Eleme
                 .background(bg)
                 .overflow(Overflow::Clip)
                 .on_press(move |_| {
-                    theme.set(crate::effective_theme(dark));
+                    theme.set(crate::app::theme::effective_theme(dark));
                     spawn(async move {
                         crate::utils::matrix::save_theme_pref(dark).await;
                     });

@@ -505,7 +505,7 @@ impl Component for RoomListItem {
                     hovered.set(false);
                 }
             })
-            .on_press(move |_| super::navigate_to_room(room_id_nav.clone()));
+            .on_press(move |_| crate::app::navigation::navigate_to_room(room_id_nav.clone()));
 
         // Desktop: hovering a row reveals two small action buttons (recontact /
         // archive) at its trailing edge instead of a swipe gesture.

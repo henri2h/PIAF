@@ -122,7 +122,7 @@ impl Component for PendingGroup {
             spawn(async move {
                 match rx.await {
                     Ok(Ok(room_id)) => {
-                        crate::ui::pages::home::navigate_to_room(room_id);
+                        crate::app::navigation::navigate_to_room(room_id);
                     }
                     Ok(Err(e)) => {
                         *error.write() = Some(format!("Error: {e}"));
