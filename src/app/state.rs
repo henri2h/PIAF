@@ -32,6 +32,9 @@ pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
 pub static SYNCING: AtomicBool = AtomicBool::new(true);
 /// Last sync attempt failed.
 pub static DISCONNECTED: AtomicBool = AtomicBool::new(false);
+/// The app window has OS focus. Mirrored from Freya by the desktop `Layout`;
+/// desktop notifications are only shown while it's false.
+pub static APP_FOCUSED: AtomicBool = AtomicBool::new(true);
 /// The server revoked our access token (e.g. device removed elsewhere).
 /// Sync stops; the user must restart and sign in again.
 pub static SESSION_EXPIRED: AtomicBool = AtomicBool::new(false);

@@ -35,7 +35,9 @@ fn relaunch_activity() -> jni::errors::Result<()> {
     const FLAG_ACTIVITY_CLEAR_TASK: i32 = 0x0000_8000;
 
     let (Some(vm), Some(ctx)) = (JAVA_VM.get(), ANDROID_APP_CONTEXT.get()) else {
-        return Err(jni::errors::Error::NullPtr("JavaVM or app context not cached"));
+        return Err(jni::errors::Error::NullPtr(
+            "JavaVM or app context not cached",
+        ));
     };
     let mut env = vm.attach_current_thread()?;
     let ctx = ctx.as_obj();
@@ -66,7 +68,9 @@ fn relaunch_activity() -> jni::errors::Result<()> {
         &intent,
         "addFlags",
         "(I)Landroid/content/Intent;",
-        &[JValue::Int(FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK)],
+        &[JValue::Int(
+            FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK,
+        )],
     )?;
     env.call_method(
         ctx,

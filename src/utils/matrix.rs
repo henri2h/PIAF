@@ -100,6 +100,30 @@ static LAST_ROOM_FINGERPRINT: std::sync::atomic::AtomicU64 = std::sync::atomic::
 #[cfg(not(target_os = "android"))]
 static NOTIFICATION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
 
+#[cfg(not(target_os = "android"))]
+/// Events older than this are catch-up, not something to notify about.
+const NOTIFY_MAX_AGE_MS: u64 = 5 * 60 * 1000;
+#[cfg(not(target_os = "android"))]
+/// When this client session started (ms since epoch); older events never notify.
+static NOTIFY_SINCE_MS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+#[cfg(not(target_os = "android"))]
+fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+#[cfg(not(target_os = "android"))]
+/// Desktop notification gate: only messages sent since this session started,
+/// still fresh, and only while the window is in the background.
+fn should_notify(event_ts_ms: u64, now_ms: u64, since_ms: u64, app_focused: bool) -> bool {
+    !app_focused
+        && event_ts_ms >= since_ms
+        && now_ms.saturating_sub(event_ts_ms) <= NOTIFY_MAX_AGE_MS
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct ClientSession {
     /// The URL of the homeserver of the user.
@@ -257,6 +281,7 @@ async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_di
     #[cfg(not(target_os = "android"))]
     if REQUESTER.get().is_some() && NOTIFICATION_HANDLER_GUARD.set(()).is_ok() {
         use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
+        NOTIFY_SINCE_MS.store(now_ms(), Ordering::Relaxed);
         client.add_event_handler(
             |ev: OriginalSyncMessageLikeEvent<RoomMessageEventContent>,
              room: Room,
@@ -366,7 +391,13 @@ async fn send_desktop_notification(
     room: Room,
     client: Client,
 ) {
-    if crate::SYNCING.load(Ordering::Relaxed) {
+    let event_ts_ms: u64 = ev.origin_server_ts.0.into();
+    if !should_notify(
+        event_ts_ms,
+        now_ms(),
+        NOTIFY_SINCE_MS.load(Ordering::Relaxed),
+        crate::APP_FOCUSED.load(Ordering::Relaxed),
+    ) {
         return;
     }
     let Some(me) = client.user_id() else { return };
@@ -460,7 +491,18 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
         }
         Err(error) => {
             tracing::warn!("login failed: {error}");
-            Err(anyhow::anyhow!("Invalid username"))
+            use matrix_sdk::ruma::api::error::ErrorKind;
+            let message = match error.client_api_error_kind() {
+                Some(ErrorKind::Forbidden) => "Wrong user ID or password.".to_string(),
+                Some(ErrorKind::UserDeactivated) => {
+                    "This account has been deactivated.".to_string()
+                }
+                Some(ErrorKind::LimitExceeded(_)) => {
+                    "Too many attempts. Wait a moment and try again.".to_string()
+                }
+                _ => format!("Sign-in failed: {error}"),
+            };
+            Err(anyhow::anyhow!(message))
         }
     }
 }
@@ -545,7 +587,9 @@ async fn new_client(
             | matrix_sdk::ClientBuildError::Url(_)
             | matrix_sdk::ClientBuildError::Http(_) => {
                 tracing::warn!("homeserver check failed: {error}");
-                Err(anyhow::anyhow!("Invalid homeserver"))
+                Err(anyhow::anyhow!(
+                    "Couldn't reach a Matrix server for {homeserver}."
+                ))
             }
             _ => {
                 // Forward other errors, it's unlikely we can retry with a different outcome.
@@ -846,6 +890,37 @@ async fn persist_sync_token(session_file: &Path, sync_token: String) -> anyhow::
 
 #[cfg(test)]
 mod tests {
+    use super::{NOTIFY_MAX_AGE_MS, should_notify};
+
+    const SINCE: u64 = 1_000_000;
+
+    #[test]
+    fn notifies_fresh_message_in_background() {
+        assert!(should_notify(SINCE + 10, SINCE + 20, SINCE, false));
+    }
+
+    #[test]
+    fn never_while_focused() {
+        assert!(!should_notify(SINCE + 10, SINCE + 20, SINCE, true));
+    }
+
+    #[test]
+    fn skips_history_from_before_session() {
+        assert!(!should_notify(SINCE - 1, SINCE + 20, SINCE, false));
+    }
+
+    #[test]
+    fn skips_stale_catch_up() {
+        let ts = SINCE + 10;
+        assert!(!should_notify(ts, ts + NOTIFY_MAX_AGE_MS + 1, SINCE, false));
+        assert!(should_notify(ts, ts + NOTIFY_MAX_AGE_MS, SINCE, false));
+    }
+
+    #[test]
+    fn server_clock_ahead_is_fresh() {
+        assert!(should_notify(SINCE + 5_000, SINCE + 10, SINCE, false));
+    }
+
     use super::media_extension;
 
     #[test]

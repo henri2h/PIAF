@@ -35,10 +35,11 @@ pub(super) fn field(
                 .child(input),
         )
         .maybe_child(helper.map(|(text, is_error)| {
-            label()
-                .text(text)
-                .font_size(12.)
-                .color(if is_error { c.error } else { c.on_surface_muted })
+            label().text(text).font_size(12.).color(if is_error {
+                c.error
+            } else {
+                c.on_surface_muted
+            })
         }))
 }
 

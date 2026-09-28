@@ -23,6 +23,12 @@ impl Component for Layout {
 
         let c = use_app_colors();
         let mut width: State<f32> = use_state(|| 0.0f32);
+
+        // Notifications run on tokio and can't read Freya state; mirror focus for them.
+        use_side_effect(|| {
+            let focused = *Platform::get().is_app_focused.read();
+            crate::APP_FOCUSED.store(focused, Ordering::Relaxed);
+        });
         let w = *width.read();
         let is_wide = w >= WIDE_MIN_WIDTH;
         WIDE_MODE.store(is_wide, Ordering::Relaxed);
