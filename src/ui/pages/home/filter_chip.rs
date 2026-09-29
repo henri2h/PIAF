@@ -42,7 +42,6 @@ impl Component for FilterChip {
         };
 
         rect()
-            .width(Size::flex(1.0))
             .height(Size::px(30.))
             .corner_radius(15.)
             .background(bg)
@@ -53,7 +52,7 @@ impl Component for FilterChip {
             .child(
                 Ripple::new()
                     .color(if selected { (255, 255, 255) } else { c.primary })
-                    .width(Size::fill_minimum())
+                    .width(Size::auto())
                     .height(Size::fill())
                     .child(
                         rect()

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use freya::prelude::*;
@@ -7,7 +8,7 @@ use freya_components::cursor_blink::use_cursor_blink;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::const_values::AppColors;
-use crate::utils::matrix::{clear_draft, load_draft, save_draft};
+use crate::utils::drafts;
 use crate::utils::use_app_colors;
 
 /// Encode raw RGBA pixels to a PNG byte vector.
@@ -143,22 +144,22 @@ impl Component for ComposeBar {
         let mut editable = use_editable(|| initial_text.clone(), EditableConfig::new);
         let mut editor_state = *editable.editor();
 
-        // Load draft on mount (skip if we're in edit mode with pre-filled text).
+        // Restore the draft on mount (not in edit mode, which pre-fills the text).
         let room_id_draft = room_id.clone();
         use_hook(move || {
-            if initial_text.is_empty() {
-                spawn(async move {
-                    if let Some(text) = load_draft(&room_id_draft).await {
-                        *editor_state.write() = RopeEditor::new(
-                            text,
-                            TextSelection::new_cursor(0),
-                            0,
-                            EditorHistory::new(Duration::from_millis(10)),
-                        );
-                    }
-                });
+            if initial_text.is_empty()
+                && let Some(text) = drafts::get(&room_id_draft)
+            {
+                *editor_state.write() = RopeEditor::new(
+                    text,
+                    TextSelection::new_cursor(0),
+                    0,
+                    EditorHistory::new(Duration::from_millis(10)),
+                );
             }
         });
+        // Bumped on every edit and on send; a pending save only runs if still current.
+        let draft_gen = use_hook(|| Arc::new(AtomicU64::new(0)));
 
         let is_editing = edit_info.read().is_some();
         let is_replying = reply_info.read().is_some();
@@ -177,6 +178,7 @@ impl Component for ComposeBar {
 
         let room_id_attach = room_id.clone();
         let room_id_send = room_id.clone();
+        let draft_gen_send = draft_gen.clone();
 
         let mut do_send = move || {
             let text = editable.editor().read().rope().to_string();
@@ -203,10 +205,8 @@ impl Component for ComposeBar {
                     *reply_info.write() = None;
                 } else {
                     let _ = action_tx.send(MsgAction::Send { text });
-                    let room_id_clear = room_id_send.clone();
-                    tokio::task::spawn(async move {
-                        clear_draft(&room_id_clear).await;
-                    });
+                    draft_gen_send.fetch_add(1, Ordering::Relaxed);
+                    drafts::clear(&room_id_send);
                 }
 
                 editable.process_event(EditableEvent::KeyDown {
@@ -252,16 +252,20 @@ impl Component for ComposeBar {
 
         let room_id_banner = room_id.clone();
 
-        // Save draft on each content change (debounced).
+        // Save the draft 500ms after the last edit.
         use_side_effect(move || {
             if is_editing {
                 return;
             }
             let text = editable.editor().read().rope().to_string();
             let room_id = room_id.clone();
+            let draft_gen = draft_gen.clone();
+            let generation = draft_gen.fetch_add(1, Ordering::Relaxed) + 1;
             tokio::task::spawn(async move {
                 tokio::time::sleep(Duration::from_millis(500)).await;
-                save_draft(&room_id, &text).await;
+                if draft_gen.load(Ordering::Relaxed) == generation {
+                    drafts::set(&room_id, &text);
+                }
             });
         });
 

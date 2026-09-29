@@ -32,12 +32,20 @@ impl RowInteraction {
             .into()
     }
 
-    pub fn attach(self, outer: Rect, room_id: String, c: AppColors, highlighted: Element) -> Rect {
+    pub fn attach(
+        self,
+        outer: Rect,
+        room_id: String,
+        c: AppColors,
+        highlighted: Element,
+        on_menu: super::OnMenu,
+    ) -> Rect {
         let mut hovered = self.hovered;
         let hover_actions = hovered.read().then(|| {
             hover_action_buttons(c, &room_id, self.recontact_hovered, self.archive_hovered)
         });
         outer
+            .on_secondary_down(move |_| on_menu(true))
             .on_pointer_over(move |_| {
                 if !*hovered.peek() {
                     hovered.set(true);

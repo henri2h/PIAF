@@ -4,7 +4,7 @@ use super::filter_chip::FilterChip;
 use super::room_list_model::RoomFilter;
 use crate::utils::use_app_colors;
 
-/// Horizontal row of room filter chips (All / Groups / DMs / Unread).
+/// Horizontal row of room filter chips, each sized to its label.
 pub struct RoomFilterBar {
     pub filter: State<RoomFilter>,
 }
@@ -23,7 +23,6 @@ impl Component for RoomFilterBar {
         let mut row = rect()
             .horizontal()
             .width(Size::fill())
-            .content(Content::Flex)
             .padding(Gaps::new(6., 16., 6., 16.))
             .spacing(6.)
             .background(c.surface);

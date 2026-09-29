@@ -3,7 +3,6 @@ use crate::utils::{
     worker::Requester,
 };
 use futures::channel::oneshot;
-use matrix_sdk::media::MediaFormat;
 use tokio::sync::mpsc::{UnboundedReceiver, unbounded_channel};
 
 pub struct MatrixClientWorker {}
@@ -75,24 +74,14 @@ impl MatrixClientWorker {
 
 async fn do_fetch_room_avatar(room_id: &str) -> Result<Vec<u8>, ()> {
     let room = crate::utils::matrix::get_room(room_id).ok_or(())?;
-    room.avatar(MediaFormat::File)
-        .await
-        .ok()
-        .flatten()
-        .ok_or(())
+    crate::utils::avatars::of_room(&room).await.ok_or(())
 }
 
 async fn do_fetch_user_avatar() -> Result<Vec<u8>, ()> {
     let Some(client) = CLIENT.get().cloned() else {
         return Err(());
     };
-    client
-        .account()
-        .get_avatar(MediaFormat::File)
-        .await
-        .ok()
-        .flatten()
-        .ok_or(())
+    crate::utils::avatars::own(&client).await.ok_or(())
 }
 
 async fn do_fetch_room_previews(room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {

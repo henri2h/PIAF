@@ -1,9 +1,16 @@
+pub mod avatars;
 pub mod bookmarks;
 pub mod const_values;
+pub mod drafts;
 pub mod matrix;
+#[cfg(not(target_os = "android"))]
+pub mod notifications;
 #[cfg(target_os = "android")]
 pub mod push;
 pub mod queries;
+pub mod reactions;
+pub mod room_actions;
+pub mod room_list;
 pub mod room_mailbox;
 pub mod room_preview;
 pub mod sync;
@@ -78,35 +85,6 @@ pub fn use_watch_tick<T: Clone + Send + Sync + 'static>(rx: &watch::Receiver<T>)
     tick
 }
 
-/// Memoizes an expensive computation across renders, recomputing only when
-/// `key` changes from the previous call.
-///
-/// Freya's own `use_memo` auto-tracks `State` reads instead of taking an
-/// explicit key, but requires `T: PartialEq` — many SDK types (e.g.
-/// `matrix_sdk::Room`) don't implement that, so this is the escape hatch:
-/// key on something cheap and comparable (a tick counter, a filter enum)
-/// instead of the expensive value itself.
-///
-/// Must be called unconditionally at the top of `render`, like any hook.
-/// The cache is a plain cell, not `State`: updating it must not schedule
-/// another render (a `State` write here rendered every caller twice).
-pub fn use_keyed_cache<K, T>(key: K, compute: impl FnOnce() -> T) -> T
-where
-    K: PartialEq + 'static,
-    T: Clone + 'static,
-{
-    let cache = use_hook(|| std::rc::Rc::new(std::cell::RefCell::new(None::<(K, T)>)));
-    let mut cache = cache.borrow_mut();
-    match &*cache {
-        Some((cached_key, value)) if cached_key == &key => value.clone(),
-        _ => {
-            let value = compute();
-            *cache = Some((key, value.clone()));
-            value
-        }
-    }
-}
-
 /// Derives `AppColors` from the current freya theme. Use inside Component::render().
 pub fn use_app_colors() -> AppColors {
     let theme = use_theme();
@@ -151,6 +129,16 @@ pub fn format_timestamp(ts: MilliSecondsSinceUnixEpoch) -> String {
     } else {
         dt_local.format("%b %-d, %Y").to_string()
     }
+}
+
+/// Full local date and time, e.g. "Monday 28 September 2026, 14:05" (tooltips).
+pub fn format_full_timestamp(ts: MilliSecondsSinceUnixEpoch) -> String {
+    let millis = u64::from(ts.get()) as i64;
+    let Some(dt_utc) = Utc.timestamp_millis_opt(millis).single() else {
+        return String::new();
+    };
+    let dt_local: DateTime<Local> = dt_utc.into();
+    dt_local.format("%A %-d %B %Y, %H:%M").to_string()
 }
 
 pub fn extract_urls(text: &str) -> Vec<String> {
@@ -340,6 +328,14 @@ mod tests {
     }
 
     // ── format_timestamp ─────────────────────────────────────────────────────
+
+    #[test]
+    fn format_full_timestamp_has_date_and_time() {
+        // Mid-day UTC keeps the local date on 1 Jan 2020 in any timezone within ±11h.
+        let result = format_full_timestamp(ts(1_577_880_000_000));
+        assert!(result.contains("January 2020"), "{result}");
+        assert!(result.contains(':'), "{result}");
+    }
 
     #[test]
     fn format_timestamp_old_different_year() {

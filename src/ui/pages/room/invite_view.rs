@@ -89,7 +89,7 @@ impl Component for InviteView {
                     Some(room) => room.leave().await.map_err(|e| e.to_string()),
                     None => Err("This room is no longer available.".to_string()),
                 };
-                let _ = crate::SYNC_TX.get().expect("not initialized").send(());
+                crate::utils::room_list::refresh("invite_response");
                 let _ = tx.send(result);
             });
             spawn(async move {

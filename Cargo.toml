@@ -88,6 +88,12 @@ tempfile = "3"
 [profile.dev.package."*"]
 opt-level = 1
 
+# matrix-sdk-ui panics on a timeline consistency check ("duplicate read
+# receipts") in debug builds only; release builds log it. Match release so
+# opening such a room doesn't kill its timeline task.
+[profile.dev.package.matrix-sdk-ui]
+debug-assertions = false
+
 [patch."https://github.com/henri2h/freya"]
 freya                    = { path = "/home/user/dev/rust/freya/crates/freya" }
 freya-components         = { path = "/home/user/dev/rust/freya/crates/freya-components" }

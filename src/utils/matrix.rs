@@ -5,14 +5,7 @@ use matrix_sdk::{
     Client, ClientBuilder, Room, ServerName,
     authentication::matrix::MatrixSession,
     encryption::{BackupDownloadStrategy, EncryptionSettings},
-    ruma::{
-        UserId,
-        events::{
-            AnySyncMessageLikeEvent, AnySyncTimelineEvent, OriginalSyncMessageLikeEvent,
-            SyncMessageLikeEvent, reaction::ReactionEventContent,
-        },
-        exports::serde_json,
-    },
+    ruma::{UserId, exports::serde_json},
 };
 use rand::{RngExt, rng};
 use rand_distr::Alphanumeric;
@@ -24,7 +17,6 @@ use std::{
 use tokio::fs;
 
 use crate::REQUESTER;
-use crate::utils::room_preview::message_body;
 
 pub static CLIENT: OnceLock<Client> = OnceLock::new();
 pub static SESSION_FILE: OnceLock<PathBuf> = OnceLock::new();
@@ -88,39 +80,6 @@ pub fn latest_event_ts(room: &Room) -> Option<u64> {
 pub fn my_user_id() -> Option<String> {
     CLIENT.get()?.user_id().map(|id| id.to_string())
 }
-/// Ensures the reaction event handler is registered at most once across all
-/// calls to `activate_client` (login + restore can both call it).
-static REACTION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
-/// Fingerprint of the room list as of the last `SYNC_TX` fire, used by
-/// `notify_sync_if_changed` to suppress redundant UI wakeups.
-static LAST_ROOM_FINGERPRINT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-#[cfg(not(target_os = "android"))]
-static NOTIFICATION_HANDLER_GUARD: OnceLock<()> = OnceLock::new();
-
-#[cfg(not(target_os = "android"))]
-/// Events older than this are catch-up, not something to notify about.
-const NOTIFY_MAX_AGE_MS: u64 = 5 * 60 * 1000;
-#[cfg(not(target_os = "android"))]
-/// When this client session started (ms since epoch); older events never notify.
-static NOTIFY_SINCE_MS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-
-#[cfg(not(target_os = "android"))]
-fn now_ms() -> u64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_millis() as u64)
-        .unwrap_or(0)
-}
-
-#[cfg(not(target_os = "android"))]
-/// Desktop notification gate: only messages sent since this session started,
-/// still fresh, and only while the window is in the background.
-fn should_notify(event_ts_ms: u64, now_ms: u64, since_ms: u64, app_focused: bool) -> bool {
-    !app_focused
-        && event_ts_ms >= since_ms
-        && now_ms.saturating_sub(event_ts_ms) <= NOTIFY_MAX_AGE_MS
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 struct ClientSession {
     /// The URL of the homeserver of the user.
@@ -219,6 +178,7 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<Client> {
 
 async fn activate_client(client: &Client, _pusher_dir: &Path) {
     watch_session_expiry(client);
+    crate::utils::drafts::load().await;
     if let Err(e) = crate::utils::sync::init(client).await {
         tracing::error!("activate_client: SyncService build failed: {e:#}");
     }
@@ -226,15 +186,8 @@ async fn activate_client(client: &Client, _pusher_dir: &Path) {
     #[cfg(target_os = "android")]
     crate::utils::push::register_pusher_if_stored(client, _pusher_dir).await;
 
-    // Track reactions to the current user's messages for the Reactions feed.
-    // The OnceLock guard ensures the handler is registered exactly once even if
-    // activate_client is called on both the restore and login paths.
-    if REQUESTER.get().is_some() && REACTION_HANDLER_GUARD.set(()).is_ok() {
-        client.add_event_handler(
-            |ev: OriginalSyncMessageLikeEvent<ReactionEventContent>, room: Room, client: Client| async move {
-                collect_reaction(ev, room, client).await;
-            },
-        );
+    if REQUESTER.get().is_some() {
+        crate::utils::reactions::register(client);
     }
 
     // Load bookmark lists from account_data once the client is ready.
@@ -255,174 +208,18 @@ async fn activate_client(client: &Client, _pusher_dir: &Path) {
         });
     }
 
-    // Desktop notifications for incoming messages.
     #[cfg(not(target_os = "android"))]
-    if REQUESTER.get().is_some() && NOTIFICATION_HANDLER_GUARD.set(()).is_ok() {
-        use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
-        NOTIFY_SINCE_MS.store(now_ms(), Ordering::Relaxed);
-        client.add_event_handler(
-            |ev: OriginalSyncMessageLikeEvent<RoomMessageEventContent>,
-             room: Room,
-             client: Client| async move {
-                send_desktop_notification(ev, room, client).await;
-            },
-        );
+    if REQUESTER.get().is_some() {
+        crate::utils::notifications::register(client);
     }
 
     // No REQUESTER means the Android push context: enrichment only, no sync.
     if REQUESTER.get().is_some() {
         tracing::debug!("activate_client: starting sync service");
         crate::utils::sync::start(client.clone());
+        // Show cached rooms right away, before the first sync update.
+        crate::utils::room_list::refresh("startup");
     }
-}
-
-async fn collect_reaction(
-    ev: OriginalSyncMessageLikeEvent<ReactionEventContent>,
-    room: Room,
-    client: Client,
-) {
-    let Some(me) = client.user_id() else { return };
-    if ev.sender == me {
-        return;
-    }
-
-    let target_event_id = ev.content.relates_to.event_id.clone();
-    let emoji = ev.content.relates_to.key.clone();
-    let timestamp_ms: u64 = ev.origin_server_ts.0.into();
-
-    let Ok(target_event) = room.event(&target_event_id, None).await else {
-        return;
-    };
-    let Ok(deserialized) = target_event.kind.raw().deserialize() else {
-        return;
-    };
-
-    if deserialized.sender() != me {
-        return;
-    }
-
-    let message_preview = extract_message_preview(&deserialized);
-
-    let room_name = room
-        .display_name()
-        .await
-        .map(|n| n.to_string())
-        .unwrap_or_default();
-
-    let sender_display = room
-        .get_member_no_sync(&ev.sender)
-        .await
-        .ok()
-        .flatten()
-        .and_then(|m| m.display_name().map(|s| s.to_string()))
-        .unwrap_or_else(|| ev.sender.localpart().to_string());
-
-    let reaction = crate::utils::ReceivedReaction {
-        room_id: room.room_id().to_string(),
-        room_name,
-        target_event_id: target_event_id.to_string(),
-        message_preview,
-        emoji,
-        sender_id: ev.sender.to_string(),
-        sender_display,
-        timestamp_ms,
-    };
-
-    crate::REACTIONS_TX
-        .get()
-        .expect("REACTIONS_TX not initialized")
-        .send_modify(|v| {
-            // Dedup: the list is sorted descending by timestamp; binary-search for the
-            // insertion point so we avoid a full O(n log n) re-sort on every reaction.
-            let ts = reaction.timestamp_ms;
-            let already_exists = v.iter().any(|r| {
-                r.sender_id == reaction.sender_id
-                    && r.target_event_id == reaction.target_event_id
-                    && r.emoji == reaction.emoji
-            });
-            if !already_exists {
-                // partition_point on descending order: first index where ts[i] < ts.
-                let pos = v.partition_point(|r| r.timestamp_ms > ts);
-                v.insert(pos, reaction);
-            }
-        });
-}
-
-fn extract_message_preview(event: &AnySyncTimelineEvent) -> String {
-    let body = match event {
-        AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
-            SyncMessageLikeEvent::Original(msg),
-        )) => message_body(&msg.content.msgtype),
-        _ => None,
-    };
-    body.map(|b| b.chars().take(60).collect())
-        .unwrap_or_else(|| "Message".to_string())
-}
-
-#[cfg(not(target_os = "android"))]
-async fn send_desktop_notification(
-    ev: OriginalSyncMessageLikeEvent<
-        matrix_sdk::ruma::events::room::message::RoomMessageEventContent,
-    >,
-    room: Room,
-    client: Client,
-) {
-    let event_ts_ms: u64 = ev.origin_server_ts.0.into();
-    if !should_notify(
-        event_ts_ms,
-        now_ms(),
-        NOTIFY_SINCE_MS.load(Ordering::Relaxed),
-        crate::APP_FOCUSED.load(Ordering::Relaxed),
-    ) {
-        return;
-    }
-    let Some(me) = client.user_id() else { return };
-    if ev.sender == me {
-        return;
-    }
-
-    // Skip muted rooms.
-    let ns = client.notification_settings().await;
-    let mode = ns
-        .get_user_defined_room_notification_mode(room.room_id())
-        .await;
-    if mode == Some(matrix_sdk::notification_settings::RoomNotificationMode::Mute) {
-        return;
-    }
-
-    let room_name = room
-        .cached_display_name()
-        .map(|n| n.to_string())
-        .unwrap_or_else(|| room.room_id().to_string());
-
-    let sender_name = room
-        .get_member_no_sync(&ev.sender)
-        .await
-        .ok()
-        .flatten()
-        .and_then(|m| m.display_name().map(|s| s.to_string()))
-        .unwrap_or_else(|| ev.sender.localpart().to_string());
-
-    let body = match &ev.content.msgtype {
-        matrix_sdk::ruma::events::room::message::MessageType::Emote(e) => {
-            format!("* {} {}", sender_name, e.body)
-        }
-        other => message_body(other).unwrap_or_else(|| "New message".to_string()),
-    };
-
-    let summary = if room.is_dm() {
-        sender_name.clone()
-    } else {
-        format!("{sender_name} · {room_name}")
-    };
-
-    let _ = notify_rust::Notification::new()
-        .appname("Piaf")
-        .summary(&summary)
-        .body(&body)
-        .icon("dialog-information")
-        .timeout(notify_rust::Timeout::Milliseconds(5000))
-        .show();
 }
 
 pub async fn login_matrix(username: String, password: String) -> anyhow::Result<()> {
@@ -575,53 +372,6 @@ async fn new_client(
     }
 }
 
-/// Cheap fingerprint of "does the room list look any different from last
-/// time we woke the UI". Sync loops (raw `/sync` and the sliding-sync room
-/// list service) both complete periodically even when nothing changed (e.g.
-/// long-poll timeouts); firing `SYNC_TX` on every one of those forces
-/// `RoomList` to rebuild and sort its full room vector for no reason. This
-/// intentionally skips `latest_event().timestamp()` (expensive: walks the
-/// room's timeline) in favor of `recency_stamp`, which the server already
-/// bumps whenever it considers the room updated.
-fn room_list_fingerprint(client: &Client) -> u64 {
-    use std::hash::{Hash, Hasher};
-
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    let mut rooms = client.joined_rooms();
-    rooms.extend(client.invited_rooms());
-    rooms.len().hash(&mut hasher);
-    for room in &rooms {
-        room.room_id().hash(&mut hasher);
-        room.recency_stamp().map(u64::from).hash(&mut hasher);
-        (room.state() == matrix_sdk::RoomState::Invited).hash(&mut hasher);
-        room.num_unread_messages().hash(&mut hasher);
-        room.num_unread_notifications().hash(&mut hasher);
-        room.cached_user_defined_notification_mode()
-            .map(|m| m as u8)
-            .hash(&mut hasher);
-    }
-    hasher.finish()
-}
-
-/// Fires `SYNC_TX` only if the room list actually looks different since the
-/// last time this was called. See `room_list_fingerprint`.
-pub fn notify_sync_if_changed(client: &Client, source: &'static str) {
-    let start = std::time::Instant::now();
-    let fp = room_list_fingerprint(client);
-    let prev = LAST_ROOM_FINGERPRINT.swap(fp, Ordering::Relaxed);
-    let changed = prev != fp;
-    if changed {
-        let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
-    }
-    tracing::debug!(
-        target: crate::logging::PERF,
-        source,
-        changed,
-        "sync batch, fingerprint {}µs",
-        start.elapsed().as_micros()
-    );
-}
-
 // ── Theme preference persistence ─────────────────────────────────────────────
 
 fn theme_pref_file() -> Option<std::path::PathBuf> {
@@ -644,55 +394,6 @@ pub async fn save_theme_pref(is_dark: bool) {
         return;
     };
     let _ = fs::write(&path, if is_dark { "2" } else { "1" }).await;
-}
-
-// ── Draft persistence ─────────────────────────────────────────────────────────
-
-fn drafts_file() -> Option<std::path::PathBuf> {
-    DATA_DIR
-        .get()
-        .and_then(|d| d.parent())
-        .map(|p| p.join("drafts.json"))
-}
-
-async fn read_drafts() -> std::collections::HashMap<String, String> {
-    let Some(path) = drafts_file() else {
-        return Default::default();
-    };
-    fs::read_to_string(&path)
-        .await
-        .ok()
-        .and_then(|s| serde_json::from_str(&s).ok())
-        .unwrap_or_default()
-}
-
-async fn write_drafts(map: &std::collections::HashMap<String, String>) {
-    let Some(path) = drafts_file() else { return };
-    if let Ok(json) = serde_json::to_string(map) {
-        let _ = fs::write(&path, json).await;
-    }
-}
-
-pub async fn load_draft(room_id: &str) -> Option<String> {
-    let s = read_drafts().await.remove(room_id)?;
-    if s.trim().is_empty() { None } else { Some(s) }
-}
-
-pub async fn save_draft(room_id: &str, text: &str) {
-    let mut map = read_drafts().await;
-    if text.trim().is_empty() {
-        map.remove(room_id);
-    } else {
-        map.insert(room_id.to_string(), text.to_string());
-    }
-    write_drafts(&map).await;
-}
-
-pub async fn clear_draft(room_id: &str) {
-    let mut map = read_drafts().await;
-    if map.remove(room_id).is_some() {
-        write_drafts(&map).await;
-    }
 }
 
 // ── Media download ────────────────────────────────────────────────────────────
@@ -756,37 +457,6 @@ pub async fn create_or_get_dm(user_id: String) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{NOTIFY_MAX_AGE_MS, should_notify};
-
-    const SINCE: u64 = 1_000_000;
-
-    #[test]
-    fn notifies_fresh_message_in_background() {
-        assert!(should_notify(SINCE + 10, SINCE + 20, SINCE, false));
-    }
-
-    #[test]
-    fn never_while_focused() {
-        assert!(!should_notify(SINCE + 10, SINCE + 20, SINCE, true));
-    }
-
-    #[test]
-    fn skips_history_from_before_session() {
-        assert!(!should_notify(SINCE - 1, SINCE + 20, SINCE, false));
-    }
-
-    #[test]
-    fn skips_stale_catch_up() {
-        let ts = SINCE + 10;
-        assert!(!should_notify(ts, ts + NOTIFY_MAX_AGE_MS + 1, SINCE, false));
-        assert!(should_notify(ts, ts + NOTIFY_MAX_AGE_MS, SINCE, false));
-    }
-
-    #[test]
-    fn server_clock_ahead_is_fresh() {
-        assert!(should_notify(SINCE + 5_000, SINCE + 10, SINCE, false));
-    }
-
     use super::media_extension;
 
     #[test]

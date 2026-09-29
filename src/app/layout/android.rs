@@ -29,6 +29,7 @@ impl Component for Layout {
             .vertical()
             .expanded()
             .native_router()
+            .child(ContextMenuViewer::new())
             .on_global_key_down(move |e: Event<KeyboardEventData>| {
                 if e.key != Key::Named(NamedKey::BrowserBack) {
                     return;

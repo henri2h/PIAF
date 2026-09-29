@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 use freya_router::prelude::RouterContext;
-use matrix_sdk::media::MediaFormat;
 
 use crate::ui::components::Avatar;
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
@@ -41,12 +40,7 @@ impl Component for SettingsProfile {
                         .flatten()
                         .or_else(|| client.user_id().map(|id| id.to_string()))
                         .unwrap_or_default();
-                    let av = client
-                        .account()
-                        .get_avatar(MediaFormat::File)
-                        .await
-                        .ok()
-                        .flatten();
+                    let av = crate::utils::avatars::own(&client).await;
                     let _ = tx.send((name, av));
                 });
                 if let Ok((name, av)) = rx.await {

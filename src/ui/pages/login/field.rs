@@ -3,10 +3,15 @@ use freya::prelude::*;
 use crate::utils::const_values::AppColors;
 
 /// Label, outlined input, and an optional helper line (red when `is_error`).
+///
+/// `action` (e.g. a show-password toggle) sits beside the input rather than in
+/// `Input::trailing`: the input's own pointer handlers stop and cancel presses
+/// anywhere inside it, so a button there never receives `on_press`.
 pub(super) fn field(
     c: AppColors,
     field_label: &'static str,
     input: Input,
+    action: Option<Rect>,
     helper: Option<(String, bool)>,
 ) -> Rect {
     rect()
@@ -32,7 +37,12 @@ pub(super) fn field(
                         .alignment(BorderAlignment::Inner),
                 )
                 .padding(Gaps::new(4., 8., 4., 12.))
-                .child(input),
+                .horizontal()
+                .content(Content::Flex)
+                .cross_align(Alignment::Center)
+                .spacing(4.)
+                .child(input.width(Size::flex(1.)))
+                .maybe_child(action),
         )
         .maybe_child(helper.map(|(text, is_error)| {
             label().text(text).font_size(12.).color(if is_error {

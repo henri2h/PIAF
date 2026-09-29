@@ -121,9 +121,9 @@ impl Component for LoginPage {
                     .flat()
                     .placeholder("@you:matrix.org")
                     .auto_focus(true)
-                    .width(Size::fill())
                     .leading(icon(lucide::at_sign(), c.on_surface_muted))
                     .on_submit(move |_| submit()),
+                None,
                 user_helper,
             ))
             .child(field(
@@ -137,10 +137,9 @@ impl Component for LoginPage {
                     } else {
                         InputMode::Shown
                     })
-                    .width(Size::fill())
                     .leading(icon(lucide::lock(), c.on_surface_muted))
-                    .trailing(eye_toggle)
                     .on_submit(move |_| submit()),
+                Some(eye_toggle),
                 None,
             ))
             .maybe_child(error.read().clone().map(|msg| error_box(c, msg)))

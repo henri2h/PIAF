@@ -24,6 +24,7 @@ fn android_main(droid_app: AndroidApp) {
         .expect("No internal data path on Android");
 
     let rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(crate::TOKIO_WORKERS)
         .enable_all()
         .build()
         .expect("Failed to build tokio runtime");

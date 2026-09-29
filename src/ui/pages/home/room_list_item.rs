@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use std::time::Duration;
 
 use freya::prelude::*;
@@ -5,16 +6,19 @@ use freya_query::prelude::*;
 use matrix_sdk::RoomHero;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
-pub use super::room_list_model::RoomSummary;
-use super::row_interaction::use_row_interaction;
+use super::room_menu::open_room_menu;
+use super::row_interaction::{OnMenu, use_row_interaction};
 use crate::app::navigation::navigate_to_room;
 use crate::logging::RenderTimer;
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
 use crate::ui::pages::home::ActiveRoomCtx;
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::my_user_id;
+pub use crate::utils::room_list::RoomSummary;
 use crate::utils::room_preview::{SenderPrefix, last_message, preview_text};
-use crate::utils::{format_timestamp, queries::FetchSenderName, use_app_colors};
+use crate::utils::{
+    format_full_timestamp, format_timestamp, queries::FetchSenderName, use_app_colors,
+};
 
 pub const ROOM_ROW_HEIGHT: f32 = 80.;
 
@@ -34,6 +38,7 @@ impl Component for RoomListItem {
         let is_active = try_consume_context::<ActiveRoomCtx>()
             .is_some_and(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()));
 
+        use_hook(|| crate::utils::sync::track_latest_event(&room_id));
         let needs_preview = s.needs_preview;
         use_side_effect_with_deps(&(room_id.clone(), needs_preview), move |(rid, needed)| {
             if *needed && let Ok(rid) = matrix_sdk::ruma::OwnedRoomId::try_from(rid.as_str()) {
@@ -95,24 +100,24 @@ impl Component for RoomListItem {
                             .horizontal()
                             .content(Content::Flex)
                             .width(Size::fill())
+                            .spacing(4.)
+                            .cross_align(Alignment::Center)
                             .child(
                                 label()
                                     .text(s.name.clone())
                                     .width(Size::flex(1.0))
+                                    .max_lines(1)
                                     .font_size(16.)
                                     .font_weight(font_weight)
                                     .color(c.on_surface),
                             )
+                            .maybe_child(
+                                s.is_favourite
+                                    .then(|| small_icon(freya_icons::lucide::star(), c.primary)),
+                            )
                             .child(trailing(s, c, font_weight)),
                     )
-                    .child(
-                        label()
-                            .text(preview)
-                            .width(Size::fill())
-                            .max_lines(1)
-                            .color(c.on_surface_variant)
-                            .font_size(13.5),
-                    ),
+                    .child(preview_line(s, preview, c)),
             );
 
         let highlighted: Element = rect()
@@ -131,7 +136,9 @@ impl Component for RoomListItem {
             .padding(Gaps::new(2., 8., 2., 8.))
             .on_press(move |_| navigate_to_room(room_id_nav.clone()));
 
-        interaction.attach(outer, room_id, c, highlighted)
+        let summary = s.clone();
+        let on_menu: OnMenu = Rc::new(move |from_down| open_room_menu(&summary, from_down));
+        interaction.attach(outer, room_id, c, highlighted, on_menu)
     }
 }
 
@@ -163,6 +170,48 @@ fn room_avatar(s: &RoomSummary, c: AppColors, bg: (u8, u8, u8)) -> Element {
     .into()
 }
 
+/// Send failure, else draft, else the latest message.
+fn preview_line(s: &RoomSummary, preview: String, c: AppColors) -> Rect {
+    let row = rect()
+        .horizontal()
+        .width(Size::fill())
+        .content(Content::Flex)
+        .spacing(4.)
+        .cross_align(Alignment::Center);
+    let text = |t: String, color| {
+        label()
+            .text(t)
+            .width(Size::flex(1.))
+            .max_lines(1)
+            .font_size(13.5)
+            .color(color)
+    };
+    if s.send_failed {
+        return row
+            .child(small_icon(freya_icons::lucide::circle_alert(), c.error))
+            .child(text("Failed to send".into(), c.error));
+    }
+    if let Some(draft) = s.draft.clone().filter(|_| !s.is_invite) {
+        return row
+            .child(
+                label()
+                    .text("Draft:")
+                    .font_size(13.5)
+                    .font_weight(FontWeight::MEDIUM)
+                    .color(c.error),
+            )
+            .child(text(draft, c.on_surface_variant));
+    }
+    row.child(text(preview, c.on_surface_variant))
+}
+
+fn small_icon(svg: bytes::Bytes, color: (u8, u8, u8)) -> SvgViewer {
+    SvgViewer::new(svg)
+        .width(Size::px(14.))
+        .height(Size::px(14.))
+        .color(color)
+}
+
 /// Mute icon + timestamp, with the unread badge below. Invites get a pill instead.
 fn trailing(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
     if s.is_invite {
@@ -178,11 +227,10 @@ fn trailing(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
                     .color(c.on_primary),
             );
     }
-    let timestamp = s
+    let ts = s
         .latest_ts
         .and_then(|ts| ts.try_into().ok())
-        .map(|ts| format_timestamp(MilliSecondsSinceUnixEpoch(ts)))
-        .unwrap_or_default();
+        .map(MilliSecondsSinceUnixEpoch);
     let timestamp_color = if s.is_unread() {
         c.primary
     } else {
@@ -203,30 +251,41 @@ fn trailing(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
                         .height(Size::px(12.))
                         .color(c.on_surface_faint)
                 }))
-                .child(
-                    label()
-                        .text(timestamp)
-                        .font_size(12.)
-                        .font_weight(font_weight)
-                        .color(timestamp_color),
-                ),
+                .maybe_child(ts.map(|ts| {
+                    TooltipContainer::new(Tooltip::new_text(format_full_timestamp(ts)))
+                        .position(AttachedPosition::Bottom)
+                        .child(
+                            label()
+                                .text(format_timestamp(ts))
+                                .font_size(12.)
+                                .font_weight(font_weight)
+                                .color(timestamp_color),
+                        )
+                })),
         )
         .child(unread_badge(s, c))
 }
 
-/// Count pill for notifications, a dot for unread-only, else an empty spacer.
+/// Count pill for notifications (red with `@` when you're mentioned), a dot
+/// for unread-only or marked unread, else an empty spacer.
 fn unread_badge(s: &RoomSummary, c: AppColors) -> Element {
-    if s.notifications > 0 {
-        let count = if s.notifications > 99 {
+    if s.notifications > 0 || s.mentions > 0 {
+        let n = s.notifications.max(s.mentions);
+        let count = if n > 99 {
             "99+".to_string()
         } else {
-            s.notifications.to_string()
+            n.to_string()
+        };
+        let (count, background) = if s.mentions > 0 {
+            (format!("@ {count}"), c.error)
+        } else {
+            (count, c.primary)
         };
         return rect()
             .min_width(Size::px(20.))
             .height(Size::px(20.))
             .corner_radius(10.)
-            .background(c.primary)
+            .background(background)
             .center()
             .padding(Gaps::new(0., 4., 0., 4.))
             .child(label().text(count).font_size(11.).color(c.on_primary))

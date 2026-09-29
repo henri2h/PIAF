@@ -2,18 +2,26 @@
 //! connection for the room list (account data, receipts, typing) plus the
 //! encryption sync (to-device, e2ee). Replaces the classic `/sync` loop.
 
+use std::collections::HashSet;
 use std::sync::atomic::Ordering;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, LazyLock, Mutex, OnceLock};
 use std::time::Duration;
 
 use matrix_sdk::Client;
+use matrix_sdk::ruma::OwnedRoomId;
 use matrix_sdk_ui::RoomListService;
 use matrix_sdk_ui::sync_service::{State, SyncService};
 use tokio::sync::broadcast::error::RecvError;
 
-use crate::utils::matrix::notify_sync_if_changed;
+use crate::utils::room_list::{refresh, resolve_invite_dm_flags};
 
 static SYNC_SERVICE: OnceLock<Arc<SyncService>> = OnceLock::new();
+
+/// Events per room in room list updates. Kept at 1: on large accounts every
+/// extra event is multiplied by thousands of rooms. Rows without a usable
+/// preview get one through a room subscription (20 events, see
+/// `RoomListItem`'s preview fetch) plus `track_latest_event`.
+const ROOM_LIST_TIMELINE_LIMIT: u32 = 1;
 
 /// Delay before restarting after a sync error (not network loss: offline mode handles that).
 const RESTART_DELAY: Duration = Duration::from_secs(5);
@@ -25,6 +33,10 @@ pub async fn init(client: &Client) -> anyhow::Result<()> {
     }
     let service = SyncService::builder(client.clone())
         .with_offline_mode()
+        // Persist the sliding-sync position: without it every launch re-downloads
+        // the whole room list, 100 rooms per batch.
+        .with_share_pos(true)
+        .with_room_list_timeline_limit(ROOM_LIST_TIMELINE_LIMIT)
         .build()
         .await?;
     let _ = SYNC_SERVICE.set(Arc::new(service));
@@ -42,6 +54,7 @@ pub fn start(client: Client) {
         return;
     };
     tokio::spawn(watch_state(service.clone()));
+    tokio::spawn(watch_room_info(client.clone()));
     tokio::spawn(watch_room_updates(client));
     tokio::spawn(async move { service.start().await });
 }
@@ -61,7 +74,6 @@ async fn watch_state(service: Arc<SyncService>) {
         tracing::debug!("sync state: {state:?}");
         match state {
             State::Running => {
-                crate::SYNCING.store(false, Ordering::Relaxed);
                 crate::DISCONNECTED.store(false, Ordering::Relaxed);
                 // The startup registration may have failed without network.
                 #[cfg(target_os = "android")]
@@ -90,13 +102,38 @@ async fn watch_state(service: Arc<SyncService>) {
     }
 }
 
+/// Latest events are computed lazily, only for registered rooms; without this
+/// a room's preview stays empty until a timeline for it is opened. Called by
+/// room rows as they're shown, so large accounts only pay for visible rooms.
+/// New values arrive as `LATEST_EVENT` notable updates (see `watch_room_info`).
+pub fn track_latest_event(room_id: &str) {
+    static TRACKED: LazyLock<Mutex<HashSet<String>>> = LazyLock::new(Default::default);
+    if !TRACKED.lock().unwrap().insert(room_id.to_string()) {
+        return;
+    }
+    let Ok(room_id) = OwnedRoomId::try_from(room_id) else {
+        return;
+    };
+    let Some(client) = crate::utils::matrix::CLIENT.get().cloned() else {
+        return;
+    };
+    tokio::spawn(async move {
+        if let Err(e) = client.latest_events().await.listen_to_room(&room_id).await {
+            tracing::warn!("latest events: can't listen to {room_id}: {e}");
+        }
+    });
+}
+
 /// Wakes the UI after each processed sync response that changed the room list.
 async fn watch_room_updates(client: Client) {
     let mut updates = client.subscribe_to_all_room_updates();
+    // Invites restored from the store, before any sync update.
+    resolve_invite_dm_flags(&client).await;
     loop {
         match updates.recv().await {
             Ok(_) | Err(RecvError::Lagged(_)) => {
-                notify_sync_if_changed(&client, "sync");
+                resolve_invite_dm_flags(&client).await;
+                refresh("sync");
                 #[cfg(target_os = "android")]
                 {
                     let client = client.clone();
@@ -104,6 +141,20 @@ async fn watch_room_updates(client: Client) {
                         crate::utils::push::cancel_read_notifications_after_sync(&client).await;
                     });
                 }
+            }
+            Err(RecvError::Closed) => break,
+        }
+    }
+}
+
+/// Room info changes that don't come with a room update (unread marker, receipts,
+/// latest event, names). One per room; `refresh` coalesces them.
+async fn watch_room_info(client: Client) {
+    let mut updates = client.room_info_notable_update_receiver();
+    loop {
+        match updates.recv().await {
+            Ok(_) | Err(RecvError::Lagged(_)) => {
+                refresh("room_info");
             }
             Err(RecvError::Closed) => break,
         }

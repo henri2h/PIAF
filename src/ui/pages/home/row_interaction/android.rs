@@ -40,7 +40,7 @@ impl RowInteraction {
         inner.into()
     }
 
-    fn start_long_press(&self) {
+    fn start_long_press(&self, on_menu: super::OnMenu) {
         let mut press_gen = self.press_gen;
         let mut long_pressed = self.long_pressed;
         let next_gen = *press_gen.read() + 1;
@@ -50,6 +50,7 @@ impl RowInteraction {
             timer(LONG_PRESS_DELAY).await;
             if *press_gen.read() == next_gen {
                 *long_pressed.write() = true;
+                on_menu(false);
                 timer(LONG_PRESS_HIGHLIGHT).await;
                 if *press_gen.read() == next_gen {
                     *long_pressed.write() = false;
@@ -64,7 +65,14 @@ impl RowInteraction {
     }
 
     /// Adds touch handlers and the recontact/archive panels revealed behind `highlighted`.
-    pub fn attach(self, outer: Rect, room_id: String, c: AppColors, highlighted: Element) -> Rect {
+    pub fn attach(
+        self,
+        outer: Rect,
+        room_id: String,
+        c: AppColors,
+        highlighted: Element,
+        on_menu: super::OnMenu,
+    ) -> Rect {
         let state = self;
         let room_id_recontact = room_id.clone();
         let room_id_archive = room_id;
@@ -128,7 +136,7 @@ impl RowInteraction {
         outer
             .on_touch_start(move |e: Event<TouchEventData>| {
                 drag_start.set(Some((e.global_location.x, e.global_location.y)));
-                state.start_long_press();
+                state.start_long_press(on_menu.clone());
             })
             .on_touch_move(move |e: Event<TouchEventData>| {
                 let Some((sx, sy)) = *drag_start.peek() else {
@@ -150,6 +158,10 @@ impl RowInteraction {
                 offset_x.set(dx.clamp(-MAX_OFFSET, MAX_OFFSET) as f32);
             })
             .on_touch_end(move |e: Event<TouchEventData>| {
+                // The lift after a long press (menu open) is not a tap.
+                if *state.long_pressed.peek() {
+                    e.prevent_default();
+                }
                 state.cancel_long_press();
                 if *is_swiping.peek() {
                     // Otherwise the row's `on_press` fires and opens the room just archived.

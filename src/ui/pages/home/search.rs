@@ -31,7 +31,7 @@ pub fn search_rooms_local(client: &Client, query: &str) -> Vec<RoomResult> {
     let ql = query.to_lowercase();
     let mut all_rooms = client.joined_rooms();
     all_rooms.extend(client.invited_rooms());
-    super::room_list_model::sort_rooms_by_recency(&mut all_rooms);
+    crate::utils::room_list::sort_rooms_by_recency(&mut all_rooms);
     all_rooms
         .into_iter()
         .filter_map(|r| {

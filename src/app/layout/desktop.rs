@@ -101,6 +101,7 @@ impl Component for Layout {
                 }
             })
             .child(body)
+            .child(ContextMenuViewer::new())
     }
 }
 

@@ -7,6 +7,10 @@ pub mod utils;
 mod android;
 
 pub use app::Route;
+
+/// Tokio workers for the app runtime. The default (one per core) is far more
+/// than one sync connection, the stores and media fetches need.
+pub const TOKIO_WORKERS: usize = 4;
 pub use app::state::*;
 
 #[cfg(not(target_os = "android"))]
@@ -18,6 +22,7 @@ pub fn run_desktop() {
     logging::init();
 
     let rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(TOKIO_WORKERS)
         .enable_all()
         .build()
         .unwrap();

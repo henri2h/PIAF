@@ -28,7 +28,9 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
     };
 
     if super::TOKIO_HANDLE.get().is_none() {
+        // Push enrichment only: a couple of workers is plenty.
         let rt = match tokio::runtime::Builder::new_multi_thread()
+            .worker_threads(2)
             .enable_all()
             .build()
         {

@@ -74,11 +74,13 @@ async fn receive(mut st: TimelineState, mut events: TimelineEvents, focus: Optio
 
     loop {
         tokio::select! {
-            start = events.reached_start.recv() => {
-                if start.is_none() { break; }
-                st.at_start.set(true);
+            done = events.page_done.recv() => {
+                let Some(hit_start) = done else { break; };
                 st.paginating.set(false);
-                st.auto_fill.set(false);
+                if hit_start {
+                    st.at_start.set(true);
+                    st.auto_fill.set(false);
+                }
             }
             update = events.updates.recv() => {
                 let Some(msgs) = update else { break; };

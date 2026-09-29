@@ -4,6 +4,7 @@ mod filter_chip;
 mod room_list;
 pub mod room_list_item;
 mod room_list_model;
+mod room_menu;
 mod row_interaction;
 pub mod search;
 mod search_panel;
@@ -54,17 +55,15 @@ impl Component for HomePage {
         let search: State<String> = use_state(String::new);
         let search_open: State<bool> = use_state(|| false);
         let filter: State<RoomFilter> = use_state(|| RoomFilter::All);
-        let chips_visible: State<bool> = use_state(|| false);
+        // Shown by default; scrolling down hides them, scrolling up brings them back.
+        let chips_visible: State<bool> = use_state(|| true);
 
-        // Room order changes on sync; archive/recontact on mailbox updates.
-        let sync_tick = use_watch_tick(crate::SYNC_RX.get().expect("not initialized"));
-        let mailbox_tick = use_watch_tick(crate::ROOM_MAILBOX_RX.get().expect("not initialized"));
+        // Re-render on sync ticks so the session-expired banner appears.
+        let _sync = use_watch_tick(crate::SYNC_RX.get().expect("not initialized"));
 
         let is_wide = WIDE_MODE.load(Ordering::Relaxed);
         let search_active = !search.read().trim().is_empty();
         let show_filters = !search_active && (*chips_visible.read() || is_wide);
-        let sync_tick_val = *sync_tick.read();
-        let mailbox_tick_val = *mailbox_tick.read();
         let session_expired = crate::SESSION_EXPIRED.load(Ordering::Relaxed);
 
         rect()
@@ -92,8 +91,6 @@ impl Component for HomePage {
                 RoomList {
                     filter: filter.read().clone(),
                     chips_visible,
-                    sync_tick: sync_tick_val,
-                    mailbox_tick: mailbox_tick_val,
                 }
                 .into_element()
             })

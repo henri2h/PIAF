@@ -17,7 +17,6 @@ pub static APP_CLASS_LOADER: OnceLock<jni::objects::GlobalRef> = OnceLock::new()
 
 use matrix_sdk::{
     Client,
-    media::MediaFormat,
     ruma::{
         EventId, OwnedRoomId, RoomId,
         api::client::push::{PusherIds, PusherInit, PusherKind},
@@ -278,8 +277,6 @@ pub async fn fetch_sender_avatar(
     room_id_str: &str,
     sender_id_str: &str,
 ) -> Option<Vec<u8>> {
-    use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
-    use matrix_sdk::ruma::events::room::MediaSource;
     use matrix_sdk::ruma::{RoomId, UserId};
 
     let room_id = RoomId::parse(room_id_str).ok()?;
@@ -287,16 +284,7 @@ pub async fn fetch_sender_avatar(
     let room = client.get_room(&room_id)?;
     let member = room.get_member_no_sync(&sender_id).await.ok().flatten()?;
     let avatar_url = member.avatar_url()?;
-    let request = MediaRequestParameters {
-        source: MediaSource::Plain(avatar_url.to_owned()),
-        format: MediaFormat::File,
-    };
-    client
-        .media()
-        .get_media_content(&request, true)
-        .await
-        .ok()
-        .map(|b| b.to_vec())
+    crate::utils::avatars::by_mxc(client, avatar_url.to_owned()).await
 }
 
 /// Fetch the image bytes for an image message event (for notification thumbnail).
@@ -338,7 +326,7 @@ pub async fn fetch_event_image(
 pub async fn fetch_room_avatar(client: &Client, room_id_str: &str) -> Option<Vec<u8>> {
     let room_id: OwnedRoomId = RoomId::parse(room_id_str).ok()?;
     let room = client.get_room(&room_id)?;
-    room.avatar(MediaFormat::File).await.ok().flatten()
+    crate::utils::avatars::of_room(&room).await
 }
 
 /// Returns the subset of `entries` where the user's read receipt post-dates

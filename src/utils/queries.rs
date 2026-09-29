@@ -45,26 +45,12 @@ pub(crate) async fn fetch_avatar_for_key(key: &str) -> Result<Vec<u8>, ()> {
 }
 
 async fn fetch_mxc_direct(mxc_uri: &str) -> Result<Vec<u8>, ()> {
-    use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
-    use matrix_sdk::ruma::events::room::MediaSource;
     let mxc: matrix_sdk::ruma::OwnedMxcUri = mxc_uri.try_into().map_err(|_| ())?;
     let client = CLIENT.get().cloned().ok_or(())?;
-    let request = MediaRequestParameters {
-        source: MediaSource::Plain(mxc),
-        format: MediaFormat::File,
-    };
-    client
-        .media()
-        .get_media_content(&request, true)
-        .await
-        .map(|b| b.to_vec())
-        .map_err(|_| ())
+    crate::utils::avatars::by_mxc(&client, mxc).await.ok_or(())
 }
 
 async fn fetch_member_avatar_direct(key: &str) -> Result<Vec<u8>, ()> {
-    use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
-    use matrix_sdk::ruma::events::room::MediaSource;
-
     let mut parts = key.splitn(2, '\x00');
     let room_id = parts.next().unwrap_or("");
     let user_id = parts.next().unwrap_or("");
@@ -78,22 +64,13 @@ async fn fetch_member_avatar_direct(key: &str) -> Result<Vec<u8>, ()> {
         .flatten()
         .ok_or(())?;
     let avatar_url = member.avatar_url().ok_or(())?;
-    let request = MediaRequestParameters {
-        source: MediaSource::Plain(avatar_url.to_owned()),
-        format: MediaFormat::File,
-    };
-    client
-        .media()
-        .get_media_content(&request, true)
+    crate::utils::avatars::by_mxc(&client, avatar_url.to_owned())
         .await
-        .map(|b| b.to_vec())
-        .map_err(|_| ())
+        .ok_or(())
 }
 
 pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, ()> {
-    use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
     use matrix_sdk::ruma::events::direct::DirectEventContent;
-    use matrix_sdk::ruma::events::room::MediaSource;
 
     let client = CLIENT.get().cloned().ok_or(())?;
     let parsed_id = matrix_sdk::ruma::RoomId::parse(room_id).map_err(|_| ())?;
@@ -120,16 +97,11 @@ pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, (
                 let user_id_str = dm_user_id.to_string();
                 if let Ok(parsed_user) = matrix_sdk::ruma::UserId::parse(&user_id_str) {
                     if let Ok(Some(member)) = room.get_member_no_sync(&parsed_user).await {
-                        if let Some(avatar_url) = member.avatar_url() {
-                            let request = MediaRequestParameters {
-                                source: MediaSource::Plain(avatar_url.to_owned()),
-                                format: MediaFormat::File,
-                            };
-                            if let Ok(bytes) =
-                                client.media().get_media_content(&request, true).await
-                            {
-                                return Ok(bytes.to_vec());
-                            }
+                        if let Some(avatar_url) = member.avatar_url()
+                            && let Some(bytes) =
+                                crate::utils::avatars::by_mxc(&client, avatar_url.to_owned()).await
+                        {
+                            return Ok(bytes);
                         }
                     }
                 }
@@ -138,7 +110,7 @@ pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, (
     }
 
     // Try the room's own set avatar.
-    if let Ok(Some(bytes)) = room.avatar(MediaFormat::File).await {
+    if let Some(bytes) = crate::utils::avatars::of_room(&room).await {
         return Ok(bytes);
     }
 
@@ -147,12 +119,8 @@ pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, (
         let Some(mxc_uri) = hero.avatar_url else {
             continue;
         };
-        let request = MediaRequestParameters {
-            source: MediaSource::Plain(mxc_uri),
-            format: MediaFormat::File,
-        };
-        if let Ok(bytes) = client.media().get_media_content(&request, true).await {
-            return Ok(bytes.to_vec());
+        if let Some(bytes) = crate::utils::avatars::by_mxc(&client, mxc_uri).await {
+            return Ok(bytes);
         }
     }
 

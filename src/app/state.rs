@@ -28,8 +28,6 @@ pub static ROOM_MAILBOX_RX: OnceLock<watch::Receiver<HashMap<String, RoomMailbox
     OnceLock::new();
 /// Window wide enough for split-pane view. Written by `Layout`.
 pub static WIDE_MODE: AtomicBool = AtomicBool::new(false);
-/// No sync batch completed yet.
-pub static SYNCING: AtomicBool = AtomicBool::new(true);
 /// Last sync attempt failed.
 pub static DISCONNECTED: AtomicBool = AtomicBool::new(false);
 /// The app window has OS focus. Mirrored from Freya by the desktop `Layout`;

@@ -75,7 +75,8 @@ pub(super) struct TimelineEvents {
     pub init: futures::channel::oneshot::Receiver<TimelineInit>,
     pub updates: UnboundedReceiver<Vec<Arc<TimelineItem>>>,
     pub typing: UnboundedReceiver<Vec<String>>,
-    pub reached_start: UnboundedReceiver<()>,
+    /// One message per page request: `true` once the start of the room is reached.
+    pub page_done: UnboundedReceiver<bool>,
 }
 
 pub(super) fn spawn_timeline(
@@ -86,7 +87,7 @@ pub(super) fn spawn_timeline(
     let (action_tx, action_rx) = unbounded_channel();
     let (update_tx, updates) = unbounded_channel();
     let (typing_tx, typing) = unbounded_channel();
-    let (reached_start_tx, reached_start) = unbounded_channel();
+    let (page_done_tx, page_done) = unbounded_channel();
     let (init_tx, init) = futures::channel::oneshot::channel();
 
     tokio::task::spawn(run(
@@ -97,7 +98,7 @@ pub(super) fn spawn_timeline(
         action_rx,
         update_tx,
         typing_tx,
-        reached_start_tx,
+        page_done_tx,
     ));
 
     let handle = TimelineHandle {
@@ -108,7 +109,7 @@ pub(super) fn spawn_timeline(
         init,
         updates,
         typing,
-        reached_start,
+        page_done,
     };
     (handle, events)
 }
@@ -122,7 +123,7 @@ async fn run(
     mut action_rx: UnboundedReceiver<MsgAction>,
     update_tx: UnboundedSender<Vec<Arc<TimelineItem>>>,
     typing_tx: UnboundedSender<Vec<String>>,
-    reached_start_tx: UnboundedSender<()>,
+    page_done_tx: UnboundedSender<bool>,
 ) {
     let Some(room) = get_room(&room_id) else {
         return;
@@ -165,9 +166,10 @@ async fn run(
             biased;
             page = page_rx.recv() => {
                 if page.is_none() { break; }
-                if timeline.paginate_backwards(PAGE_SIZE).await.unwrap_or(false) {
-                    let _ = reached_start_tx.send(());
-                }
+                // Always answer: a page can add no visible items (no diff), and
+                // the UI would otherwise wait with its spinner forever.
+                let hit_start = timeline.paginate_backwards(PAGE_SIZE).await.unwrap_or(false);
+                let _ = page_done_tx.send(hit_start);
             }
             action = action_rx.recv() => {
                 let Some(action) = action else { break; };

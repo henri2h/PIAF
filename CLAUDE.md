@@ -74,7 +74,7 @@ All OnceLocks are initialized by `app::state::init()` before `launch()` (desktop
 All Matrix SDK calls happen off the UI thread:
 
 - **`MatrixClientWorker`** (`worker/client.rs`): handles login, avatar/name fetches, room preview fetches. Send tasks via `REQUESTER.get().expect(...).method(...)`.
-- **Sync** (`utils/sync.rs`): matrix-sdk-ui `SyncService` (sliding sync: room list with account data/receipts/typing, plus encryption sync), built and started by `activate_client`. There is no classic `/sync` loop. A room-updates watcher calls `notify_sync_if_changed`, which fires `SYNC_TX` when the room list fingerprint changes; a state watcher maps `Offline`/`Error` to `DISCONNECTED` and restarts after errors (not after session expiry). The room list service for `subscribe_to_rooms` is `sync::room_list_service()`.
+- **Sync** (`utils/sync.rs`): matrix-sdk-ui `SyncService` (sliding sync: room list with account data/receipts/typing, plus encryption sync), built and started by `activate_client`. There is no classic `/sync` loop. A room-updates watcher calls `room_list::refresh`, which fires `SYNC_TX` when the room list changed; a state watcher maps `Offline`/`Error` to `DISCONNECTED` and restarts after errors (not after session expiry). The room list service for `subscribe_to_rooms` is `sync::room_list_service()`.
 - Event handlers (`add_event_handler`) fire for sliding-sync responses too, but the room list uses `timeline_limit` 1: only the latest event per room per update reaches them.
 - Requires a homeserver with Simplified Sliding Sync (MSC4186).
 
@@ -93,10 +93,17 @@ Three search functions:
 - `search_users_remote(query)` — calls `client.search_users()` (network)
 - `search_messages_remote(query, next_batch)` — calls Matrix search API with pagination
 
-Room list logic lives in `src/ui/pages/home/room_list_model.rs`:
-- `RoomSummary`: per-room fields read once per sync (name, latest_ts, unread counts, dm, muted). `RoomListItem { summary }` is memoized on it (`PartialEq` ignores the carried `Room`); only the preview text is derived lazily in the row.
-- `all_room_summaries()` (sorted), `visible_rooms(summaries, filter, mailbox)`, `RoomFilter`.
+Room list data lives in `src/utils/room_list.rs`, built off the UI thread:
+- `RoomSummary`: everything a row shows (name, latest_ts, unread/mention counts, `m.marked_unread`, dm, muted, `m.favourite`/`m.lowpriority`, invite, send failure, draft preview) plus the `Room` for the lazy preview text. Its `PartialEq` (ignores the `Room`) is the single definition of a visible change: it decides both whether a new list is published and whether a row re-renders. Add new visible fields there.
+- `refresh(source)` only *requests* a rebuild: one background task coalesces requests (16ms) and rebuilds, so nothing builds on the UI thread (a build costs ~1.5µs/room, several ms on large accounts). The rebuild sorts (sections: invites, favourites, rooms, low priority; within each by server recency stamp, see `SortKey`) and publishes a `RoomListSnapshot { version, rooms }` only if the list changed (then also fires `SYNC_TX`). `version == 0` means not built yet.
+- Room actions show instantly through `Pending` overrides applied in the build (`update_pending`), cleared when the server echo lands or on failure/timeout.
+- Latest events (previews) are computed only for rooms registered with `sync::track_latest_event`, which each `RoomListItem` calls on mount — large accounts (thousands of rooms) only pay for rooms actually shown.
+- `RoomList` reads it with `use_watch(room_list::receiver())`; `home/room_list_model.rs` only has the UI-side `RoomFilter` and `visible_rooms`.
 - `sort_rooms_by_recency(&mut Vec<Room>)` for code working on raw `Room`s (search).
+
+Context menu (right-click / long-press): `home/room_menu.rs`, actions in `utils/room_actions.rs`. `ContextMenuViewer` is mounted in both layouts.
+
+Drafts: `utils/drafts.rs` (in-memory, mirrored to `drafts.json`). Read with `drafts::get`/`preview`, write with `drafts::set`/`clear`; `set` refreshes the list when the preview changes.
 
 Row gestures are in `home/row_interaction/{desktop,android}.rs`, same API on both: `use_row_interaction()`, `is_highlighted()`, `feedback()`, `attach()`. Put platform differences there, not `#[cfg]` in `RoomListItem`.
 
@@ -198,7 +205,7 @@ cargo test --lib               # Unit tests only (src/utils/mod.rs)
 cargo test --test search       # Integration tests only (tests/search.rs)
 ```
 
-**Unit tests** (`#[cfg(test)]` modules, e.g. `src/utils/mod.rs`, `utils/room_preview.rs`, `home/room_list_model.rs`) cover pure functions with no Matrix client or Freya context. Build events for tests with `Raw::from_json_string(json!({...}).to_string())`.
+**Unit tests** (`#[cfg(test)]` modules, e.g. `src/utils/mod.rs`, `utils/room_preview.rs`) cover pure functions with no Freya context; `utils/room_list.rs` tests build real `Room`s from a mocked sync via `room_list::test_support` (`MatrixMockServer`). Build events for tests with `Raw::from_json_string(json!({...}).to_string())`.
 
 **Integration tests** (`tests/search.rs`) use `matrix_sdk::test_utils::logged_in_client_with_server()` to spin up a `wiremock::MockServer` and exercise the search functions at the HTTP layer — no real homeserver needed.
 
