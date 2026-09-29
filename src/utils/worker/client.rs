@@ -1,0 +1,108 @@
+use crate::utils::{
+    matrix::{CLIENT, login_matrix},
+    worker::Requester,
+};
+use futures::channel::oneshot;
+use tokio::sync::mpsc::{UnboundedReceiver, unbounded_channel};
+
+pub struct MatrixClientWorker {}
+
+pub enum WorkerTask {
+    Login(String, String, oneshot::Sender<anyhow::Result<()>>),
+    FetchRoomAvatar(String, oneshot::Sender<Result<Vec<u8>, ()>>),
+    FetchUserAvatar(oneshot::Sender<Result<Vec<u8>, ()>>),
+    FetchUserDisplayName(oneshot::Sender<Result<String, ()>>),
+    FetchRoomPreviews(Vec<matrix_sdk::ruma::OwnedRoomId>),
+}
+
+impl MatrixClientWorker {
+    pub fn spawn() -> Requester {
+        let (client_tx, client_rx) = unbounded_channel();
+
+        let mut worker = MatrixClientWorker {};
+        tokio::spawn(async move {
+            worker.work(client_rx).await;
+        });
+
+        Requester { tx: client_tx }
+    }
+
+    pub async fn work(&mut self, mut rx: UnboundedReceiver<WorkerTask>) {
+        loop {
+            let t = rx.recv().await;
+
+            match t {
+                Some(task) => self.run(task).await,
+                None => {
+                    break;
+                }
+            }
+        }
+    }
+
+    pub async fn run(&mut self, task: WorkerTask) {
+        match task {
+            WorkerTask::Login(username, password, reply) => {
+                tracing::debug!("worker: login");
+                let response = login_matrix(username, password).await;
+                let _ = reply.send(response);
+            }
+            WorkerTask::FetchRoomAvatar(room_id, reply) => {
+                tracing::trace!("worker: fetch room avatar {room_id}");
+                let result = do_fetch_room_avatar(&room_id).await;
+                let _ = reply.send(result);
+            }
+            WorkerTask::FetchUserAvatar(reply) => {
+                let result = do_fetch_user_avatar().await;
+                let _ = reply.send(result);
+            }
+            WorkerTask::FetchUserDisplayName(reply) => {
+                let result = do_fetch_user_display_name().await;
+                let _ = reply.send(result);
+            }
+            WorkerTask::FetchRoomPreviews(room_ids) => {
+                do_fetch_room_previews(room_ids).await;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Matrix operations — run sequentially inside the worker loop, which
+// naturally prevents concurrent SQLite store access.
+// ---------------------------------------------------------------------------
+
+async fn do_fetch_room_avatar(room_id: &str) -> Result<Vec<u8>, ()> {
+    let room = crate::utils::matrix::get_room(room_id).ok_or(())?;
+    crate::utils::avatars::of_room(&room).await.ok_or(())
+}
+
+async fn do_fetch_user_avatar() -> Result<Vec<u8>, ()> {
+    let Some(client) = CLIENT.get().cloned() else {
+        return Err(());
+    };
+    crate::utils::avatars::own(&client).await.ok_or(())
+}
+
+async fn do_fetch_room_previews(room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {
+    let Some(service) = crate::utils::sync::room_list_service() else {
+        return;
+    };
+    let refs: Vec<&matrix_sdk::ruma::RoomId> = room_ids.iter().map(|id| id.as_ref()).collect();
+    service.subscribe_to_rooms(&refs).await;
+}
+
+async fn do_fetch_user_display_name() -> Result<String, ()> {
+    let Some(client) = CLIENT.get().cloned() else {
+        return Err(());
+    };
+    let name = client
+        .account()
+        .get_display_name()
+        .await
+        .ok()
+        .flatten()
+        .or_else(|| client.user_id().map(|id| id.to_string()))
+        .unwrap_or_default();
+    Ok(name)
+}
