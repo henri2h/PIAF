@@ -8,6 +8,7 @@ use super::focus::{event_offset, row_key, watch_focus_events};
 use super::message_row::MessageRow;
 use super::room_start_banner::RoomStartBanner;
 use super::use_room_timeline::RoomTimeline;
+use crate::app::keys::{Area, KeyCommand, use_key_commands};
 use crate::logging::RenderTimer;
 use crate::utils::matrix::my_user_id;
 use crate::utils::{format_date_key, format_date_label, use_app_colors};
@@ -36,6 +37,12 @@ impl Component for TimelineView {
 
         let mut content_height = use_state(|| 0.0f32);
         let mut viewport_height = use_state(|| 0.0f32);
+        use_room_keys(
+            scroll_controller,
+            content_height,
+            viewport_height,
+            super::ui_ctx::use_room_ui_ctx().compose_focus,
+        );
         let mut heights: State<HashMap<String, f32>> = use_state(HashMap::new);
 
         use_hook(|| {
@@ -159,6 +166,50 @@ impl Component for TimelineView {
             )
             .into_element()
     }
+}
+
+/// Scroll step for `j` / `k`.
+const LINE_PX: f32 = 60.;
+
+/// j/k, Ctrl-d/u, gg/G and `i`, while the room has keyboard focus.
+fn use_room_keys(
+    mut scroll: ScrollController,
+    content_height: State<f32>,
+    viewport_height: State<f32>,
+    mut compose_focus: State<u64>,
+) {
+    use_key_commands(move |nav, command| {
+        if *nav.area.peek() != Area::Room {
+            return;
+        }
+        let viewport = *viewport_height.peek();
+        // Positions are measured from the top: newest content is at -max.
+        let max = (*content_height.peek() - viewport).max(0.);
+        let (_, y) = Into::<(i32, i32)>::into(scroll);
+        let by = |dy: f32| (y as f32 - dy).clamp(-max, 0.) as i32;
+        match command {
+            KeyCommand::Down => {
+                scroll.scroll_to_y(by(LINE_PX));
+            }
+            KeyCommand::Up => {
+                scroll.scroll_to_y(by(-LINE_PX));
+            }
+            KeyCommand::HalfPageDown => {
+                scroll.scroll_to_y(by(viewport / 2.));
+            }
+            KeyCommand::HalfPageUp => {
+                scroll.scroll_to_y(by(-viewport / 2.));
+            }
+            KeyCommand::Top => {
+                scroll.scroll_to_y(0);
+            }
+            KeyCommand::Bottom => {
+                scroll.scroll_to_y(-(max as i32));
+            }
+            KeyCommand::FocusComposer => *compose_focus.write() += 1,
+            _ => {}
+        }
+    });
 }
 
 /// One-shot scroll to the focus event, after the first layout measured the rows.

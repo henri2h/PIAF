@@ -19,6 +19,8 @@ pub(super) struct RoomUiCtx {
     pub action_popup: State<Option<Arc<TimelineItem>>>,
     pub bookmark_picker: State<Option<BookmarkEntry>>,
     pub user_popup: State<Option<UserPopupInfo>>,
+    /// Bumped to move keyboard focus into the composer (`i`).
+    pub compose_focus: State<u64>,
 }
 
 pub(super) fn use_provide_room_ui_ctx() -> RoomUiCtx {
@@ -30,6 +32,7 @@ pub(super) fn use_provide_room_ui_ctx() -> RoomUiCtx {
         action_popup: use_state(|| None),
         bookmark_picker: use_state(|| None),
         user_popup: use_state(|| None),
+        compose_focus: use_state(|| 0),
     };
     use_provide_context(|| ctx);
     ctx

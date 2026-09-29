@@ -5,6 +5,7 @@ use freya::prelude::*;
 use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 
+use crate::app::keys::{KeyCommand, use_key_commands};
 use crate::ui::components::Avatar;
 use crate::utils::const_values::AppColors;
 use crate::utils::queries::FetchUserDisplayName;
@@ -32,6 +33,8 @@ impl Component for HomeAppBar {
         let mut search_open = self.search_open;
         let is_wide = WIDE_MODE.load(Ordering::Relaxed);
         let is_search_open = *search_open.read();
+        let search_a11y = use_a11y();
+        use_search_key(search_open, search_a11y);
 
         let name_query =
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
@@ -84,7 +87,7 @@ impl Component for HomeAppBar {
                         rect()
                             .width(Size::flex(1.0))
                             .padding(Gaps::new(0., 8., 0., 8.))
-                            .child(search_input(search, c))
+                            .child(search_input(search, c, search_a11y))
                             .into_element()
                     } else {
                         label()
@@ -218,7 +221,7 @@ impl Component for HomeAppBar {
                         .width(Size::fill())
                         .padding(Gaps::new(6., 16., 6., 16.))
                         .background(c.surface)
-                        .child(search_input(search, c)),
+                        .child(search_input(search, c, search_a11y).auto_focus(true)),
                 )
             } else {
                 None
@@ -226,8 +229,19 @@ impl Component for HomeAppBar {
     }
 }
 
-fn search_input(search: State<String>, c: AppColors) -> Input {
+/// `/` opens (narrow) and focuses the search field.
+fn use_search_key(mut search_open: State<bool>, search_a11y: AccessibilityId) {
+    use_key_commands(move |_, command| {
+        if command == KeyCommand::Search {
+            search_open.set(true);
+            search_a11y.request_focus();
+        }
+    });
+}
+
+fn search_input(search: State<String>, c: AppColors, a11y_id: AccessibilityId) -> Input {
     Input::new(search)
+        .a11y_id(a11y_id)
         .leading(
             SvgViewer::new(freya_icons::lucide::search())
                 .color(c.on_surface_variant)

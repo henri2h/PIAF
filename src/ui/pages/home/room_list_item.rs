@@ -8,6 +8,7 @@ use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
 use super::room_menu::open_room_menu;
 use super::row_interaction::{OnMenu, use_row_interaction};
+use crate::app::keys::{Area, use_key_nav};
 use crate::app::navigation::navigate_to_room;
 use crate::logging::RenderTimer;
 use crate::ui::components::{Avatar, StackedAvatar, user_color};
@@ -37,6 +38,11 @@ impl Component for RoomListItem {
         let interaction = use_row_interaction();
         let is_active = try_consume_context::<ActiveRoomCtx>()
             .is_some_and(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()));
+        // Keyboard cursor, shown only while the list has keyboard focus.
+        let is_key_selected = use_key_nav().is_some_and(|nav| {
+            *nav.area.read() == Area::List
+                && nav.selected.read().as_deref() == Some(room_id.as_str())
+        });
 
         use_hook(|| crate::utils::sync::track_latest_event(&room_id));
         let needs_preview = s.needs_preview;
@@ -125,6 +131,14 @@ impl Component for RoomListItem {
             .background(bg)
             .corner_radius(12.)
             .overflow(Overflow::Clip)
+            .maybe(is_key_selected, |el| {
+                el.border(
+                    Border::new()
+                        .fill(c.primary)
+                        .width(2.)
+                        .alignment(BorderAlignment::Inner),
+                )
+            })
             .child(interaction.feedback(inner))
             .into();
 

@@ -185,6 +185,10 @@ Avatar and display-name lookups use `freya-query` for caching. Implement `QueryC
 
 All colors are Material Design 3 tokens as `(u8, u8, u8)` RGB tuples: `PRIMARY`, `ON_SURFACE`, `ON_SURFACE_VARIANT`, `ERROR`, `OUTLINE_VARIANT`, etc. The `Ripple` component from `freya-material-design` is the standard interactive feedback for tappable items. Use `Overflow::Clip` on the outer container.
 
+## Keyboard navigation (desktop, vim-style)
+
+`src/app/keys.rs`. The desktop `Layout` is the only raw key handler: it ignores keys while a text field is focused (`text_input_focused`, by accessibility role), parses them (`parse`, incl. `gg`), and publishes a `KeyCommand` on the `KeyNav` context bus. Components react with `use_key_commands(|nav, command| ...)`, which skips commands sent before they mounted; check `nav.area` (`List` / `Room`) so only the focused pane acts. `KeyNav.selected` is the list cursor. In wide mode the area follows the active room (opening a room focuses it; `h`/`Esc` returns to the list); in narrow mode it follows the route. Text inputs must handle `Esc` themselves (unfocus) so navigation resumes. Bindings and the `?` help text live in `keys.rs` (`HELP`).
+
 ## Logging
 
 Use `tracing` (`tracing::info!` etc.), never `println!`. Setup in `src/logging.rs`: desktop filters with `RUST_LOG` (default `warn,piaf=info`); Android forwards to logcat through the `log` bridge.

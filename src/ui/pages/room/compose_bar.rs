@@ -164,6 +164,14 @@ impl Component for ComposeBar {
         let is_editing = edit_info.read().is_some();
         let is_replying = reply_info.read().is_some();
 
+        // `i` (keyboard navigation) focuses the composer.
+        let compose_focus = *super::ui_ctx::use_room_ui_ctx().compose_focus.read();
+        use_side_effect_with_deps(&compose_focus, move |&requests| {
+            if requests > 0 {
+                a11y_id.request_focus();
+            }
+        });
+
         // Auto-focus the compose bar when reply or edit mode is activated.
         let focus_trigger = is_replying || is_editing;
         use_side_effect_with_deps(&focus_trigger, move |&active| {
@@ -272,6 +280,11 @@ impl Component for ComposeBar {
         let mut on_submit_btn = do_send.clone();
 
         let on_key_down = move |e: Event<KeyboardEventData>| {
+            // Leave the composer so keyboard navigation works again.
+            if e.key == Key::Named(NamedKey::Escape) {
+                a11y_id.request_unfocus();
+                return;
+            }
             if e.key == Key::Named(NamedKey::Enter) && !e.modifiers.shift() {
                 do_send();
             } else {

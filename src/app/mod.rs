@@ -1,5 +1,6 @@
 #[cfg(not(target_os = "android"))]
 mod active_room_panel;
+pub mod keys;
 mod layout;
 pub mod navigation;
 pub mod restart;
