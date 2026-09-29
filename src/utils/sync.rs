@@ -75,10 +75,10 @@ async fn watch_state(service: Arc<SyncService>) {
         match state {
             State::Running => {
                 crate::DISCONNECTED.store(false, Ordering::Relaxed);
-                // The startup registration may have failed without network.
+                // Register for push once the server is reachable, off the startup path.
                 #[cfg(target_os = "android")]
                 if std::mem::take(&mut first_run) {
-                    retry_pusher_registration().await;
+                    tokio::spawn(register_pusher());
                 }
             }
             State::Offline => crate::DISCONNECTED.store(true, Ordering::Relaxed),
@@ -162,7 +162,7 @@ async fn watch_room_info(client: Client) {
 }
 
 #[cfg(target_os = "android")]
-async fn retry_pusher_registration() {
+async fn register_pusher() {
     let base = crate::utils::matrix::DATA_DIR
         .get()
         .and_then(|d| d.parent())

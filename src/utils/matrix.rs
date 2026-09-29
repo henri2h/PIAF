@@ -134,7 +134,7 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
             "restore_matrix_client: calling activate_client (REQUESTER present={})",
             REQUESTER.get().is_some()
         );
-        activate_client(&client, &base_dir).await;
+        activate_client(&client).await;
         tracing::debug!("restore_matrix_client: activate_client returned");
 
         return Ok(true);
@@ -176,15 +176,15 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<Client> {
     Ok(client)
 }
 
-async fn activate_client(client: &Client, _pusher_dir: &Path) {
+async fn activate_client(client: &Client) {
     watch_session_expiry(client);
     crate::utils::drafts::load().await;
     if let Err(e) = crate::utils::sync::init(client).await {
         tracing::error!("activate_client: SyncService build failed: {e:#}");
     }
 
-    #[cfg(target_os = "android")]
-    crate::utils::push::register_pusher_if_stored(client, _pusher_dir).await;
+    // Push registration is a network round trip (measured 0.8-2.2s); it runs
+    // once sync is up (`sync::watch_state`), never on the startup path.
 
     if REQUESTER.get().is_some() {
         crate::utils::reactions::register(client);
@@ -257,7 +257,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
             // Saving client
             CLIENT.set(client).expect("Client already set");
 
-            activate_client(CLIENT.get().unwrap(), data_dir).await;
+            activate_client(CLIENT.get().unwrap()).await;
 
             Ok(())
         }

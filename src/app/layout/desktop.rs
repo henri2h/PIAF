@@ -41,7 +41,7 @@ impl Component for Layout {
         let route = use_route::<Route>();
 
         let nav = use_provide_key_nav();
-        let mut pending_g: State<Option<Instant>> = use_state(|| None);
+        let pending_g: State<Option<Instant>> = use_state(|| None);
         // Opening a room (mouse or keyboard) moves keyboard focus to it.
         let active_room = use_watch(ACTIVE_ROOM_RX.get().expect("not initialized"));
         use_side_effect(move || {
