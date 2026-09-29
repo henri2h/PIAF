@@ -86,10 +86,15 @@ impl Component for RoomList {
                     let Some(summary) = filtered_rooms.get(item.index) else {
                         return rect().into_element();
                     };
-                    RoomListItem {
-                        summary: summary.clone(),
-                    }
-                    .into_element()
+                    // Keyed by room: unkeyed, rows are matched by position, so every
+                    // scroll step hands each row a new room and all of them re-render.
+                    rect()
+                        .key(&summary.room_id)
+                        .width(Size::fill())
+                        .child(RoomListItem {
+                            summary: summary.clone(),
+                        })
+                        .into_element()
                 })
                 .length(rooms_len)
                 .item_size(ROOM_ROW_HEIGHT)

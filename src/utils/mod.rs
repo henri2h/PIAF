@@ -6,6 +6,7 @@ pub mod push;
 pub mod queries;
 pub mod room_mailbox;
 pub mod room_preview;
+pub mod sync;
 pub mod worker;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -87,24 +88,22 @@ pub fn use_watch_tick<T: Clone + Send + Sync + 'static>(rx: &watch::Receiver<T>)
 /// instead of the expensive value itself.
 ///
 /// Must be called unconditionally at the top of `render`, like any hook.
+/// The cache is a plain cell, not `State`: updating it must not schedule
+/// another render (a `State` write here rendered every caller twice).
 pub fn use_keyed_cache<K, T>(key: K, compute: impl FnOnce() -> T) -> T
 where
     K: PartialEq + 'static,
     T: Clone + 'static,
 {
-    let mut cache: State<Option<(K, T)>> = use_state(|| None);
-
-    let is_stale = match &*cache.read() {
-        Some((cached_key, _)) => cached_key != &key,
-        None => true,
-    };
-
-    if is_stale {
-        let value = compute();
-        cache.set(Some((key, value.clone())));
-        value
-    } else {
-        cache.read().as_ref().unwrap().1.clone()
+    let cache = use_hook(|| std::rc::Rc::new(std::cell::RefCell::new(None::<(K, T)>)));
+    let mut cache = cache.borrow_mut();
+    match &*cache {
+        Some((cached_key, value)) if cached_key == &key => value.clone(),
+        _ => {
+            let value = compute();
+            *cache = Some((key, value.clone()));
+            value
+        }
     }
 }
 

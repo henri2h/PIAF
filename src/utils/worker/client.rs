@@ -1,5 +1,5 @@
 use crate::utils::{
-    matrix::{CLIENT, ROOM_LIST_SERVICE, login_matrix},
+    matrix::{CLIENT, login_matrix},
     worker::Requester,
 };
 use futures::channel::oneshot;
@@ -96,7 +96,7 @@ async fn do_fetch_user_avatar() -> Result<Vec<u8>, ()> {
 }
 
 async fn do_fetch_room_previews(room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {
-    let Some(service) = ROOM_LIST_SERVICE.get() else {
+    let Some(service) = crate::utils::sync::room_list_service() else {
         return;
     };
     let refs: Vec<&matrix_sdk::ruma::RoomId> = room_ids.iter().map(|id| id.as_ref()).collect();

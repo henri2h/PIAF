@@ -49,7 +49,7 @@ Navigation uses `RouterContext::get().push(Route::...)`. In wide mode, the right
 
 ```rust
 REQUESTER: OnceLock<Requester>                               // Send tasks to the background worker
-SYNC_TX/RX: OnceLock<watch::...>                             // Fires on every Matrix sync tick
+SYNC_TX/RX: OnceLock<watch::...>                             // Fires when a sync changed the room list
 ACTIVE_ROOM_TX/RX: OnceLock<watch::...>                      // Currently selected room (wide mode)
 FOCUS_EVENT_TX/RX: OnceLock<watch::Option<(String, String)>> // (room_id, event_id) for scroll-to-event
 WIDE_MODE: AtomicBool                                        // Current layout mode
@@ -71,12 +71,12 @@ All OnceLocks are initialized by `app::state::init()` before `launch()` (desktop
 
 ### Background Worker (`src/utils/worker/`)
 
-All Matrix SDK calls happen off the UI thread via two worker systems spawned at startup:
+All Matrix SDK calls happen off the UI thread:
 
-- **`MatrixClientWorker`** (`worker/client.rs`): handles login, avatar/name fetches, room preview fetches
-- **`MatrixSyncWorker`** (`worker/sync.rs`): runs `matrix_sync()` in a loop, fires `SYNC_TX` each tick
-
-Send tasks via `REQUESTER.get().expect(...).method(...)`.
+- **`MatrixClientWorker`** (`worker/client.rs`): handles login, avatar/name fetches, room preview fetches. Send tasks via `REQUESTER.get().expect(...).method(...)`.
+- **Sync** (`utils/sync.rs`): matrix-sdk-ui `SyncService` (sliding sync: room list with account data/receipts/typing, plus encryption sync), built and started by `activate_client`. There is no classic `/sync` loop. A room-updates watcher calls `notify_sync_if_changed`, which fires `SYNC_TX` when the room list fingerprint changes; a state watcher maps `Offline`/`Error` to `DISCONNECTED` and restarts after errors (not after session expiry). The room list service for `subscribe_to_rooms` is `sync::room_list_service()`.
+- Event handlers (`add_event_handler`) fire for sliding-sync responses too, but the room list uses `timeline_limit` 1: only the latest event per room per update reaches them.
+- Requires a homeserver with Simplified Sliding Sync (MSC4186).
 
 ### Matrix Client (`src/utils/matrix.rs`)
 
@@ -149,6 +149,8 @@ if let Some(x) = val { *my_state.write() = None; }
 - Shared, reusable components live under `src/ui/components/`.
 
 #### VirtualScrollView is required for long lists
+
+**Key every item the builder returns** by a stable id (`rect().key(&room_id).child(Row {..})`); components can't take keys themselves. Unkeyed items are matched by position, so each scroll step gives every visible row new props and re-renders all of them (measured: 11× more renders).
 
 **Never replace `VirtualScrollView` with `ScrollView`** for the room list or message list — these lists are too large. `VirtualScrollView` memoizes on `length` + `item_size`; force a re-render when content changes without a count change by keying on a stamp derived from the top item's recency (e.g. `first_room.recency_stamp() + rooms_len`).
 

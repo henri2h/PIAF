@@ -2,13 +2,11 @@ use std::sync::atomic::Ordering;
 
 use futures::channel::oneshot;
 use matrix_sdk::{
-    Client, ClientBuilder, LoopCtrl, Room, ServerName,
+    Client, ClientBuilder, Room, ServerName,
     authentication::matrix::MatrixSession,
-    config::SyncSettings,
     encryption::{BackupDownloadStrategy, EncryptionSettings},
     ruma::{
         UserId,
-        api::client::filter::FilterDefinition,
         events::{
             AnySyncMessageLikeEvent, AnySyncTimelineEvent, OriginalSyncMessageLikeEvent,
             SyncMessageLikeEvent, reaction::ReactionEventContent,
@@ -16,7 +14,6 @@ use matrix_sdk::{
         exports::serde_json,
     },
 };
-use matrix_sdk_ui::RoomListService;
 use rand::{RngExt, rng};
 use rand_distr::Alphanumeric;
 use serde::{Deserialize, Serialize};
@@ -30,7 +27,6 @@ use crate::REQUESTER;
 use crate::utils::room_preview::message_body;
 
 pub static CLIENT: OnceLock<Client> = OnceLock::new();
-pub static ROOM_LIST_SERVICE: OnceLock<RoomListService> = OnceLock::new();
 pub static SESSION_FILE: OnceLock<PathBuf> = OnceLock::new();
 pub static DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
 
@@ -55,6 +51,7 @@ pub async fn on_session_expired() {
         return;
     }
     tracing::warn!("access token revoked, session expired");
+    crate::utils::sync::stop().await;
     if let Some(file) = SESSION_FILE.get() {
         if let Err(e) = fs::rename(file, file.with_extension("expired")).await {
             tracing::warn!("could not set expired session file aside: {e}");
@@ -144,14 +141,6 @@ struct FullSession {
 
     /// The Matrix user session.
     user_session: MatrixSession,
-
-    /// The latest sync token.
-    ///
-    /// It is only needed to persist it when using `Client::sync_once()` and we
-    /// want to make our syncs faster by not receiving all the initial sync
-    /// again.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    sync_token: Option<String>,
 }
 
 pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
@@ -166,15 +155,13 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
     if session_file.exists() {
         // If the push context already restored the client, reuse it and only
         // re-read the sync token so the main sync loop can resume where it left off.
-        let (client, sync_token) = if let Some(existing) = CLIENT.get() {
-            let serialized = fs::read_to_string(&session_file).await?;
-            let full: FullSession = serde_json::from_str(&serialized)?;
-            (existing.clone(), full.sync_token)
+        let client = if let Some(existing) = CLIENT.get() {
+            existing.clone()
         } else {
-            let (c, t) = restore_session(&session_file).await?;
+            let c = restore_session(&session_file).await?;
             let _ = CLIENT.set(c.clone());
             tracing::debug!("restore_matrix_client: CLIENT set");
-            (c, t)
+            c
         };
 
         // Signal immediately so the UI can navigate to the room list and show
@@ -188,7 +175,7 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
             "restore_matrix_client: calling activate_client (REQUESTER present={})",
             REQUESTER.get().is_some()
         );
-        activate_client(&client, sync_token, &base_dir).await;
+        activate_client(&client, &base_dir).await;
         tracing::debug!("restore_matrix_client: activate_client returned");
 
         return Ok(true);
@@ -198,7 +185,7 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
 }
 
 /// Restore a previous session.
-async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<String>)> {
+async fn restore_session(session_file: &Path) -> anyhow::Result<Client> {
     tracing::info!(
         "Previous session found in '{}'",
         session_file.to_string_lossy()
@@ -209,7 +196,6 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<
     let FullSession {
         client_session,
         user_session,
-        sync_token,
     } = serde_json::from_str(&serialized_session)?;
 
     // discover: false — homeserver is already a resolved base URL from the
@@ -228,21 +214,13 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<(Client, Option<
     // Restore the Matrix user session.
     client.restore_session(user_session).await?;
 
-    Ok((client, sync_token))
+    Ok(client)
 }
 
-async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_dir: &Path) {
+async fn activate_client(client: &Client, _pusher_dir: &Path) {
     watch_session_expiry(client);
-    if ROOM_LIST_SERVICE.get().is_none() {
-        match RoomListService::new(client.clone()).await {
-            Ok(room_list_s) => {
-                tracing::debug!("activate_client: RoomListService created");
-                ROOM_LIST_SERVICE.set(room_list_s).ok();
-            }
-            Err(e) => tracing::error!("activate_client: RoomListService::new failed: {e:#}"),
-        }
-    } else {
-        tracing::debug!("activate_client: ROOM_LIST_SERVICE already set");
+    if let Err(e) = crate::utils::sync::init(client).await {
+        tracing::error!("activate_client: SyncService build failed: {e:#}");
     }
 
     #[cfg(target_os = "android")]
@@ -291,12 +269,10 @@ async fn activate_client(client: &Client, sync_token: Option<String>, _pusher_di
         );
     }
 
-    if let Some(rq) = REQUESTER.get() {
-        tracing::debug!("activate_client: starting sync + room_list_sync");
-        rq.start_sync(sync_token);
-        rq.start_room_list_sync();
-    } else {
-        tracing::warn!("activate_client: REQUESTER not set, sync not started");
+    // No REQUESTER means the Android push context: enrichment only, no sync.
+    if REQUESTER.get().is_some() {
+        tracing::debug!("activate_client: starting sync service");
+        crate::utils::sync::start(client.clone());
     }
 }
 
@@ -476,7 +452,6 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
             let serialized_session = serde_json::to_string(&FullSession {
                 client_session,
                 user_session,
-                sync_token: None,
             })?;
             fs::write(session_file, serialized_session).await?;
 
@@ -485,7 +460,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
             // Saving client
             CLIENT.set(client).expect("Client already set");
 
-            activate_client(CLIENT.get().unwrap(), None, data_dir).await;
+            activate_client(CLIENT.get().unwrap(), data_dir).await;
 
             Ok(())
         }
@@ -647,102 +622,6 @@ pub fn notify_sync_if_changed(client: &Client, source: &'static str) {
     );
 }
 
-pub async fn matrix_sync(
-    client: Client,
-    initial_sync_token: Option<String>,
-    session_file: &Path,
-) -> anyhow::Result<()> {
-    tracing::info!("Launching a first sync to ignore past messages…");
-
-    // Enable room members lazy-loading, it will speed up the initial sync a lot
-    // with accounts in lots of rooms.
-    // See <https://spec.matrix.org/v1.6/client-server-api/#lazy-loading-room-members>.
-    let filter = FilterDefinition::with_lazy_loading();
-
-    let mut sync_settings = SyncSettings::default().filter(filter.into());
-
-    // We restore the sync where we left.
-    // This is not necessary when not using `sync_once`. The other sync methods get
-    // the sync token from the store.
-    if let Some(sync_token) = initial_sync_token {
-        sync_settings = sync_settings.token(sync_token);
-    }
-
-    // Let's ignore messages before the program was launched.
-    // This is a loop in case the initial sync is longer than our timeout. The
-    // server should cache the response and it will ultimately take less time to
-    // receive.
-    loop {
-        match client.sync_once(sync_settings.clone()).await {
-            Ok(response) => {
-                // This is the last time we need to provide this token, the sync method after
-                // will handle it on its own.
-                sync_settings = sync_settings.token(response.next_batch.clone());
-                persist_sync_token(session_file, response.next_batch).await?;
-                break;
-            }
-            Err(error) if is_unknown_token(&error) => {
-                on_session_expired().await;
-                return Ok(());
-            }
-            Err(error) => {
-                tracing::warn!("initial sync failed, retrying in 5s: {error}");
-                tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-            }
-        }
-    }
-
-    tracing::info!("The client is ready! Listening to new messages…");
-
-    // Retry pusher registration now that we know the homeserver is reachable.
-    // The startup attempt may have failed due to no network connectivity yet.
-    #[cfg(target_os = "android")]
-    if let Some(base) = DATA_DIR
-        .get()
-        .and_then(|d| d.parent())
-        .map(|p| p.to_path_buf())
-    {
-        crate::utils::push::register_pusher_if_stored(&client, &base).await;
-    }
-
-    // This loops until we kill the program or an error happens.
-    client
-        .sync_with_result_callback(sync_settings, |sync_result| {
-            // Clone before `async move`: each Fn invocation borrows `client` to
-            // clone it, then moves the owned clone into the future.
-            let sc = client.clone();
-            #[cfg(target_os = "android")]
-            let nc = client.clone();
-            async move {
-                if let Err(e) = &sync_result
-                    && is_unknown_token(e)
-                {
-                    on_session_expired().await;
-                    return Ok(LoopCtrl::Break);
-                }
-                let response = sync_result?;
-
-                persist_sync_token(session_file, response.next_batch)
-                    .await
-                    .map_err(|err| matrix_sdk::Error::UnknownError(err.into()))?;
-
-                crate::SYNCING.store(false, Ordering::Relaxed);
-                notify_sync_if_changed(&sc, "sync");
-
-                // Dismiss notifications for rooms that were read on any device since last sync.
-                #[cfg(target_os = "android")]
-                tokio::spawn(async move {
-                    crate::utils::push::cancel_read_notifications_after_sync(&nc).await;
-                });
-
-                Ok(LoopCtrl::Continue)
-            }
-        })
-        .await?;
-
-    Ok(())
-}
-
 // ── Theme preference persistence ─────────────────────────────────────────────
 
 fn theme_pref_file() -> Option<std::path::PathBuf> {
@@ -873,20 +752,6 @@ pub async fn create_or_get_dm(user_id: String) -> Option<String> {
         }
     });
     rx.await.ok().flatten()
-}
-
-/// Persist the sync token for a future session.
-/// Note that this is needed only when using `sync_once`. Other sync methods get
-/// the sync token from the store.
-async fn persist_sync_token(session_file: &Path, sync_token: String) -> anyhow::Result<()> {
-    let serialized_session = fs::read_to_string(session_file).await?;
-    let mut full_session: FullSession = serde_json::from_str(&serialized_session)?;
-
-    full_session.sync_token = Some(sync_token);
-    let serialized_session = serde_json::to_string(&full_session)?;
-    fs::write(session_file, serialized_session).await?;
-
-    Ok(())
 }
 
 #[cfg(test)]
