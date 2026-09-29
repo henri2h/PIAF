@@ -121,9 +121,18 @@ impl Component for RoomListItem {
                                 s.is_favourite
                                     .then(|| small_icon(freya_icons::lucide::star(), c.primary)),
                             )
-                            .child(trailing(s, c, font_weight)),
+                            .child(meta(s, c, font_weight)),
                     )
-                    .child(preview_line(s, preview, c)),
+                    .child(
+                        rect()
+                            .horizontal()
+                            .content(Content::Flex)
+                            .width(Size::fill())
+                            .spacing(8.)
+                            .cross_align(Alignment::Center)
+                            .child(preview_line(s, preview, c))
+                            .child(unread_badge(s, c)),
+                    ),
             );
 
         let highlighted: Element = rect()
@@ -188,7 +197,7 @@ fn room_avatar(s: &RoomSummary, c: AppColors, bg: (u8, u8, u8)) -> Element {
 fn preview_line(s: &RoomSummary, preview: String, c: AppColors) -> Rect {
     let row = rect()
         .horizontal()
-        .width(Size::fill())
+        .width(Size::flex(1.))
         .content(Content::Flex)
         .spacing(4.)
         .cross_align(Alignment::Center);
@@ -226,8 +235,8 @@ fn small_icon(svg: bytes::Bytes, color: (u8, u8, u8)) -> SvgViewer {
         .color(color)
 }
 
-/// Mute icon + timestamp, with the unread badge below. Invites get a pill instead.
-fn trailing(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
+/// First-line trailing info: mute icon + timestamp, or the invite pill.
+fn meta(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
     if s.is_invite {
         return rect()
             .padding(Gaps::new(3., 10., 3., 10.))
@@ -251,33 +260,26 @@ fn trailing(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
         c.on_surface_faint
     };
     rect()
-        .vertical()
-        .cross_align(Alignment::End)
+        .horizontal()
         .spacing(4.)
-        .child(
-            rect()
-                .horizontal()
-                .spacing(4.)
-                .cross_align(Alignment::Center)
-                .maybe_child(s.is_muted.then(|| {
-                    SvgViewer::new(freya_icons::lucide::bell_off())
-                        .width(Size::px(12.))
-                        .height(Size::px(12.))
-                        .color(c.on_surface_faint)
-                }))
-                .maybe_child(ts.map(|ts| {
-                    TooltipContainer::new(Tooltip::new_text(format_full_timestamp(ts)))
-                        .position(AttachedPosition::Bottom)
-                        .child(
-                            label()
-                                .text(format_timestamp(ts))
-                                .font_size(12.)
-                                .font_weight(font_weight)
-                                .color(timestamp_color),
-                        )
-                })),
-        )
-        .child(unread_badge(s, c))
+        .cross_align(Alignment::Center)
+        .maybe_child(s.is_muted.then(|| {
+            SvgViewer::new(freya_icons::lucide::bell_off())
+                .width(Size::px(12.))
+                .height(Size::px(12.))
+                .color(c.on_surface_faint)
+        }))
+        .maybe_child(ts.map(|ts| {
+            TooltipContainer::new(Tooltip::new_text(format_full_timestamp(ts)))
+                .position(AttachedPosition::Bottom)
+                .child(
+                    label()
+                        .text(format_timestamp(ts))
+                        .font_size(12.)
+                        .font_weight(font_weight)
+                        .color(timestamp_color),
+                )
+        }))
 }
 
 /// Count pill for notifications (red with `@` when you're mentioned), a dot
