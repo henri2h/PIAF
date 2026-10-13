@@ -44,6 +44,8 @@ pub struct KeyNav {
     /// Room highlighted in the list (keyboard cursor).
     pub selected: State<Option<String>>,
     pub help_open: State<bool>,
+    /// Set when a room is opened from the list; its composer takes focus.
+    pub focus_composer: State<bool>,
 }
 
 impl KeyNav {
@@ -60,6 +62,7 @@ pub fn use_provide_key_nav() -> KeyNav {
         area: use_state(|| Area::List),
         selected: use_state(|| None),
         help_open: use_state(|| false),
+        focus_composer: use_state(|| false),
     };
     use_provide_context(|| nav);
     nav
@@ -93,7 +96,7 @@ pub fn use_key_commands(mut handler: impl FnMut(KeyNav, KeyCommand) + 'static) {
 
 /// True while typing into a text field, when single-letter keys must not act.
 pub fn text_input_focused() -> bool {
-    let node = Platform::get().focused_accessibility_node;
+    let node = Platform::get().current_window().focused_accessibility_node;
     matches!(
         node.read().role(),
         AccessibilityRole::TextInput
@@ -122,7 +125,8 @@ pub fn parse(key: &Key, ctrl: bool, pending_g: Option<Instant>, now: Instant) ->
     match key {
         Key::Named(NamedKey::ArrowDown) => Parsed::Command(Down),
         Key::Named(NamedKey::ArrowUp) => Parsed::Command(Up),
-        Key::Named(NamedKey::Enter) => Parsed::Command(Open),
+        Key::Named(NamedKey::Enter | NamedKey::ArrowRight) => Parsed::Command(Open),
+        Key::Named(NamedKey::ArrowLeft) => Parsed::Command(Back),
         Key::Named(NamedKey::Escape) => Parsed::Command(Back),
         Key::Character(c) => match (c.as_str(), ctrl) {
             ("d", true) => Parsed::Command(HalfPageDown),
@@ -154,8 +158,8 @@ pub const HELP: &[(&str, &str)] = &[
     ("j / k", "Next / previous room, or scroll the room"),
     ("g g / G", "Top / bottom"),
     ("J / K", "Next / previous unread room"),
-    ("Enter / l", "Open room"),
-    ("h / Esc", "Back to the room list"),
+    ("Enter / l / →", "Open room"),
+    ("h / Esc / ←", "Back to the room list"),
     ("Ctrl-d / Ctrl-u", "Scroll half a page"),
     ("i", "Write a message"),
     ("/", "Search"),
@@ -193,6 +197,10 @@ mod tests {
             Parsed::Command(KeyCommand::ToggleRead)
         );
         assert_eq!(parse(&ch("?"), false, None, now), Parsed::ToggleHelp);
+        assert_eq!(
+            parse(&Key::Named(NamedKey::ArrowLeft), false, None, now),
+            Parsed::Command(KeyCommand::Back)
+        );
     }
 
     #[test]

@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_material_design::prelude::Ripple;
 use freya_router::prelude::RouterContext;
 use matrix_sdk::RoomMemberships;
@@ -276,11 +278,11 @@ impl Component for RoomMembers {
                                                                             .color(c.error)
                                                                             .width(Size::px(20.))
                                                                             .height(Size::px(20.)),
-                                                                    )
+                                                                    ).hoverable(Size::auto(), Size::auto(), 20.)
                                                             })),
                                                     ),
                                             )
-                                            .into_element()
+                                            .hoverable(Size::fill(), Size::auto(), 0.)
                                     })),
                             ),
                     )
@@ -327,18 +329,18 @@ impl Component for RoomMembers {
                                     .spacing(12.)
                                     .child(
                                         rect()
-                                            .width(Size::flex(1.0))
+                                            .width(Size::fill())
                                             .padding(Gaps::new(12., 0., 12., 0.))
                                             .corner_radius(8.)
                                             .background(c.surface_container)
                                             .overflow(Overflow::Clip)
                                             .center()
                                             .on_press(move |_| *confirm_remove.write() = None)
-                                            .child(label().text("Cancel").font_size(14.).color(c.on_surface)),
+                                            .child(label().text("Cancel").font_size(14.).color(c.on_surface)).hoverable(Size::flex(1.0), Size::auto(), 8.),
                                     )
                                     .child(
                                         rect()
-                                            .width(Size::flex(1.0))
+                                            .width(Size::fill())
                                             .padding(Gaps::new(12., 0., 12., 0.))
                                             .corner_radius(8.)
                                             .background(c.error)
@@ -357,7 +359,7 @@ impl Component for RoomMembers {
                                                     });
                                                 });
                                             })
-                                            .child(label().text("Remove").font_size(14.).color(c.on_primary)),
+                                            .child(label().text("Remove").font_size(14.).color(c.on_primary)).hoverable(Size::flex(1.0), Size::auto(), 8.),
                                     ),
                             ),
                     )

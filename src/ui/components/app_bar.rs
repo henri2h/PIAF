@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
-use crate::ui::components::Avatar;
+use crate::ui::components::{Avatar, HoverableExt};
 use crate::utils::const_values::STATUS_BAR_INSET;
 use crate::utils::use_app_colors;
 
@@ -161,7 +161,7 @@ impl Component for TopAppBar {
                         .width(Size::px(ICON_SIZE))
                         .height(Size::px(ICON_SIZE)),
                 )
-                .into_element()
+                .hoverable(Size::px(BTN_SIZE), Size::px(BTN_SIZE), BTN_SIZE / 2.)
         } else {
             // No back button: add a 12px start inset so the title aligns nicely.
             rect().width(Size::px(12.)).into_element()
@@ -240,7 +240,7 @@ impl Component for TopAppBar {
                             .width(Size::px(ICON_SIZE))
                             .height(Size::px(ICON_SIZE)),
                     )
-                    .into_element(),
+                    .hoverable(Size::px(BTN_SIZE), Size::px(BTN_SIZE), BTN_SIZE / 2.),
                 TopAppBarAction::AvatarButton {
                     bytes,
                     initial,
@@ -265,7 +265,7 @@ impl Component for TopAppBar {
                             on_press();
                         })
                         .child(inner)
-                        .into_element()
+                        .hoverable(Size::px(BTN_SIZE), Size::px(BTN_SIZE), BTN_SIZE / 2.)
                 }
             })
             .collect();

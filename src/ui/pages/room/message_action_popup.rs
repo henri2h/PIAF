@@ -2,6 +2,8 @@ use std::{cell::RefCell, rc::Rc};
 
 use freya::prelude::*;
 
+use crate::ui::components::HoverableExt;
+
 use crate::utils::const_values::AppColors;
 
 const REACTION_EMOJIS: &[&str] = &["👍", "❤️", "😂", "😮", "😢", "🎉"];
@@ -44,12 +46,13 @@ fn emoji_reaction_row(c: AppColors, on_react: Rc<RefCell<dyn FnMut(String) + 'st
         row = row.child(
             rect()
                 .center()
-                .width(Size::flex(1.))
+                .width(Size::fill())
                 .height(Size::px(44.))
                 .corner_radius(10.)
                 .background(c.surface_container)
                 .on_press(move |_| (react_fn.borrow_mut())(react_key.clone()))
-                .child(label().text(emoji_str).font_size(20.)),
+                .child(label().text(emoji_str).font_size(20.))
+                .hoverable(Size::flex(1.), Size::px(44.), 10.),
         );
     }
 
@@ -78,7 +81,7 @@ fn action_button_list(c: AppColors, actions: Vec<PopupAction>) -> Vec<Element> {
                         .height(Size::px(18.)),
                 )
                 .child(label().text(a.label).font_size(15.).color(a.color))
-                .into()
+                .hoverable(Size::fill(), Size::auto(), 10.)
         })
         .collect()
 }

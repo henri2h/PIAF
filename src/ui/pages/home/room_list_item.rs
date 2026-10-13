@@ -165,32 +165,49 @@ impl Component for RoomListItem {
     }
 }
 
-/// Group rooms with 2+ hero avatars get a stacked avatar; others the room avatar.
+/// The room's own avatar. Rooms without one (other than DMs, which show the
+/// other user) use their heroes that have a profile picture: two stacked, or
+/// one alone.
 fn room_avatar(s: &RoomSummary, c: AppColors, bg: (u8, u8, u8)) -> Element {
-    let heroes = s.room.heroes();
-    let with_avatar: Vec<&RoomHero> = heroes.iter().filter(|h| h.avatar_url.is_some()).collect();
-    if let [h1, h2, ..] = with_avatar[..]
-        && !s.is_dm
-    {
-        return StackedAvatar {
-            size: 48.,
-            initial1: hero_initial(h1),
-            color1: user_color(h1.user_id.as_str()),
-            initial2: hero_initial(h2),
-            color2: user_color(h2.user_id.as_str()),
-            border_color: bg,
-        }
-        .into();
-    }
-    Avatar {
+    let room_avatar = Avatar {
         size: 48.,
         bytes: None,
         fetch_key: Some(s.room_id.clone()),
         initial: initial_of(&s.name),
         color: c.primary,
         image_key: s.room_id.clone(),
+    };
+    if s.is_dm || s.room.avatar_url().is_some() {
+        return room_avatar.into();
     }
-    .into()
+    let heroes = s.room.heroes();
+    let with_avatar: Vec<(&RoomHero, String)> = heroes
+        .iter()
+        .filter_map(|h| Some((h, format!("mxc:{}", h.avatar_url.as_ref()?))))
+        .collect();
+    match &with_avatar[..] {
+        [(h1, key1), (h2, key2), ..] => StackedAvatar {
+            size: 48.,
+            initial1: hero_initial(h1),
+            color1: user_color(h1.user_id.as_str()),
+            fetch_key1: Some(key1.clone()),
+            initial2: hero_initial(h2),
+            color2: user_color(h2.user_id.as_str()),
+            fetch_key2: Some(key2.clone()),
+            border_color: bg,
+        }
+        .into(),
+        [(h, key)] => Avatar {
+            size: 48.,
+            bytes: None,
+            fetch_key: Some(key.clone()),
+            initial: hero_initial(h),
+            color: user_color(h.user_id.as_str()),
+            image_key: key.clone(),
+        }
+        .into(),
+        [] => room_avatar.into(),
+    }
 }
 
 /// Send failure, else draft, else the latest message.

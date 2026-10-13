@@ -167,11 +167,13 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<Client> {
     )
     .build()
     .await?;
+    crate::logging::boot("stores opened");
 
     tracing::info!("Restoring session for {}…", user_session.meta.user_id);
 
     // Restore the Matrix user session.
     client.restore_session(user_session).await?;
+    crate::logging::boot("session restored");
 
     Ok(client)
 }
@@ -179,9 +181,11 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<Client> {
 async fn activate_client(client: &Client) {
     watch_session_expiry(client);
     crate::utils::drafts::load().await;
+    crate::logging::boot("drafts loaded");
     if let Err(e) = crate::utils::sync::init(client).await {
         tracing::error!("activate_client: SyncService build failed: {e:#}");
     }
+    crate::logging::boot("sync service built");
 
     // Push registration is a network round trip (measured 0.8-2.2s); it runs
     // once sync is up (`sync::watch_state`), never on the startup path.
@@ -217,6 +221,7 @@ async fn activate_client(client: &Client) {
     if REQUESTER.get().is_some() {
         tracing::debug!("activate_client: starting sync service");
         crate::utils::sync::start(client.clone());
+        crate::logging::boot("sync started");
         // Show cached rooms right away, before the first sync update.
         crate::utils::room_list::refresh("startup");
     }

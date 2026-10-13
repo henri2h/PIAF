@@ -4,6 +4,8 @@ use std::time::Duration;
 
 use freya::prelude::*;
 
+use crate::ui::components::HoverableExt;
+
 use super::search::{
     MessageResult, search_messages_remote, search_rooms_local, search_users_remote,
 };
@@ -204,7 +206,7 @@ fn load_more_footer(
                 });
             })
             .child(label().text("Load more").font_size(14.).color(c.primary))
-            .into_element(),
+            .hoverable(Size::fill(), Size::px(44.), 0.),
     )
 }
 

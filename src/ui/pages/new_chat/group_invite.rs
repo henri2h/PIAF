@@ -1,4 +1,6 @@
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_router::prelude::RouterContext;
 use std::sync::Arc;
 use std::time::Duration;
@@ -22,7 +24,7 @@ impl Component for NewGroup {
         let search: State<String> = use_state(String::new);
         let mut results: State<Vec<UserInfo>> = use_state(Vec::new);
         let mut searching: State<bool> = use_state(|| false);
-        let mut suggestions: State<Vec<UserInfo>> = use_state(Vec::new);
+        let suggestions: State<Vec<UserInfo>> = use_state(Vec::new);
         let mut invitees_tick: State<u32> = use_state(|| 0u32);
         let mut search_ver: State<u64> = use_state(|| 0u64);
 
@@ -237,7 +239,8 @@ impl Component for NewGroup {
                                             .color(c.on_surface_variant)
                                             .width(Size::px(10.))
                                             .height(Size::px(10.)),
-                                    ),
+                                    )
+                                    .hoverable(Size::px(18.), Size::px(18.), 9.),
                             ),
                     );
                 }
@@ -349,7 +352,7 @@ impl Component for NewGroup {
                                             .width(Size::px(18.))
                                             .height(Size::px(18.)),
                                     )
-                                    .into_element()
+                                    .hoverable(Size::px(32.), Size::px(32.), 16.)
                             }),
                     );
                 }

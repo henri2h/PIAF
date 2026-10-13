@@ -13,8 +13,27 @@ pub const DEFAULT_FILTER: &str = "warn,piaf=info";
 /// Target for render counts and timings.
 pub const PERF: &str = "piaf::perf";
 
+/// Launch reference for `boot`; set by `init`, the first thing both entry points run.
+static START: std::sync::OnceLock<Instant> = std::sync::OnceLock::new();
+static LAST_STEP: std::sync::Mutex<Option<Instant>> = std::sync::Mutex::new(None);
+
+/// Logs a startup milestone: time since launch and since the previous one.
+/// Info level (target `piaf::boot`) so it shows with the default filters.
+pub fn boot(step: &str) {
+    let now = Instant::now();
+    let start = *START.get_or_init(|| now);
+    let previous = LAST_STEP.lock().unwrap().replace(now).unwrap_or(start);
+    tracing::info!(
+        target: "piaf::boot",
+        "{step}: {}ms (+{}ms)",
+        now.duration_since(start).as_millis(),
+        now.duration_since(previous).as_millis()
+    );
+}
+
 #[cfg(not(target_os = "android"))]
 pub fn init() {
+    let _ = START.set(Instant::now());
     use tracing_subscriber::EnvFilter;
     let filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(DEFAULT_FILTER));
@@ -23,6 +42,7 @@ pub fn init() {
 
 #[cfg(target_os = "android")]
 pub fn init() {
+    let _ = START.set(Instant::now());
     use android_logger::{Config, FilterBuilder};
     android_logger::init_once(
         Config::default()

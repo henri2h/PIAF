@@ -120,11 +120,15 @@ impl Component for SettingsProfile {
                                                     });
                                                 });
                                             })
-                                            .child(if is_uploading {
-                                                "Uploading…"
-                                            } else {
-                                                "Change avatar"
-                                            });
+                                            .child(super::button_label(
+                                                freya_icons::lucide::image(),
+                                                if is_uploading {
+                                                    "Uploading…"
+                                                } else {
+                                                    "Change avatar"
+                                                },
+                                                c,
+                                            ));
                                         #[cfg(target_os = "android")]
                                         let btn = rect();
                                         btn
@@ -190,11 +194,15 @@ impl Component for SettingsProfile {
                                                             }
                                                         });
                                                     })
-                                                    .child(if is_saving {
-                                                        "Saving…"
-                                                    } else {
-                                                        "Save"
-                                                    }),
+                                                    .child(super::button_label(
+                                                        freya_icons::lucide::save(),
+                                                        if is_saving {
+                                                            "Saving…"
+                                                        } else {
+                                                            "Save"
+                                                        },
+                                                        c,
+                                                    )),
                                             ),
                                     ),
                             )

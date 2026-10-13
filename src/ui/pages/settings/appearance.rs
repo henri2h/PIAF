@@ -4,7 +4,7 @@ use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::Route;
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::{Hoverable, TopAppBar, TopAppBarTitle};
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
 
@@ -60,35 +60,35 @@ fn theme_selector(is_dark: bool, c: AppColors, mut theme: State<Theme>) -> Eleme
         } else {
             c.on_surface_variant
         };
-        row = row.child(
-            rect()
-                .height(Size::px(32.))
-                .corner_radius(16.)
-                .width(Size::flex(1.))
-                .background(bg)
-                .overflow(Overflow::Clip)
-                .on_press(move |_| {
-                    theme.set(crate::app::theme::effective_theme(dark));
-                    spawn(async move {
-                        crate::utils::matrix::save_theme_pref(dark).await;
-                    });
-                })
-                .child(
-                    freya_material_design::prelude::Ripple::new()
-                        .color(if is_selected { c.on_primary } else { c.primary })
-                        .width(Size::fill_minimum())
-                        .height(Size::fill())
-                        .child(
-                            rect()
-                                .horizontal()
-                                .height(Size::fill())
-                                .padding(Gaps::new(0., 16., 0., 16.))
-                                .cross_align(Alignment::Center)
-                                .child(label().text(name).font_size(13.).color(text_col)),
-                        ),
-                )
-                .into_element(),
-        );
+        let chip = rect()
+            .expanded()
+            .background(bg)
+            .on_press(move |_| {
+                theme.set(crate::app::theme::effective_theme(dark));
+                spawn(async move {
+                    crate::utils::matrix::save_theme_pref(dark).await;
+                });
+            })
+            .child(
+                freya_material_design::prelude::Ripple::new()
+                    .color(if is_selected { c.on_primary } else { c.primary })
+                    .width(Size::fill_minimum())
+                    .height(Size::fill())
+                    .child(
+                        rect()
+                            .horizontal()
+                            .height(Size::fill())
+                            .padding(Gaps::new(0., 16., 0., 16.))
+                            .cross_align(Alignment::Center)
+                            .child(label().text(name).font_size(13.).color(text_col)),
+                    ),
+            );
+        row = row.child(Hoverable {
+            width: Size::flex(1.),
+            height: Size::px(32.),
+            corner_radius: 16.,
+            child: chip.into_element(),
+        });
     }
     row.into_element()
 }

@@ -6,7 +6,7 @@ use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::app::keys::{KeyCommand, use_key_commands};
-use crate::ui::components::Avatar;
+use crate::ui::components::{Avatar, HoverableExt};
 use crate::utils::const_values::AppColors;
 use crate::utils::queries::FetchUserDisplayName;
 use crate::utils::use_app_colors;
@@ -80,7 +80,8 @@ impl Component for HomeAppBar {
                                 initial,
                                 color: c.primary,
                                 image_key: "__self__".to_string(),
-                            }),
+                            })
+                            .hoverable(Size::px(48.), Size::px(48.), 24.),
                     )
                     // Wide: inline search input; narrow: "Chats" title
                     .child(if is_wide {
@@ -123,7 +124,8 @@ impl Component for HomeAppBar {
                                     .color(c.on_surface_variant)
                                     .width(Size::px(22.))
                                     .height(Size::px(22.)),
-                                ),
+                                )
+                                .hoverable(Size::px(48.), Size::px(48.), 24.),
                         )
                     } else {
                         None
@@ -143,41 +145,8 @@ impl Component for HomeAppBar {
                                     .color(c.on_surface_variant)
                                     .width(Size::px(22.))
                                     .height(Size::px(22.)),
-                            ),
-                    )
-                    // Recontact button (both modes)
-                    .child(
-                        rect()
-                            .width(Size::px(48.))
-                            .height(Size::px(48.))
-                            .corner_radius(24.)
-                            .center()
-                            .on_press(|_| {
-                                let _ = RouterContext::get().push(crate::Route::RecontactPage);
-                            })
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::user_check())
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(22.))
-                                    .height(Size::px(22.)),
-                            ),
-                    )
-                    // Archived button (both modes)
-                    .child(
-                        rect()
-                            .width(Size::px(48.))
-                            .height(Size::px(48.))
-                            .corner_radius(24.)
-                            .center()
-                            .on_press(|_| {
-                                let _ = RouterContext::get().push(crate::Route::ArchivedPage);
-                            })
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::archive())
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(22.))
-                                    .height(Size::px(22.)),
-                            ),
+                            )
+                            .hoverable(Size::px(48.), Size::px(48.), 24.),
                     )
                     // Reactions button (both modes)
                     .child(
@@ -194,24 +163,8 @@ impl Component for HomeAppBar {
                                     .color(c.on_surface_variant)
                                     .width(Size::px(22.))
                                     .height(Size::px(22.)),
-                            ),
-                    )
-                    // Pencil button (both modes)
-                    .child(
-                        rect()
-                            .width(Size::px(48.))
-                            .height(Size::px(48.))
-                            .corner_radius(24.)
-                            .center()
-                            .on_press(|_| {
-                                let _ = RouterContext::get().push(crate::Route::NewChat);
-                            })
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::pencil())
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(22.))
-                                    .height(Size::px(22.)),
-                            ),
+                            )
+                            .hoverable(Size::px(48.), Size::px(48.), 24.),
                     ),
             )
             // Narrow: search row below the bar, shown while toggled open.
@@ -259,6 +212,6 @@ fn search_input(search: State<String>, c: AppColors, a11y_id: AccessibilityId) -
         })
         .theme_layout(InputLayoutThemePartial {
             corner_radius: Some(Preference::Specific(CornerRadius::new_all(8.))),
-            inner_margin: Some(Preference::Specific(Gaps::new(10., 10., 10., 10.))),
+            padding: Some(Preference::Specific(Gaps::new(10., 10., 10., 10.))),
         })
 }

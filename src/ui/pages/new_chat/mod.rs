@@ -5,6 +5,8 @@ use std::sync::{
 use std::time::Duration;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::UserId;
 
@@ -86,8 +88,8 @@ impl Component for NewChat {
         let search: State<String> = use_state(String::new);
         let mut results: State<Vec<UserInfo>> = use_state(Vec::new);
         let mut searching: State<bool> = use_state(|| false);
-        let mut status: State<Option<String>> = use_state(|| None);
-        let mut suggestions: State<Vec<UserInfo>> = use_state(Vec::new);
+        let status: State<Option<String>> = use_state(|| None);
+        let suggestions: State<Vec<UserInfo>> = use_state(Vec::new);
         let search_ver = use_hook(|| Arc::new(AtomicU64::new(0)));
         // Prevents double-tap from spawning two concurrent navigation tasks,
         // which would push duplicate routes and leave stale PENDING_DM.
@@ -277,9 +279,7 @@ impl Component for NewChat {
                                 corner_radius: Some(Preference::Specific(CornerRadius::new_all(
                                     8.,
                                 ))),
-                                inner_margin: Some(Preference::Specific(Gaps::new(
-                                    10., 10., 10., 10.,
-                                ))),
+                                padding: Some(Preference::Specific(Gaps::new(10., 10., 10., 10.))),
                             }),
                     ),
             )
@@ -399,7 +399,7 @@ impl Component for NewChat {
                                     .height(Size::px(18.))
                                     .color(c.primary),
                             )
-                            .into_element()
+                            .hoverable(Size::fill(), Size::px(62.), 0.)
                     })
                     .length(count)
                     .item_size(62.)

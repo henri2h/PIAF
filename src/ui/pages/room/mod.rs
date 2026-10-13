@@ -6,6 +6,7 @@ mod focus;
 mod invite_view;
 mod media_items;
 mod message_action_popup;
+mod message_hover_bar;
 mod message_row;
 mod room_app_bar;
 mod room_start_banner;

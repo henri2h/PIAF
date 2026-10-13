@@ -12,7 +12,7 @@ pub fn media_source_key(source: &MediaSource) -> String {
 }
 
 // At most 4 media downloads run concurrently. Others yield on the main thread
-// (via spawn_local / spawn_forever) until a permit is free, then spawn a tokio
+// (via spawn_local / spawn_in_window) until a permit is free, then spawn a tokio
 // worker task so the actual I/O never blocks the main thread.
 static MEDIA_FETCH_SEM: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
 

@@ -849,21 +849,20 @@ checksum = "d3c3baedf037b161e69da9200947329f52afa3b6e1cdbe6f344d6aa350fedd2f"
 
 [[package]]
 name = "bindgen"
-version = "0.72.1"
+version = "0.73.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895"
+checksum = "787ef8ef523575546b106a58213d6e6b06198a05c2f757258c68a74273670cfa"
 dependencies = [
  "bitflags 2.13.0",
  "cexpr",
  "clang-sys",
- "itertools 0.10.5",
  "log",
  "prettyplease",
  "proc-macro2",
  "quote",
  "regex",
  "rustc-hash",
- "shlex 1.3.0",
+ "shlex",
  "syn 2.0.117",
 ]
 
@@ -1152,7 +1151,7 @@ dependencies = [
  "find-msvc-tools",
  "jobserver",
  "libc",
- "shlex 2.0.1",
+ "shlex",
 ]
 
 [[package]]
@@ -2422,7 +2421,7 @@ dependencies = [
 
 [[package]]
 name = "freya"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "cfg-if",
  "freya-android",
@@ -2442,7 +2441,7 @@ dependencies = [
 
 [[package]]
 name = "freya-android"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-components",
  "freya-core",
@@ -2454,7 +2453,7 @@ dependencies = [
 
 [[package]]
 name = "freya-animation"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "easer",
  "freya-core",
@@ -2462,7 +2461,7 @@ dependencies = [
 
 [[package]]
 name = "freya-clipboard"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "copypasta",
  "freya-core",
@@ -2470,7 +2469,7 @@ dependencies = [
 
 [[package]]
 name = "freya-components"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -2493,7 +2492,7 @@ dependencies = [
 
 [[package]]
 name = "freya-core"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "accesskit",
  "async-io",
@@ -2524,7 +2523,7 @@ dependencies = [
 
 [[package]]
 name = "freya-edit"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "bitflags 2.13.0",
  "freya-clipboard",
@@ -2537,21 +2536,21 @@ dependencies = [
 
 [[package]]
 name = "freya-engine"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-skia-safe",
 ]
 
 [[package]]
 name = "freya-icons"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "bytes",
 ]
 
 [[package]]
 name = "freya-markdown"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-components",
  "freya-core",
@@ -2561,7 +2560,7 @@ dependencies = [
 
 [[package]]
 name = "freya-material-design"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-animation",
  "freya-components",
@@ -2571,7 +2570,7 @@ dependencies = [
 
 [[package]]
 name = "freya-metrics-plugin"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-core",
  "freya-engine",
@@ -2581,7 +2580,7 @@ dependencies = [
 
 [[package]]
 name = "freya-query"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-core",
  "futures-util",
@@ -2589,14 +2588,14 @@ dependencies = [
 
 [[package]]
 name = "freya-radio"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-core",
 ]
 
 [[package]]
 name = "freya-router"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-core",
  "freya-router-macro",
@@ -2607,7 +2606,7 @@ dependencies = [
 
 [[package]]
 name = "freya-router-macro"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2617,16 +2616,16 @@ dependencies = [
 
 [[package]]
 name = "freya-sdk"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "freya-core",
 ]
 
 [[package]]
 name = "freya-skia-bindings"
-version = "0.100.0"
+version = "0.104.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a59be930a7bfe544a7f16fcc6d7326dfabff3ffe65c3321932f4e61234f4941"
+checksum = "8b842f8c0e9b10134a4f6a9a12af88ac9502dac119a0c9340f0fcd833b51f34a"
 dependencies = [
  "bindgen",
  "cc",
@@ -2641,9 +2640,9 @@ dependencies = [
 
 [[package]]
 name = "freya-skia-safe"
-version = "0.100.0"
+version = "0.104.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7975576c62caa0b8bccb6f4cfd16c61f57b27fffa15540f37deba9bd246bf009"
+checksum = "1ea5f92b1bb2850278a94883f3aca84dd28d49320b4cf44941a43cd40b595c54"
 dependencies = [
  "base64 0.23.1",
  "bitflags 2.13.0",
@@ -2654,18 +2653,18 @@ dependencies = [
 
 [[package]]
 name = "freya-skia-svg-macros"
-version = "0.1.0"
+version = "0.104.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c622cedc8d1cdaf144bc779734e7f6c5c29876a63e114bd0424d47a0d1aad18e"
+checksum = "b066d6dcffdaccd60ce58a171ea4cb700d8e04b31564f071195df4702c0e494a"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn 3.0.9",
 ]
 
 [[package]]
 name = "freya-winit"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3174,18 +3173,18 @@ dependencies = [
 
 [[package]]
 name = "hotpath"
-version = "0.22.0"
+version = "0.28.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66750a77f4f6b408a148be5102ef1f3ba7172def7ee92b1cfc75d9f7a3870453"
+checksum = "e2ee4f8d17ebe2400fa845f079acf9ede235be6472512876779af45f7890f934"
 dependencies = [
  "hotpath-macros",
 ]
 
 [[package]]
 name = "hotpath-macros"
-version = "0.22.0"
+version = "0.28.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afe0e1900d2dbe2e2df8e9522b97ebd7a5598ba18478f57e247957022dffedbe"
+checksum = "2b90aafbaf5f6af01ee9db2888644b15995f5306e5c280aec8261feb3e5e214a"
 
 [[package]]
 name = "html5ever"
@@ -5369,7 +5368,7 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
 name = "pathgraph"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 
 [[package]]
 name = "pbkdf2"
@@ -5904,10 +5903,10 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "ragnarok"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "euclid",
- "hotpath",
+ "hashbrown 0.16.1",
  "itertools 0.14.0",
  "rustc-hash",
  "tracing",
@@ -6844,12 +6843,6 @@ dependencies = [
 
 [[package]]
 name = "shlex"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
-
-[[package]]
-name = "shlex"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
@@ -7178,6 +7171,17 @@ name = "syn"
 version = "2.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
+name = "syn"
+version = "3.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d78c8dee4c7bf0e14673097256fed6142ce9d3b85a408189d07482442145823b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7667,7 +7671,7 @@ checksum = "756daf9b1013ebe47a8776667b466417e2d4c5679d441c26230efd9ef78692db"
 
 [[package]]
 name = "torin"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.9"
 dependencies = [
  "euclid",
  "itertools 0.14.0",

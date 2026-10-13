@@ -4,7 +4,7 @@ use std::rc::Rc;
 use freya::prelude::*;
 
 use super::room_list_item::{ROOM_ROW_HEIGHT, RoomListItem};
-use super::room_list_model::{RoomFilter, visible_rooms};
+use super::room_list_model::{Mailbox, RoomFilter, visible_rooms};
 use crate::ROOM_MAILBOX_RX;
 use crate::app::keys::{Area, KeyCommand, KeyNav, use_key_commands};
 use crate::app::navigation::navigate_to_room;
@@ -19,6 +19,7 @@ use crate::utils::{use_app_colors, use_watch, use_watch_tick};
 /// by `utils::room_list`; builds nothing itself.
 #[derive(PartialEq)]
 pub struct RoomList {
+    pub mailbox: Mailbox,
     pub filter: RoomFilter,
     pub chips_visible: State<bool>,
 }
@@ -40,17 +41,21 @@ impl Component for RoomList {
         let snapshot = snapshot.read().clone();
         let filtered_rooms = Rc::new({
             let mailbox = ROOM_MAILBOX_RX.get().expect("not initialized").borrow();
-            visible_rooms(&snapshot.rooms, &self.filter, &mailbox)
+            visible_rooms(&snapshot.rooms, self.mailbox, &self.filter, &mailbox)
         });
         *shown.borrow_mut() = filtered_rooms.clone();
         let rooms_len = filtered_rooms.len();
+        if rooms_len > 0 {
+            static FIRST: std::sync::Once = std::sync::Once::new();
+            FIRST.call_once(|| crate::logging::boot("room list shown"));
+        }
         let initial_loading = snapshot.version == 0;
 
         if initial_loading && rooms_len == 0 {
             return loading_state(c);
         }
         if rooms_len == 0 {
-            return empty_state(c, &self.filter);
+            return empty_state(c, self.mailbox, &self.filter);
         }
 
         // The builder closure captures `filtered_rooms`, which either input can change.
@@ -143,7 +148,11 @@ fn list_command(
     };
     let id = room.room_id.clone();
     match command {
-        KeyCommand::Open => navigate_to_room(id),
+        KeyCommand::Open => {
+            let mut focus_composer = nav.focus_composer;
+            focus_composer.set(true);
+            navigate_to_room(id);
+        }
         KeyCommand::ToggleFavourite => run(id, RoomAction::Favourite(!room.is_favourite)),
         KeyCommand::ToggleRead if room.is_unread() => run(id, RoomAction::MarkRead),
         KeyCommand::ToggleRead => run(id, RoomAction::MarkUnread),
@@ -183,7 +192,18 @@ fn loading_state(c: AppColors) -> Element {
         .into()
 }
 
-fn empty_state(c: AppColors, filter: &RoomFilter) -> Element {
+fn empty_state(c: AppColors, mailbox: Mailbox, filter: &RoomFilter) -> Element {
+    let (title, subtitle) = match (mailbox, filter) {
+        (Mailbox::Recontact, RoomFilter::All) => {
+            ("Nothing to recontact", "Mark a room to recontact it later")
+        }
+        (Mailbox::Archived, RoomFilter::All) => (
+            "Nothing archived",
+            "Archive a room once you're done with it",
+        ),
+        (Mailbox::Inbox, _) => (filter.empty_title(), filter.empty_subtitle()),
+        _ => ("No matching rooms", "Try another filter"),
+    };
     rect()
         .expanded()
         .center()
@@ -195,15 +215,10 @@ fn empty_state(c: AppColors, filter: &RoomFilter) -> Element {
                 .height(Size::px(48.))
                 .color(c.outline_variant_light),
         )
+        .child(label().text(title).font_size(16.).color(c.on_surface_muted))
         .child(
             label()
-                .text(filter.empty_title())
-                .font_size(16.)
-                .color(c.on_surface_muted),
-        )
-        .child(
-            label()
-                .text(filter.empty_subtitle())
+                .text(subtitle)
                 .font_size(13.)
                 .color(c.outline_variant_light),
         )

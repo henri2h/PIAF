@@ -1,5 +1,7 @@
 use super::room_list_model::RoomFilter;
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_material_design::prelude::Ripple;
 
 use crate::utils::use_app_colors;
@@ -69,5 +71,6 @@ impl Component for FilterChip {
                             ),
                     ),
             )
+            .hoverable(Size::auto(), Size::px(30.), 15.)
     }
 }

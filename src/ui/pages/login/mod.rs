@@ -2,6 +2,8 @@ mod field;
 mod user_id;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_icons::lucide;
 use freya_material_design::prelude::ButtonRippleExt;
 use freya_router::prelude::RouterContext;
@@ -89,7 +91,8 @@ impl Component for LoginPage {
                     lucide::eye_off()
                 },
                 c.on_surface_variant,
-            ));
+            ))
+            .hoverable(Size::px(32.), Size::px(32.), 16.);
 
         let form = rect()
             .vertical()
@@ -247,6 +250,7 @@ fn top_bar(c: AppColors) -> Rect {
                 .center()
                 .on_press(|_| RouterContext::get().go_back())
                 .child(icon(lucide::arrow_left(), c.on_surface))
+                .hoverable(Size::px(40.), Size::px(40.), 20.)
         }))
 }
 

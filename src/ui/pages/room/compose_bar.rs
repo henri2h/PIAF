@@ -3,6 +3,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya::text_edit::*;
 use freya_components::cursor_blink::use_cursor_blink;
 use tokio::sync::mpsc::UnboundedSender;
@@ -172,6 +174,17 @@ impl Component for ComposeBar {
             }
         });
 
+        // Opening the room with Enter from the list focuses the composer.
+        let key_nav = crate::app::keys::use_key_nav();
+        use_side_effect(move || {
+            let Some(nav) = key_nav else { return };
+            let mut pending = nav.focus_composer;
+            if *pending.read() {
+                pending.set(false);
+                a11y_id.request_focus();
+            }
+        });
+
         // Auto-focus the compose bar when reply or edit mode is activated.
         let focus_trigger = is_replying || is_editing;
         use_side_effect_with_deps(&focus_trigger, move |&active| {
@@ -280,9 +293,16 @@ impl Component for ComposeBar {
         let mut on_submit_btn = do_send.clone();
 
         let on_key_down = move |e: Event<KeyboardEventData>| {
-            // Leave the composer so keyboard navigation works again.
+            // Esc cancels a reply or edit first, then leaves the composer
+            // so keyboard navigation works again.
             if e.key == Key::Named(NamedKey::Escape) {
-                a11y_id.request_unfocus();
+                if edit_info.peek().is_some() {
+                    edit_info.set(None);
+                } else if reply_info.peek().is_some() {
+                    reply_info.set(None);
+                } else {
+                    a11y_id.request_unfocus();
+                }
                 return;
             }
             if e.key == Key::Named(NamedKey::Enter) && !e.modifiers.shift() {
@@ -309,7 +329,7 @@ impl Component for ComposeBar {
             editable.process_event(EditableEvent::KeyUp { key: &e.key });
         };
 
-        let on_global_pointer_press = move |_: Event<PointerEventData>| {
+        let on_global_pointer_up = move |_: Event<PointerEventData>| {
             editable.process_event(EditableEvent::Release);
         };
 
@@ -394,58 +414,80 @@ impl Component for ComposeBar {
                 rect()
                     .horizontal()
                     .width(Size::fill())
-                    .padding(Gaps::new(4., 12., 0., 12.))
+                    .content(Content::Flex)
+                    .padding(Gaps::new(8., 12., 0., 12.))
                     .cross_align(Alignment::Center)
-                    .spacing(8.)
+                    .spacing(10.)
                     .child(
                         SvgViewer::new(icon)
                             .color(label_color)
-                            .width(Size::px(14.))
-                            .height(Size::px(14.)),
+                            .width(Size::px(18.))
+                            .height(Size::px(18.)),
                     )
                     .child(if let Some((sender, body)) = preview {
                         rect()
                             .horizontal()
-                            .width(Size::fill_minimum())
-                            .corner_radius(6.)
+                            .width(Size::flex(1.))
+                            .content(Content::Flex)
+                            .corner_radius(8.)
+                            .overflow(Overflow::Clip)
                             .background(c.reply_other_bg)
-                            .padding(Gaps::new(3., 8., 3., 8.))
-                            .spacing(6.)
                             .child(
-                                label()
-                                    .text(sender)
-                                    .font_size(11.)
-                                    .font_weight(FontWeight::BOLD)
-                                    .color(c.reply_other_sender),
+                                rect()
+                                    .width(Size::px(3.))
+                                    .height(Size::fill_minimum())
+                                    .background(c.reply_other_sender),
                             )
                             .child(
-                                label()
-                                    .text(body)
-                                    .font_size(11.)
-                                    .color(c.reply_other_text)
-                                    .max_lines(1),
+                                rect()
+                                    .vertical()
+                                    .width(Size::flex(1.))
+                                    .padding(Gaps::new(6., 10., 6., 10.))
+                                    .spacing(2.)
+                                    .child(
+                                        label()
+                                            .text(format!("{label_text} {sender}"))
+                                            .font_size(12.)
+                                            .font_weight(FontWeight::BOLD)
+                                            .color(c.reply_other_sender)
+                                            .max_lines(1),
+                                    )
+                                    .child(
+                                        label()
+                                            .width(Size::fill())
+                                            .text(body)
+                                            .font_size(13.)
+                                            .color(c.reply_other_text)
+                                            .max_lines(2)
+                                            .text_overflow(TextOverflow::Ellipsis),
+                                    ),
                             )
                             .into_element()
                     } else {
                         label()
                             .text(label_text)
-                            .font_size(12.)
+                            .font_size(13.)
                             .color(label_color)
-                            .width(Size::fill_minimum())
+                            .width(Size::flex(1.))
                             .into_element()
                     })
                     .child(
-                        rect()
-                            .center()
-                            .width(Size::px(20.))
-                            .height(Size::px(20.))
-                            .corner_radius(10.)
-                            .on_press(on_cancel)
+                        TooltipContainer::new(Tooltip::new_text("Cancel (Esc)"))
+                            .position(AttachedPosition::Top)
                             .child(
-                                SvgViewer::new(freya_icons::lucide::x())
-                                    .color(c.on_surface_muted)
-                                    .width(Size::px(14.))
-                                    .height(Size::px(14.)),
+                                rect()
+                                    .center()
+                                    .width(Size::px(32.))
+                                    .height(Size::px(32.))
+                                    .corner_radius(16.)
+                                    .on_press(on_cancel)
+                                    .child(
+                                        SvgViewer::new(freya_icons::lucide::x())
+                                            .color(c.on_surface_variant)
+                                            .width(Size::px(18.))
+                                            .height(Size::px(18.)),
+                                    )
+                                    .hoverable(Size::px(32.), Size::px(32.), 16.),
                             ),
                     )
                     .into_element()
@@ -517,7 +559,8 @@ impl Component for ComposeBar {
                                         .color(c.on_surface_muted)
                                         .width(Size::px(14.))
                                         .height(Size::px(14.)),
-                                ),
+                                )
+                                .hoverable(Size::px(20.), Size::px(20.), 10.),
                         )
                         .into_element()
                 } else {
@@ -548,7 +591,7 @@ impl Component for ComposeBar {
                             .a11y_role(AccessibilityRole::TextInput)
                             .on_key_down(on_key_down)
                             .on_key_up(on_key_up)
-                            .on_global_pointer_press(on_global_pointer_press)
+                            .on_global_pointer_up(on_global_pointer_up)
                             .on_pointer_down(move |_| a11y_id.request_focus())
                             .width(Size::flex(1.0))
                             .height(Size::px(inner_h + V_PAD * 2.))

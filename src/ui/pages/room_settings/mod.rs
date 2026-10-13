@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_router::prelude::RouterContext;
 use matrix_sdk::RoomMemberships;
 use matrix_sdk::ruma::events::room::power_levels::UserPowerLevel;
@@ -281,7 +283,7 @@ impl Component for RoomSettings {
                                                             .font_size(13.)
                                                             .color(c.primary),
                                                     )
-                                                    .into_element()
+                                                    .hoverable(Size::auto(), Size::auto(), 0.)
                                             }))
                                             .into_element()
                                     } else {
@@ -425,7 +427,7 @@ impl Component for RoomSettings {
                                                     ),
                                             ),
                                     )
-                                    .into_element()
+                                    .hoverable(Size::fill(), Size::auto(), 0.)
                             }))
                             .child(M3ListItem {
                                 icon: freya_icons::lucide::users(),
@@ -530,18 +532,18 @@ fn leave_confirm_overlay(
                         .spacing(12.)
                         .child(
                             rect()
-                                .width(Size::flex(1.0))
+                                .width(Size::fill())
                                 .padding(Gaps::new(12., 0., 12., 0.))
                                 .corner_radius(8.)
                                 .background(c.surface_container)
                                 .overflow(Overflow::Clip)
                                 .center()
                                 .on_press(move |_| *open.write() = false)
-                                .child(label().text("Cancel").font_size(14.).color(c.on_surface)),
+                                .child(label().text("Cancel").font_size(14.).color(c.on_surface)).hoverable(Size::flex(1.0), Size::auto(), 8.),
                         )
                         .child(
                             rect()
-                                .width(Size::flex(1.0))
+                                .width(Size::fill())
                                 .padding(Gaps::new(12., 0., 12., 0.))
                                 .corner_radius(8.)
                                 .background(c.error)
@@ -565,7 +567,7 @@ fn leave_confirm_overlay(
                                         *leaving.write() = false;
                                     });
                                 })
-                                .child(label().text("Leave").font_size(14.).color(c.on_primary)),
+                                .child(label().text("Leave").font_size(14.).color(c.on_primary)).hoverable(Size::flex(1.0), Size::auto(), 8.),
                         ),
                 ),
         )

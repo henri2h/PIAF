@@ -286,6 +286,10 @@ fn rebuild(source: &'static str, requests: usize) {
         current.rooms = Arc::new(rooms);
         true
     });
+    if changed && count > 0 {
+        static FIRST: std::sync::Once = std::sync::Once::new();
+        FIRST.call_once(|| crate::logging::boot("room list built"));
+    }
     if changed {
         // Other listeners (invite screen, session banner) key off sync ticks.
         let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));

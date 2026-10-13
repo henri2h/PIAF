@@ -5,6 +5,35 @@ use std::collections::HashMap;
 use crate::utils::room_list::RoomSummary;
 use crate::utils::room_mailbox::{RoomMailboxState, is_archived_hidden};
 
+/// Which rooms the list shows, before the [`RoomFilter`] chips apply.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Mailbox {
+    Inbox,
+    Recontact,
+    Archived,
+}
+
+impl Mailbox {
+    pub const ALL: [Mailbox; 3] = [Self::Inbox, Self::Recontact, Self::Archived];
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            Self::Inbox => "Inbox",
+            Self::Recontact => "Recontact",
+            Self::Archived => "Archived",
+        }
+    }
+
+    fn matches(&self, room: &RoomSummary, state: Option<&RoomMailboxState>) -> bool {
+        let archived = is_archived_hidden(room.latest_ts, state.and_then(|s| s.archived_until_ts));
+        match self {
+            Self::Inbox => !archived,
+            Self::Recontact => state.is_some_and(|s| s.recontact),
+            Self::Archived => archived,
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum RoomFilter {
     All,
@@ -65,18 +94,16 @@ impl RoomFilter {
     }
 }
 
-/// Rooms passing `filter` that aren't archived; order preserved.
+/// Rooms in `view` passing `filter`; order preserved.
 pub fn visible_rooms(
     rooms: &[RoomSummary],
+    view: Mailbox,
     filter: &RoomFilter,
     mailbox: &HashMap<String, RoomMailboxState>,
 ) -> Vec<RoomSummary> {
     rooms
         .iter()
-        .filter(|r| {
-            let archived_until_ts = mailbox.get(&r.room_id).and_then(|s| s.archived_until_ts);
-            filter.matches(r) && !is_archived_hidden(r.latest_ts, archived_until_ts)
-        })
+        .filter(|r| filter.matches(r) && view.matches(r, mailbox.get(&r.room_id)))
         .cloned()
         .collect()
 }
@@ -118,7 +145,7 @@ mod tests {
     async fn invites_show_in_all() {
         let (server, client) = server().await;
         let invite = invited(&server, &client, room_id!("!i:x")).await;
-        let visible = visible_rooms(&[invite], &RoomFilter::All, &HashMap::new());
+        let visible = visible_rooms(&[invite], Mailbox::Inbox, &RoomFilter::All, &HashMap::new());
         assert_eq!(visible.len(), 1);
     }
 }

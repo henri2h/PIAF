@@ -113,11 +113,11 @@ impl Component for Avatar {
 
                 if let Some(key) = fetch_key.clone() {
                     // Matrix avatar: fetch bytes from the server, then decode.
-                    // spawn_forever keeps the task alive even if the component
+                    // spawn_in_window keeps the task alive even if the component
                     // scrolls out of view, so the AssetCacher entry is always
                     // updated and the next remount hits the cache immediately.
                     let asset_config = asset_config.clone();
-                    spawn_forever(async move {
+                    spawn_in_window(async move {
                         let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
                         let key2 = key.clone();
                         tokio::spawn(async move {
@@ -196,8 +196,11 @@ pub struct StackedAvatar {
     pub size: f32,
     pub initial1: String,
     pub color1: (u8, u8, u8),
+    /// Avatar fetch key (e.g. `mxc:…`) for the first circle; initial if `None`.
+    pub fetch_key1: Option<String>,
     pub initial2: String,
     pub color2: (u8, u8, u8),
+    pub fetch_key2: Option<String>,
     /// Background color of the parent surface, used to draw a separator ring
     /// between the two overlapping circles so they don't bleed into each other.
     pub border_color: (u8, u8, u8),
@@ -217,32 +220,45 @@ impl Component for StackedAvatar {
         let ring_size = circle_size + border * 2.;
         let ring_r = ring_size / 2.;
 
-        let mk_circle = |color: (u8, u8, u8), initial: String, ring: bool| {
-            let inner = rect()
-                .width(Size::px(circle_size))
-                .height(Size::px(circle_size))
-                .corner_radius(r)
-                .background(color)
-                .center()
-                .child(
-                    label()
-                        .text(initial)
-                        .font_size(font_size)
-                        .color((255u8, 255u8, 255u8)),
-                );
-            if ring {
-                rect()
-                    .width(Size::px(ring_size))
-                    .height(Size::px(ring_size))
-                    .corner_radius(ring_r)
-                    .background(self.border_color)
-                    .center()
-                    .child(inner)
-                    .into_element()
-            } else {
-                inner.into_element()
-            }
-        };
+        let mk_circle =
+            |color: (u8, u8, u8), initial: String, fetch_key: Option<String>, ring: bool| {
+                let inner: Element = match fetch_key {
+                    Some(key) => Avatar {
+                        size: circle_size,
+                        bytes: None,
+                        fetch_key: Some(key.clone()),
+                        initial,
+                        color,
+                        image_key: key,
+                    }
+                    .into(),
+                    None => rect()
+                        .width(Size::px(circle_size))
+                        .height(Size::px(circle_size))
+                        .corner_radius(r)
+                        .background(color)
+                        .center()
+                        .child(
+                            label()
+                                .text(initial)
+                                .font_size(font_size)
+                                .color((255u8, 255u8, 255u8)),
+                        )
+                        .into(),
+                };
+                if ring {
+                    rect()
+                        .width(Size::px(ring_size))
+                        .height(Size::px(ring_size))
+                        .corner_radius(ring_r)
+                        .background(self.border_color)
+                        .center()
+                        .child(inner)
+                        .into_element()
+                } else {
+                    inner
+                }
+            };
 
         rect()
             .vertical()
@@ -253,7 +269,12 @@ impl Component for StackedAvatar {
                     .horizontal()
                     .width(Size::fill())
                     .height(Size::px(offset))
-                    .child(mk_circle(self.color1, self.initial1.clone(), false)),
+                    .child(mk_circle(
+                        self.color1,
+                        self.initial1.clone(),
+                        self.fetch_key1.clone(),
+                        false,
+                    )),
             )
             .child(
                 rect()
@@ -263,7 +284,12 @@ impl Component for StackedAvatar {
                     .content(Content::Flex)
                     .layer(1)
                     .child(rect().width(Size::flex(1.0)).height(Size::px(1.)))
-                    .child(mk_circle(self.color2, self.initial2.clone(), true)),
+                    .child(mk_circle(
+                        self.color2,
+                        self.initial2.clone(),
+                        self.fetch_key2.clone(),
+                        true,
+                    )),
             )
     }
 }

@@ -3,13 +3,11 @@ use freya_router::prelude::Routable;
 
 use super::layout::Layout;
 use crate::ui::pages::{
-    archived::ArchivedPage,
     bookmarks::BookmarksPage,
     home::HomePage,
     login::LoginPage,
     new_chat::{NewChat, NewGroup, NewGroupConfig, PendingDm, PendingGroup},
     reactions::ReactionsPage,
-    recontact::RecontactPage,
     room::RoomPage,
     room_media::RoomMediaPage,
     room_members::RoomMembers,
@@ -65,8 +63,4 @@ pub enum Route {
         ReactionsPage,
         #[route("/bookmarks")]
         BookmarksPage,
-        #[route("/recontact")]
-        RecontactPage,
-        #[route("/archived")]
-        ArchivedPage,
 }

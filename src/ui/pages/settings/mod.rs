@@ -4,7 +4,7 @@ use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::Route;
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::{Hoverable, TopAppBar, TopAppBarTitle};
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
 
@@ -96,6 +96,21 @@ impl Component for Settings {
     }
 }
 
+/// Icon + text content for a settings `Button`.
+pub(super) fn button_label(icon: bytes::Bytes, text: &'static str, c: AppColors) -> Rect {
+    rect()
+        .horizontal()
+        .cross_align(Alignment::Center)
+        .spacing(6.)
+        .child(
+            SvgViewer::new(icon)
+                .color(c.on_surface)
+                .width(Size::px(16.))
+                .height(Size::px(16.)),
+        )
+        .child(label().text(text))
+}
+
 pub(super) fn section_label(text: &str, c: AppColors) -> Element {
     rect()
         .width(Size::fill())
@@ -160,54 +175,60 @@ fn nav_row(
     c: AppColors,
     on_press: Arc<dyn Fn()>,
 ) -> Element {
-    rect()
-        .width(Size::fill())
-        .overflow(Overflow::Clip)
-        .on_press(move |_| on_press())
-        .child(
-            freya_material_design::prelude::Ripple::new()
-                .width(Size::fill())
-                .child(
-                    rect()
-                        .horizontal()
-                        .width(Size::fill())
-                        .padding(Gaps::new(14., 16., 14., 16.))
-                        .spacing(12.)
-                        .cross_align(Alignment::Center)
-                        .child(
-                            SvgViewer::new(icon)
-                                .width(Size::px(20.))
-                                .height(Size::px(20.))
-                                .color(c.on_surface_variant),
-                        )
-                        .child(
-                            rect()
-                                .vertical()
-                                .spacing(2.)
-                                .width(Size::flex(1.0))
-                                .child(
-                                    label()
-                                        .text(title.to_string())
-                                        .font_size(15.)
-                                        .color(c.on_surface),
-                                )
-                                .child(if let Some(sub) = subtitle {
-                                    label()
-                                        .text(sub.to_string())
-                                        .font_size(12.)
-                                        .color(c.on_surface_muted)
-                                        .into_element()
-                                } else {
-                                    rect().into_element()
-                                }),
-                        )
-                        .child(
-                            SvgViewer::new(freya_icons::lucide::chevron_right())
-                                .width(Size::px(16.))
-                                .height(Size::px(16.))
-                                .color(c.outline_variant_light),
-                        ),
-                ),
-        )
-        .into_element()
+    Hoverable {
+        width: Size::fill(),
+        height: Size::auto(),
+        corner_radius: 0.,
+        child: rect()
+            .width(Size::fill())
+            .overflow(Overflow::Clip)
+            .on_press(move |_| on_press())
+            .child(
+                freya_material_design::prelude::Ripple::new()
+                    .width(Size::fill())
+                    .child(
+                        rect()
+                            .horizontal()
+                            .width(Size::fill())
+                            .padding(Gaps::new(14., 16., 14., 16.))
+                            .spacing(12.)
+                            .cross_align(Alignment::Center)
+                            .child(
+                                SvgViewer::new(icon)
+                                    .width(Size::px(20.))
+                                    .height(Size::px(20.))
+                                    .color(c.on_surface_variant),
+                            )
+                            .child(
+                                rect()
+                                    .vertical()
+                                    .spacing(2.)
+                                    .width(Size::flex(1.0))
+                                    .child(
+                                        label()
+                                            .text(title.to_string())
+                                            .font_size(15.)
+                                            .color(c.on_surface),
+                                    )
+                                    .child(if let Some(sub) = subtitle {
+                                        label()
+                                            .text(sub.to_string())
+                                            .font_size(12.)
+                                            .color(c.on_surface_muted)
+                                            .into_element()
+                                    } else {
+                                        rect().into_element()
+                                    }),
+                            )
+                            .child(
+                                SvgViewer::new(freya_icons::lucide::chevron_right())
+                                    .width(Size::px(16.))
+                                    .height(Size::px(16.))
+                                    .color(c.outline_variant_light),
+                            ),
+                    ),
+            )
+            .into_element(),
+    }
+    .into_element()
 }

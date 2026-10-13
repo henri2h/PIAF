@@ -239,7 +239,11 @@ fn notifications_content(
                                     *gateway_saving.write() = false;
                                 });
                             })
-                            .child(if is_saving { "Saving…" } else { "Save" }),
+                            .child(super::button_label(
+                                freya_icons::lucide::save(),
+                                if is_saving { "Saving…" } else { "Save" },
+                                c,
+                            )),
                     ),
             )
             .child(
@@ -340,7 +344,11 @@ fn notifications_content(
                     *push_busy.write() = false;
                 });
             })
-            .child(if busy { "Working…" } else { "Re-register" }),
+            .child(super::button_label(
+                freya_icons::lucide::refresh_cw(),
+                if busy { "Working…" } else { "Re-register" },
+                c,
+            )),
     );
 
     if registered {
@@ -361,7 +369,11 @@ fn notifications_content(
                         *push_busy.write() = false;
                     });
                 })
-                .child("Unregister"),
+                .child(super::button_label(
+                    freya_icons::lucide::bell_off(),
+                    "Unregister",
+                    c,
+                )),
         );
     }
 

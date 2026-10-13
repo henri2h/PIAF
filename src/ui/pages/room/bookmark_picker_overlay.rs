@@ -1,4 +1,6 @@
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_material_design::prelude::Ripple;
 
 use crate::BOOKMARKS_RX;
@@ -133,5 +135,5 @@ fn list_row(
                     ),
             ),
         )
-        .into()
+        .hoverable(Size::fill(), Size::auto(), 8.)
 }

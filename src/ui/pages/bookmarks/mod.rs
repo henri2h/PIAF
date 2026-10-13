@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_material_design::prelude::Ripple;
 use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
@@ -119,7 +121,8 @@ fn tabs_row(
                                 .font_weight(FontWeight::MEDIUM)
                                 .color(text_color),
                         ),
-                ),
+                )
+                .hoverable(Size::auto(), Size::px(30.), 15.),
         );
     }
     row.into()
@@ -267,8 +270,10 @@ impl Component for BookmarkItem {
                                             .color(c.on_surface_muted),
                                     ),
                                 ),
-                            ),
-                    ),
+                            )
+                            .hoverable(Size::px(28.), Size::px(28.), 14.),
+                    )
+                    .hoverable(Size::fill(), Size::auto(), 12.),
             )
     }
 }
@@ -401,7 +406,8 @@ impl Component for ManageListRow {
                                     .color(c.error),
                             ),
                         ),
-                    ),
+                    )
+                    .hoverable(Size::px(28.), Size::px(28.), 14.),
             )
     }
 }

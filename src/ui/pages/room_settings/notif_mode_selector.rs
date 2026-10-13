@@ -1,4 +1,6 @@
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use matrix_sdk::notification_settings::RoomNotificationMode;
 
 use crate::utils::{const_values::AppColors, matrix::CLIENT};
@@ -147,7 +149,7 @@ pub(super) fn notif_popup_overlay(
                                         .height(Size::px(20.))
                                 })),
                         )
-                        .into_element()
+                        .hoverable(Size::fill(), Size::auto(), 0.)
                 }))
                 .child(rect().width(Size::fill()).height(Size::px(16.))),
         )

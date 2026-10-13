@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::{
     OwnedRoomId,
@@ -114,7 +116,8 @@ impl Component for RoomSearch {
                                                 .color(c.on_surface_faint)
                                                 .width(Size::px(16.))
                                                 .height(Size::px(16.)),
-                                        ),
+                                        )
+                                        .hoverable(Size::px(32.), Size::px(32.), 16.),
                                 )
                             } else {
                                 None

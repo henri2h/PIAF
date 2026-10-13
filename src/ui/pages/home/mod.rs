@@ -15,8 +15,10 @@ use std::sync::atomic::Ordering;
 use app_bar::HomeAppBar;
 use filter_bar::RoomFilterBar;
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use room_list::RoomList;
-use room_list_model::RoomFilter;
+use room_list_model::{Mailbox, RoomFilter};
 use search_panel::SearchResults;
 
 use crate::logging::RenderTimer;
@@ -55,6 +57,7 @@ impl Component for HomePage {
         let search: State<String> = use_state(String::new);
         let search_open: State<bool> = use_state(|| false);
         let filter: State<RoomFilter> = use_state(|| RoomFilter::All);
+        let mailbox: State<Mailbox> = use_state(|| Mailbox::Inbox);
         // Shown by default; scrolling down hides them, scrolling up brings them back.
         let chips_visible: State<bool> = use_state(|| true);
 
@@ -81,7 +84,7 @@ impl Component for HomePage {
                 rect().into_element()
             })
             .child(if show_filters {
-                RoomFilterBar { filter }.into_element()
+                RoomFilterBar { mailbox, filter }.into_element()
             } else {
                 rect().into_element()
             })
@@ -89,12 +92,47 @@ impl Component for HomePage {
                 SearchResults { search }.into_element()
             } else {
                 RoomList {
+                    mailbox: *mailbox.read(),
                     filter: filter.read().clone(),
                     chips_visible,
                 }
                 .into_element()
             })
+            .maybe_child((!search_active).then(|| new_chat_fab(c)))
     }
+}
+
+/// Material floating action button, bottom right: start a new chat.
+fn new_chat_fab(c: AppColors) -> Element {
+    rect()
+        .position(Position::new_absolute().bottom(16.).right(16.))
+        .layer(1)
+        .corner_radius(16.)
+        .shadow(Shadow::new().y(3.).blur(8.).color((0, 0, 0, 60)))
+        .child(
+            TooltipContainer::new(Tooltip::new_text("New chat"))
+                .position(AttachedPosition::Top)
+                .child(
+                    rect()
+                        .center()
+                        .width(Size::px(56.))
+                        .height(Size::px(56.))
+                        .corner_radius(16.)
+                        .background(c.primary)
+                        .on_press(|_| {
+                            let _ = freya_router::prelude::RouterContext::get()
+                                .push(crate::Route::NewChat);
+                        })
+                        .child(
+                            SvgViewer::new(freya_icons::lucide::pencil())
+                                .color(c.on_primary)
+                                .width(Size::px(24.))
+                                .height(Size::px(24.)),
+                        )
+                        .hoverable(Size::px(56.), Size::px(56.), 16.),
+                ),
+        )
+        .into_element()
 }
 
 /// Shown once the server revokes our token; sync has stopped. The session file
@@ -127,7 +165,8 @@ fn session_expired_banner(c: AppColors) -> Element {
                         .font_size(13.)
                         .font_weight(FontWeight::MEDIUM)
                         .color(c.error),
-                ),
+                )
+                .hoverable(Size::auto(), Size::auto(), 16.),
         )
         .into()
 }

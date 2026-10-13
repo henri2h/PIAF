@@ -11,7 +11,7 @@ pub(super) fn field(
     c: AppColors,
     field_label: &'static str,
     input: Input,
-    action: Option<Rect>,
+    action: Option<Element>,
     helper: Option<(String, bool)>,
 ) -> Rect {
     rect()

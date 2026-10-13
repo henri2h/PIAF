@@ -1,4 +1,6 @@
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 use std::sync::Arc;
@@ -150,5 +152,6 @@ impl Component for ReactionItem {
                             ),
                     ),
             )
+            .hoverable(Size::fill(), Size::auto(), 0.)
     }
 }

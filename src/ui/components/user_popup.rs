@@ -1,4 +1,6 @@
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 
@@ -164,7 +166,8 @@ impl Component for UserPopupOverlay {
                                 })
                                 .font_size(16.)
                                 .color(colors.text_inverse),
-                        ),
+                        )
+                        .hoverable(Size::fill(), Size::auto(), 8.),
                 );
         }
 

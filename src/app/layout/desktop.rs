@@ -31,7 +31,7 @@ impl Component for Layout {
 
         // Notifications run on tokio and can't read Freya state; mirror focus for them.
         use_side_effect(|| {
-            let focused = *Platform::get().is_app_focused.read();
+            let focused = *Platform::get().current_window().is_app_focused.read();
             crate::APP_FOCUSED.store(focused, Ordering::Relaxed);
         });
         let w = *width.read();
@@ -67,11 +67,22 @@ impl Component for Layout {
             Route::RoomSettings { room_id } if w >= THREE_PANEL_MIN_WIDTH => Some(room_id.clone()),
             _ => None,
         };
-        let show_split = is_wide
+        // App settings open as a modal over the split view.
+        let settings_modal = is_wide
             && matches!(
                 route,
-                Route::HomePage | Route::RoomPage { .. } | Route::RoomSettings { .. }
+                Route::Settings
+                    | Route::SettingsProfile
+                    | Route::SettingsSecurity
+                    | Route::SettingsNotifications
+                    | Route::SettingsAppearance
             );
+        let show_split = settings_modal
+            || is_wide
+                && matches!(
+                    route,
+                    Route::HomePage | Route::RoomPage { .. } | Route::RoomSettings { .. }
+                );
 
         let body = if let Some(rid) = settings_room {
             rect()
@@ -132,9 +143,28 @@ impl Component for Layout {
                 on_key(&e, nav, pending_g, is_wide);
             })
             .child(body)
+            .maybe_child(settings_modal.then(settings_modal_view))
             .child(ContextMenuViewer::new())
             .maybe_child(nav.help_open.read().then(|| help_overlay(c, nav)))
     }
+}
+
+fn settings_modal_view() -> Element {
+    Popup::new()
+        .width(Size::px(560.))
+        .height(Size::px(680.))
+        .padding(Gaps::new_all(0.))
+        .on_close_request(|_| {
+            let _ = RouterContext::get().push(Route::HomePage);
+        })
+        .child(
+            rect()
+                .expanded()
+                .corner_radius(12.)
+                .overflow(Overflow::Clip)
+                .child(Outlet::<Route>::new()),
+        )
+        .into_element()
 }
 
 fn side_panel(child: impl IntoElement) -> Rect {

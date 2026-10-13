@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk_ui::timeline::{
     EventSendState, MembershipChange, TimelineDetails, TimelineItem, TimelineItemContent,
@@ -69,6 +71,10 @@ impl Component for MessageRow {
             mut user_popup,
             ..
         } = use_room_ui_ctx();
+        #[cfg(not(target_os = "android"))]
+        let mut reply_info = use_room_ui_ctx().reply_info;
+        #[cfg(not(target_os = "android"))]
+        let mut hovered = use_state(|| false);
         let is_dm = self.is_dm;
         let my_user_id = self.my_user_id.clone();
         let date_label = self.date_label.clone();
@@ -380,7 +386,8 @@ impl Component for MessageRow {
                                     .map(|s| ViewerSource::Remote(s.clone())),
                                 fallback_source: Some(ViewerSource::Remote(source)),
                                 thumb_size: Some((400, 300)),
-                            }),
+                            })
+                            .hoverable(Size::px(200.), Size::px(150.), 8.),
                     )
                     .maybe_child(
                         caption.map(|cap| label().text(cap).color(text_color).into_element()),
@@ -433,7 +440,7 @@ impl Component for MessageRow {
                                     .into_element()
                             })),
                     )
-                    .into_element()
+                    .hoverable(Size::auto(), Size::auto(), 0.)
             }
             MessageType::Video(v) => {
                 let text_color = if is_me {
@@ -554,7 +561,7 @@ impl Component for MessageRow {
                                     .into_element()
                             })),
                     )
-                    .into_element()
+                    .hoverable(Size::auto(), Size::auto(), 0.)
             }
             _ => return rect(),
         };
@@ -666,7 +673,8 @@ impl Component for MessageRow {
                                 .text(format!("{} {}", key, count))
                                 .font_size(13.)
                                 .color(pill_text_color),
-                        ),
+                        )
+                        .hoverable(Size::auto(), Size::auto(), 12.),
                 );
             }
             pills_row
@@ -723,7 +731,8 @@ impl Component for MessageRow {
                         color: sender_color_val,
                         image_key: avatar_key.clone(),
                         fetch_key: Some(avatar_key),
-                    }),
+                    })
+                    .hoverable(Size::auto(), Size::auto(), 18.),
             )
         } else {
             row
@@ -776,7 +785,7 @@ impl Component for MessageRow {
                         ),
                 );
             }
-            r.into_element()
+            r.hoverable(Size::fill(), Size::auto(), 0.)
         } else {
             rect().into_element()
         };
@@ -807,7 +816,8 @@ impl Component for MessageRow {
                                     .text("Discard")
                                     .font_size(11.)
                                     .color((255u8, 255u8, 255u8)),
-                            ),
+                            )
+                            .hoverable(Size::auto(), Size::auto(), 4.),
                     )
                     .into_element()
             } else {
@@ -818,11 +828,51 @@ impl Component for MessageRow {
         };
 
         #[cfg(not(target_os = "android"))]
+        let hover_bar = (*hovered.read()).then(|| {
+            let tx = action_tx.clone();
+            let react_eid = event_id.clone();
+            let reply_eid = event_id.clone();
+            let reply_sender = sender_name.clone();
+            let reply_body = crate::utils::room_preview::message_body(message.msgtype())
+                .unwrap_or_else(|| "[Message]".to_string());
+            let item_more = item.clone();
+            super::message_hover_bar::hover_bar(
+                c,
+                move |key| {
+                    if let Some(event_id) = react_eid.clone() {
+                        let _ = tx.send(MsgAction::React { event_id, key });
+                    }
+                },
+                move || {
+                    if let Some(event_id) = reply_eid.clone() {
+                        reply_info.set(Some((event_id, reply_sender.clone(), reply_body.clone())));
+                    }
+                },
+                move || action_popup.set(Some(item_more.clone())),
+            )
+        });
+
+        #[cfg(not(target_os = "android"))]
         return rect()
             .vertical()
             .width(Size::fill())
+            .on_pointer_over(move |_| {
+                if !*hovered.peek() {
+                    hovered.set(true);
+                }
+            })
+            .on_pointer_out(move |_| {
+                if *hovered.peek() {
+                    hovered.set(false);
+                }
+            })
             .child(date_separator)
-            .child(row.child(bubble_col))
+            .child(if is_me {
+                // Toolbar on the inner side of the bubble.
+                row.maybe_child(hover_bar).child(bubble_col)
+            } else {
+                row.child(bubble_col).maybe_child(hover_bar)
+            })
             .child(failed_send_row)
             .child(read_receipt_row);
 

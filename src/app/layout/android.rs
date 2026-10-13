@@ -18,11 +18,7 @@ impl Component for Layout {
         let route = use_route::<Route>();
         let show_navbar = !matches!(
             route,
-            Route::WelcomePage
-                | Route::LoginPage
-                | Route::BookmarksPage
-                | Route::RecontactPage
-                | Route::ArchivedPage
+            Route::WelcomePage | Route::LoginPage | Route::BookmarksPage
         );
 
         rect()

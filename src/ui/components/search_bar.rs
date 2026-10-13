@@ -1,5 +1,7 @@
 use freya::prelude::*;
 
+use crate::ui::components::HoverableExt;
+
 /// Styled search bar (white outer padding → rounded grey pill → icon + input).
 /// `input` is bound live to the text field.  When `submit` is `Some(target)`,
 /// pressing Enter writes the current text into `target`; otherwise the live
@@ -67,7 +69,7 @@ impl Component for SearchBar {
                                     .width(Size::px(12.))
                                     .height(Size::px(12.)),
                             )
-                            .into_element()
+                            .hoverable(Size::px(20.), Size::px(20.), 10.)
                     } else {
                         rect().into_element()
                     }),
