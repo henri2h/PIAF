@@ -67,8 +67,8 @@ impl Component for Layout {
             Route::RoomSettings { room_id } if w >= THREE_PANEL_MIN_WIDTH => Some(room_id.clone()),
             _ => None,
         };
-        // App settings open as a modal over the split view.
-        let settings_modal = is_wide
+        // Settings, chat creation, reactions and bookmarks open as a modal over the split view.
+        let modal_route = is_wide
             && matches!(
                 route,
                 Route::Settings
@@ -76,8 +76,13 @@ impl Component for Layout {
                     | Route::SettingsSecurity
                     | Route::SettingsNotifications
                     | Route::SettingsAppearance
+                    | Route::NewChat
+                    | Route::NewGroup
+                    | Route::NewGroupConfig
+                    | Route::ReactionsPage
+                    | Route::BookmarksPage
             );
-        let show_split = settings_modal
+        let show_split = modal_route
             || is_wide
                 && matches!(
                     route,
@@ -143,13 +148,13 @@ impl Component for Layout {
                 on_key(&e, nav, pending_g, is_wide);
             })
             .child(body)
-            .maybe_child(settings_modal.then(settings_modal_view))
+            .maybe_child(modal_route.then(modal_view))
             .child(ContextMenuViewer::new())
             .maybe_child(nav.help_open.read().then(|| help_overlay(c, nav)))
     }
 }
 
-fn settings_modal_view() -> Element {
+fn modal_view() -> Element {
     Popup::new()
         .width(Size::px(560.))
         .height(Size::px(680.))

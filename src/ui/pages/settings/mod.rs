@@ -4,7 +4,7 @@ use freya::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::Route;
-use crate::ui::components::{Hoverable, TopAppBar, TopAppBarTitle};
+use crate::ui::components::{M3ListItem, TopAppBar, TopAppBarTitle};
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
 
@@ -175,60 +175,13 @@ fn nav_row(
     c: AppColors,
     on_press: Arc<dyn Fn()>,
 ) -> Element {
-    Hoverable {
-        width: Size::fill(),
-        height: Size::auto(),
-        corner_radius: 0.,
-        child: rect()
-            .width(Size::fill())
-            .overflow(Overflow::Clip)
-            .on_press(move |_| on_press())
-            .child(
-                freya_material_design::prelude::Ripple::new()
-                    .width(Size::fill())
-                    .child(
-                        rect()
-                            .horizontal()
-                            .width(Size::fill())
-                            .padding(Gaps::new(14., 16., 14., 16.))
-                            .spacing(12.)
-                            .cross_align(Alignment::Center)
-                            .child(
-                                SvgViewer::new(icon)
-                                    .width(Size::px(20.))
-                                    .height(Size::px(20.))
-                                    .color(c.on_surface_variant),
-                            )
-                            .child(
-                                rect()
-                                    .vertical()
-                                    .spacing(2.)
-                                    .width(Size::flex(1.0))
-                                    .child(
-                                        label()
-                                            .text(title.to_string())
-                                            .font_size(15.)
-                                            .color(c.on_surface),
-                                    )
-                                    .child(if let Some(sub) = subtitle {
-                                        label()
-                                            .text(sub.to_string())
-                                            .font_size(12.)
-                                            .color(c.on_surface_muted)
-                                            .into_element()
-                                    } else {
-                                        rect().into_element()
-                                    }),
-                            )
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::chevron_right())
-                                    .width(Size::px(16.))
-                                    .height(Size::px(16.))
-                                    .color(c.outline_variant_light),
-                            ),
-                    ),
-            )
-            .into_element(),
+    M3ListItem {
+        icon,
+        item_label: title.to_string(),
+        sublabel: subtitle.map(str::to_string),
+        icon_color: c.on_surface_variant,
+        destructive: false,
+        on_press: EventHandler::new(move |_| on_press()),
     }
     .into_element()
 }

@@ -106,7 +106,9 @@ impl Component for HomePage {
 fn new_chat_fab(c: AppColors) -> Element {
     rect()
         .position(Position::new_absolute().bottom(16.).right(16.))
-        .layer(1)
+        // Layers grow by one per nesting level, so the list rows sit far above
+        // `layer(1)`. Jump well past them, but stay below overlays (popups, menus).
+        .layer(1000)
         .corner_radius(16.)
         .shadow(Shadow::new().y(3.).blur(8.).color((0, 0, 0, 60)))
         .child(
@@ -119,6 +121,9 @@ fn new_chat_fab(c: AppColors) -> Element {
                         .height(Size::px(56.))
                         .corner_radius(16.)
                         .background(c.primary)
+                        // Solid nodes only block hover for events they listen to: without
+                        // this, room rows (`on_pointer_over`) underneath light up too.
+                        .on_pointer_over(|_| {})
                         .on_press(|_| {
                             let _ = freya_router::prelude::RouterContext::get()
                                 .push(crate::Route::NewChat);

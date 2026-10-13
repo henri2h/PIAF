@@ -432,11 +432,16 @@ impl Component for ComposeBar {
                             .corner_radius(8.)
                             .overflow(Overflow::Clip)
                             .background(c.reply_other_bg)
-                            .child(
-                                rect()
-                                    .width(Size::px(3.))
-                                    .height(Size::fill_minimum())
-                                    .background(c.reply_other_sender),
+                            .border(
+                                Border::new()
+                                    .fill(c.reply_other_sender)
+                                    .width(BorderWidth {
+                                        top: 0.,
+                                        right: 0.,
+                                        bottom: 0.,
+                                        left: 3.,
+                                    })
+                                    .alignment(BorderAlignment::Inner),
                             )
                             .child(
                                 rect()
