@@ -1,6 +1,11 @@
 //! Reactions feed: reactions others leave on our messages, newest first.
 
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+use futures::StreamExt;
+use matrix_sdk::room::MessagesOptions;
+use matrix_sdk::ruma::api::client::filter::RoomEventFilter;
 
 use matrix_sdk::ruma::events::{
     AnySyncMessageLikeEvent, AnySyncTimelineEvent, OriginalSyncMessageLikeEvent,
@@ -24,6 +29,58 @@ pub fn register(client: &Client) {
             collect_reaction(ev, room, client).await;
         },
     );
+}
+
+/// Rooms scanned by [`backfill`], most recent first.
+const BACKFILL_ROOMS: usize = 40;
+/// History scanned per room: reactions only where the server can filter
+/// (unencrypted rooms), all events otherwise.
+const BACKFILL_REACTIONS: u32 = 50;
+const BACKFILL_ENCRYPTED_EVENTS: u32 = 100;
+const BACKFILL_CONCURRENCY: usize = 4;
+
+static BACKFILLED: AtomicBool = AtomicBool::new(false);
+
+/// Sync only delivers reactions that arrive while the app runs (and sliding
+/// sync only the latest event per room), so fill the feed from the recent
+/// history of the most recently active rooms. Runs once per session.
+pub async fn backfill(client: Client) {
+    if BACKFILLED.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    let mut rooms = client.joined_rooms();
+    crate::utils::room_list::sort_rooms_by_recency(&mut rooms);
+    rooms.truncate(BACKFILL_ROOMS);
+
+    futures::stream::iter(rooms)
+        .for_each_concurrent(BACKFILL_CONCURRENCY, |room| {
+            let client = client.clone();
+            async move { backfill_room(room, client).await }
+        })
+        .await;
+}
+
+async fn backfill_room(room: Room, client: Client) {
+    let mut options = MessagesOptions::backward();
+    if room.encryption_state().is_encrypted() {
+        options.limit = BACKFILL_ENCRYPTED_EVENTS.into();
+    } else {
+        options.limit = BACKFILL_REACTIONS.into();
+        let mut filter = RoomEventFilter::default();
+        filter.types = Some(vec!["m.reaction".to_owned()]);
+        options.filter = filter;
+    }
+    let Ok(messages) = room.messages(options).await else {
+        return;
+    };
+    for event in messages.chunk {
+        if let Ok(AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::Reaction(
+            SyncMessageLikeEvent::Original(ev),
+        ))) = event.raw().deserialize()
+        {
+            collect_reaction(ev, room.clone(), client.clone()).await;
+        }
+    }
 }
 
 async fn collect_reaction(

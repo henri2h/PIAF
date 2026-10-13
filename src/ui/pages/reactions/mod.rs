@@ -17,6 +17,21 @@ impl Component for ReactionsPage {
         let c = use_app_colors();
         let reactions = use_watch(REACTIONS_RX.get().expect("not initialized"));
         let reactions = reactions.read().clone();
+        // Past reactions: scan recent history once per session.
+        let mut loading = use_state(|| true);
+        use_hook(move || {
+            let (tx, rx) = futures::channel::oneshot::channel::<()>();
+            tokio::spawn(async move {
+                if let Some(client) = crate::utils::matrix::CLIENT.get().cloned() {
+                    crate::utils::reactions::backfill(client).await;
+                }
+                let _ = tx.send(());
+            });
+            spawn(async move {
+                let _ = rx.await;
+                loading.set(false);
+            });
+        });
 
         rect()
             .vertical()
@@ -38,7 +53,11 @@ impl Component for ReactionsPage {
                     .spacing(12.)
                     .child(
                         label()
-                            .text("No reactions yet")
+                            .text(if *loading.read() {
+                                "Loading reactions…"
+                            } else {
+                                "No reactions yet"
+                            })
                             .font_size(16.)
                             .color(c.on_surface_muted),
                     )
