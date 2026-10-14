@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
 use matrix_sdk::encryption::{CrossSigningStatus, VerificationState};
 
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
 use crate::utils::const_values::AppColors;
+use crate::utils::matrix::CLIENT;
 use crate::utils::use_app_colors;
-use crate::{Route, utils::matrix::CLIENT};
 
 #[derive(Clone, PartialEq)]
 pub(super) struct DeviceInfo {
@@ -41,76 +40,76 @@ impl Component for SettingsSecurity {
                 let Some(client) = CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) =
-                    futures::channel::oneshot::channel::<(Vec<DeviceInfo>, EncryptionInfo)>();
-                tokio::task::spawn(async move {
-                    let enc_info = {
-                        let enc = client.encryption();
-                        let verification_state = enc.verification_state().get();
-                        let cross_signing = enc.cross_signing_status().await;
-                        EncryptionInfo {
-                            verification_state,
-                            cross_signing,
-                        }
-                    };
-                    let own_device_id = client
-                        .device_id()
-                        .map(|d| d.to_string())
-                        .unwrap_or_default();
+                let rx =
+                    crate::utils::on_tokio::<(Vec<DeviceInfo>, EncryptionInfo), _>(async move {
+                        let enc_info = {
+                            let enc = client.encryption();
+                            let verification_state = enc.verification_state().get();
+                            let cross_signing = enc.cross_signing_status().await;
+                            EncryptionInfo {
+                                verification_state,
+                                cross_signing,
+                            }
+                        };
+                        let own_device_id = client
+                            .device_id()
+                            .map(|d| d.to_string())
+                            .unwrap_or_default();
 
-                    use matrix_sdk::ruma::api::client::device::get_devices;
-                    let server_ts: std::collections::HashMap<String, u64> = client
-                        .send(get_devices::v3::Request::new())
-                        .await
-                        .map(|r| {
-                            r.devices
-                                .into_iter()
-                                .filter_map(|d| {
-                                    let ts = u64::from(d.last_seen_ts?.get());
-                                    Some((d.device_id.to_string(), ts))
-                                })
-                                .collect()
-                        })
-                        .unwrap_or_default();
-
-                    let mut device_list: Vec<DeviceInfo> = if let Some(user_id) = client.user_id() {
-                        client
-                            .encryption()
-                            .get_user_devices(user_id)
+                        use matrix_sdk::ruma::api::client::device::get_devices;
+                        let server_ts: std::collections::HashMap<String, u64> = client
+                            .send(get_devices::v3::Request::new())
                             .await
-                            .map(|ud| {
-                                ud.devices()
-                                    .map(|d| {
-                                        let id = d.device_id().to_string();
-                                        let last_seen_ts = server_ts.get(&id).copied();
-                                        DeviceInfo {
-                                            device_id: id.clone(),
-                                            display_name: d
-                                                .display_name()
-                                                .unwrap_or(d.device_id().as_str())
-                                                .to_string(),
-                                            is_verified: d.is_verified(),
-                                            is_this_device: id == own_device_id,
-                                            last_seen_ts,
-                                        }
+                            .map(|r| {
+                                r.devices
+                                    .into_iter()
+                                    .filter_map(|d| {
+                                        let ts = u64::from(d.last_seen_ts?.get());
+                                        Some((d.device_id.to_string(), ts))
                                     })
                                     .collect()
                             })
-                            .unwrap_or_default()
-                    } else {
-                        vec![]
-                    };
+                            .unwrap_or_default();
 
-                    device_list.sort_by(|a, b| {
-                        if a.is_this_device != b.is_this_device {
-                            return b.is_this_device.cmp(&a.is_this_device);
-                        }
-                        b.last_seen_ts.cmp(&a.last_seen_ts)
+                        let mut device_list: Vec<DeviceInfo> =
+                            if let Some(user_id) = client.user_id() {
+                                client
+                                    .encryption()
+                                    .get_user_devices(user_id)
+                                    .await
+                                    .map(|ud| {
+                                        ud.devices()
+                                            .map(|d| {
+                                                let id = d.device_id().to_string();
+                                                let last_seen_ts = server_ts.get(&id).copied();
+                                                DeviceInfo {
+                                                    device_id: id.clone(),
+                                                    display_name: d
+                                                        .display_name()
+                                                        .unwrap_or(d.device_id().as_str())
+                                                        .to_string(),
+                                                    is_verified: d.is_verified(),
+                                                    is_this_device: id == own_device_id,
+                                                    last_seen_ts,
+                                                }
+                                            })
+                                            .collect()
+                                    })
+                                    .unwrap_or_default()
+                            } else {
+                                vec![]
+                            };
+
+                        device_list.sort_by(|a, b| {
+                            if a.is_this_device != b.is_this_device {
+                                return b.is_this_device.cmp(&a.is_this_device);
+                            }
+                            b.last_seen_ts.cmp(&a.last_seen_ts)
+                        });
+
+                        (device_list, enc_info)
                     });
-
-                    let _ = tx.send((device_list, enc_info));
-                });
-                if let Ok((dev_list, enc_info)) = rx.await {
+                if let Some((dev_list, enc_info)) = rx.await {
                     *devices.write() = dev_list;
                     *encryption.write() = Some(enc_info);
                 }
@@ -127,9 +126,7 @@ impl Component for SettingsSecurity {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Security".to_string()),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::Settings);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             .child(

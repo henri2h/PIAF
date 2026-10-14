@@ -18,7 +18,7 @@ pub static APP_CLASS_LOADER: OnceLock<jni::objects::GlobalRef> = OnceLock::new()
 use matrix_sdk::{
     Client,
     ruma::{
-        EventId, OwnedRoomId, RoomId,
+        EventId, RoomId,
         api::client::push::{PusherIds, PusherInit, PusherKind},
         events::{
             AnySyncMessageLikeEvent, AnySyncTimelineEvent, SyncMessageLikeEvent,
@@ -220,7 +220,6 @@ pub async fn fetch_notification_payload(
     event_id_str: &str,
 ) -> Option<NotifPayload> {
     use matrix_sdk::ruma::UserId;
-    use matrix_sdk::ruma::events::room::MediaSource;
 
     let room_id = RoomId::parse(room_id_str).ok()?;
     let event_id = EventId::parse(event_id_str).ok()?;
@@ -271,22 +270,6 @@ pub async fn fetch_notification_payload(
     })
 }
 
-/// Fetch the sender's avatar bytes for a given room member.
-pub async fn fetch_sender_avatar(
-    client: &Client,
-    room_id_str: &str,
-    sender_id_str: &str,
-) -> Option<Vec<u8>> {
-    use matrix_sdk::ruma::{RoomId, UserId};
-
-    let room_id = RoomId::parse(room_id_str).ok()?;
-    let sender_id = UserId::parse(sender_id_str).ok()?;
-    let room = client.get_room(&room_id)?;
-    let member = room.get_member_no_sync(&sender_id).await.ok().flatten()?;
-    let avatar_url = member.avatar_url()?;
-    crate::utils::avatars::by_mxc(client, avatar_url.to_owned()).await
-}
-
 /// Fetch the image bytes for an image message event (for notification thumbnail).
 pub async fn fetch_event_image(
     client: &Client,
@@ -320,13 +303,6 @@ pub async fn fetch_event_image(
         .await
         .ok()
         .map(|b| b.to_vec())
-}
-
-/// Fetch the room avatar as raw bytes (for use as notification large icon).
-pub async fn fetch_room_avatar(client: &Client, room_id_str: &str) -> Option<Vec<u8>> {
-    let room_id: OwnedRoomId = RoomId::parse(room_id_str).ok()?;
-    let room = client.get_room(&room_id)?;
-    crate::utils::avatars::of_room(&room).await
 }
 
 /// Returns the subset of `entries` where the user's read receipt post-dates

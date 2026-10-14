@@ -24,20 +24,4 @@ impl Requester {
         }
         self.tx.send(WorkerTask::FetchRoomPreviews(room_ids)).ok();
     }
-
-    pub async fn fetch_user_avatar(&self) -> Result<Vec<u8>, ()> {
-        let (tx, rx) = oneshot::channel();
-        self.tx
-            .send(WorkerTask::FetchUserAvatar(tx))
-            .map_err(|_| ())?;
-        rx.await.map_err(|_| ())?
-    }
-
-    pub async fn fetch_user_display_name(&self) -> Result<String, ()> {
-        let (tx, rx) = oneshot::channel();
-        self.tx
-            .send(WorkerTask::FetchUserDisplayName(tx))
-            .map_err(|_| ())?;
-        rx.await.map_err(|_| ())?
-    }
 }

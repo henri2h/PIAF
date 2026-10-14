@@ -6,7 +6,6 @@ use crate::utils::use_app_colors;
 #[derive(Debug, Clone, PartialEq)]
 pub(super) struct SearchResultItem {
     pub sender_name: String,
-    pub sender_initial: char,
     pub sender_color: (u8, u8, u8),
     pub body: String,
     pub timestamp: String,
@@ -29,11 +28,9 @@ impl Component for SearchResultRow {
             .cross_align(Alignment::Start)
             .child(Avatar {
                 size: 36.,
-                bytes: None,
-                initial: item.sender_initial.to_string(),
+                source: None,
+                name: item.sender_name.clone(),
                 color: item.sender_color,
-                image_key: String::new(),
-                fetch_key: None,
             })
             .child(
                 rect()

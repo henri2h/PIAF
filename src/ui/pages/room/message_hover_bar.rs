@@ -1,9 +1,10 @@
 use freya::prelude::*;
 
-use crate::ui::components::Hoverable;
+use crate::ui::components::{HoverableExt, IconButton};
 use crate::utils::const_values::AppColors;
 
 const QUICK_REACTIONS: &[&str] = &["👍", "❤️", "😂"];
+const BUTTON: f32 = 28.;
 
 /// Desktop toolbar shown beside a hovered message's bubble: quick reactions, reply, and
 /// "more" (the full action popup).
@@ -13,71 +14,40 @@ pub(super) fn hover_bar(
     mut on_reply: impl FnMut() + 'static,
     mut on_more: impl FnMut() + 'static,
 ) -> Element {
-    let mut bar = rect()
+    rect()
         .horizontal()
         .cross_align(Alignment::Center)
         .spacing(2.)
         .padding(Gaps::new_all(2.))
         .corner_radius(16.)
         .background(c.surface_container_high)
-        .border(Border::new().width(1.).fill(c.outline_variant));
-
-    for emoji in QUICK_REACTIONS {
-        let on_react = on_react.clone();
-        bar = bar.child(button(
-            move || on_react((*emoji).to_string()),
-            label().text(*emoji).font_size(15.).into_element(),
-        ));
-    }
-
-    bar.child(icon_button(
-        c,
-        "Reply",
-        freya_icons::lucide::reply(),
-        move || on_reply(),
-    ))
-    .child(icon_button(
-        c,
-        "More",
-        freya_icons::lucide::ellipsis(),
-        move || on_more(),
-    ))
-    .into_element()
-}
-
-fn button(mut on_press: impl FnMut() + 'static, content: Element) -> Element {
-    Hoverable {
-        width: Size::px(28.),
-        height: Size::px(28.),
-        corner_radius: 14.,
-        child: rect()
-            .expanded()
-            .center()
-            .on_press(move |e: Event<PressEventData>| {
-                e.stop_propagation();
-                on_press();
+        .border(Border::new().width(1.).fill(c.outline_variant))
+        .children(QUICK_REACTIONS.iter().map(|emoji| {
+            let on_react = on_react.clone();
+            rect()
+                .center()
+                .width(Size::px(BUTTON))
+                .height(Size::px(BUTTON))
+                .on_press(move |e: Event<PressEventData>| {
+                    e.stop_propagation();
+                    on_react((*emoji).to_string());
+                })
+                .child(label().text(*emoji).font_size(15.))
+                .hoverable(Size::px(BUTTON), Size::px(BUTTON), BUTTON / 2.)
+        }))
+        .child(
+            IconButton::new(freya_icons::lucide::reply(), c.on_surface, move |_| {
+                on_reply()
             })
-            .child(content)
-            .into_element(),
-    }
-    .into_element()
-}
-
-fn icon_button(
-    c: AppColors,
-    tooltip: &'static str,
-    icon: Bytes,
-    on_press: impl FnMut() + 'static,
-) -> Element {
-    TooltipContainer::new(Tooltip::new_text(tooltip))
-        .position(AttachedPosition::Top)
-        .child(button(
-            on_press,
-            SvgViewer::new(icon)
-                .color(c.on_surface)
-                .width(Size::px(16.))
-                .height(Size::px(16.))
-                .into_element(),
-        ))
+            .tooltip("Reply")
+            .size(BUTTON, 16.),
+        )
+        .child(
+            IconButton::new(freya_icons::lucide::ellipsis(), c.on_surface, move |_| {
+                on_more()
+            })
+            .tooltip("More")
+            .size(BUTTON, 16.),
+        )
         .into_element()
 }

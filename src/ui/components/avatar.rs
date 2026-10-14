@@ -8,24 +8,16 @@ use freya_components::{
 };
 use freya_core::elements::image::{ImageHandle, SamplingMode};
 
-use crate::utils::queries::fetch_avatar_for_key;
+use super::use_fade;
+use crate::utils::avatars::AvatarSource;
 
-/// Pick a deterministic color from a fixed palette based on a string (e.g. user ID).
-pub fn user_color(id: &str) -> (u8, u8, u8) {
-    const PALETTE: &[(u8, u8, u8)] = &[
-        (103, 80, 164),
-        (0, 105, 92),
-        (183, 28, 28),
-        (230, 81, 0),
-        (1, 87, 155),
-        (27, 94, 32),
-        (136, 14, 79),
-        (62, 39, 35),
-    ];
-    let hash = id
-        .bytes()
-        .fold(0usize, |acc, b| acc.wrapping_add(b as usize));
-    PALETTE[hash % PALETTE.len()]
+/// Letter shown when there is no picture: the first letter or digit of
+/// `name`, uppercased (skips the `@`/`#`/`!` of Matrix IDs).
+pub fn initial(name: &str) -> String {
+    name.chars()
+        .find(|c| c.is_alphanumeric())
+        .map(|c| c.to_uppercase().collect())
+        .unwrap_or_else(|| "?".to_string())
 }
 
 fn initial_disc(size: f32, initial: &str, color: (u8, u8, u8)) -> Element {
@@ -46,146 +38,109 @@ fn initial_disc(size: f32, initial: &str, color: (u8, u8, u8)) -> Element {
         .into()
 }
 
-/// Circular avatar: shows an image when bytes are available, otherwise a
-/// solid-color disc with an initial letter.
+/// Circular avatar: the image of `source` once loaded, otherwise (and when
+/// `source` is `None`) a solid-color disc with the [`initial`] of `name`.
 ///
-/// Pass `fetch_key` (a room_id string) to have the avatar fetch and cache its
-/// own image from the Matrix server using the same asset-caching mechanism as
-/// `ImageViewer`, so re-renders work correctly inside `VirtualScrollView`.
+/// Images are fetched and decoded into the shared asset cache keyed by the
+/// source, so every avatar of the same room or user shares one entry and
+/// re-renders work inside `VirtualScrollView`.
 #[derive(Clone, PartialEq)]
 pub struct Avatar {
     pub size: f32,
-    pub bytes: Option<Vec<u8>>,
-    /// Room ID to fetch the avatar from. Used when `bytes` is `None`.
-    pub fetch_key: Option<String>,
-    pub initial: String,
+    pub source: Option<AvatarSource>,
+    /// Display name (or ID) the initial comes from.
+    pub name: String,
     pub color: (u8, u8, u8),
-    /// Stable cache key for the asset decoder (e.g. room_id or "home-avatar").
-    pub image_key: String,
 }
 
 impl Component for Avatar {
     fn render(&self) -> impl IntoElement {
         let size = self.size;
         let radius = size / 2.;
-        let initial = self.initial.clone();
+        let initial = initial(&self.name);
         let color = self.color;
 
-        // Choose the ImageSource used as the asset-cache key.
-        //
-        // • bytes provided  → Bytes source (decoded normally)
-        // • fetch_key only  → (fetch_key, Bytes::new()) sentinel; actual bytes are
-        //                     fetched inside use_side_effect_with_deps below and
-        //                     written directly into the asset cache
-        // • neither         → unique-per-instance sentinel; never decoded
-        let source: ImageSource = match &self.bytes {
-            Some(b) => (self.image_key.clone(), Bytes::from(b.clone())).into(),
-            None => match &self.fetch_key {
-                Some(k) => (k.clone(), Bytes::new()).into(),
-                None => (format!("__none__{}", self.image_key), Bytes::new()).into(),
-            },
+        // Cache key only: the bytes are fetched in the effect below and
+        // written straight into the asset cache.
+        let cache_key = match &self.source {
+            Some(source) => source.cache_key(),
+            None => "avatar:none".to_string(),
         };
+        let image_source: ImageSource = (cache_key, Bytes::new()).into();
+        let fetch_source = self.source.clone();
 
-        let has_bytes = self.bytes.is_some();
-        let fetch_key = self.fetch_key.clone();
-
-        let asset_config = AssetConfiguration::new(&source, AssetAge::default());
+        let asset_config = AssetConfiguration::new(&image_source, AssetAge::default());
         use_asset(&asset_config);
         let mut asset_cacher = use_hook(AssetCacher::get);
-        let mut tasks: State<Vec<TaskHandle>> = use_state(Vec::new);
 
-        use_side_effect_with_deps(
-            &(source.clone(), asset_config.clone()),
-            move |(source, asset_config)| {
-                if !matches!(
-                    asset_cacher.read_asset(asset_config),
-                    Some(Asset::Pending) | Some(Asset::Error(_))
-                ) {
+        use_side_effect_with_deps(&asset_config, move |asset_config| {
+            let Some(source) = fetch_source.clone() else {
+                return;
+            };
+            if !matches!(
+                asset_cacher.read_asset(asset_config),
+                Some(Asset::Pending) | Some(Asset::Error(_))
+            ) {
+                return;
+            }
+            asset_cacher.update_asset(asset_config.clone(), Asset::Loading);
+            let asset_config = asset_config.clone();
+            // Not tied to this component: the cache entry is always completed,
+            // so a remount (e.g. scrolling back) hits it immediately.
+            spawn_in_window(async move {
+                let fetch = source.clone();
+                let bytes =
+                    crate::utils::on_tokio(
+                        async move { crate::utils::avatars::fetch(&fetch).await },
+                    );
+                let Some(Some(bytes)) = bytes.await else {
+                    asset_cacher.update_asset(asset_config, Asset::Error("no avatar".into()));
                     return;
+                };
+                let decode: ImageSource = (source.cache_key(), Bytes::from(bytes)).into();
+                match decode.load(None, SamplingMode::default()).await {
+                    Ok((image, bytes)) => {
+                        let holder = ImageHandle::new(image, bytes);
+                        asset_cacher.update_asset(asset_config, Asset::Cached(Rc::new(holder)));
+                    }
+                    Err(_) => {
+                        tracing::debug!(target: "piaf::avatar", ?source, "decode failed");
+                        asset_cacher
+                            .update_asset(asset_config, Asset::Error("decode failed".into()));
+                    }
                 }
-
-                // Cancel any previous in-flight decode task.
-                for t in tasks.write().drain(..) {
-                    t.cancel();
-                }
-
-                asset_cacher.update_asset(asset_config.clone(), Asset::Loading);
-
-                if let Some(key) = fetch_key.clone() {
-                    // Matrix avatar: fetch bytes from the server, then decode.
-                    // spawn_in_window keeps the task alive even if the component
-                    // scrolls out of view, so the AssetCacher entry is always
-                    // updated and the next remount hits the cache immediately.
-                    let asset_config = asset_config.clone();
-                    spawn_in_window(async move {
-                        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
-                        let key2 = key.clone();
-                        tokio::spawn(async move {
-                            let _ = tx.send(fetch_avatar_for_key(&key2).await);
-                        });
-
-                        let Ok(Ok(bytes_vec)) = rx.await else {
-                            asset_cacher
-                                .update_asset(asset_config, Asset::Error("fetch failed".into()));
-                            return;
-                        };
-
-                        // Decode via the ImageSource path (handles blocking decode correctly).
-                        let decode_source: ImageSource = (key, Bytes::from(bytes_vec)).into();
-                        match decode_source.load(None, SamplingMode::default()).await {
-                            Ok((sk_image, bytes)) => {
-                                let holder = ImageHandle::new(sk_image, bytes);
-                                asset_cacher
-                                    .update_asset(asset_config, Asset::Cached(Rc::new(holder)));
-                            }
-                            Err(_) => {
-                                asset_cacher.update_asset(
-                                    asset_config,
-                                    Asset::Error("decode failed".into()),
-                                );
-                            }
-                        }
-                    });
-                } else if has_bytes {
-                    // Pre-fetched bytes: decode normally.
-                    let source = source.clone();
-                    let asset_config = asset_config.clone();
-                    let task = spawn(async move {
-                        match source.load(None, SamplingMode::default()).await {
-                            Ok((sk_image, bytes)) => {
-                                let holder = ImageHandle::new(sk_image, bytes);
-                                asset_cacher
-                                    .update_asset(asset_config, Asset::Cached(Rc::new(holder)));
-                            }
-                            Err(_) => {
-                                asset_cacher.update_asset(
-                                    asset_config,
-                                    Asset::Error("decode failed".into()),
-                                );
-                            }
-                        }
-                    });
-                    tasks.write().push(task);
-                }
-                // No bytes and no fetch_key → stay as placeholder.
-            },
-        );
+            });
+        });
 
         let asset = asset_cacher
             .read_asset(&asset_config)
             .expect("Asset should exist by now");
+        // Fades in over the initial when the image arrives while shown; an
+        // image already cached at mount shows at once (no flash on scroll).
+        let opacity = use_fade(matches!(asset, Asset::Cached(_)), 150);
 
-        match asset {
-            Asset::Cached(holder) => {
-                let holder = holder.downcast_ref::<ImageHandle>().unwrap().clone();
-                freya_core::elements::image::image(holder)
-                    .width(Size::px(size))
-                    .height(Size::px(size))
-                    .corner_radius(radius)
-                    .into_element()
-            }
-            _ => initial_disc(size, &initial, color),
+        let Asset::Cached(holder) = asset else {
+            return initial_disc(size, &initial, color);
+        };
+        let holder = holder.downcast_ref::<ImageHandle>().unwrap().clone();
+        let image = freya_core::elements::image::image(holder)
+            .width(Size::px(size))
+            .height(Size::px(size))
+            .corner_radius(radius);
+        if opacity >= 1. {
+            return image.into_element();
         }
+        rect()
+            .width(Size::px(size))
+            .height(Size::px(size))
+            .child(initial_disc(size, &initial, color))
+            .child(
+                rect()
+                    .position(Position::new_absolute().top(0.).left(0.))
+                    .opacity(opacity)
+                    .child(image),
+            )
+            .into_element()
     }
 }
 
@@ -194,13 +149,13 @@ impl Component for Avatar {
 #[derive(Clone, PartialEq)]
 pub struct StackedAvatar {
     pub size: f32,
-    pub initial1: String,
+    pub name1: String,
     pub color1: (u8, u8, u8),
-    /// Avatar fetch key (e.g. `mxc:…`) for the first circle; initial if `None`.
-    pub fetch_key1: Option<String>,
-    pub initial2: String,
+    /// Image of the first circle; its initial if `None`.
+    pub source1: Option<AvatarSource>,
+    pub name2: String,
     pub color2: (u8, u8, u8),
-    pub fetch_key2: Option<String>,
+    pub source2: Option<AvatarSource>,
     /// Background color of the parent surface, used to draw a separator ring
     /// between the two overlapping circles so they don't bleed into each other.
     pub border_color: (u8, u8, u8),
@@ -212,8 +167,6 @@ impl Component for StackedAvatar {
         // Each circle is ~71% of container; offset is the remaining ~29%.
         let circle_size = (size * 0.71).floor();
         let offset = size - circle_size;
-        let font_size = (circle_size * 0.38).floor();
-        let r = circle_size / 2.;
         // A 2-px ring drawn as a slightly larger circle in the surface color
         // creates a visual gap between the two overlapping avatar circles.
         let border = 2.0_f32;
@@ -221,31 +174,14 @@ impl Component for StackedAvatar {
         let ring_r = ring_size / 2.;
 
         let mk_circle =
-            |color: (u8, u8, u8), initial: String, fetch_key: Option<String>, ring: bool| {
-                let inner: Element = match fetch_key {
-                    Some(key) => Avatar {
-                        size: circle_size,
-                        bytes: None,
-                        fetch_key: Some(key.clone()),
-                        initial,
-                        color,
-                        image_key: key,
-                    }
-                    .into(),
-                    None => rect()
-                        .width(Size::px(circle_size))
-                        .height(Size::px(circle_size))
-                        .corner_radius(r)
-                        .background(color)
-                        .center()
-                        .child(
-                            label()
-                                .text(initial)
-                                .font_size(font_size)
-                                .color((255u8, 255u8, 255u8)),
-                        )
-                        .into(),
-                };
+            |color: (u8, u8, u8), name: String, source: Option<AvatarSource>, ring: bool| {
+                let inner: Element = Avatar {
+                    size: circle_size,
+                    source,
+                    name,
+                    color,
+                }
+                .into();
                 if ring {
                     rect()
                         .width(Size::px(ring_size))
@@ -271,8 +207,8 @@ impl Component for StackedAvatar {
                     .height(Size::px(offset))
                     .child(mk_circle(
                         self.color1,
-                        self.initial1.clone(),
-                        self.fetch_key1.clone(),
+                        self.name1.clone(),
+                        self.source1.clone(),
                         false,
                     )),
             )
@@ -286,10 +222,25 @@ impl Component for StackedAvatar {
                     .child(rect().width(Size::flex(1.0)).height(Size::px(1.)))
                     .child(mk_circle(
                         self.color2,
-                        self.initial2.clone(),
-                        self.fetch_key2.clone(),
+                        self.name2.clone(),
+                        self.source2.clone(),
                         true,
                     )),
             )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::initial;
+
+    #[test]
+    fn initial_skips_id_sigils_and_uppercases() {
+        assert_eq!(initial("alice"), "A");
+        assert_eq!(initial("@bob:example.org"), "B");
+        assert_eq!(initial("#room:example.org"), "R");
+        assert_eq!(initial("élise"), "É");
+        assert_eq!(initial(""), "?");
+        assert_eq!(initial("@@"), "?");
     }
 }

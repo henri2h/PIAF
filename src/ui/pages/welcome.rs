@@ -32,12 +32,11 @@ impl Component for WelcomePage {
                         let _ = RouterContext::get().push(Route::HomePage);
                         return;
                     }
-                    let (tx, delay_rx) = futures::channel::oneshot::channel::<()>();
-                    tokio::task::spawn(async move {
+                    // `changed()` must be awaited on tokio, not on Freya's executor.
+                    crate::utils::on_tokio(async move {
                         let _ = rx.changed().await;
-                        let _ = tx.send(());
-                    });
-                    let _ = delay_rx.await;
+                    })
+                    .await;
                 }
                 if CLIENT.get().is_some() {
                     let _ = RouterContext::get().push(Route::HomePage);

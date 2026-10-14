@@ -29,11 +29,6 @@ pub(super) fn room_app_bar(
     };
     TopAppBar {
         title: TopAppBarTitle::Room {
-            initial: name
-                .chars()
-                .next()
-                .map(|ch| ch.to_uppercase().to_string())
-                .unwrap_or_else(|| "?".to_string()),
             color: c.primary,
             room_id: room_id.to_string(),
             name: name.to_string(),

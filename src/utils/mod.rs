@@ -1,8 +1,12 @@
 pub mod avatars;
 pub mod bookmarks;
+#[cfg(not(target_os = "android"))]
+pub mod clipboard;
 pub mod const_values;
 pub mod drafts;
 pub mod matrix;
+pub mod media;
+pub mod members;
 #[cfg(not(target_os = "android"))]
 pub mod notifications;
 #[cfg(target_os = "android")]
@@ -14,6 +18,8 @@ pub mod room_list;
 pub mod room_mailbox;
 pub mod room_preview;
 pub mod sync;
+pub mod timeline_media;
+pub mod users;
 pub mod worker;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -86,14 +92,30 @@ pub fn use_watch_tick<T: Clone + Send + Sync + 'static>(rx: &watch::Receiver<T>)
 }
 
 /// Derives `AppColors` from the current freya theme. Use inside Component::render().
+/// Runs `future` on tokio right away; await the result from a Freya `spawn`.
+/// Bridges through a `futures` oneshot: awaiting a tokio one on Freya's smol
+/// executor freezes the UI. `None` if the task panicked.
+pub fn on_tokio<T, F>(future: F) -> impl std::future::Future<Output = Option<T>>
+where
+    T: Send + 'static,
+    F: std::future::Future<Output = T> + Send + 'static,
+{
+    let (tx, rx) = futures::channel::oneshot::channel();
+    tokio::spawn(async move {
+        let _ = tx.send(future.await);
+    });
+    async move { rx.await.ok() }
+}
+
 pub fn use_app_colors() -> AppColors {
     let theme = use_theme();
     AppColors::from_colors(&theme.read().colors)
 }
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
-pub fn sender_color(user_id: &str) -> (u8, u8, u8) {
-    let hash: u32 = user_id
+/// Stable color for a user or room ID (avatars without a picture, sender names).
+pub fn id_color(id: &str) -> (u8, u8, u8) {
+    let hash: u32 = id
         .bytes()
         .fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32));
     const PALETTE: [(u8, u8, u8); 8] = [
@@ -155,6 +177,7 @@ pub fn extract_urls(text: &str) -> Vec<String> {
 }
 
 /// Returns a sortable "YYYY-MM-DD" string for the given timestamp (local time).
+
 pub fn format_date_key(ts: MilliSecondsSinceUnixEpoch) -> String {
     let millis = u64::from(ts.get()) as i64;
     if let Some(dt_utc) = Utc.timestamp_millis_opt(millis).single() {
@@ -204,22 +227,22 @@ mod tests {
 
     #[test]
     fn sender_color_is_deterministic() {
-        let a = sender_color("@alice:example.com");
-        let b = sender_color("@alice:example.com");
+        let a = id_color("@alice:example.com");
+        let b = id_color("@alice:example.com");
         assert_eq!(a, b);
     }
 
     #[test]
     fn sender_color_differs_for_different_users() {
         // Not strictly guaranteed by the hash, but holds for these two inputs.
-        let a = sender_color("@alice:example.com");
-        let b = sender_color("@bob:example.com");
+        let a = id_color("@alice:example.com");
+        let b = id_color("@bob:example.com");
         assert_ne!(a, b);
     }
 
     #[test]
     fn sender_color_empty_string_does_not_panic() {
-        let _ = sender_color("");
+        let _ = id_color("");
     }
 
     // ── extract_urls ─────────────────────────────────────────────────────────

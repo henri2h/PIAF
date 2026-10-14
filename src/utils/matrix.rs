@@ -1,6 +1,5 @@
 use std::sync::atomic::Ordering;
 
-use futures::channel::oneshot;
 use matrix_sdk::{
     Client, ClientBuilder, Room, ServerName,
     authentication::matrix::MatrixSession,
@@ -379,58 +378,7 @@ async fn new_client(
 
 // ── Theme preference persistence ─────────────────────────────────────────────
 
-fn theme_pref_file() -> Option<std::path::PathBuf> {
-    DATA_DIR
-        .get()
-        .and_then(|d| d.parent())
-        .map(|p| p.join("theme_pref"))
-}
-
-pub fn load_theme_is_dark() -> bool {
-    theme_pref_file()
-        .and_then(|p| std::fs::read_to_string(p).ok())
-        .and_then(|s| s.trim().parse::<u8>().ok())
-        .map(|v| v == 2)
-        .unwrap_or(false)
-}
-
-pub async fn save_theme_pref(is_dark: bool) {
-    let Some(path) = theme_pref_file() else {
-        return;
-    };
-    let _ = fs::write(&path, if is_dark { "2" } else { "1" }).await;
-}
-
 // ── Media download ────────────────────────────────────────────────────────────
-
-fn media_extension(bytes: &[u8]) -> &'static str {
-    if bytes.starts_with(b"\x89PNG") {
-        "png"
-    } else if bytes.starts_with(b"\xFF\xD8\xFF") {
-        "jpg"
-    } else if bytes.starts_with(b"GIF8") {
-        "gif"
-    } else if bytes.len() >= 12 && &bytes[..4] == b"RIFF" && &bytes[8..12] == b"WEBP" {
-        "webp"
-    } else {
-        "bin"
-    }
-}
-
-pub async fn save_media_to_downloads(bytes: &[u8]) {
-    let Some(data_dir) = DATA_DIR.get() else {
-        return;
-    };
-    let downloads_dir = data_dir.join("downloads");
-    let _ = fs::create_dir_all(&downloads_dir).await;
-    let ts = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis();
-    let ext = media_extension(bytes);
-    let path = downloads_dir.join(format!("media_{}.{}", ts, ext));
-    let _ = fs::write(&path, bytes).await;
-}
 
 // ── DM helpers ────────────────────────────────────────────────────────────────
 
@@ -442,73 +390,14 @@ pub async fn create_or_get_dm(user_id: String) -> Option<String> {
     if let Some(room) = client.get_dm_room(&parsed) {
         return Some(room.room_id().to_string());
     }
-    let (tx, rx) = oneshot::channel::<Option<String>>();
-    tokio::spawn(async move {
+    crate::utils::on_tokio(async move {
         use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoom;
         let mut req = CreateRoom::new();
         req.is_direct = true;
         req.invite = vec![parsed.to_owned()];
-        match client.create_room(req).await {
-            Ok(room) => {
-                let _ = tx.send(Some(room.room_id().to_string()));
-            }
-            Err(_) => {
-                let _ = tx.send(None);
-            }
-        }
-    });
-    rx.await.ok().flatten()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::media_extension;
-
-    #[test]
-    fn detects_png() {
-        // PNG magic: \x89 P N G
-        assert_eq!(media_extension(b"\x89PNG\r\n\x1a\nextra"), "png");
-    }
-
-    #[test]
-    fn detects_jpeg() {
-        // JPEG SOI marker: FF D8 FF
-        assert_eq!(media_extension(b"\xFF\xD8\xFF\xE0extra"), "jpg");
-    }
-
-    #[test]
-    fn detects_gif() {
-        // GIF87a and GIF89a both start with GIF8
-        assert_eq!(media_extension(b"GIF89a..."), "gif");
-        assert_eq!(media_extension(b"GIF87a..."), "gif");
-    }
-
-    #[test]
-    fn detects_webp() {
-        // WebP: RIFF????WEBP
-        let mut bytes = Vec::new();
-        bytes.extend_from_slice(b"RIFF");
-        bytes.extend_from_slice(&[0u8; 4]); // file size (ignored)
-        bytes.extend_from_slice(b"WEBP");
-        bytes.extend_from_slice(b"VP8 extra");
-        assert_eq!(media_extension(&bytes), "webp");
-    }
-
-    #[test]
-    fn unknown_format_returns_bin() {
-        assert_eq!(media_extension(b"PK\x03\x04"), "bin"); // zip
-        assert_eq!(media_extension(b"unknown data"), "bin");
-    }
-
-    #[test]
-    fn empty_slice_returns_bin() {
-        assert_eq!(media_extension(b""), "bin");
-    }
-
-    #[test]
-    fn webp_requires_full_12_byte_header() {
-        // RIFF present but only 11 bytes — must not panic
-        let bytes = b"RIFF\x00\x00\x00\x00WEB";
-        assert_eq!(media_extension(bytes), "bin");
-    }
+        let room = client.create_room(req).await.ok()?;
+        Some(room.room_id().to_string())
+    })
+    .await
+    .flatten()
 }

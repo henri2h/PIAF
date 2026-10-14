@@ -45,10 +45,11 @@ static BACKFILLED: AtomicBool = AtomicBool::new(false);
 /// sync only the latest event per room), so fill the feed from the recent
 /// history of the most recently active rooms. Runs once per session.
 pub async fn backfill(client: Client) {
-    if BACKFILLED.swap(true, Ordering::Relaxed) {
+    let mut rooms = client.joined_rooms();
+    // Before the first sync there are no rooms yet: leave it for the next open.
+    if rooms.is_empty() || BACKFILLED.swap(true, Ordering::Relaxed) {
         return;
     }
-    let mut rooms = client.joined_rooms();
     crate::utils::room_list::sort_rooms_by_recency(&mut rooms);
     rooms.truncate(BACKFILL_ROOMS);
 

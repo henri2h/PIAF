@@ -1,5 +1,6 @@
 use freya::prelude::*;
 
+use super::use_fade;
 use crate::utils::use_app_colors;
 
 /// Hover feedback for anything pressable: tints `child` with a translucent
@@ -45,6 +46,7 @@ impl Component for Hoverable {
         let c = use_app_colors();
         let mut hovered = use_state(|| false);
         let (r, g, b) = c.on_surface;
+        let tint = use_fade(*hovered.read(), 120);
         rect()
             .width(self.width.clone())
             .height(self.height.clone())
@@ -53,13 +55,13 @@ impl Component for Hoverable {
             .on_pointer_enter(move |_| hovered.set(true))
             .on_pointer_leave(move |_| hovered.set(false))
             .child(self.child.clone())
-            .maybe_child(hovered.read().then(|| {
+            .maybe_child((tint > 0.).then(|| {
                 rect()
                     .position(Position::new_absolute().top(0.).left(0.))
                     .width(Size::fill())
                     .height(Size::fill())
                     .corner_radius(self.corner_radius)
-                    .background((r, g, b, 20))
+                    .background((r, g, b, (20. * tint) as u8))
                     .interactive(false)
             }))
     }

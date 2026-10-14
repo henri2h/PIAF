@@ -7,8 +7,9 @@ use matrix_sdk::ruma::events::room::MediaSource;
 
 use crate::utils::{
     const_values::STATUS_BAR_INSET,
-    matrix::save_media_to_downloads,
+    media::save_to_downloads,
     queries::{FetchMediaContent, media_source_key},
+    timeline_media::{MediaContent, MediaEntry},
 };
 
 use super::MediaThumbnail;
@@ -40,6 +41,29 @@ pub struct MediaViewerItem {
     pub thumbnail_source: Option<ViewerSource>,
 }
 
+impl MediaViewerItem {
+    /// Viewer item for an image entry; `None` for files and links.
+    pub fn from_entry(entry: &MediaEntry) -> Option<Self> {
+        let MediaContent::Image {
+            source,
+            caption,
+            blurhash,
+            thumbnail_source,
+        } = &entry.content
+        else {
+            return None;
+        };
+        Some(Self {
+            key: entry.key.clone(),
+            source: ViewerSource::Remote(source.clone()),
+            info: Some((entry.sender_name.clone(), entry.timestamp.clone())),
+            caption: caption.clone(),
+            blurhash: blurhash.clone(),
+            thumbnail_source: thumbnail_source.clone().map(ViewerSource::Remote),
+        })
+    }
+}
+
 // ── Public: full-screen viewer with prev/next navigation ──────────────────────
 
 const PREFETCH_AHEAD: usize = 2;
@@ -48,6 +72,8 @@ pub struct MediaViewer {
     pub items: Vec<MediaViewerItem>,
     pub selected_key: State<Option<String>>,
     pub on_load_more: Option<Rc<dyn Fn()>>,
+    /// Shows a "Show in chat" button; called with the item key (its event ID).
+    pub on_show_in_chat: Option<Rc<dyn Fn(String)>>,
 }
 
 impl PartialEq for MediaViewer {
@@ -61,6 +87,7 @@ impl Component for MediaViewer {
         let items = self.items.clone();
         let mut selected_key = self.selected_key;
         let on_load_more = self.on_load_more.clone();
+        let on_show_in_chat = self.on_show_in_chat.clone();
 
         // ── current_bytes: full-res image bytes for the selected item ────────
         //
@@ -196,6 +223,20 @@ impl Component for MediaViewer {
                 let _ = &items_kd;
             }
         };
+
+        let show_in_chat = on_show_in_chat.map(|f| {
+            let key = item.key.clone();
+            TooltipContainer::new(Tooltip::new_text("Show in chat"))
+                .position(AttachedPosition::Bottom)
+                .child(
+                    Button::new().on_press(move |_| f(key.clone())).child(
+                        SvgViewer::new(freya_icons::lucide::message_square())
+                            .width(Size::px(20.))
+                            .height(Size::px(20.))
+                            .color((255u8, 255u8, 255u8)),
+                    ),
+                )
+        });
 
         // ── Header center ────────────────────────────────────────────────────
         let header_center = if let Some((sender, ts)) = &item.info {
@@ -372,12 +413,13 @@ impl Component for MediaViewer {
                                     ),
                             )
                             .child(header_center)
+                            .maybe_child(show_in_chat)
                             .child(
                                 Button::new()
                                     .on_press(move |_| {
                                         if let Some(b) = dl_bytes.clone() {
                                             tokio::task::spawn(async move {
-                                                save_media_to_downloads(&b).await;
+                                                save_to_downloads(&b).await;
                                             });
                                         }
                                     })

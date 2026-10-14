@@ -1,6 +1,5 @@
 mod app_bar;
 mod filter_bar;
-mod filter_chip;
 mod room_list;
 pub mod room_list_item;
 mod room_list_model;
@@ -16,7 +15,7 @@ use app_bar::HomeAppBar;
 use filter_bar::RoomFilterBar;
 use freya::prelude::*;
 
-use crate::ui::components::HoverableExt;
+use crate::ui::components::{HoverableExt, use_fade};
 use room_list::RoomList;
 use room_list_model::{Mailbox, RoomFilter};
 use search_panel::SearchResults;
@@ -67,6 +66,9 @@ impl Component for HomePage {
         let is_wide = WIDE_MODE.load(Ordering::Relaxed);
         let search_active = !search.read().trim().is_empty();
         let show_filters = !search_active && (*chips_visible.read() || is_wide);
+        // The FAB follows the filter chips: hidden while searching or after
+        // scrolling down, sliding back in on scroll up.
+        let fab_shown = use_fade(show_filters, 200);
         let session_expired = crate::SESSION_EXPIRED.load(Ordering::Relaxed);
 
         rect()
@@ -98,14 +100,17 @@ impl Component for HomePage {
                 }
                 .into_element()
             })
-            .maybe_child((!search_active).then(|| new_chat_fab(c)))
+            .maybe_child((fab_shown > 0.).then(|| new_chat_fab(c, fab_shown)))
     }
 }
 
 /// Material floating action button, bottom right: start a new chat.
-fn new_chat_fab(c: AppColors) -> Element {
+/// `shown`: 0 (hidden below the edge) to 1 (in place).
+fn new_chat_fab(c: AppColors, shown: f32) -> Element {
     rect()
         .position(Position::new_absolute().bottom(16.).right(16.))
+        .offset_y((1. - shown) * 88.)
+        .opacity(shown)
         // Layers grow by one per nesting level, so the list rows sit far above
         // `layer(1)`. Jump well past them, but stay below overlays (popups, menus).
         .layer(1000)

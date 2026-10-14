@@ -1,15 +1,13 @@
 use freya::prelude::*;
 
+use crate::utils::avatars::AvatarSource;
+
 use crate::ui::components::HoverableExt;
 use freya_query::prelude::*;
-use freya_router::prelude::RouterContext;
 
 use crate::ui::pages::home::room_list_item::{RoomListItem, RoomSummary};
+use crate::utils::matrix::CLIENT;
 use crate::utils::queries::FetchMutualRooms;
-use crate::{
-    Route,
-    utils::matrix::{CLIENT, create_or_get_dm},
-};
 
 use super::Avatar;
 
@@ -17,9 +15,7 @@ use super::Avatar;
 pub struct UserPopupInfo {
     pub user_id: String,
     pub display_name: String,
-    pub initial: String,
-    pub color: (u8, u8, u8),
-    pub avatar_url: Option<String>,
+    pub avatar: Option<AvatarSource>,
 }
 
 #[derive(PartialEq)]
@@ -33,8 +29,6 @@ impl Component for UserPopupOverlay {
         let colors = theme.read().colors.clone();
         let mut open = self.open;
         let info_opt = self.open.read().clone();
-
-        let mut action_loading: State<bool> = use_state(|| false);
 
         // Hooks must always be called; use empty key when no user is selected.
         let user_id_key = info_opt
@@ -50,8 +44,6 @@ impl Component for UserPopupOverlay {
         let mut popup = Popup::new().on_close_request(move |_| *open.write() = None);
 
         if let Some(info) = info_opt {
-            let fetch_key = info.avatar_url.as_ref().map(|u| format!("mxc:{u}"));
-
             // Resolve room IDs to Room objects.
             let common_rooms: Vec<_> = common_room_ids
                 .iter()
@@ -68,7 +60,11 @@ impl Component for UserPopupOverlay {
                 .is_some();
 
             let common_count = common_rooms.len();
-            let user_id_for_press = info.user_id.clone();
+            let user = crate::utils::users::UserInfo {
+                user_id: info.user_id.clone(),
+                display_name: info.display_name.clone(),
+                avatar: info.avatar.clone(),
+            };
 
             popup = popup
                 // ── Header ────────────────────────────────────────────────────
@@ -79,11 +75,9 @@ impl Component for UserPopupOverlay {
                         .cross_align(Alignment::Center)
                         .child(Avatar {
                             size: 56.,
-                            bytes: None,
-                            initial: info.initial.clone(),
-                            color: info.color,
-                            image_key: info.user_id.clone(),
-                            fetch_key,
+                            source: info.avatar.clone(),
+                            name: info.display_name.clone(),
+                            color: crate::utils::id_color(&info.user_id),
                         })
                         .child(
                             rect()
@@ -142,28 +136,12 @@ impl Component for UserPopupOverlay {
                         .overflow(Overflow::Clip)
                         .center()
                         .on_press(move |_| {
-                            if *action_loading.read() || is_loading {
-                                return;
-                            }
-                            *action_loading.write() = true;
-                            let user_id = user_id_for_press.clone();
-                            spawn(async move {
-                                if let Some(room_id) = create_or_get_dm(user_id).await {
-                                    *open.write() = None;
-                                    let _ = RouterContext::get().push(Route::RoomPage { room_id });
-                                }
-                                *action_loading.write() = false;
-                            });
+                            open.set(None);
+                            crate::app::navigation::open_dm(user.clone());
                         })
                         .child(
                             label()
-                                .text(if *action_loading.read() || is_loading {
-                                    "Loading…"
-                                } else if has_dm {
-                                    "Jump to DM"
-                                } else {
-                                    "Send message"
-                                })
+                                .text(if has_dm { "Jump to DM" } else { "Send message" })
                                 .font_size(16.)
                                 .color(colors.text_inverse),
                         )

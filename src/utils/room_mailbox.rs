@@ -32,17 +32,6 @@ pub fn is_archived_hidden(latest_ts: Option<u64>, archived_until_ts: Option<u64>
     }
 }
 
-/// [`is_archived_hidden`] for a room, looked up in the mailbox state map.
-pub fn is_room_archived(room: &Room, mailbox: &HashMap<String, RoomMailboxState>) -> bool {
-    let archived_until_ts = mailbox
-        .get(room.room_id().as_str())
-        .and_then(|s| s.archived_until_ts);
-    is_archived_hidden(
-        crate::utils::matrix::latest_event_ts(room),
-        archived_until_ts,
-    )
-}
-
 async fn read_room_state(room: &Room) -> RoomMailboxState {
     let recontact = room
         .tags()

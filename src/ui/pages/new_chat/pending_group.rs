@@ -1,11 +1,9 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
 
 use crate::{
-    Route,
-    ui::components::{Avatar, TopAppBar, TopAppBarTitle, user_color},
+    ui::components::{TopAppBar, TopAppBarTitle},
     utils::{matrix::CLIENT, use_app_colors},
 };
 
@@ -22,24 +20,11 @@ impl Component for PendingGroup {
         let mut sending: State<bool> = use_state(|| false);
         let mut error: State<Option<String>> = use_state(|| None);
 
-        let (group_name, invitee_previews) = GROUP_DRAFT
+        let group_name = GROUP_DRAFT
             .lock()
-            .map(|d| {
-                let name = d.name.clone();
-                let previews: Vec<(String, String, Option<String>)> = d
-                    .invitees
-                    .iter()
-                    .map(|u| {
-                        (
-                            u.user_id.clone(),
-                            u.display_name.clone(),
-                            u.avatar_mxc.clone(),
-                        )
-                    })
-                    .collect();
-                (name, previews)
-            })
-            .unwrap_or_else(|_| (String::new(), vec![]));
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        let invitees = super::draft::invitees();
 
         let is_sending = *sending.read();
         let err_msg = error.read().clone();
@@ -62,8 +47,7 @@ impl Component for PendingGroup {
                 })
                 .unwrap_or_else(|_| (String::new(), vec![], true));
 
-            let (tx, rx) = futures::channel::oneshot::channel::<Result<String, String>>();
-            tokio::task::spawn(async move {
+            let rx = crate::utils::on_tokio::<Result<String, String>, _>(async move {
                 let result: Result<String, String> = async {
                     use matrix_sdk::ruma::events::{
                         AnyMessageLikeEventContent, room::message::RoomMessageEventContent,
@@ -112,18 +96,18 @@ impl Component for PendingGroup {
                     Ok(room_id)
                 }
                 .await;
-                let _ = tx.send(result);
+                result
             });
             spawn(async move {
                 match rx.await {
-                    Ok(Ok(room_id)) => {
+                    Some(Ok(room_id)) => {
                         crate::app::navigation::navigate_to_room(room_id);
                     }
-                    Ok(Err(e)) => {
+                    Some(Err(e)) => {
                         *error.write() = Some(format!("Error: {e}"));
                         *sending.write() = false;
                     }
-                    Err(_) => {
+                    None => {
                         *sending.write() = false;
                     }
                 }
@@ -143,9 +127,7 @@ impl Component for PendingGroup {
                 } else {
                     group_name.clone()
                 }),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::NewGroupConfig);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             // Group info header
@@ -166,38 +148,7 @@ impl Component for PendingGroup {
                             .font_weight(FontWeight::MEDIUM)
                             .color(c.on_surface),
                     )
-                    .child({
-                        let mut row = rect().horizontal().width(Size::fill()).spacing(8.);
-                        for (uid, display_name, avatar_mxc) in &invitee_previews {
-                            let initial = display_name
-                                .chars()
-                                .next()
-                                .map(|ch| ch.to_uppercase().to_string())
-                                .unwrap_or_else(|| "?".to_string());
-                            let color = user_color(uid);
-                            row = row.child(
-                                rect()
-                                    .vertical()
-                                    .spacing(4.)
-                                    .cross_align(Alignment::Center)
-                                    .child(Avatar {
-                                        size: 36.,
-                                        bytes: None,
-                                        fetch_key: avatar_mxc.clone(),
-                                        initial,
-                                        color,
-                                        image_key: uid.clone(),
-                                    })
-                                    .child(
-                                        label()
-                                            .text(display_name.chars().take(8).collect::<String>())
-                                            .font_size(11.)
-                                            .color(c.on_surface_variant),
-                                    ),
-                            );
-                        }
-                        row
-                    }),
+                    .child(super::draft::invitee_strip(&invitees, 36., c)),
             )
             // Body hint
             .child(

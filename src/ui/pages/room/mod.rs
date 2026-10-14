@@ -1,11 +1,14 @@
 mod action_popup_overlay;
 mod bookmark_picker_overlay;
 mod compose_bar;
+mod compose_line;
 mod detail_modal;
 mod focus;
 mod invite_view;
 mod media_items;
 mod message_action_popup;
+mod message_content;
+#[cfg(not(target_os = "android"))]
 mod message_hover_bar;
 mod message_row;
 mod room_app_bar;
@@ -31,7 +34,7 @@ use ui_ctx::{RoomUiCtx, use_provide_room_ui_ctx};
 use use_room_timeline::use_room_timeline;
 
 use crate::logging::{PERF, RenderTimer};
-use crate::ui::components::{MediaViewer, UserPopupOverlay};
+use crate::ui::components::{MediaViewer, UserPopupOverlay, use_fading};
 use crate::utils::matrix::{get_room, my_user_id};
 use crate::utils::use_app_colors;
 use crate::utils::use_watch_tick;
@@ -97,6 +100,7 @@ impl Component for RoomView {
         let ui = use_provide_room_ui_ctx();
         let focus_event_id = use_hook(|| take_focus_event(&room_id));
         let timeline = use_room_timeline(&room_id, focus_event_id.clone());
+        let typing = use_fading(typing_label(&timeline.state.typing_users.read()), 150);
         let scroll_controller = use_scroll_controller(|| ScrollConfig {
             default_vertical_position: if focus_event_id.is_some() {
                 ScrollPosition::Start
@@ -113,6 +117,7 @@ impl Component for RoomView {
                 items: media_items(&timeline.state.messages.read()),
                 selected_key: ui.image_viewer,
                 on_load_more: Some(std::rc::Rc::new(move || handle.paginate())),
+                on_show_in_chat: None,
             }
             .into_element()
         } else {
@@ -145,13 +150,7 @@ impl Component for RoomView {
                     timeline: timeline.clone(),
                     scroll_controller,
                 })
-                .child(bottom_bar(
-                    ui,
-                    &timeline.state.typing_users.read(),
-                    &room_id,
-                    &timeline,
-                    c,
-                ))
+                .child(bottom_bar(ui, typing.clone(), &room_id, &timeline, c))
                 .into_element()
         };
 
@@ -167,7 +166,7 @@ impl Component for RoomView {
 /// Typing indicator + composer. Keyed on the edited event so edits get a fresh composer.
 fn bottom_bar(
     ui: RoomUiCtx,
-    typing_users: &[String],
+    typing: Option<(String, f32)>,
     room_id: &str,
     timeline: &use_room_timeline::RoomTimeline,
     c: crate::utils::const_values::AppColors,
@@ -179,8 +178,9 @@ fn bottom_bar(
     rect()
         .vertical()
         .width(Size::fill())
-        .maybe_child(typing_label(typing_users).map(|text| {
+        .maybe_child(typing.map(|(text, opacity)| {
             rect()
+                .opacity(opacity)
                 .width(Size::fill())
                 .padding(Gaps::new(2., 16., 2., 16.))
                 .child(

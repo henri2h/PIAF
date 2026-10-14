@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
 
-use crate::Route;
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
 #[cfg(target_os = "android")]
 use crate::utils::const_values::AppColors;
@@ -38,20 +36,22 @@ impl Component for SettingsNotifications {
                 let Some(client) = crate::utils::matrix::CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) = futures::channel::oneshot::channel::<(
-                    Option<String>,
-                    bool,
-                    String,
-                    Vec<crate::utils::push::PusherInfo>,
-                )>();
-                tokio::task::spawn(async move {
+                let rx = crate::utils::on_tokio::<
+                    (
+                        Option<String>,
+                        bool,
+                        String,
+                        Vec<crate::utils::push::PusherInfo>,
+                    ),
+                    _,
+                >(async move {
                     let endpoint = crate::utils::push::get_current_endpoint().await;
                     let active = crate::utils::push::is_pusher_registered(&client).await;
                     let gateway = crate::utils::push::get_push_gateway().await;
                     let pusher_list = crate::utils::push::get_registered_pushers(&client).await;
-                    let _ = tx.send((endpoint, active, gateway, pusher_list));
+                    (endpoint, active, gateway, pusher_list)
                 });
-                if let Ok((ep, active, gw, pusher_list)) = rx.await {
+                if let Some((ep, active, gw, pusher_list)) = rx.await {
                     *push_endpoint.write() = ep;
                     *pusher_active.write() = active;
                     *gateway_url.write() = gw.clone();
@@ -89,9 +89,7 @@ impl Component for SettingsNotifications {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Notifications".to_string()),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::Settings);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             .child(

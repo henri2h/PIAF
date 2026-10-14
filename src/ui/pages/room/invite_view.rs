@@ -1,9 +1,12 @@
+use crate::utils::id_color;
 use freya::prelude::*;
+
+use crate::utils::avatars::AvatarSource;
 use freya_material_design::prelude::ButtonRippleExt;
 
 use super::room_app_bar::room_app_bar;
 use crate::app::navigation::close_room;
-use crate::ui::components::{Avatar, user_color};
+use crate::ui::components::Avatar;
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::get_room;
 use crate::utils::use_app_colors;
@@ -49,24 +52,20 @@ impl Component for InviteView {
 
         let room_id = self.room_id.clone();
         use_hook(move || {
-            let (tx, rx) = futures::channel::oneshot::channel();
-            tokio::spawn(async move {
-                let Some(room) = get_room(&room_id) else {
-                    return;
-                };
+            let rx = crate::utils::on_tokio(async move {
+                let room = get_room(&room_id)?;
                 let is_direct = room.is_direct().await.unwrap_or(false);
-                if let Ok(d) = room.invite_details().await {
-                    let _ = tx.send(InviteInfo {
-                        inviter_id: d.inviter_id.to_string(),
-                        inviter_name: d
-                            .inviter
-                            .and_then(|m| m.display_name().map(|n| n.to_string())),
-                        is_direct,
-                    });
-                }
+                let d = room.invite_details().await.ok()?;
+                Some(InviteInfo {
+                    inviter_id: d.inviter_id.to_string(),
+                    inviter_name: d
+                        .inviter
+                        .and_then(|m| m.display_name().map(|n| n.to_string())),
+                    is_direct,
+                })
             });
             spawn(async move {
-                if let Ok(details) = rx.await {
+                if let Some(Some(details)) = rx.await {
                     info.set(Some(details));
                 }
             });
@@ -82,18 +81,17 @@ impl Component for InviteView {
                 Busy::Declining
             }));
             error.set(None);
-            let (tx, rx) = futures::channel::oneshot::channel::<Result<(), String>>();
-            tokio::spawn(async move {
+            let rx = crate::utils::on_tokio::<Result<(), String>, _>(async move {
                 let result = match get_room(&room_id) {
                     Some(room) if accept => room.join().await.map_err(|e| e.to_string()),
                     Some(room) => room.leave().await.map_err(|e| e.to_string()),
                     None => Err("This room is no longer available.".to_string()),
                 };
                 crate::utils::room_list::refresh("invite_response");
-                let _ = tx.send(result);
+                result
             });
             spawn(async move {
-                let result = rx.await.unwrap_or_else(|_| Err("Cancelled".to_string()));
+                let result = rx.await.unwrap_or_else(|| Err("Cancelled".to_string()));
                 busy.set(None);
                 match result {
                     Ok(()) if accept => joined.set(true),
@@ -144,11 +142,9 @@ impl Component for InviteView {
                                     .spacing(16.)
                                     .child(Avatar {
                                         size: 88.,
-                                        bytes: None,
-                                        fetch_key: Some(self.room_id.clone()),
-                                        initial: initial_of(&name),
-                                        color: user_color(&self.room_id),
-                                        image_key: self.room_id.clone(),
+                                        source: Some(AvatarSource::Room(self.room_id.clone())),
+                                        name: name.clone(),
+                                        color: id_color(&self.room_id),
                                     })
                                     .child(
                                         label()
@@ -242,11 +238,4 @@ fn actions(
                     )),
             ),
         )
-}
-
-fn initial_of(name: &str) -> String {
-    name.chars()
-        .next()
-        .map(|ch| ch.to_uppercase().to_string())
-        .unwrap_or_else(|| "?".to_string())
 }

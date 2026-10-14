@@ -1,11 +1,8 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
 
-use crate::Route;
-use crate::ui::components::{Hoverable, TopAppBar, TopAppBarTitle};
-use crate::utils::const_values::AppColors;
+use crate::ui::components::{Chip, TopAppBar, TopAppBarTitle};
 use crate::utils::use_app_colors;
 
 #[derive(PartialEq)]
@@ -24,9 +21,7 @@ impl Component for SettingsAppearance {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Appearance".to_string()),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::Settings);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             .child(
@@ -35,60 +30,26 @@ impl Component for SettingsAppearance {
                     .width(Size::fill())
                     .padding(Gaps::new(8., 0., 8., 0.))
                     .child(super::section_label("Theme", c))
-                    .child(theme_selector(is_dark, c, theme)),
+                    .child(theme_selector(is_dark, theme)),
             )
     }
 }
 
-fn theme_selector(is_dark: bool, c: AppColors, mut theme: State<Theme>) -> Element {
-    const OPTIONS: &[(bool, &str)] = &[(false, "Light"), (true, "Dark")];
-    let mut row = rect()
+fn theme_selector(is_dark: bool, theme: State<Theme>) -> Element {
+    const OPTIONS: [(bool, &str); 2] = [(false, "Light"), (true, "Dark")];
+    rect()
         .horizontal()
         .width(Size::fill())
         .content(Content::flex())
         .padding(Gaps::new(8., 16., 12., 16.))
-        .spacing(8.);
-    for &(dark, name) in OPTIONS {
-        let is_selected = dark == is_dark;
-        let bg = if is_selected {
-            c.primary
-        } else {
-            c.surface_container
-        };
-        let text_col = if is_selected {
-            c.on_primary
-        } else {
-            c.on_surface_variant
-        };
-        let chip = rect()
-            .expanded()
-            .background(bg)
-            .on_press(move |_| {
-                theme.set(crate::app::theme::effective_theme(dark));
-                spawn(async move {
-                    crate::utils::matrix::save_theme_pref(dark).await;
-                });
+        .spacing(8.)
+        .children(OPTIONS.into_iter().map(|(dark, name)| {
+            Chip::new(name, dark == is_dark, move |_| {
+                crate::app::theme::set_dark(theme, dark);
             })
-            .child(
-                freya_material_design::prelude::Ripple::new()
-                    .color(if is_selected { c.on_primary } else { c.primary })
-                    .width(Size::fill_minimum())
-                    .height(Size::fill())
-                    .child(
-                        rect()
-                            .horizontal()
-                            .height(Size::fill())
-                            .padding(Gaps::new(0., 16., 0., 16.))
-                            .cross_align(Alignment::Center)
-                            .child(label().text(name).font_size(13.).color(text_col)),
-                    ),
-            );
-        row = row.child(Hoverable {
-            width: Size::flex(1.),
-            height: Size::px(32.),
-            corner_radius: 16.,
-            child: chip.into_element(),
-        });
-    }
-    row.into_element()
+            .width(Size::flex(1.))
+            .height(32.)
+            .into_element()
+        }))
+        .into_element()
 }

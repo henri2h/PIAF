@@ -3,8 +3,8 @@ use std::sync::{Arc, OnceLock};
 use freya_query::prelude::QueryCapability;
 use matrix_sdk::ruma::events::room::MediaSource;
 
-use crate::REQUESTER;
 use crate::utils::matrix::CLIENT;
+use crate::utils::on_tokio;
 
 /// Serialize a `MediaSource` to a stable string key usable with `FetchMediaContent`.
 pub fn media_source_key(source: &MediaSource) -> String {
@@ -26,106 +26,6 @@ fn media_semaphore() -> Arc<tokio::sync::Semaphore> {
 // Helpers — run directly as parallel tokio tasks, bypassing the sequential
 // worker, so many rooms can load their avatars/names concurrently.
 // ---------------------------------------------------------------------------
-
-/// Fetches the avatar for a given key.
-/// - `"__self__"` → current user's own avatar
-/// - `"room_id\x00user_id"` → room member avatar
-/// - anything else → room avatar
-pub(crate) async fn fetch_avatar_for_key(key: &str) -> Result<Vec<u8>, ()> {
-    if key == "__self__" {
-        return REQUESTER.get().ok_or(())?.fetch_user_avatar().await;
-    }
-    if let Some(mxc_uri) = key.strip_prefix("mxc:") {
-        return fetch_mxc_direct(mxc_uri).await;
-    }
-    if key.contains('\x00') {
-        return fetch_member_avatar_direct(key).await;
-    }
-    fetch_room_avatar_direct(key).await
-}
-
-async fn fetch_mxc_direct(mxc_uri: &str) -> Result<Vec<u8>, ()> {
-    let mxc: matrix_sdk::ruma::OwnedMxcUri = mxc_uri.try_into().map_err(|_| ())?;
-    let client = CLIENT.get().cloned().ok_or(())?;
-    crate::utils::avatars::by_mxc(&client, mxc).await.ok_or(())
-}
-
-async fn fetch_member_avatar_direct(key: &str) -> Result<Vec<u8>, ()> {
-    let mut parts = key.splitn(2, '\x00');
-    let room_id = parts.next().unwrap_or("");
-    let user_id = parts.next().unwrap_or("");
-    let client = CLIENT.get().cloned().ok_or(())?;
-    let parsed_user = matrix_sdk::ruma::UserId::parse(user_id).map_err(|_| ())?;
-    let room = crate::utils::matrix::get_room(room_id).ok_or(())?;
-    let member = room
-        .get_member_no_sync(&parsed_user)
-        .await
-        .ok()
-        .flatten()
-        .ok_or(())?;
-    let avatar_url = member.avatar_url().ok_or(())?;
-    crate::utils::avatars::by_mxc(&client, avatar_url.to_owned())
-        .await
-        .ok_or(())
-}
-
-pub(crate) async fn fetch_room_avatar_direct(room_id: &str) -> Result<Vec<u8>, ()> {
-    use matrix_sdk::ruma::events::direct::DirectEventContent;
-
-    let client = CLIENT.get().cloned().ok_or(())?;
-    let parsed_id = matrix_sdk::ruma::RoomId::parse(room_id).map_err(|_| ())?;
-    let room = client.get_room(&parsed_id).ok_or(())?;
-
-    // For DM rooms, look up the user this room belongs to in the m.direct
-    // account data (user_id → [room_ids] map) and use that user's avatar.
-    // This is authoritative even for bridged DMs where the room may have
-    // three members (self, other user, bridge bot).
-    if let Ok(Some(raw)) = client.account().account_data::<DirectEventContent>().await {
-        if let Ok(direct) = raw.deserialize() {
-            let dm_user = direct.0.into_iter().find_map(|(user, rooms)| {
-                if rooms.iter().any(|r| r == &parsed_id) {
-                    Some(user)
-                } else {
-                    None
-                }
-            });
-
-            if let Some(dm_user_id) = dm_user {
-                // Resolve the DirectUserIdentifier to a plain UserId string.
-                // DirectUserIdentifier is either a UserId or a ThirdPartyIdentifier;
-                // only the UserId case gives us a Matrix user to look up.
-                let user_id_str = dm_user_id.to_string();
-                if let Ok(parsed_user) = matrix_sdk::ruma::UserId::parse(&user_id_str) {
-                    if let Ok(Some(member)) = room.get_member_no_sync(&parsed_user).await {
-                        if let Some(avatar_url) = member.avatar_url()
-                            && let Some(bytes) =
-                                crate::utils::avatars::by_mxc(&client, avatar_url.to_owned()).await
-                        {
-                            return Ok(bytes);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Try the room's own set avatar.
-    if let Some(bytes) = crate::utils::avatars::of_room(&room).await {
-        return Ok(bytes);
-    }
-
-    // Fall back to the first hero member that has a non-null avatar_url.
-    for hero in room.heroes() {
-        let Some(mxc_uri) = hero.avatar_url else {
-            continue;
-        };
-        if let Some(bytes) = crate::utils::avatars::by_mxc(&client, mxc_uri).await {
-            return Ok(bytes);
-        }
-    }
-
-    Err(())
-}
 
 async fn fetch_sender_name_direct(key: &str) -> Result<String, ()> {
     let mut parts = key.splitn(2, '\x00');
@@ -154,26 +54,6 @@ async fn fetch_sender_name_direct(key: &str) -> Result<String, ()> {
 // Queries
 // ---------------------------------------------------------------------------
 
-#[derive(Clone, PartialEq, Hash, Eq)]
-pub struct FetchRoomAvatar;
-
-impl QueryCapability for FetchRoomAvatar {
-    type Ok = Vec<u8>;
-    type Err = ();
-    type Keys = String;
-
-    async fn run(&self, key: &String) -> Result<Vec<u8>, ()> {
-        // Spawn a real tokio task so many rooms can load concurrently without
-        // going through the sequential worker.
-        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
-        let key = key.clone();
-        tokio::spawn(async move {
-            let _ = tx.send(fetch_room_avatar_direct(&key).await);
-        });
-        rx.await.map_err(|_| ())?
-    }
-}
-
 /// Fetch the display name of a specific member in a room.
 /// Key: `"room_id\x00user_id"` (null-byte separator)
 #[derive(Clone, PartialEq, Hash, Eq)]
@@ -186,12 +66,10 @@ impl QueryCapability for FetchSenderName {
 
     async fn run(&self, key: &String) -> Result<String, ()> {
         // Same approach: parallel tokio task per lookup.
-        let (tx, rx) = futures::channel::oneshot::channel::<Result<String, ()>>();
         let key = key.clone();
-        tokio::spawn(async move {
-            let _ = tx.send(fetch_sender_name_direct(&key).await);
-        });
-        rx.await.map_err(|_| ())?
+        on_tokio(async move { fetch_sender_name_direct(&key).await })
+            .await
+            .ok_or(())?
     }
 }
 
@@ -216,14 +94,12 @@ impl QueryCapability for FetchMediaContent {
         // Spawn a real tokio task so the semaphore acquire and the download
         // both happen in a tokio context — never on the freya/smol main thread.
         // The freya task only awaits a futures::oneshot, which is smol-safe.
-        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
-        tokio::spawn(async move {
+        let rx = on_tokio::<Result<Vec<u8>, ()>, _>(async move {
             // Acquire the permit inside the tokio task (safe: real tokio context).
             let permit = match media_semaphore().acquire_owned().await {
                 Ok(p) => p,
                 Err(_) => {
-                    let _ = tx.send(Err(()));
-                    return;
+                    return Err(());
                 }
             };
             let _permit = permit; // released when this task finishes
@@ -237,10 +113,10 @@ impl QueryCapability for FetchMediaContent {
                 .await
                 .map(|b| b.to_vec())
                 .map_err(|_| ());
-            let _ = tx.send(result);
+            result
         });
 
-        rx.await.map_err(|_| ())?
+        rx.await.ok_or(())?
     }
 }
 
@@ -273,13 +149,11 @@ impl QueryCapability for FetchMediaThumbnail {
             matrix_sdk::ruma::exports::serde_json::from_str(json).map_err(|_| ())?;
         let client = CLIENT.get().cloned().ok_or(())?;
 
-        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<u8>, ()>>();
-        tokio::spawn(async move {
+        let rx = on_tokio::<Result<Vec<u8>, ()>, _>(async move {
             let permit = match media_semaphore().acquire_owned().await {
                 Ok(p) => p,
                 Err(_) => {
-                    let _ = tx.send(Err(()));
-                    return;
+                    return Err(());
                 }
             };
             let _permit = permit;
@@ -297,10 +171,10 @@ impl QueryCapability for FetchMediaThumbnail {
                 .await
                 .map(|b| b.to_vec())
                 .map_err(|_| ());
-            let _ = tx.send(result);
+            result
         });
 
-        rx.await.map_err(|_| ())?
+        rx.await.ok_or(())?
     }
 }
 
@@ -314,8 +188,7 @@ impl QueryCapability for FetchUserDisplayName {
 
     async fn run(&self, _: &()) -> Result<String, ()> {
         let client = CLIENT.get().cloned().ok_or(())?;
-        let (tx, rx) = futures::channel::oneshot::channel::<Result<String, ()>>();
-        tokio::spawn(async move {
+        let rx = on_tokio::<Result<String, ()>, _>(async move {
             let name = client
                 .account()
                 .get_display_name()
@@ -324,9 +197,9 @@ impl QueryCapability for FetchUserDisplayName {
                 .flatten()
                 .or_else(|| client.user_id().map(|id| id.to_string()))
                 .unwrap_or_default();
-            let _ = tx.send(Ok(name));
+            Ok(name)
         });
-        rx.await.map_err(|_| ())?
+        rx.await.ok_or(())?
     }
 }
 
@@ -346,15 +219,13 @@ impl QueryCapability for FetchMutualRooms {
         let client = CLIENT.get().cloned().ok_or(())?;
         let parsed = ruma::UserId::parse(user_id.as_str()).map_err(|_| ())?;
 
-        let (tx, rx) = futures::channel::oneshot::channel::<Result<Vec<String>, ()>>();
-        tokio::spawn(async move {
+        let rx = on_tokio::<Result<Vec<String>, ()>, _>(async move {
             // Try MSC2666 via the native ruma request.
             if let Ok(resp) = client
                 .send(MutualRoomsRequest::new(parsed.to_owned()))
                 .await
             {
-                let _ = tx.send(Ok(resp.joined.into_iter().map(|r| r.to_string()).collect()));
-                return;
+                return Ok(resp.joined.into_iter().map(|r| r.to_string()).collect());
             }
 
             // Fallback: iterate locally cached joined rooms.
@@ -364,7 +235,7 @@ impl QueryCapability for FetchMutualRooms {
                     result.push(room.room_id().to_string());
                 }
             }
-            let _ = tx.send(Ok(result));
+            Ok(result)
         });
         rx.await.unwrap_or(Err(()))
     }

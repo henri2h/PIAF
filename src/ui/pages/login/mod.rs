@@ -3,7 +3,8 @@ mod user_id;
 
 use freya::prelude::*;
 
-use crate::ui::components::HoverableExt;
+use crate::ui::components::IconButton;
+
 use freya_icons::lucide;
 use freya_material_design::prelude::ButtonRippleExt;
 use freya_router::prelude::RouterContext;
@@ -78,21 +79,22 @@ impl Component for LoginPage {
         };
 
         let hidden = !*show_password.read();
-        let eye_toggle = rect()
-            .width(Size::px(32.))
-            .height(Size::px(32.))
-            .corner_radius(16.)
-            .center()
-            .on_press(move |_| show_password.toggle())
-            .child(icon(
-                if hidden {
-                    lucide::eye()
-                } else {
-                    lucide::eye_off()
-                },
-                c.on_surface_variant,
-            ))
-            .hoverable(Size::px(32.), Size::px(32.), 16.);
+        let eye_toggle = IconButton::new(
+            if hidden {
+                lucide::eye()
+            } else {
+                lucide::eye_off()
+            },
+            c.on_surface_variant,
+            move |_| show_password.toggle(),
+        )
+        .tooltip(if hidden {
+            "Show password"
+        } else {
+            "Hide password"
+        })
+        .size(32., 18.)
+        .into_element();
 
         let form = rect()
             .vertical()
@@ -243,14 +245,10 @@ fn top_bar(c: AppColors) -> Rect {
         .width(Size::fill())
         .padding(Gaps::new(STATUS_BAR_INSET + 8., 8., 0., 8.))
         .maybe_child(can_go_back.then(|| {
-            rect()
-                .width(Size::px(40.))
-                .height(Size::px(40.))
-                .corner_radius(20.)
-                .center()
-                .on_press(|_| RouterContext::get().go_back())
-                .child(icon(lucide::arrow_left(), c.on_surface))
-                .hoverable(Size::px(40.), Size::px(40.), 20.)
+            IconButton::new(lucide::arrow_left(), c.on_surface, |_| {
+                RouterContext::get().go_back()
+            })
+            .size(40., 18.)
         }))
 }
 

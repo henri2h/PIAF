@@ -1,4 +1,6 @@
 use freya::prelude::*;
+
+use crate::ui::components::HoverableExt;
 use freya_material_design::prelude::Ripple;
 
 use crate::utils::use_app_colors;
@@ -27,19 +29,12 @@ impl Component for M3ListItem {
         let icon_color = self.icon_color;
         let destructive = self.destructive;
         let on_press = self.on_press.clone();
-        let mut hovered: State<bool> = use_state(|| false);
-        let bg = if *hovered.read() {
-            c.surface_container
-        } else {
-            c.surface
-        };
+        let bg = c.surface;
 
         rect()
             .width(Size::fill())
             .overflow(Overflow::Clip)
             .background(bg)
-            .on_pointer_enter(move |_| *hovered.write() = true)
-            .on_pointer_leave(move |_| *hovered.write() = false)
             .on_press(on_press)
             .child(
                 Ripple::new()
@@ -80,5 +75,6 @@ impl Component for M3ListItem {
                             ),
                     ),
             )
+            .hoverable(Size::fill(), Size::auto(), 0.)
     }
 }

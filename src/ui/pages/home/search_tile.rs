@@ -1,8 +1,16 @@
+use crate::utils::id_color;
 use freya::prelude::*;
+
+use crate::ui::components::PersonRow;
+use crate::utils::users::UserInfo;
+
+use crate::ui::components::HoverableExt;
+
+use crate::utils::avatars::AvatarSource;
 use freya_material_design::prelude::Ripple;
 use matrix_sdk::ruma::{MilliSecondsSinceUnixEpoch, UInt};
 
-use crate::ui::components::{Avatar, user_color};
+use crate::ui::components::Avatar;
 use crate::utils::{format_timestamp, use_app_colors};
 
 use crate::app::navigation::{navigate_to_room, navigate_to_room_at_event};
@@ -20,29 +28,17 @@ pub struct RoomSearchTile {
 impl Component for RoomSearchTile {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let mut hovered: State<bool> = use_state(|| false);
 
         let room_id = self.room_id.clone();
         let display_name = self.display_name.clone();
-        let initial = display_name
-            .chars()
-            .next()
-            .map(|ch| ch.to_uppercase().to_string())
-            .unwrap_or_else(|| "?".to_string());
-        let color = user_color(&room_id);
-        let bg = if *hovered.read() {
-            c.surface_container
-        } else {
-            c.surface
-        };
+        let color = id_color(&room_id);
+        let bg = c.surface;
         let rid = room_id.clone();
 
         rect()
             .width(Size::fill())
             .background(bg)
             .overflow(Overflow::Clip)
-            .on_pointer_enter(move |_| *hovered.write() = true)
-            .on_pointer_leave(move |_| *hovered.write() = false)
             .on_press(move |_| navigate_to_room(rid.clone()))
             .child(
                 Ripple::new().color(c.primary).width(Size::fill()).child(
@@ -55,11 +51,9 @@ impl Component for RoomSearchTile {
                         .cross_align(Alignment::Center)
                         .child(Avatar {
                             size: 44.,
-                            bytes: None,
-                            fetch_key: Some(room_id.clone()),
-                            initial,
+                            source: Some(AvatarSource::Room(room_id.clone())),
+                            name: display_name.to_string(),
                             color,
-                            image_key: room_id.clone(),
                         })
                         .child(
                             label()
@@ -70,6 +64,7 @@ impl Component for RoomSearchTile {
                         ),
                 ),
             )
+            .hoverable(Size::fill(), Size::auto(), 0.)
     }
 }
 
@@ -79,89 +74,21 @@ impl Component for RoomSearchTile {
 
 #[derive(PartialEq)]
 pub struct UserSearchTile {
-    pub user_id: String,
-    pub display_name: String,
-    pub avatar_mxc: Option<String>,
+    pub user: UserInfo,
 }
 
 impl Component for UserSearchTile {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let mut hovered: State<bool> = use_state(|| false);
-
-        let user_id = self.user_id.clone();
-        let display_name = self.display_name.clone();
-        let avatar_mxc = self.avatar_mxc.clone();
-        let initial = display_name
-            .chars()
-            .next()
-            .map(|ch| ch.to_uppercase().to_string())
-            .unwrap_or_else(|| "?".to_string());
-        let color = user_color(&user_id);
-        let bg = if *hovered.read() {
-            c.surface_container
-        } else {
-            c.surface
-        };
-        let uid = user_id.clone();
-
-        rect()
-            .width(Size::fill())
-            .background(bg)
-            .overflow(Overflow::Clip)
-            .on_pointer_enter(move |_| *hovered.write() = true)
-            .on_pointer_leave(move |_| *hovered.write() = false)
-            .on_press(move |_| {
-                let uid = uid.clone();
-                spawn(async move {
-                    if let Some(room_id) = crate::utils::matrix::create_or_get_dm(uid).await {
-                        navigate_to_room(room_id);
-                    }
-                });
-            })
-            .child(
-                Ripple::new().color(c.primary).width(Size::fill()).child(
-                    rect()
-                        .horizontal()
-                        .content(Content::Flex)
-                        .width(Size::fill())
-                        .padding(Gaps::new(10., 16., 10., 16.))
-                        .spacing(12.)
-                        .cross_align(Alignment::Center)
-                        .child(Avatar {
-                            size: 42.,
-                            bytes: None,
-                            fetch_key: avatar_mxc,
-                            initial,
-                            color,
-                            image_key: user_id.clone(),
-                        })
-                        .child(
-                            rect()
-                                .vertical()
-                                .width(Size::flex(1.0))
-                                .spacing(2.)
-                                .child(
-                                    label()
-                                        .text(display_name)
-                                        .font_size(15.)
-                                        .color(c.on_surface),
-                                )
-                                .child(
-                                    label()
-                                        .text(user_id)
-                                        .font_size(12.)
-                                        .color(c.on_surface_muted),
-                                ),
-                        )
-                        .child(
-                            SvgViewer::new(freya_icons::lucide::message_circle())
-                                .width(Size::px(18.))
-                                .height(Size::px(18.))
-                                .color(c.primary),
-                        ),
-                ),
+        let user = self.user.clone();
+        PersonRow::new(&user.user_id, &user.display_name, user.avatar.clone())
+            .trailing(
+                SvgViewer::new(freya_icons::lucide::message_circle())
+                    .width(Size::px(18.))
+                    .height(Size::px(18.))
+                    .color(c.primary),
             )
+            .on_press(move |_| crate::app::navigation::open_dm(user.clone()))
     }
 }
 
@@ -183,7 +110,6 @@ pub struct MessageSearchTile {
 impl Component for MessageSearchTile {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let mut hovered: State<bool> = use_state(|| false);
 
         let event_id = self.event_id.clone();
         let room_id = self.room_id.clone();
@@ -195,17 +121,8 @@ impl Component for MessageSearchTile {
             UInt::try_from(self.event_ts_ms).unwrap_or(UInt::from(0u32)),
         );
         let date_str = format_timestamp(ts);
-        let initial = room_name
-            .chars()
-            .next()
-            .map(|ch| ch.to_uppercase().to_string())
-            .unwrap_or_else(|| "?".to_string());
-        let color = user_color(&room_id);
-        let bg = if *hovered.read() {
-            c.surface_container
-        } else {
-            c.surface
-        };
+        let color = id_color(&room_id);
+        let bg = c.surface;
         let rid = room_id.clone();
         let eid = event_id.clone();
 
@@ -213,8 +130,6 @@ impl Component for MessageSearchTile {
             .width(Size::fill())
             .background(bg)
             .overflow(Overflow::Clip)
-            .on_pointer_enter(move |_| *hovered.write() = true)
-            .on_pointer_leave(move |_| *hovered.write() = false)
             .on_press(move |_| navigate_to_room_at_event(rid.clone(), eid.clone()))
             .child(
                 Ripple::new().color(c.primary).width(Size::fill()).child(
@@ -227,11 +142,9 @@ impl Component for MessageSearchTile {
                         .cross_align(Alignment::Center)
                         .child(Avatar {
                             size: 38.,
-                            bytes: None,
-                            fetch_key: Some(room_id.clone()),
-                            initial,
+                            source: Some(AvatarSource::Room(room_id.clone())),
+                            name: room_name.clone(),
                             color,
-                            image_key: room_id.clone(),
                         })
                         .child(
                             rect()
@@ -273,5 +186,6 @@ impl Component for MessageSearchTile {
                         ),
                 ),
             )
+            .hoverable(Size::fill(), Size::auto(), 0.)
     }
 }

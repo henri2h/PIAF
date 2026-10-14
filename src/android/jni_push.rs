@@ -1,3 +1,4 @@
+use crate::utils::avatars::{self, AvatarSource};
 use jni::{
     JNIEnv,
     objects::{JClass, JString},
@@ -194,13 +195,8 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
         Some(h) => h,
         None => return std::ptr::null_mut(),
     };
-    let client = match crate::utils::matrix::CLIENT.get() {
-        Some(c) => c.clone(),
-        None => return std::ptr::null_mut(),
-    };
-    let bytes = handle.block_on(async move {
-        crate::utils::push::fetch_sender_avatar(&client, &room_id_str, &sender_id_str).await
-    });
+    let source = AvatarSource::member(room_id_str, sender_id_str);
+    let bytes = handle.block_on(async move { avatars::fetch(&source).await });
     match bytes {
         Some(b) => env
             .byte_array_from_slice(&b)
@@ -261,13 +257,8 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
         Some(h) => h,
         None => return std::ptr::null_mut(),
     };
-    let client = match crate::utils::matrix::CLIENT.get() {
-        Some(c) => c.clone(),
-        None => return std::ptr::null_mut(),
-    };
-    let bytes = handle.block_on(async move {
-        crate::utils::push::fetch_room_avatar(&client, &room_id_str).await
-    });
+    let source = AvatarSource::Room(room_id_str);
+    let bytes = handle.block_on(async move { avatars::fetch(&source).await });
     match bytes {
         Some(b) => env
             .byte_array_from_slice(&b)

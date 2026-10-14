@@ -2,42 +2,22 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
+use crate::utils::avatars::AvatarSource;
+
 use crate::ui::components::HoverableExt;
-use matrix_sdk::ruma::events::room::message::MessageType;
+#[cfg(not(target_os = "android"))]
+use crate::ui::components::use_fading;
 use matrix_sdk_ui::timeline::{
     EventSendState, MembershipChange, TimelineDetails, TimelineItem, TimelineItemContent,
     VirtualTimelineItem,
 };
 use tokio::sync::mpsc::UnboundedSender;
 
-use freya_query::prelude::QueryCapability;
-
 use super::ui_ctx::{RoomUiCtx, use_room_ui_ctx};
 use super::{MsgAction, Reaction, ReactionSender};
 use crate::logging::RenderTimer;
-use crate::ui::components::{Avatar, MediaThumbnail, UserPopupInfo, ViewerSource};
-use crate::utils::matrix::save_media_to_downloads;
-use crate::utils::queries::{FetchMediaContent, media_source_key};
-use crate::utils::{format_timestamp, sender_color, use_app_colors};
-
-fn format_file_size(bytes: u64) -> String {
-    if bytes < 1_024 {
-        format!("{} B", bytes)
-    } else if bytes < 1_024 * 1_024 {
-        format!("{:.1} KB", bytes as f64 / 1_024.0)
-    } else {
-        format!("{:.1} MB", bytes as f64 / (1_024.0 * 1_024.0))
-    }
-}
-
-fn format_media_duration(d: std::time::Duration) -> String {
-    let s = d.as_secs();
-    if s >= 3_600 {
-        format!("{}:{:02}:{:02}", s / 3_600, (s % 3_600) / 60, s % 60)
-    } else {
-        format!("{}:{:02}", s / 60, s % 60)
-    }
-}
+use crate::ui::components::{Avatar, UserPopupInfo};
+use crate::utils::{format_timestamp, id_color, use_app_colors};
 
 pub struct MessageRow {
     pub room_id: String,
@@ -65,7 +45,7 @@ impl Component for MessageRow {
         let item = self.item.clone();
         let action_tx = self.action_tx.clone();
         let RoomUiCtx {
-            mut image_viewer,
+            image_viewer,
             mut action_popup,
             mut detail_modal,
             mut user_popup,
@@ -75,6 +55,8 @@ impl Component for MessageRow {
         let mut reply_info = use_room_ui_ctx().reply_info;
         #[cfg(not(target_os = "android"))]
         let mut hovered = use_state(|| false);
+        #[cfg(not(target_os = "android"))]
+        let hover_bar_opacity = use_fading(hovered.read().then_some(()), 120).map(|(_, o)| o);
         let is_dm = self.is_dm;
         let my_user_id = self.my_user_id.clone();
         let date_label = self.date_label.clone();
@@ -180,33 +162,8 @@ impl Component for MessageRow {
         let event_id = event.event_id().map(|id| id.to_string());
         let timestamp = format_timestamp(event.timestamp());
 
-        let (sender_name, sender_initial) = match event.sender_profile() {
-            TimelineDetails::Ready(profile) => {
-                let name = profile
-                    .display_name
-                    .clone()
-                    .unwrap_or_else(|| sender_str.clone());
-                let initial = name
-                    .chars()
-                    .next()
-                    .unwrap_or('?')
-                    .to_uppercase()
-                    .next()
-                    .unwrap_or('?');
-                (name, initial)
-            }
-            _ => {
-                let initial = sender_str
-                    .chars()
-                    .nth(1)
-                    .unwrap_or('?')
-                    .to_uppercase()
-                    .next()
-                    .unwrap_or('?');
-                (sender_str.clone(), initial)
-            }
-        };
-        let sender_color_val = sender_color(&sender_str);
+        let sender_name = crate::utils::room_preview::sender_name(event);
+        let sender_color_val = id_color(&sender_str);
 
         let read_receipts: Vec<(String, String)> = event
             .read_receipts()
@@ -326,244 +283,14 @@ impl Component for MessageRow {
             };
 
         // ── Content ───────────────────────────────────────────────────────
-        let content_el = match message.msgtype() {
-            MessageType::Text(t) => {
-                let text_color = if is_me {
-                    c.bubble_me_text
-                } else {
-                    c.bubble_other_text
-                };
-                rect()
-                    .color(text_color)
-                    .child(MarkdownViewer::new(t.body.clone()).color(text_color))
-                    .into_element()
-            }
-            MessageType::Image(img) => {
-                let key = event_id
-                    .clone()
-                    .unwrap_or_else(|| "img-unknown".to_string());
-                let key_view = key.clone();
-                let source = img.source.clone();
-                let caption = {
-                    let b = &img.body;
-                    if b.starts_with("image")
-                        || b.ends_with(".jpg")
-                        || b.ends_with(".jpeg")
-                        || b.ends_with(".png")
-                        || b.ends_with(".gif")
-                        || b.ends_with(".webp")
-                    {
-                        None
-                    } else {
-                        Some(b.clone()).filter(|s| !s.is_empty())
-                    }
-                };
-                let blurhash = img.info.as_ref().and_then(|i| i.blurhash.clone());
-                let thumbnail_source = img.info.as_ref().and_then(|i| i.thumbnail_source.clone());
-                let text_color = if is_me {
-                    c.bubble_me_text
-                } else {
-                    c.bubble_other_text
-                };
-                rect()
-                    .vertical()
-                    .spacing(6.)
-                    .child(
-                        rect()
-                            .key(key.clone())
-                            .width(Size::px(200.))
-                            .height(Size::px(150.))
-                            .corner_radius(8.)
-                            .overflow(Overflow::Clip)
-                            .on_press(move |_| {
-                                *image_viewer.write() = Some(key_view.clone());
-                            })
-                            .child(MediaThumbnail {
-                                item_key: key,
-                                blurhash,
-                                thumbnail_source: thumbnail_source
-                                    .as_ref()
-                                    .map(|s| ViewerSource::Remote(s.clone())),
-                                fallback_source: Some(ViewerSource::Remote(source)),
-                                thumb_size: Some((400, 300)),
-                            })
-                            .hoverable(Size::px(200.), Size::px(150.), 8.),
-                    )
-                    .maybe_child(
-                        caption.map(|cap| label().text(cap).color(text_color).into_element()),
-                    )
-                    .into_element()
-            }
-            MessageType::File(f) => {
-                let text_color = if is_me {
-                    c.bubble_me_text
-                } else {
-                    c.bubble_other_text
-                };
-                let name = f.filename.as_deref().unwrap_or(f.body.as_str()).to_string();
-                let size_str = f
-                    .info
-                    .as_ref()
-                    .and_then(|i| i.size)
-                    .map(|s| format_file_size(u64::from(s)));
-                let fetch_key = media_source_key(&f.source);
-                rect()
-                    .horizontal()
-                    .cross_align(Alignment::Center)
-                    .spacing(8.)
-                    .padding(Gaps::new(4., 0., 4., 0.))
-                    .on_press(move |_| {
-                        let k = fetch_key.clone();
-                        spawn(async move {
-                            if let Ok(b) = FetchMediaContent.run(&k).await {
-                                tokio::task::spawn(async move {
-                                    save_media_to_downloads(&b).await;
-                                });
-                            }
-                        });
-                    })
-                    .child(
-                        SvgViewer::new(freya_icons::lucide::paperclip())
-                            .color(text_color)
-                            .width(Size::px(16.))
-                            .height(Size::px(16.)),
-                    )
-                    .child(
-                        rect()
-                            .vertical()
-                            .child(label().text(name).font_size(13.).color(text_color))
-                            .maybe_child(size_str.map(|s| {
-                                label()
-                                    .text(s)
-                                    .font_size(11.)
-                                    .color(c.on_surface_muted)
-                                    .into_element()
-                            })),
-                    )
-                    .hoverable(Size::auto(), Size::auto(), 0.)
-            }
-            MessageType::Video(v) => {
-                let text_color = if is_me {
-                    c.bubble_me_text
-                } else {
-                    c.bubble_other_text
-                };
-                let key = event_id
-                    .clone()
-                    .unwrap_or_else(|| "vid-unknown".to_string());
-                let thumbnail_source = v.info.as_ref().and_then(|i| i.thumbnail_source.clone());
-                let duration = v
-                    .info
-                    .as_ref()
-                    .and_then(|i| i.duration)
-                    .map(format_media_duration);
-                let name = v.body.clone();
-                rect()
-                    .vertical()
-                    .spacing(4.)
-                    .maybe_child(thumbnail_source.map(|ts| {
-                        let key_th = key.clone();
-                        rect()
-                            .key(key_th.clone())
-                            .width(Size::px(200.))
-                            .height(Size::px(150.))
-                            .corner_radius(8.)
-                            .overflow(Overflow::Clip)
-                            .child(MediaThumbnail {
-                                item_key: key_th,
-                                blurhash: None,
-                                thumbnail_source: Some(ViewerSource::Remote(ts)),
-                                fallback_source: None,
-                                thumb_size: Some((400, 300)),
-                            })
-                            .child(
-                                rect()
-                                    .position(Position::new_absolute().top(0.).left(0.))
-                                    .layer(1)
-                                    .width(Size::fill())
-                                    .height(Size::fill())
-                                    .center()
-                                    .child(
-                                        SvgViewer::new(freya_icons::lucide::play())
-                                            .color((255u8, 255u8, 255u8))
-                                            .width(Size::px(32.))
-                                            .height(Size::px(32.)),
-                                    ),
-                            )
-                            .into_element()
-                    }))
-                    .child(
-                        rect()
-                            .horizontal()
-                            .cross_align(Alignment::Center)
-                            .spacing(6.)
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::film())
-                                    .color(text_color)
-                                    .width(Size::px(14.))
-                                    .height(Size::px(14.)),
-                            )
-                            .child(label().text(name).font_size(13.).color(text_color))
-                            .maybe_child(duration.map(|d| {
-                                label()
-                                    .text(d)
-                                    .font_size(11.)
-                                    .color(c.on_surface_muted)
-                                    .into_element()
-                            }))
-                            .into_element(),
-                    )
-                    .into_element()
-            }
-            MessageType::Audio(a) => {
-                let text_color = if is_me {
-                    c.bubble_me_text
-                } else {
-                    c.bubble_other_text
-                };
-                let duration = a
-                    .info
-                    .as_ref()
-                    .and_then(|i| i.duration)
-                    .map(format_media_duration);
-                let name = a.body.clone();
-                let fetch_key = media_source_key(&a.source);
-                rect()
-                    .horizontal()
-                    .cross_align(Alignment::Center)
-                    .spacing(8.)
-                    .padding(Gaps::new(4., 0., 4., 0.))
-                    .on_press(move |_| {
-                        let k = fetch_key.clone();
-                        spawn(async move {
-                            if let Ok(b) = FetchMediaContent.run(&k).await {
-                                tokio::task::spawn(async move {
-                                    save_media_to_downloads(&b).await;
-                                });
-                            }
-                        });
-                    })
-                    .child(
-                        SvgViewer::new(freya_icons::lucide::music())
-                            .color(text_color)
-                            .width(Size::px(16.))
-                            .height(Size::px(16.)),
-                    )
-                    .child(
-                        rect()
-                            .vertical()
-                            .child(label().text(name).font_size(13.).color(text_color))
-                            .maybe_child(duration.map(|d| {
-                                label()
-                                    .text(d)
-                                    .font_size(11.)
-                                    .color(c.on_surface_muted)
-                                    .into_element()
-                            })),
-                    )
-                    .hoverable(Size::auto(), Size::auto(), 0.)
-            }
-            _ => return rect(),
+        let Some(content_el) = super::message_content::message_content(
+            &message,
+            event_id.clone(),
+            is_me,
+            image_viewer,
+            c,
+        ) else {
+            return rect();
         };
 
         // ── Bubble ────────────────────────────────────────────────────────
@@ -706,11 +433,10 @@ impl Component for MessageRow {
 
         let room_id = self.room_id.clone();
         let row = if !is_me && !is_dm {
-            let avatar_key = format!("{}\x00{}", room_id, sender_str);
             let sender_name_c = sender_name.clone();
             let sender_uid = sender_str.clone();
-            let s_color = sender_color_val;
-            let s_initial = sender_initial.to_string();
+            let sender_avatar = AvatarSource::member(&room_id, &sender_str);
+            let popup_avatar = sender_avatar.clone();
             row.child(
                 rect()
                     .overflow(Overflow::Clip)
@@ -719,18 +445,14 @@ impl Component for MessageRow {
                         *user_popup.write() = Some(UserPopupInfo {
                             user_id: sender_uid.clone(),
                             display_name: sender_name_c.clone(),
-                            initial: s_initial.clone(),
-                            color: s_color,
-                            avatar_url: None,
+                            avatar: Some(popup_avatar.clone()),
                         });
                     })
                     .child(Avatar {
                         size: 36.,
-                        bytes: None,
-                        initial: sender_initial.to_string(),
+                        source: Some(sender_avatar),
+                        name: sender_name.clone(),
                         color: sender_color_val,
-                        image_key: avatar_key.clone(),
-                        fetch_key: Some(avatar_key),
                     })
                     .hoverable(Size::auto(), Size::auto(), 18.),
             )
@@ -751,22 +473,12 @@ impl Component for MessageRow {
                     *detail_modal.write() = Some(item_modal.clone());
                 });
             for (uid, _ts) in read_receipts.iter().take(5) {
-                let initial = uid
-                    .chars()
-                    .nth(1)
-                    .unwrap_or('?')
-                    .to_uppercase()
-                    .next()
-                    .unwrap_or('?');
-                let color = sender_color(uid);
-                let member_key = format!("{}\x00{}", self.room_id, uid);
+                let color = id_color(uid);
                 r = r.child(Avatar {
                     size: 16.,
-                    bytes: None,
-                    initial: initial.to_string(),
+                    source: Some(AvatarSource::member(&self.room_id, uid)),
+                    name: uid.clone(),
                     color,
-                    image_key: member_key.clone(),
-                    fetch_key: Some(member_key),
                 });
             }
             if read_receipts.len() > 5 {
@@ -828,15 +540,14 @@ impl Component for MessageRow {
         };
 
         #[cfg(not(target_os = "android"))]
-        let hover_bar = (*hovered.read()).then(|| {
+        let hover_bar = hover_bar_opacity.map(|opacity| {
             let tx = action_tx.clone();
             let react_eid = event_id.clone();
             let reply_eid = event_id.clone();
             let reply_sender = sender_name.clone();
-            let reply_body = crate::utils::room_preview::message_body(message.msgtype())
-                .unwrap_or_else(|| "[Message]".to_string());
+            let reply_body = crate::utils::room_preview::reply_preview(message.msgtype());
             let item_more = item.clone();
-            super::message_hover_bar::hover_bar(
+            let bar = super::message_hover_bar::hover_bar(
                 c,
                 move |key| {
                     if let Some(event_id) = react_eid.clone() {
@@ -849,7 +560,8 @@ impl Component for MessageRow {
                     }
                 },
                 move || action_popup.set(Some(item_more.clone())),
-            )
+            );
+            rect().opacity(opacity).child(bar)
         });
 
         #[cfg(not(target_os = "android"))]
@@ -904,56 +616,5 @@ impl Component for MessageRow {
             .child(row.child(bubble_col))
             .child(failed_send_row)
             .child(read_receipt_row);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{format_file_size, format_media_duration};
-    use std::time::Duration;
-
-    // ── format_file_size ──────────────────────────────────────────────────────
-
-    #[test]
-    fn file_size_bytes_boundary() {
-        assert_eq!(format_file_size(0), "0 B");
-        assert_eq!(format_file_size(512), "512 B");
-        assert_eq!(format_file_size(1023), "1023 B"); // last byte before KB
-    }
-
-    #[test]
-    fn file_size_kilobytes() {
-        assert_eq!(format_file_size(1024), "1.0 KB");
-        assert_eq!(format_file_size(1536), "1.5 KB"); // 1.5 * 1024
-        assert_eq!(format_file_size(2048), "2.0 KB");
-    }
-
-    #[test]
-    fn file_size_megabytes() {
-        assert_eq!(format_file_size(1024 * 1024), "1.0 MB");
-        assert_eq!(format_file_size(1024 * 1024 * 5), "5.0 MB");
-    }
-
-    // ── format_media_duration ─────────────────────────────────────────────────
-
-    #[test]
-    fn duration_seconds_only() {
-        assert_eq!(format_media_duration(Duration::ZERO), "0:00");
-        assert_eq!(format_media_duration(Duration::from_secs(9)), "0:09");
-        assert_eq!(format_media_duration(Duration::from_secs(59)), "0:59");
-    }
-
-    #[test]
-    fn duration_minutes_and_seconds() {
-        assert_eq!(format_media_duration(Duration::from_secs(60)), "1:00");
-        assert_eq!(format_media_duration(Duration::from_secs(90)), "1:30");
-        assert_eq!(format_media_duration(Duration::from_secs(3599)), "59:59");
-    }
-
-    #[test]
-    fn duration_hours() {
-        assert_eq!(format_media_duration(Duration::from_secs(3600)), "1:00:00");
-        assert_eq!(format_media_duration(Duration::from_secs(3661)), "1:01:01");
-        assert_eq!(format_media_duration(Duration::from_secs(7322)), "2:02:02");
     }
 }

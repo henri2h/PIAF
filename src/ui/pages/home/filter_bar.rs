@@ -1,7 +1,7 @@
 use freya::prelude::*;
 
-use super::filter_chip::FilterChip;
 use super::room_list_model::{Mailbox, RoomFilter};
+use crate::ui::components::Chip;
 use crate::utils::use_app_colors;
 
 /// Mailbox selector (Inbox / Recontact / Archived) followed by the filter
@@ -36,14 +36,12 @@ impl Component for RoomFilterBar {
                 }));
 
         let mut chips = rect().horizontal().spacing(6.);
-        for f in &RoomFilter::ALL {
-            let is_selected = *filter.read() == *f;
-            chips = chips.child(FilterChip {
-                chip_label: f.label(),
-                selected: is_selected,
-                filter,
-                value: f.clone(),
-            });
+        for f in RoomFilter::ALL {
+            let selected = *filter.read() == f;
+            let mut filter = filter;
+            chips = chips.child(Chip::new(f.label(), selected, move |_| {
+                filter.set(f.clone())
+            }));
         }
 
         rect()

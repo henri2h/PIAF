@@ -4,113 +4,17 @@ use std::time::Duration;
 
 use freya::prelude::*;
 
-use crate::ui::components::HoverableExt;
+use crate::ui::components::IconButton;
+
+use crate::ui::components::use_fading;
 use freya::text_edit::*;
-use freya_components::cursor_blink::use_cursor_blink;
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::utils::const_values::AppColors;
 use crate::utils::drafts;
 use crate::utils::use_app_colors;
 
-/// Encode raw RGBA pixels to a PNG byte vector.
-#[cfg(not(target_os = "android"))]
-fn encode_rgba_to_png(width: u32, height: u32, rgba: &[u8]) -> Option<Vec<u8>> {
-    let mut buf = Vec::new();
-    let mut enc = png::Encoder::new(&mut buf, width, height);
-    enc.set_color(png::ColorType::Rgba);
-    enc.set_depth(png::BitDepth::Eight);
-    let mut writer = enc.write_header().ok()?;
-    writer.write_image_data(rgba).ok()?;
-    drop(writer);
-    Some(buf)
-}
-
-/// Try to read an image from the system clipboard.
-/// Returns PNG bytes on success, `None` if clipboard has no image.
-/// Safe to call from the UI/main thread.
-#[cfg(not(target_os = "android"))]
-fn read_clipboard_image() -> Option<Vec<u8>> {
-    let mut cb = arboard::Clipboard::new().ok()?;
-    let img = cb.get_image().ok()?;
-    encode_rgba_to_png(img.width as u32, img.height as u32, &img.bytes)
-}
-
 use super::MsgAction;
-
-#[derive(PartialEq)]
-struct ComposeLine {
-    line_index: usize,
-    editable: UseEditable,
-    c: AppColors,
-    is_focused: bool,
-}
-
-impl Component for ComposeLine {
-    fn render_key(&self) -> DiffKey {
-        (&self.line_index).into()
-    }
-
-    fn render(&self) -> impl IntoElement {
-        let line_index = self.line_index;
-        let mut editable = self.editable;
-        let c = self.c;
-        let holder = use_state(ParagraphHolder::default);
-
-        let (text, is_active, cursor_index, highlights) = {
-            let editor = editable.editor().read();
-            let text = editor
-                .line(line_index)
-                .map(|l| l.text.to_string())
-                .unwrap_or_default();
-            let is_active = editor.cursor_row() == line_index;
-            // Only draw the cursor when this line is active AND the bar has focus.
-            // This prevents the cursor from appearing under the placeholder text.
-            let cursor_index = if is_active && self.is_focused {
-                Some(editor.cursor_col())
-            } else {
-                None
-            };
-            let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
-            (text, is_active, cursor_index, highlights)
-        };
-
-        // Blink when this line is active and the composer has keyboard focus.
-        let (_, cursor_color) = use_cursor_blink(
-            is_active && self.is_focused,
-            Color::from(c.compose_edit_text),
-        );
-
-        let on_mouse_down = move |e: Event<MouseEventData>| {
-            editable.process_event(EditableEvent::Down {
-                location: e.element_location,
-                editor_line: EditorLine::Paragraph(line_index),
-                holder: &holder.read(),
-            });
-        };
-
-        let on_mouse_move = move |e: Event<MouseEventData>| {
-            editable.process_event(EditableEvent::Move {
-                location: e.element_location,
-                editor_line: EditorLine::Paragraph(line_index),
-                holder: &holder.read(),
-            });
-        };
-
-        paragraph()
-            .holder(holder.read().clone())
-            .on_mouse_down(on_mouse_down)
-            .on_mouse_move(on_mouse_move)
-            .cursor_index(cursor_index)
-            .cursor_color(cursor_color)
-            .highlights(highlights.map(|h| vec![h]))
-            .width(Size::fill())
-            .font_size(14.)
-            .color(c.compose_edit_text)
-            .max_lines(1)
-            .span(text)
-    }
-}
+use super::compose_line::ComposeLine;
 
 const LINE_H: f32 = 22.;
 const MAX_LINES: usize = 5;
@@ -165,6 +69,19 @@ impl Component for ComposeBar {
 
         let is_editing = edit_info.read().is_some();
         let is_replying = reply_info.read().is_some();
+        // Banner above the input: `None` inside while editing, else the reply
+        // preview (sender, body). Kept while it fades out.
+        let banner = use_fading(
+            if is_editing {
+                Some(None)
+            } else {
+                reply_info
+                    .read()
+                    .clone()
+                    .map(|(_, sender, body)| Some((sender, body)))
+            },
+            150,
+        );
 
         // `i` (keyboard navigation) focuses the composer.
         let compose_focus = *super::ui_ctx::use_room_ui_ctx().compose_focus.read();
@@ -197,6 +114,7 @@ impl Component for ComposeBar {
         let mut paste_pending: State<Option<Vec<u8>>> = use_state(|| None);
         let mut paste_sending: State<bool> = use_state(|| false);
 
+        #[cfg(not(target_os = "android"))]
         let room_id_attach = room_id.clone();
         let room_id_send = room_id.clone();
         let draft_gen_send = draft_gen.clone();
@@ -248,24 +166,18 @@ impl Component for ComposeBar {
             if let Some(png_bytes) = paste {
                 *paste_pending.write() = None;
                 *paste_sending.write() = true;
-                let (done_tx, done_rx) = futures::channel::oneshot::channel::<()>();
                 let room_id = room_id_send.clone();
-                tokio::task::spawn(async move {
-                    use matrix_sdk::attachment::AttachmentConfig;
-                    if let Some(room) = crate::utils::matrix::get_room(&room_id) {
-                        let _ = room
-                            .send_attachment(
-                                "paste.png",
-                                &mime::IMAGE_PNG,
-                                png_bytes,
-                                AttachmentConfig::default(),
-                            )
-                            .await;
-                    }
-                    let _ = done_tx.send(());
+                let done = crate::utils::on_tokio(async move {
+                    crate::utils::media::send_attachment(
+                        &room_id,
+                        "paste.png",
+                        &mime::IMAGE_PNG,
+                        png_bytes,
+                    )
+                    .await;
                 });
                 spawn(async move {
-                    let _ = done_rx.await;
+                    done.await;
                     *paste_sending.write() = false;
                 });
             }
@@ -318,7 +230,7 @@ impl Component for ComposeBar {
                 // On Ctrl+V, check clipboard for an image and stage it for sending.
                 #[cfg(not(target_os = "android"))]
                 if e.key == Key::Character("v".into()) && e.modifiers.ctrl() {
-                    if let Some(png) = read_clipboard_image() {
+                    if let Some(png) = crate::utils::clipboard::read_image() {
                         *paste_pending.write() = Some(png);
                     }
                 }
@@ -345,41 +257,17 @@ impl Component for ComposeBar {
             #[cfg(not(target_os = "android"))]
             {
                 let room_id = room_id_attach.clone();
-                tokio::task::spawn(async move {
-                    use matrix_sdk::attachment::AttachmentConfig;
-
-                    let Some(path) = rfd::AsyncFileDialog::new()
-                        .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"])
-                        .pick_file()
-                        .await
-                    else {
-                        return;
-                    };
-
-                    let filename = path.file_name();
-                    let bytes = path.read().await;
-                    let mime: mime::Mime = match std::path::Path::new(&filename)
-                        .extension()
-                        .and_then(|e| e.to_str())
-                        .map(|e| e.to_lowercase())
-                        .as_deref()
-                    {
-                        Some("jpg") | Some("jpeg") => mime::IMAGE_JPEG,
-                        Some("png") => mime::IMAGE_PNG,
-                        Some("gif") => mime::IMAGE_GIF,
-                        Some("webp") => "image/webp"
-                            .parse()
-                            .unwrap_or(mime::APPLICATION_OCTET_STREAM),
-                        _ => mime::APPLICATION_OCTET_STREAM,
-                    };
-
-                    let Some(room) = crate::utils::matrix::get_room(&room_id) else {
-                        return;
-                    };
-
-                    let _ = room
-                        .send_attachment(&filename, &mime, bytes, AttachmentConfig::default())
+                tokio::spawn(async move {
+                    use crate::utils::media;
+                    if let Some(image) = media::pick_image("Send an image").await {
+                        media::send_attachment(
+                            &room_id,
+                            &image.file_name,
+                            &image.mime,
+                            image.bytes,
+                        )
                         .await;
+                    }
                 });
             }
         };
@@ -394,24 +282,13 @@ impl Component for ComposeBar {
         let bar = bar.padding(Gaps::new(0., 0., 34., 0.));
         bar
             // ── Context banner: editing or replying ───────────────────────
-            .child(if is_editing || is_replying {
-                let (icon, label_text, label_color, preview) = if is_editing {
-                    (
-                        freya_icons::lucide::pencil(),
-                        "Editing message",
-                        c.primary,
-                        None,
-                    )
-                } else {
-                    let (_, sender, body) = reply_info.read().clone().unwrap();
-                    (
-                        freya_icons::lucide::reply(),
-                        "Replying to",
-                        c.primary,
-                        Some((sender, body)),
-                    )
+            .child(if let Some((preview, opacity)) = banner {
+                let (icon, label_text, label_color) = match preview {
+                    None => (freya_icons::lucide::pencil(), "Editing message", c.primary),
+                    Some(_) => (freya_icons::lucide::reply(), "Replying to", c.primary),
                 };
                 rect()
+                    .opacity(opacity)
                     .horizontal()
                     .width(Size::fill())
                     .content(Content::Flex)
@@ -477,23 +354,9 @@ impl Component for ComposeBar {
                             .into_element()
                     })
                     .child(
-                        TooltipContainer::new(Tooltip::new_text("Cancel (Esc)"))
-                            .position(AttachedPosition::Top)
-                            .child(
-                                rect()
-                                    .center()
-                                    .width(Size::px(32.))
-                                    .height(Size::px(32.))
-                                    .corner_radius(16.)
-                                    .on_press(on_cancel)
-                                    .child(
-                                        SvgViewer::new(freya_icons::lucide::x())
-                                            .color(c.on_surface_variant)
-                                            .width(Size::px(18.))
-                                            .height(Size::px(18.)),
-                                    )
-                                    .hoverable(Size::px(32.), Size::px(32.), 16.),
-                            ),
+                        IconButton::new(freya_icons::lucide::x(), c.on_surface_variant, on_cancel)
+                            .tooltip("Cancel (Esc)")
+                            .size(32., 18.),
                     )
                     .into_element()
             } else {
@@ -551,21 +414,15 @@ impl Component for ComposeBar {
                                 .width(Size::fill_minimum()),
                         )
                         .child(
-                            rect()
-                                .center()
-                                .width(Size::px(20.))
-                                .height(Size::px(20.))
-                                .corner_radius(10.)
-                                .on_press(move |_| {
+                            IconButton::new(
+                                freya_icons::lucide::x(),
+                                c.on_surface_muted,
+                                move |_| {
                                     *paste_pending.write() = None;
-                                })
-                                .child(
-                                    SvgViewer::new(freya_icons::lucide::x())
-                                        .color(c.on_surface_muted)
-                                        .width(Size::px(14.))
-                                        .height(Size::px(14.)),
-                                )
-                                .hoverable(Size::px(20.), Size::px(20.), 10.),
+                                },
+                            )
+                            .size(20., 14.)
+                            .into_element(),
                         )
                         .into_element()
                 } else {

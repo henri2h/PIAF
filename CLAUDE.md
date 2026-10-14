@@ -43,7 +43,7 @@ The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo
 
 Navigation uses `RouterContext::get().push(Route::...)`. In wide mode, the right panel is driven by `ACTIVE_ROOM_TX`/`ACTIVE_ROOM_RX` (watch channel) rather than router navigation.
 
-**Always navigate rooms via the shared helper** `navigate_to_room(room_id)` (and `navigate_to_room_at_event`) in `src/app/navigation.rs` — it handles both wide-mode (`ACTIVE_ROOM_TX`) and narrow-mode (router push) correctly.
+**Always navigate rooms via the shared helper** `navigate_to_room(room_id)` (and `navigate_to_room_at_event`) in `src/app/navigation.rs` — it handles both wide-mode (`ACTIVE_ROOM_TX`) and narrow-mode (router push) correctly. Open a DM with `open_dm(UserInfo)` (existing room, else the pending-DM page; never create rooms on a tap). Back buttons use `go_back_or_home`, never a push of the parent route (that grows the history).
 
 ### Global Singletons (`src/app/state.rs`, re-exported at crate root)
 
@@ -73,7 +73,7 @@ All OnceLocks are initialized by `app::state::init()` before `launch()` (desktop
 
 All Matrix SDK calls happen off the UI thread:
 
-- **`MatrixClientWorker`** (`worker/client.rs`): handles login, avatar/name fetches, room preview fetches. Send tasks via `REQUESTER.get().expect(...).method(...)`.
+- **`MatrixClientWorker`** (`worker/client.rs`): handles login and room preview fetches. Send tasks via `REQUESTER.get().expect(...).method(...)`.
 - **Sync** (`utils/sync.rs`): matrix-sdk-ui `SyncService` (sliding sync: room list with account data/receipts/typing, plus encryption sync), built and started by `activate_client`. There is no classic `/sync` loop. A room-updates watcher calls `room_list::refresh`, which fires `SYNC_TX` when the room list changed; a state watcher maps `Offline`/`Error` to `DISCONNECTED` and restarts after errors (not after session expiry). The room list service for `subscribe_to_rooms` is `sync::room_list_service()`.
 - Event handlers (`add_event_handler`) fire for sliding-sync responses too, but the room list uses `timeline_limit` 1: only the latest event per room per update reaches them.
 - Requires a homeserver with Simplified Sliding Sync (MSC4186).
@@ -110,8 +110,12 @@ Row gestures are in `home/row_interaction/{desktop,android}.rs`, same API on bot
 ### Shared helpers
 
 - `utils/matrix.rs`: `get_room(&str)`, `my_user_id()`, `latest_event_ts(&Room)` — use instead of `RoomId::parse` + `CLIENT.get_room`.
-- `utils/room_preview.rs`: `message_body(&MessageType)` (one label per msgtype, used by room list, notifications, reactions, search), `event_preview`, `last_message`, `preview_text`.
-- `utils/room_mailbox.rs`: `is_room_archived(&Room, &mailbox)`.
+- `utils/room_preview.rs`: `message_body(&MessageType)` (one label per msgtype, used by room list, notifications, reactions, search), `reply_preview`, `sender_name(&EventTimelineItem)`, `event_preview`, `last_message`, `preview_text`.
+- `utils/timeline_media.rs`: images / files / links in timeline items (`entries`, `MediaEntry`, `MediaKind`, `caption`).
+- `utils/media.rs`: `download(&MediaSource)`, `save_to_downloads`, `send_attachment`, `pick_image` (desktop), `image_mime`, `format_file_size`, `format_media_duration`.
+- `utils/users.rs`: `UserInfo`, `search` (user directory), `dm_contacts`. `utils/members.rs`: `MemberItem`, `joined(&Room)`, `ADMIN_LEVEL`.
+- `utils::id_color(id)`: the one color for a user/room ID (avatars, sender names).
+- `utils/room_mailbox.rs`: `is_archived_hidden(latest_ts, archived_until_ts)`.
 
 Search state in `HomePage` uses an `Arc<AtomicU64>` version counter to invalidate stale in-flight requests. Version is incremented on each new query; async tasks compare against the version before writing results.
 
@@ -132,6 +136,18 @@ impl Component for MyComponent {
 ```
 
 Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use_side_effect_with_deps`, and ours in `utils/mod.rs`: `use_watch(rx) -> State<T>` (mirrors a tokio watch channel), `use_watch_tick(rx) -> State<u64>` (change counter, for memo keys), `bridge_watch(rx, on_change)` (callback form). Never await `watch::Receiver::changed()` from a Freya `spawn` (tokio coop budget makes it spin at 100% CPU); these helpers await it on tokio and stop when the component unmounts.
+
+#### Shared building blocks (`src/ui/components/`) — reuse, don't re-implement
+
+- `Hoverable` / `.hoverable(w, h, radius)`: hover tint for anything pressable (fades in/out). No hand-rolled `hovered` states for highlights.
+- `IconButton`: round icon button (hover, ripple, optional `.tooltip()`, press doesn't reach the parent).
+- `Chip`: pill toggle for filters, tabs and option pickers (selection colours animate).
+- `PersonRow`: a person in a list (avatar, name, badge, subtitle, trailing, press). `badge("Admin", c)`.
+- `BottomSheet` / `confirm_sheet(title, message, confirm, on_cancel, on_confirm)`: sheets and destructive confirmations.
+- `empty_state(icon, title, hint, c)` / `loading_state(caption, c)`: placeholders filling a list's area.
+- `search_input(state, placeholder, c)`: the search field (chain `auto_focus`, `on_submit`).
+- `use_fade(visible, ms) -> f32` and `use_fading(Option<T>, ms) -> Option<(T, opacity)>` (keeps the last value while fading out): for things that appear and disappear. Both start at their end value, so nothing animates on mount (virtual lists remount rows while scrolling).
+- `Avatar` + `AvatarSource` (see Avatars).
 
 #### Hooks rules (Freya)
 
@@ -161,7 +177,9 @@ if let Some(x) = val { *my_state.write() = None; }
 
 **Never replace `VirtualScrollView` with `ScrollView`** for the room list or message list — these lists are too large. `VirtualScrollView` memoizes on `length` + `item_size`; force a re-render when content changes without a count change by keying on a stamp derived from the top item's recency (e.g. `first_room.recency_stamp() + rooms_len`).
 
-### Async bridging: always use `futures::channel::oneshot`, never `tokio::sync::oneshot`
+### Async bridging: `utils::on_tokio`, never `tokio::sync::oneshot`
+
+Run tokio work from the UI with `let result = on_tokio(async move { ... }).await;` (returns `Option<T>`, `None` if the task panicked). It spawns right away and bridges through a `futures` oneshot. To wait inside a Freya task use Freya's `timer(duration)`, not `tokio::time::sleep`. The rule below is what `on_tokio` implements:
 
 Freya's `spawn` runs on the smol executor. Awaiting a `tokio::sync::oneshot::Receiver` inside a smol task blocks the entire smol thread, freezing the UI.
 
@@ -177,9 +195,13 @@ let result = rx.await; // safe in smol
 let (tx, rx) = tokio::sync::oneshot::channel::<T>();
 ```
 
+### Avatars (`src/utils/avatars.rs`, `ui/components/avatar.rs`)
+
+`Avatar { size, source: Option<AvatarSource>, name, color }` shows `source`'s image, else the initial of `name` (don't compute initials yourself; color: `id_color`). **Always pick the source by what is shown, never build string keys:** `Room(room_id)` (DM → other user, own avatar, hero), `Member { room_id, user_id }` (room avatar → global profile; use `AvatarSource::member(..)` for anyone seen in a room: senders, receipts, member lists), `User(user_id)`, `Mxc(uri)` (raw `mxc://` URI already in hand, e.g. search results), `Me`, `Bytes(..)`. Each source has one cache entry app-wide and one fetch path (`avatars::fetch`, server thumbnails). Failures log under `piaf::avatar` (debug).
+
 ### Data Fetching (`src/utils/queries.rs`)
 
-Avatar and display-name lookups use `freya-query` for caching. Implement `QueryCapability` with `stale_time`, then call `use_query(Query::new(key, MyCapability).stale_time(...))` in a component.
+Display-name and media lookups use `freya-query` for caching. Implement `QueryCapability` with `stale_time`, then call `use_query(Query::new(key, MyCapability).stale_time(...))` in a component.
 
 ### Design System (`src/utils/const_values.rs`)
 

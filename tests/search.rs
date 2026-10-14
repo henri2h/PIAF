@@ -6,9 +6,8 @@
 /// Run with: `cargo test --test search`
 use matrix_sdk::config::SyncSettings;
 use matrix_sdk::test_utils::logged_in_client_with_server;
-use piaf::ui::pages::home::search::{
-    search_messages_remote, search_rooms_local, search_users_remote,
-};
+use piaf::ui::pages::home::search::{search_messages_remote, search_rooms_local};
+use piaf::utils::users;
 use serde_json::json;
 use wiremock::{
     Mock, ResponseTemplate,
@@ -16,11 +15,11 @@ use wiremock::{
 };
 
 // ---------------------------------------------------------------------------
-// search_users_remote
+// users::search
 // ---------------------------------------------------------------------------
 
 #[tokio::test]
-async fn search_users_remote_parses_results() {
+async fn users_search_parses_results() {
     let (client, server) = logged_in_client_with_server().await;
 
     Mock::given(method("POST"))
@@ -43,21 +42,23 @@ async fn search_users_remote_parses_results() {
         .mount(&server)
         .await;
 
-    let results = search_users_remote(client, "ali".to_owned()).await;
+    let results = users::search(&client, "ali", 10).await;
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].user_id, "@alice:example.org");
     assert_eq!(results[0].display_name, "Alice Smith");
-    assert!(results[0].avatar_mxc.is_none());
+    assert!(results[0].avatar.is_none());
     assert_eq!(results[1].user_id, "@bob:example.org");
     assert_eq!(
-        results[1].avatar_mxc.as_deref(),
-        Some("mxc://example.org/abc123")
+        results[1].avatar,
+        Some(piaf::utils::avatars::AvatarSource::Mxc(
+            "mxc://example.org/abc123".to_string()
+        ))
     );
 }
 
 #[tokio::test]
-async fn search_users_remote_falls_back_to_localpart_when_no_display_name() {
+async fn users_search_falls_back_to_localpart_when_no_display_name() {
     let (client, server) = logged_in_client_with_server().await;
 
     Mock::given(method("POST"))
@@ -71,14 +72,14 @@ async fn search_users_remote_falls_back_to_localpart_when_no_display_name() {
         .mount(&server)
         .await;
 
-    let results = search_users_remote(client, "carol".to_owned()).await;
+    let results = users::search(&client, "carol", 10).await;
 
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].display_name, "carol"); // localpart fallback
 }
 
 #[tokio::test]
-async fn search_users_remote_returns_empty_on_server_error() {
+async fn users_search_returns_empty_on_server_error() {
     let (client, server) = logged_in_client_with_server().await;
 
     Mock::given(method("POST"))
@@ -87,7 +88,7 @@ async fn search_users_remote_returns_empty_on_server_error() {
         .mount(&server)
         .await;
 
-    let results = search_users_remote(client, "query".to_owned()).await;
+    let results = users::search(&client, "query", 10).await;
     assert!(results.is_empty());
 }
 

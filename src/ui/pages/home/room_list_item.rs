@@ -1,7 +1,10 @@
 use std::rc::Rc;
 use std::time::Duration;
 
+use crate::utils::id_color;
 use freya::prelude::*;
+
+use crate::utils::avatars::AvatarSource;
 use freya_query::prelude::*;
 use matrix_sdk::RoomHero;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
@@ -11,7 +14,7 @@ use super::row_interaction::{OnMenu, use_row_interaction};
 use crate::app::keys::{Area, use_key_nav};
 use crate::app::navigation::navigate_to_room;
 use crate::logging::RenderTimer;
-use crate::ui::components::{Avatar, StackedAvatar, user_color};
+use crate::ui::components::{Avatar, StackedAvatar};
 use crate::ui::pages::home::ActiveRoomCtx;
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::my_user_id;
@@ -171,39 +174,35 @@ impl Component for RoomListItem {
 fn room_avatar(s: &RoomSummary, c: AppColors, bg: (u8, u8, u8)) -> Element {
     let room_avatar = Avatar {
         size: 48.,
-        bytes: None,
-        fetch_key: Some(s.room_id.clone()),
-        initial: initial_of(&s.name),
+        source: Some(AvatarSource::Room(s.room_id.clone())),
+        name: s.name.clone(),
         color: c.primary,
-        image_key: s.room_id.clone(),
     };
     if s.is_dm || s.room.avatar_url().is_some() {
         return room_avatar.into();
     }
     let heroes = s.room.heroes();
-    let with_avatar: Vec<(&RoomHero, String)> = heroes
+    let with_avatar: Vec<(&RoomHero, AvatarSource)> = heroes
         .iter()
-        .filter_map(|h| Some((h, format!("mxc:{}", h.avatar_url.as_ref()?))))
+        .filter_map(|h| Some((h, AvatarSource::Mxc(h.avatar_url.as_ref()?.to_string()))))
         .collect();
     match &with_avatar[..] {
-        [(h1, key1), (h2, key2), ..] => StackedAvatar {
+        [(h1, source1), (h2, source2), ..] => StackedAvatar {
             size: 48.,
-            initial1: hero_initial(h1),
-            color1: user_color(h1.user_id.as_str()),
-            fetch_key1: Some(key1.clone()),
-            initial2: hero_initial(h2),
-            color2: user_color(h2.user_id.as_str()),
-            fetch_key2: Some(key2.clone()),
+            name1: hero_name(h1),
+            color1: id_color(h1.user_id.as_str()),
+            source1: Some(source1.clone()),
+            name2: hero_name(h2),
+            color2: id_color(h2.user_id.as_str()),
+            source2: Some(source2.clone()),
             border_color: bg,
         }
         .into(),
-        [(h, key)] => Avatar {
+        [(h, source)] => Avatar {
             size: 48.,
-            bytes: None,
-            fetch_key: Some(key.clone()),
-            initial: hero_initial(h),
-            color: user_color(h.user_id.as_str()),
-            image_key: key.clone(),
+            source: Some(source.clone()),
+            name: hero_name(h),
+            color: id_color(h.user_id.as_str()),
         }
         .into(),
         [] => room_avatar.into(),
@@ -332,18 +331,8 @@ fn unread_badge(s: &RoomSummary, c: AppColors) -> Element {
     }
 }
 
-fn initial_of(name: &str) -> String {
-    name.chars()
-        .next()
-        .map(|c| c.to_uppercase().to_string())
-        .unwrap_or_else(|| "?".to_string())
-}
-
-fn hero_initial(hero: &RoomHero) -> String {
+fn hero_name(hero: &RoomHero) -> String {
     hero.display_name
-        .as_deref()
-        .and_then(|n| n.chars().next())
-        .or_else(|| hero.user_id.localpart().chars().next())
-        .map(|c| c.to_uppercase().to_string())
-        .unwrap_or_else(|| "?".to_string())
+        .clone()
+        .unwrap_or_else(|| hero.user_id.localpart().to_string())
 }

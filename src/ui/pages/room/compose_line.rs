@@ -1,0 +1,80 @@
+use freya::prelude::*;
+use freya::text_edit::*;
+use freya_components::cursor_blink::use_cursor_blink;
+
+use crate::utils::const_values::AppColors;
+
+/// One line of the composer: text, selection and blinking cursor.
+#[derive(PartialEq)]
+pub(super) struct ComposeLine {
+    pub line_index: usize,
+    pub editable: UseEditable,
+    pub c: AppColors,
+    pub is_focused: bool,
+}
+
+impl Component for ComposeLine {
+    fn render_key(&self) -> DiffKey {
+        (&self.line_index).into()
+    }
+
+    fn render(&self) -> impl IntoElement {
+        let line_index = self.line_index;
+        let mut editable = self.editable;
+        let c = self.c;
+        let holder = use_state(ParagraphHolder::default);
+
+        let (text, is_active, cursor_index, highlights) = {
+            let editor = editable.editor().read();
+            let text = editor
+                .line(line_index)
+                .map(|l| l.text.to_string())
+                .unwrap_or_default();
+            let is_active = editor.cursor_row() == line_index;
+            // Only draw the cursor when this line is active AND the bar has focus.
+            // This prevents the cursor from appearing under the placeholder text.
+            let cursor_index = if is_active && self.is_focused {
+                Some(editor.cursor_col())
+            } else {
+                None
+            };
+            let highlights = editor.get_visible_selection(EditorLine::Paragraph(line_index));
+            (text, is_active, cursor_index, highlights)
+        };
+
+        // Blink when this line is active and the composer has keyboard focus.
+        let (_, cursor_color) = use_cursor_blink(
+            is_active && self.is_focused,
+            Color::from(c.compose_edit_text),
+        );
+
+        let on_mouse_down = move |e: Event<MouseEventData>| {
+            editable.process_event(EditableEvent::Down {
+                location: e.element_location,
+                editor_line: EditorLine::Paragraph(line_index),
+                holder: &holder.read(),
+            });
+        };
+
+        let on_mouse_move = move |e: Event<MouseEventData>| {
+            editable.process_event(EditableEvent::Move {
+                location: e.element_location,
+                editor_line: EditorLine::Paragraph(line_index),
+                holder: &holder.read(),
+            });
+        };
+
+        paragraph()
+            .holder(holder.read().clone())
+            .on_mouse_down(on_mouse_down)
+            .on_mouse_move(on_mouse_move)
+            .cursor_index(cursor_index)
+            .cursor_color(cursor_color)
+            .highlights(highlights.map(|h| vec![h]))
+            .width(Size::fill())
+            .font_size(14.)
+            .color(c.compose_edit_text)
+            .max_lines(1)
+            .span(text)
+    }
+}

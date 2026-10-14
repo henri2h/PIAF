@@ -9,6 +9,7 @@ use crate::ROOM_MAILBOX_RX;
 use crate::app::keys::{Area, KeyCommand, KeyNav, use_key_commands};
 use crate::app::navigation::navigate_to_room;
 use crate::logging::RenderTimer;
+use crate::ui::components::{empty_state, loading_state};
 use crate::utils::const_values::AppColors;
 use crate::utils::room_actions::{RoomAction, run};
 use crate::utils::room_list;
@@ -52,10 +53,10 @@ impl Component for RoomList {
         let initial_loading = snapshot.version == 0;
 
         if initial_loading && rooms_len == 0 {
-            return loading_state(c);
+            return loading_state(Some("Loading conversations…"), c).into_element();
         }
         if rooms_len == 0 {
-            return empty_state(c, self.mailbox, &self.filter);
+            return no_rooms(c, self.mailbox, &self.filter);
         }
 
         // The builder closure captures `filtered_rooms`, which either input can change.
@@ -149,8 +150,12 @@ fn list_command(
     let id = room.room_id.clone();
     match command {
         KeyCommand::Open => {
-            let mut focus_composer = nav.focus_composer;
-            focus_composer.set(true);
+            // Invites have no composer: the request would linger and steal
+            // focus on a later open.
+            if !room.is_invite {
+                let mut focus_composer = nav.focus_composer;
+                focus_composer.set(true);
+            }
             navigate_to_room(id);
         }
         KeyCommand::ToggleFavourite => run(id, RoomAction::Favourite(!room.is_favourite)),
@@ -176,23 +181,7 @@ fn scroll_into_view(scroll: &mut ScrollController, index: usize, viewport_height
     }
 }
 
-fn loading_state(c: AppColors) -> Element {
-    rect()
-        .expanded()
-        .center()
-        .vertical()
-        .spacing(16.)
-        .child(CircularLoader::new().size(40.))
-        .child(
-            label()
-                .text("Loading conversations…")
-                .font_size(14.)
-                .color(c.on_surface_muted),
-        )
-        .into()
-}
-
-fn empty_state(c: AppColors, mailbox: Mailbox, filter: &RoomFilter) -> Element {
+fn no_rooms(c: AppColors, mailbox: Mailbox, filter: &RoomFilter) -> Element {
     let (title, subtitle) = match (mailbox, filter) {
         (Mailbox::Recontact, RoomFilter::All) => {
             ("Nothing to recontact", "Mark a room to recontact it later")
@@ -204,23 +193,11 @@ fn empty_state(c: AppColors, mailbox: Mailbox, filter: &RoomFilter) -> Element {
         (Mailbox::Inbox, _) => (filter.empty_title(), filter.empty_subtitle()),
         _ => ("No matching rooms", "Try another filter"),
     };
-    rect()
-        .expanded()
-        .center()
-        .vertical()
-        .spacing(12.)
-        .child(
-            SvgViewer::new(freya_icons::lucide::message_circle())
-                .width(Size::px(48.))
-                .height(Size::px(48.))
-                .color(c.outline_variant_light),
-        )
-        .child(label().text(title).font_size(16.).color(c.on_surface_muted))
-        .child(
-            label()
-                .text(subtitle)
-                .font_size(13.)
-                .color(c.outline_variant_light),
-        )
-        .into()
+    empty_state(
+        freya_icons::lucide::message_circle(),
+        title,
+        Some(subtitle),
+        c,
+    )
+    .into()
 }

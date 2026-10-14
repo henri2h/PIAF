@@ -8,6 +8,22 @@ use matrix_sdk::ruma::events::{
 use matrix_sdk::ruma::exports::serde_json;
 use matrix_sdk::ruma::serde::Raw;
 
+/// Display name of a timeline event's sender, else their user ID.
+pub fn sender_name(event: &matrix_sdk_ui::timeline::EventTimelineItem) -> String {
+    match event.sender_profile() {
+        matrix_sdk_ui::timeline::TimelineDetails::Ready(profile) => profile
+            .display_name
+            .clone()
+            .unwrap_or_else(|| event.sender().to_string()),
+        _ => event.sender().to_string(),
+    }
+}
+
+/// Text quoted when replying to a message.
+pub fn reply_preview(msgtype: &MessageType) -> String {
+    message_body(msgtype).unwrap_or_else(|| "[Message]".to_string())
+}
+
 /// Preview text for a message, or `None` for types we don't render.
 pub fn message_body(msgtype: &MessageType) -> Option<String> {
     Some(match msgtype {

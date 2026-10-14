@@ -2,13 +2,10 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
-use crate::ui::components::HoverableExt;
-use freya_material_design::prelude::Ripple;
-use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
 use crate::BOOKMARKS_RX;
-use crate::ui::components::{TopAppBar, TopAppBarAction, TopAppBarTitle};
+use crate::ui::components::{HoverableExt, IconButton, TopAppBar, TopAppBarAction, TopAppBarTitle};
 use crate::utils::bookmarks::{
     BookmarkEntry, BookmarkList, delete_list, mutate_bookmarks, remove_entry, rename_list,
 };
@@ -46,9 +43,7 @@ impl Component for BookmarksPage {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Bookmarks".to_string()),
-                on_back: Some(Arc::new(|| {
-                    RouterContext::get().go_back();
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![TopAppBarAction::IconButton {
                     icon: freya_icons::lucide::settings(),
                     on_press: Arc::new(move || *manage_open.write_unchecked() = true),
@@ -68,7 +63,14 @@ impl Component for BookmarksPage {
                     }
                     scroll.into_element()
                 }
-                _ => empty_state(c).into_element(),
+                _ => crate::ui::components::empty_state(
+                    freya_icons::lucide::bookmark(),
+                    "No bookmarks yet",
+                    Some("Bookmark a message to start a list"),
+                    c,
+                )
+                .into_element()
+                .into_element(),
             })
             .child(ManageListsOverlay {
                 open: manage_open,
@@ -126,33 +128,6 @@ fn tabs_row(
         );
     }
     row.into()
-}
-
-fn empty_state(c: AppColors) -> Element {
-    rect()
-        .expanded()
-        .center()
-        .vertical()
-        .spacing(12.)
-        .child(
-            SvgViewer::new(freya_icons::lucide::bookmark())
-                .width(Size::px(48.))
-                .height(Size::px(48.))
-                .color(c.outline_variant_light),
-        )
-        .child(
-            label()
-                .text("No bookmarks yet")
-                .font_size(16.)
-                .color(c.on_surface_muted),
-        )
-        .child(
-            label()
-                .text("Bookmark a message to start a list")
-                .font_size(13.)
-                .color(c.on_surface_faint),
-        )
-        .into()
 }
 
 #[derive(PartialEq, Clone)]
@@ -239,39 +214,25 @@ impl Component for BookmarkItem {
                             ),
                     )
                     .child(
-                        rect()
-                            .width(Size::px(28.))
-                            .height(Size::px(28.))
-                            .corner_radius(14.)
-                            .overflow(Overflow::Clip)
-                            .on_press({
+                        IconButton::new(freya_icons::lucide::trash_2(), c.on_surface_muted, {
+                            let list_id = list_id.clone();
+                            let room_id = entry.room_id.clone();
+                            let event_id = entry.event_id.clone();
+                            move |_| {
                                 let list_id = list_id.clone();
-                                let room_id = entry.room_id.clone();
-                                let event_id = entry.event_id.clone();
-                                move |e: Event<PressEventData>| {
-                                    e.stop_propagation();
-                                    let list_id = list_id.clone();
-                                    let room_id = room_id.clone();
-                                    let event_id = event_id.clone();
-                                    tokio::spawn(async move {
-                                        mutate_bookmarks(|content| {
-                                            remove_entry(content, &list_id, &room_id, &event_id)
-                                        })
-                                        .await;
-                                    });
-                                }
-                            })
-                            .child(
-                                Ripple::new().color(c.error).width(Size::fill()).child(
-                                    rect().center().expanded().child(
-                                        SvgViewer::new(freya_icons::lucide::trash_2())
-                                            .width(Size::px(16.))
-                                            .height(Size::px(16.))
-                                            .color(c.on_surface_muted),
-                                    ),
-                                ),
-                            )
-                            .hoverable(Size::px(28.), Size::px(28.), 14.),
+                                let room_id = room_id.clone();
+                                let event_id = event_id.clone();
+                                tokio::spawn(async move {
+                                    mutate_bookmarks(|content| {
+                                        remove_entry(content, &list_id, &room_id, &event_id)
+                                    })
+                                    .await;
+                                });
+                            }
+                        })
+                        .tooltip("Remove")
+                        .size(28., 16.)
+                        .into_element(),
                     )
                     .hoverable(Size::fill(), Size::auto(), 12.),
             )
@@ -386,28 +347,14 @@ impl Component for ManageListRow {
                     }),
             )
             .child(
-                rect()
-                    .width(Size::px(28.))
-                    .height(Size::px(28.))
-                    .corner_radius(14.)
-                    .overflow(Overflow::Clip)
-                    .on_press(move |_| {
-                        let list_id = list_id_delete.clone();
-                        tokio::spawn(async move {
-                            mutate_bookmarks(|content| delete_list(content, &list_id)).await;
-                        });
-                    })
-                    .child(
-                        Ripple::new().color(c.error).width(Size::fill()).child(
-                            rect().center().expanded().child(
-                                SvgViewer::new(freya_icons::lucide::trash_2())
-                                    .width(Size::px(16.))
-                                    .height(Size::px(16.))
-                                    .color(c.error),
-                            ),
-                        ),
-                    )
-                    .hoverable(Size::px(28.), Size::px(28.), 14.),
+                IconButton::new(freya_icons::lucide::trash_2(), c.error, move |_| {
+                    let list_id = list_id_delete.clone();
+                    tokio::spawn(async move {
+                        mutate_bookmarks(|content| delete_list(content, &list_id)).await;
+                    });
+                })
+                .tooltip("Delete list")
+                .size(28., 16.),
             )
     }
 }

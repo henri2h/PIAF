@@ -6,12 +6,12 @@ use freya_router::prelude::{Outlet, RouterContext, use_route};
 use super::Layout;
 use crate::app::Route;
 use crate::app::theme::effective_theme;
-use crate::utils::{matrix::load_theme_is_dark, use_app_colors};
+use crate::utils::use_app_colors;
 
 /// Android: single panel with bottom navigation bar; double back press to exit.
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
-        use_init_theme(|| effective_theme(load_theme_is_dark()));
+        use_init_theme(|| effective_theme(crate::app::theme::load_is_dark()));
         let c = use_app_colors();
         let mut back_pressed: State<bool> = use_state(|| false);
 
@@ -37,10 +37,9 @@ impl Component for Layout {
                     std::process::exit(0);
                 } else {
                     *back_pressed.write() = true;
-                    let (tx, rx) = futures::channel::oneshot::channel::<()>();
-                    tokio::task::spawn(async move {
+                    let rx = crate::utils::on_tokio::<(), _>(async move {
                         tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                        let _ = tx.send(());
+                        ()
                     });
                     spawn(async move {
                         let _ = rx.await;

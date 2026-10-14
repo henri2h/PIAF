@@ -1,21 +1,23 @@
 use freya::prelude::*;
 use freya_material_design::prelude::Ripple;
 
+use crate::ui::components::{IconButton, use_fade};
+
 use crate::utils::const_values::AppColors;
 
 /// Desktop row: hover highlight, ripple, and recontact/archive buttons on hover.
 #[derive(Clone, Copy)]
 pub struct RowInteraction {
     hovered: State<bool>,
-    recontact_hovered: State<bool>,
-    archive_hovered: State<bool>,
+    /// Opacity of the hover buttons, fading with `hovered`.
+    actions_opacity: f32,
 }
 
 pub fn use_row_interaction() -> RowInteraction {
+    let hovered = use_state(|| false);
     RowInteraction {
-        hovered: use_state(|| false),
-        recontact_hovered: use_state(|| false),
-        archive_hovered: use_state(|| false),
+        hovered,
+        actions_opacity: use_fade(*hovered.read(), 120),
     }
 }
 
@@ -41,9 +43,9 @@ impl RowInteraction {
         on_menu: super::OnMenu,
     ) -> Rect {
         let mut hovered = self.hovered;
-        let hover_actions = hovered.read().then(|| {
-            hover_action_buttons(c, &room_id, self.recontact_hovered, self.archive_hovered)
-        });
+        let opacity = self.actions_opacity;
+        let hover_actions =
+            (opacity > 0.).then(|| hover_action_buttons(c, &room_id).opacity(opacity));
         outer
             .on_secondary_down(move |_| on_menu(true))
             .on_pointer_over(move |_| {
@@ -61,12 +63,7 @@ impl RowInteraction {
     }
 }
 
-fn hover_action_buttons(
-    c: AppColors,
-    room_id: &str,
-    recontact_hovered: State<bool>,
-    archive_hovered: State<bool>,
-) -> Element {
+fn hover_action_buttons(c: AppColors, room_id: &str) -> Rect {
     let room_id_recontact = room_id.to_string();
     let room_id_archive = room_id.to_string();
 
@@ -80,7 +77,6 @@ fn hover_action_buttons(
             c,
             "Recontact",
             freya_icons::lucide::user_check(),
-            recontact_hovered,
             move || {
                 let room_id = room_id_recontact.clone();
                 tokio::spawn(async move {
@@ -92,7 +88,6 @@ fn hover_action_buttons(
             c,
             "Archive",
             freya_icons::lucide::archive(),
-            archive_hovered,
             move || {
                 let room_id = room_id_archive.clone();
                 tokio::spawn(async move {
@@ -100,45 +95,16 @@ fn hover_action_buttons(
                 });
             },
         ))
-        .into_element()
 }
 
 fn action_button(
     c: AppColors,
-    tooltip_label: &'static str,
+    tooltip: &'static str,
     icon: bytes::Bytes,
-    mut hovered: State<bool>,
     mut on_press: impl FnMut() + 'static,
 ) -> Element {
-    TooltipContainer::new(Tooltip::new_text(tooltip_label))
-        .position(AttachedPosition::Top)
-        .child(
-            rect()
-                .width(Size::px(32.))
-                .height(Size::px(32.))
-                .corner_radius(16.)
-                .overflow(Overflow::Clip)
-                .background(if *hovered.read() {
-                    c.outline_variant_light
-                } else {
-                    c.surface_container_high
-                })
-                .on_pointer_over(move |_| hovered.set(true))
-                .on_pointer_out(move |_| hovered.set(false))
-                .on_press(move |e: Event<PressEventData>| {
-                    e.stop_propagation();
-                    on_press();
-                })
-                .child(
-                    Ripple::new().color(c.primary).width(Size::fill()).child(
-                        rect().center().expanded().child(
-                            SvgViewer::new(icon)
-                                .width(Size::px(16.))
-                                .height(Size::px(16.))
-                                .color(c.on_surface_variant),
-                        ),
-                    ),
-                ),
-        )
+    IconButton::new(icon, c.on_surface_variant, move |_| on_press())
+        .tooltip(tooltip)
+        .background(c.surface_container_high)
         .into_element()
 }

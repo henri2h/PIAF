@@ -1,35 +1,4 @@
-#![allow(dead_code)]
-
 use freya::prelude::{Color, ColorsSheet};
-
-/// User-configurable theme preference (stored as u8: 0=System, 1=Light, 2=Dark).
-#[derive(Clone, Copy, PartialEq, Debug, Default)]
-pub enum ThemePref {
-    #[default]
-    System = 0,
-    Light = 1,
-    Dark = 2,
-}
-
-impl ThemePref {
-    pub fn from_u8(v: u8) -> Self {
-        match v {
-            1 => Self::Light,
-            2 => Self::Dark,
-            _ => Self::System,
-        }
-    }
-    pub fn to_u8(self) -> u8 {
-        self as u8
-    }
-    pub fn label(self) -> &'static str {
-        match self {
-            Self::System => "System",
-            Self::Light => "Light",
-            Self::Dark => "Dark",
-        }
-    }
-}
 
 // ── Platform insets ───────────────────────────────────────────────────────────
 

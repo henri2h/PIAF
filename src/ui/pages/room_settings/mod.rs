@@ -2,39 +2,25 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
+use crate::utils::avatars::AvatarSource;
+
 use crate::ui::components::HoverableExt;
 use freya_router::prelude::RouterContext;
-use matrix_sdk::RoomMemberships;
-use matrix_sdk::ruma::events::room::power_levels::UserPowerLevel;
 
+use crate::Route;
 use crate::ui::components::{Avatar, TopAppBar, TopAppBarTitle, UserPopupInfo, UserPopupOverlay};
-use crate::utils::{sender_color, use_app_colors};
-use crate::{Route, utils::matrix::CLIENT};
+use crate::utils::use_app_colors;
 
 mod notif_mode_selector;
 use crate::ui::components::M3ListItem;
+use crate::ui::components::confirm_sheet;
+use crate::ui::pages::room_members::member_row;
 use crate::utils::extract_urls;
-use notif_mode_selector::{notif_label, notif_popup_overlay};
+use crate::utils::members::{self, MemberItem};
+use matrix_sdk::notification_settings::RoomNotificationMode;
+use notif_mode_selector::{load_notif_mode, notif_label, notif_sheet};
 
 const MEMBER_PREVIEW_COUNT: usize = 5;
-const ADMIN_THRESHOLD: i64 = 50;
-
-fn power_to_i64(pl: UserPowerLevel) -> i64 {
-    match pl {
-        UserPowerLevel::Int(i) => i64::from(i),
-        _ => i64::MAX,
-    }
-}
-
-#[derive(Clone, PartialEq)]
-struct MemberItem {
-    user_id: String,
-    display_name: String,
-    initial: char,
-    color: (u8, u8, u8),
-    power_level: i64,
-    avatar_url: Option<String>,
-}
 
 #[derive(PartialEq)]
 pub struct RoomSettings {
@@ -46,63 +32,36 @@ impl Component for RoomSettings {
         let c = use_app_colors();
 
         let room_id = self.room_id.clone();
-        let room_id_nav = room_id.clone();
 
         let mut room_name: State<String> = use_state(String::new);
         let mut member_count: State<u64> = use_state(|| 0u64);
         let mut members: State<Vec<MemberItem>> = use_state(|| vec![]);
         let mut room_topic: State<Option<String>> = use_state(|| None);
         let mut room_version: State<Option<String>> = use_state(|| None);
-        let notif_mode: State<Option<u8>> = use_state(|| None);
+        let notif_mode: State<Option<RoomNotificationMode>> = use_state(|| None);
         let mut notif_open: State<bool> = use_state(|| false);
         let mut confirm_leave: State<bool> = use_state(|| false);
-        let mut user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
+        let user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
         let leaving: State<bool> = use_state(|| false);
         let mut copied: State<bool> = use_state(|| false);
 
         use_hook(|| {
-            let room_id_notif = room_id.clone();
+            let room_id = room_id.clone();
             let mut notif_mode = notif_mode;
             spawn(async move {
-                let Some(client) = CLIENT.get().cloned() else {
-                    return;
-                };
-                let (tx, rx) = futures::channel::oneshot::channel::<Option<u8>>();
-                tokio::task::spawn(async move {
-                    let Ok(parsed_id) = matrix_sdk::ruma::RoomId::parse(&room_id_notif) else {
-                        let _ = tx.send(None);
-                        return;
-                    };
-                    let ns = client.notification_settings().await;
-                    let mode = ns.get_user_defined_room_notification_mode(&parsed_id).await;
-                    use matrix_sdk::notification_settings::RoomNotificationMode;
-                    let v = mode.map(|m| match m {
-                        RoomNotificationMode::AllMessages => 0,
-                        RoomNotificationMode::MentionsAndKeywordsOnly => 1,
-                        RoomNotificationMode::Mute => 2,
-                    });
-                    let _ = tx.send(v);
-                });
-                if let Ok(mode) = rx.await {
-                    *notif_mode.write() = mode;
-                }
+                notif_mode.set(load_notif_mode(room_id).await);
             });
         });
 
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let (tx, rx) = futures::channel::oneshot::channel::<(
-                    String,
-                    u64,
-                    Vec<MemberItem>,
-                    Option<String>,
-                    Option<String>,
-                )>();
-                tokio::task::spawn(async move {
+                let rx = crate::utils::on_tokio::<
+                    (String, u64, Vec<MemberItem>, Option<String>, Option<String>),
+                    _,
+                >(async move {
                     let Some(room) = crate::utils::matrix::get_room(&room_id) else {
-                        let _ = tx.send((String::new(), 0, vec![], None, None));
-                        return;
+                        return (String::new(), 0, vec![], None, None);
                     };
                     let name = room
                         .display_name()
@@ -112,48 +71,11 @@ impl Component for RoomSettings {
                     let count = room.joined_members_count();
                     let topic = room.topic();
                     let version = room.version().map(|v| v.as_str().to_string());
+                    let member_list = members::joined(&room).await;
 
-                    let mut member_list: Vec<MemberItem> = room
-                        .members(RoomMemberships::JOIN)
-                        .await
-                        .unwrap_or_default()
-                        .into_iter()
-                        .map(|m| {
-                            let uid = m.user_id().to_string();
-                            let dn = m
-                                .display_name()
-                                .map(|s| s.to_string())
-                                .unwrap_or_else(|| uid.clone());
-                            let initial = dn
-                                .chars()
-                                .next()
-                                .unwrap_or('?')
-                                .to_uppercase()
-                                .next()
-                                .unwrap_or('?');
-                            let color = sender_color(&uid);
-                            let power_level = power_to_i64(m.power_level());
-                            let avatar_url = m.avatar_url().map(|u| u.to_string());
-                            MemberItem {
-                                user_id: uid,
-                                display_name: dn,
-                                initial,
-                                color,
-                                power_level,
-                                avatar_url,
-                            }
-                        })
-                        .collect();
-
-                    member_list.sort_by(|a, b| {
-                        b.power_level
-                            .cmp(&a.power_level)
-                            .then(a.display_name.cmp(&b.display_name))
-                    });
-
-                    let _ = tx.send((name, count, member_list, topic, version));
+                    (name, count, member_list, topic, version)
                 });
-                if let Ok((name, count, member_list, topic, version)) = rx.await {
+                if let Some((name, count, member_list, topic, version)) = rx.await {
                     *room_name.write() = name;
                     *member_count.write() = count;
                     *members.write() = member_list;
@@ -170,18 +92,12 @@ impl Component for RoomSettings {
         let version = room_version.read().clone();
         let is_leaving = *leaving.read();
         let current_notif = *notif_mode.read();
-        let adm_level = ADMIN_THRESHOLD;
-        let initial = name
-            .chars()
-            .next()
-            .map(|ch| ch.to_uppercase().to_string())
-            .unwrap_or_else(|| "?".to_string());
 
         let room_id_media = room_id.clone();
         let room_id_members = room_id.clone();
+        let room_id_avatar = room_id.clone();
         let room_id_copy = room_id.clone();
         let room_id_leave = room_id.clone();
-        let is_wide = crate::WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed);
 
         let preview_members: Vec<&MemberItem> =
             member_list.iter().take(MEMBER_PREVIEW_COUNT).collect();
@@ -194,15 +110,7 @@ impl Component for RoomSettings {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Room info".to_string()),
-                on_back: Some(Arc::new(move || {
-                    if is_wide {
-                        let _ = RouterContext::get().push(Route::HomePage);
-                    } else {
-                        let _ = RouterContext::get().push(Route::RoomPage {
-                            room_id: room_id_nav.clone(),
-                        });
-                    }
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             .child(
@@ -223,11 +131,9 @@ impl Component for RoomSettings {
                                     .padding(Gaps::new(24., 16., 16., 16.))
                                     .child(Avatar {
                                         size: 80.,
-                                        bytes: None,
-                                        initial,
+                                        source: Some(AvatarSource::Room(room_id.clone())),
+                                        name: name.to_string(),
                                         color: c.primary,
-                                        image_key: room_id.clone(),
-                                        fetch_key: Some(room_id.clone()),
                                     })
                                     .child(
                                         label()
@@ -264,10 +170,7 @@ impl Component for RoomSettings {
                                                     .spacing(4.)
                                                     .cross_align(Alignment::Center)
                                                     .on_press(move |_| {
-                                                        std::process::Command::new("xdg-open")
-                                                            .arg(url_open.clone())
-                                                            .spawn()
-                                                            .ok();
+                                                        Platform::get().open_url(url_open.clone())
                                                     })
                                                     .child(
                                                         SvgViewer::new(
@@ -357,77 +260,12 @@ impl Component for RoomSettings {
                                     ),
                             )
                             .children(preview_members.into_iter().map(|m| {
-                                let is_admin = m.power_level >= adm_level;
-                                let fetch_key = m.avatar_url.as_ref().map(|u| format!("mxc:{u}"));
-                                let popup_info = UserPopupInfo {
-                                    user_id: m.user_id.clone(),
-                                    display_name: m.display_name.clone(),
-                                    initial: m.initial.to_string(),
-                                    color: m.color,
-                                    avatar_url: m.avatar_url.clone(),
-                                };
+                                // Keyed by user: unkeyed rows are matched by position.
                                 rect()
+                                    .key(&m.user_id)
                                     .width(Size::fill())
-                                    .overflow(Overflow::Clip)
-                                    .on_press(move |_| {
-                                        *user_popup.write() = Some(popup_info.clone())
-                                    })
-                                    .child(
-                                        rect()
-                                            .horizontal()
-                                            .width(Size::fill())
-                                            .padding(Gaps::new(8., 16., 8., 16.))
-                                            .spacing(12.)
-                                            .cross_align(Alignment::Center)
-                                            .child(Avatar {
-                                                size: 40.,
-                                                bytes: None,
-                                                initial: m.initial.to_string(),
-                                                color: m.color,
-                                                image_key: m.user_id.clone(),
-                                                fetch_key,
-                                            })
-                                            .child(
-                                                rect()
-                                                    .vertical()
-                                                    .width(Size::flex(1.0))
-                                                    .spacing(2.)
-                                                    .child(
-                                                        rect()
-                                                            .horizontal()
-                                                            .spacing(6.)
-                                                            .cross_align(Alignment::Center)
-                                                            .child(
-                                                                label()
-                                                                    .text(m.display_name.clone())
-                                                                    .font_size(15.)
-                                                                    .font_weight(FontWeight::MEDIUM)
-                                                                    .color(c.on_surface),
-                                                            )
-                                                            .maybe_child(is_admin.then(|| {
-                                                                rect()
-                                                                    .padding(Gaps::new(
-                                                                        2., 6., 2., 6.,
-                                                                    ))
-                                                                    .corner_radius(8.)
-                                                                    .background(c.primary)
-                                                                    .child(
-                                                                        label()
-                                                                            .text("Admin")
-                                                                            .font_size(10.)
-                                                                            .color(c.on_primary),
-                                                                    )
-                                                            })),
-                                                    )
-                                                    .child(
-                                                        label()
-                                                            .text(m.user_id.clone())
-                                                            .font_size(13.)
-                                                            .color(c.on_surface_variant),
-                                                    ),
-                                            ),
-                                    )
-                                    .hoverable(Size::fill(), Size::auto(), 0.)
+                                    .child(member_row(m, &room_id_avatar, user_popup, c))
+                                    .into_element()
                             }))
                             .child(M3ListItem {
                                 icon: freya_icons::lucide::users(),
@@ -469,12 +307,11 @@ impl Component for RoomSettings {
             // ── Overlays ──────────────────────────────────────────────────────
             .maybe_child(
                 (*notif_open.read())
-                    .then(|| notif_popup_overlay(current_notif, room_id.clone(), notif_open, c)),
+                    .then(|| notif_sheet(notif_mode, room_id.clone(), notif_open, c)),
             )
             .maybe_child(
-                (*confirm_leave.read()).then(|| {
-                    leave_confirm_overlay(room_id_leave.clone(), confirm_leave, leaving, c)
-                }),
+                (*confirm_leave.read())
+                    .then(|| leave_confirm_overlay(room_id_leave.clone(), confirm_leave, leaving)),
             )
             .child(UserPopupOverlay { open: user_popup })
     }
@@ -492,84 +329,29 @@ fn leave_confirm_overlay(
     room_id: String,
     mut open: State<bool>,
     mut leaving: State<bool>,
-    c: crate::utils::const_values::AppColors,
 ) -> Element {
-    let room_id_leave = room_id.clone();
-    rect()
-        .position(Position::new_global().top(0.).left(0.))
-        .layer(Layer::Overlay)
-        .width(Size::window_percent(100.))
-        .height(Size::window_percent(100.))
-        .background((0u8, 0u8, 0u8, 160u8))
-        .on_press(move |_| *open.write() = false)
-        .child(
-            rect()
-                .position(Position::new_absolute().bottom(0.).left(0.))
-                .width(Size::fill())
-                .background(c.surface)
-                .vertical()
-                .corner_radius(20.)
-                .padding(Gaps::new(24., 24., 32., 24.))
-                .spacing(16.)
-                .on_press(|e: Event<PressEventData>| e.stop_propagation())
-                .child(
-                    label()
-                        .text("Leave room?")
-                        .font_size(18.)
-                        .font_weight(FontWeight::BOLD)
-                        .color(c.on_surface),
-                )
-                .child(
-                    label()
-                        .text("You will leave this room. You can rejoin later if it is public or if you get an invite.")
-                        .font_size(14.)
-                        .color(c.on_surface_variant),
-                )
-                .child(
-                    rect()
-                        .horizontal()
-                        .width(Size::fill())
-                        .spacing(12.)
-                        .child(
-                            rect()
-                                .width(Size::fill())
-                                .padding(Gaps::new(12., 0., 12., 0.))
-                                .corner_radius(8.)
-                                .background(c.surface_container)
-                                .overflow(Overflow::Clip)
-                                .center()
-                                .on_press(move |_| *open.write() = false)
-                                .child(label().text("Cancel").font_size(14.).color(c.on_surface)).hoverable(Size::flex(1.0), Size::auto(), 8.),
-                        )
-                        .child(
-                            rect()
-                                .width(Size::fill())
-                                .padding(Gaps::new(12., 0., 12., 0.))
-                                .corner_radius(8.)
-                                .background(c.error)
-                                .overflow(Overflow::Clip)
-                                .center()
-                                .on_press(move |_| {
-                                    *open.write() = false;
-                                    *leaving.write() = true;
-                                    let room_id = room_id_leave.clone();
-                                    spawn(async move {
-                                                                                let (tx, rx) = futures::channel::oneshot::channel::<bool>();
-                                        tokio::task::spawn(async move {
-                                            let ok = crate::utils::matrix::get_room(&room_id)
-                                                .map(|room| async move { room.leave().await.is_ok() });
-                                            let success = if let Some(fut) = ok { fut.await } else { false };
-                                            let _ = tx.send(success);
-                                        });
-                                        if rx.await.unwrap_or(false) {
-                                            let _ = RouterContext::get().push(Route::HomePage);
-                                        }
-                                        *leaving.write() = false;
-                                    });
-                                })
-                                .child(label().text("Leave").font_size(14.).color(c.on_primary)).hoverable(Size::flex(1.0), Size::auto(), 8.),
-                        ),
-                ),
-        )
-        .into()
+    confirm_sheet(
+        "Leave room?",
+        "You will leave this room. You can rejoin later if it is public or if you get an invite.",
+        "Leave",
+        move || open.set(false),
+        move || {
+            open.set(false);
+            leaving.set(true);
+            let room_id = room_id.clone();
+            spawn(async move {
+                let left = crate::utils::on_tokio(async move {
+                    match crate::utils::matrix::get_room(&room_id) {
+                        Some(room) => room.leave().await.is_ok(),
+                        None => false,
+                    }
+                });
+                if left.await.unwrap_or(false) {
+                    let _ = RouterContext::get().push(Route::HomePage);
+                }
+                leaving.set(false);
+            });
+        },
+    )
+    .into_element()
 }

@@ -2,7 +2,11 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
-use crate::ui::components::{Avatar, HoverableExt};
+use crate::ui::components::IconButton;
+
+use crate::utils::avatars::AvatarSource;
+
+use crate::ui::components::Avatar;
 use crate::utils::const_values::STATUS_BAR_INSET;
 use crate::utils::use_app_colors;
 
@@ -15,13 +19,13 @@ const BTN_SIZE: f32 = 48.;
 // TopAppBarTitle
 // ---------------------------------------------------------------------------
 
+#[derive(Clone)]
 pub enum TopAppBarTitle {
     Text(String),
     /// Avatar + name — shares fetch logic with RoomListItem via `fetch_key`.
     Room {
         name: String,
         room_id: String,
-        initial: String,
         color: (u8, u8, u8),
     },
     /// Replaces the title with an inline search input (MD3 search bar).
@@ -29,29 +33,6 @@ pub enum TopAppBarTitle {
         state: State<String>,
         placeholder: &'static str,
     },
-}
-
-impl Clone for TopAppBarTitle {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Text(t) => Self::Text(t.clone()),
-            Self::Room {
-                name,
-                room_id,
-                initial,
-                color,
-            } => Self::Room {
-                name: name.clone(),
-                room_id: room_id.clone(),
-                initial: initial.clone(),
-                color: *color,
-            },
-            Self::SearchInput { state, placeholder } => Self::SearchInput {
-                state: *state,
-                placeholder,
-            },
-        }
-    }
 }
 
 impl PartialEq for TopAppBarTitle {
@@ -85,13 +66,6 @@ pub enum TopAppBarAction {
         icon: Bytes,
         on_press: Arc<dyn Fn()>,
     },
-    /// Avatar button — shows an image or a fallback initial letter.
-    AvatarButton {
-        bytes: Option<Vec<u8>>,
-        initial: String,
-        color: (u8, u8, u8),
-        on_press: Arc<dyn Fn()>,
-    },
 }
 
 impl Clone for TopAppBarAction {
@@ -99,17 +73,6 @@ impl Clone for TopAppBarAction {
         match self {
             Self::IconButton { icon, on_press } => Self::IconButton {
                 icon: icon.clone(),
-                on_press: Arc::clone(on_press),
-            },
-            Self::AvatarButton {
-                bytes,
-                initial,
-                color,
-                on_press,
-            } => Self::AvatarButton {
-                bytes: bytes.clone(),
-                initial: initial.clone(),
-                color: *color,
                 on_press: Arc::clone(on_press),
             },
         }
@@ -147,21 +110,15 @@ impl Component for TopAppBar {
         let actions = self.actions.clone();
 
         let leading = if let Some(cb) = on_back {
-            rect()
-                .width(Size::px(BTN_SIZE))
-                .height(Size::px(BTN_SIZE))
-                .corner_radius(BTN_SIZE / 2.)
-                .center()
-                .on_press(move |_| {
+            IconButton::new(
+                freya_icons::lucide::arrow_left(),
+                c.on_surface_variant,
+                move |_| {
                     cb();
-                })
-                .child(
-                    SvgViewer::new(freya_icons::lucide::arrow_left())
-                        .color(c.on_surface_variant)
-                        .width(Size::px(ICON_SIZE))
-                        .height(Size::px(ICON_SIZE)),
-                )
-                .hoverable(Size::px(BTN_SIZE), Size::px(BTN_SIZE), BTN_SIZE / 2.)
+                },
+            )
+            .size(BTN_SIZE, ICON_SIZE)
+            .into_element()
         } else {
             // No back button: add a 12px start inset so the title aligns nicely.
             rect().width(Size::px(12.)).into_element()
@@ -177,7 +134,6 @@ impl Component for TopAppBar {
             TopAppBarTitle::Room {
                 name,
                 room_id,
-                initial,
                 color,
             } => rect()
                 .horizontal()
@@ -185,11 +141,9 @@ impl Component for TopAppBar {
                 .cross_align(Alignment::Center)
                 .child(Avatar {
                     size: 36.,
-                    bytes: None,
-                    fetch_key: Some(room_id.clone()),
-                    initial,
+                    source: Some(AvatarSource::Room(room_id.clone())),
+                    name: name.clone(),
                     color,
-                    image_key: room_id,
                 })
                 .child(
                     label()
@@ -226,46 +180,10 @@ impl Component for TopAppBar {
         let trailing: Vec<Element> = actions
             .into_iter()
             .map(|action| match action {
-                TopAppBarAction::IconButton { icon, on_press } => rect()
-                    .width(Size::px(BTN_SIZE))
-                    .height(Size::px(BTN_SIZE))
-                    .corner_radius(BTN_SIZE / 2.)
-                    .center()
-                    .on_press(move |_| {
-                        on_press();
-                    })
-                    .child(
-                        SvgViewer::new(icon)
-                            .color(c.on_surface_variant)
-                            .width(Size::px(ICON_SIZE))
-                            .height(Size::px(ICON_SIZE)),
-                    )
-                    .hoverable(Size::px(BTN_SIZE), Size::px(BTN_SIZE), BTN_SIZE / 2.),
-                TopAppBarAction::AvatarButton {
-                    bytes,
-                    initial,
-                    color,
-                    on_press,
-                } => {
-                    let inner: Element = Avatar {
-                        size: 36.,
-                        bytes,
-                        initial,
-                        color,
-                        image_key: "appbar-avatar".to_string(),
-                        fetch_key: None,
-                    }
-                    .into();
-                    rect()
-                        .width(Size::px(BTN_SIZE))
-                        .height(Size::px(BTN_SIZE))
-                        .corner_radius(BTN_SIZE / 2.)
-                        .center()
-                        .on_press(move |_| {
-                            on_press();
-                        })
-                        .child(inner)
-                        .hoverable(Size::px(BTN_SIZE), Size::px(BTN_SIZE), BTN_SIZE / 2.)
+                TopAppBarAction::IconButton { icon, on_press } => {
+                    IconButton::new(icon, c.on_surface_variant, move |_| on_press())
+                        .size(BTN_SIZE, ICON_SIZE)
+                        .into_element()
                 }
             })
             .collect();

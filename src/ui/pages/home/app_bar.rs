@@ -2,12 +2,15 @@ use std::sync::atomic::Ordering;
 use std::time::Duration;
 
 use freya::prelude::*;
+
+use crate::ui::components::IconButton;
+
+use crate::utils::avatars::AvatarSource;
 use freya_query::prelude::*;
 use freya_router::prelude::RouterContext;
 
 use crate::app::keys::{KeyCommand, use_key_commands};
-use crate::ui::components::{Avatar, HoverableExt};
-use crate::utils::const_values::AppColors;
+use crate::ui::components::{Avatar, HoverableExt, search_input};
 use crate::utils::queries::FetchUserDisplayName;
 use crate::utils::use_app_colors;
 use crate::{Route, WIDE_MODE};
@@ -38,13 +41,7 @@ impl Component for HomeAppBar {
 
         let name_query =
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
-        let initial = name_query
-            .read()
-            .state()
-            .ok()
-            .and_then(|n| n.chars().next())
-            .map(|c| c.to_uppercase().to_string())
-            .unwrap_or_else(|| "?".to_string());
+        let my_name = name_query.read().state().ok().cloned().unwrap_or_default();
 
         rect()
             .vertical()
@@ -75,11 +72,9 @@ impl Component for HomeAppBar {
                             })
                             .child(Avatar {
                                 size: 36.,
-                                bytes: None,
-                                fetch_key: Some("__self__".to_string()),
-                                initial,
+                                source: Some(AvatarSource::Me),
+                                name: my_name,
                                 color: c.primary,
-                                image_key: "__self__".to_string(),
                             })
                             .hoverable(Size::px(48.), Size::px(48.), 24.),
                     )
@@ -88,7 +83,10 @@ impl Component for HomeAppBar {
                         rect()
                             .width(Size::flex(1.0))
                             .padding(Gaps::new(0., 8., 0., 8.))
-                            .child(search_input(search, c, search_a11y))
+                            .child(
+                                search_input(search, "Search conversations, people…", c)
+                                    .a11y_id(search_a11y),
+                            )
                             .into_element()
                     } else {
                         label()
@@ -103,68 +101,53 @@ impl Component for HomeAppBar {
                     // Narrow: search toggle icon
                     .maybe_child(if !is_wide {
                         Some(
-                            rect()
-                                .width(Size::px(48.))
-                                .height(Size::px(48.))
-                                .corner_radius(24.)
-                                .center()
-                                .on_press(move |_| {
+                            IconButton::new(
+                                if is_search_open {
+                                    freya_icons::lucide::x()
+                                } else {
+                                    freya_icons::lucide::search()
+                                },
+                                c.on_surface_variant,
+                                move |_| {
                                     let new_val = !*search_open.read();
                                     if !new_val {
                                         *search.write() = String::new();
                                     }
                                     *search_open.write() = new_val;
-                                })
-                                .child(
-                                    SvgViewer::new(if is_search_open {
-                                        freya_icons::lucide::x()
-                                    } else {
-                                        freya_icons::lucide::search()
-                                    })
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(22.))
-                                    .height(Size::px(22.)),
-                                )
-                                .hoverable(Size::px(48.), Size::px(48.), 24.),
+                                },
+                            )
+                            .tooltip("Search")
+                            .size(48., 22.)
+                            .into_element(),
                         )
                     } else {
                         None
                     })
                     // Bookmarks button (both modes)
                     .child(
-                        rect()
-                            .width(Size::px(48.))
-                            .height(Size::px(48.))
-                            .corner_radius(24.)
-                            .center()
-                            .on_press(|_| {
+                        IconButton::new(
+                            freya_icons::lucide::bookmark(),
+                            c.on_surface_variant,
+                            move |_| {
                                 let _ = RouterContext::get().push(crate::Route::BookmarksPage);
-                            })
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::bookmark())
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(22.))
-                                    .height(Size::px(22.)),
-                            )
-                            .hoverable(Size::px(48.), Size::px(48.), 24.),
+                            },
+                        )
+                        .tooltip("Bookmarks")
+                        .size(48., 22.)
+                        .into_element(),
                     )
                     // Reactions button (both modes)
                     .child(
-                        rect()
-                            .width(Size::px(48.))
-                            .height(Size::px(48.))
-                            .corner_radius(24.)
-                            .center()
-                            .on_press(|_| {
+                        IconButton::new(
+                            freya_icons::lucide::heart(),
+                            c.on_surface_variant,
+                            move |_| {
                                 let _ = RouterContext::get().push(crate::Route::ReactionsPage);
-                            })
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::heart())
-                                    .color(c.on_surface_variant)
-                                    .width(Size::px(22.))
-                                    .height(Size::px(22.)),
-                            )
-                            .hoverable(Size::px(48.), Size::px(48.), 24.),
+                            },
+                        )
+                        .tooltip("Reactions")
+                        .size(48., 22.)
+                        .into_element(),
                     ),
             )
             // Narrow: search row below the bar, shown while toggled open.
@@ -174,7 +157,11 @@ impl Component for HomeAppBar {
                         .width(Size::fill())
                         .padding(Gaps::new(6., 16., 6., 16.))
                         .background(c.surface)
-                        .child(search_input(search, c, search_a11y).auto_focus(true)),
+                        .child(
+                            search_input(search, "Search conversations, people…", c)
+                                .a11y_id(search_a11y)
+                                .auto_focus(true),
+                        ),
                 )
             } else {
                 None
@@ -190,28 +177,4 @@ fn use_search_key(mut search_open: State<bool>, search_a11y: AccessibilityId) {
             search_a11y.request_focus();
         }
     });
-}
-
-fn search_input(search: State<String>, c: AppColors, a11y_id: AccessibilityId) -> Input {
-    Input::new(search)
-        .a11y_id(a11y_id)
-        .leading(
-            SvgViewer::new(freya_icons::lucide::search())
-                .color(c.on_surface_variant)
-                .width(Size::px(15.))
-                .height(Size::px(15.)),
-        )
-        .placeholder("Search conversations, people…")
-        .width(Size::fill())
-        .theme_colors(InputColorsThemePartial {
-            background: Some(Preference::Specific(Color::from(c.surface_container))),
-            focus_background: Some(Preference::Specific(Color::from(c.surface_container))),
-            border_fill: Some(Preference::Specific(Color::TRANSPARENT)),
-            focus_border_fill: Some(Preference::Specific(Color::from(c.primary))),
-            ..Default::default()
-        })
-        .theme_layout(InputLayoutThemePartial {
-            corner_radius: Some(Preference::Specific(CornerRadius::new_all(8.))),
-            padding: Some(Preference::Specific(Gaps::new(10., 10., 10., 10.))),
-        })
 }

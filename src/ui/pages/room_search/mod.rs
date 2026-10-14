@@ -2,17 +2,17 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
-use crate::ui::components::HoverableExt;
-use freya_router::prelude::RouterContext;
+use crate::ui::components::IconButton;
+
 use matrix_sdk::ruma::{
     OwnedRoomId,
     api::client::{filter::RoomEventFilter, search::search_events::v3 as search_v3},
     events::{AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent},
 };
 
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::utils::{format_timestamp, matrix::CLIENT, room_preview::message_body, sender_color};
-use crate::{Route, utils::use_app_colors};
+use crate::ui::components::{TopAppBar, TopAppBarTitle, search_input};
+use crate::utils::use_app_colors;
+use crate::utils::{format_timestamp, id_color, matrix::CLIENT, room_preview::message_body};
 
 mod search_result_row;
 use search_result_row::{SearchResultItem, SearchResultRow};
@@ -26,7 +26,6 @@ impl Component for RoomSearch {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
         let room_id = self.room_id.clone();
-        let room_id_back = room_id.clone();
 
         let query_input: State<String> = use_state(String::new);
         let results: State<Vec<SearchResultItem>> = use_state(|| vec![]);
@@ -44,11 +43,7 @@ impl Component for RoomSearch {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Search messages".to_string()),
-                on_back: Some(Arc::new(move || {
-                    let _ = RouterContext::get().push(Route::RoomPage {
-                        room_id: room_id_back.clone(),
-                    });
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             .child(
@@ -57,72 +52,51 @@ impl Component for RoomSearch {
                     .width(Size::fill())
                     .padding(Gaps::new(6., 12., 6., 12.))
                     .background(c.surface)
+                    .content(Content::Flex)
+                    .cross_align(Alignment::Center)
+                    .spacing(6.)
                     .child(
-                        rect()
-                            .horizontal()
-                            .width(Size::fill())
-                            .corner_radius(20.)
-                            .background(c.surface_container)
-                            .padding(Gaps::new(0., 12., 0., 12.))
-                            .cross_align(Alignment::Center)
-                            .spacing(6.)
-                            .child(
-                                SvgViewer::new(freya_icons::lucide::search())
-                                    .color(c.on_surface_faint)
-                                    .width(Size::px(16.))
-                                    .height(Size::px(16.)),
+                        rect().width(Size::flex(1.)).child(
+                            search_input(query_input, "Search messages…", c)
+                                .auto_focus(true)
+                                .on_submit(move |query: String| {
+                                    if query.is_empty() {
+                                        return;
+                                    }
+                                    let mut results = results;
+                                    let mut loading = loading;
+                                    let mut has_searched = has_searched;
+                                    *loading.write() = true;
+                                    *has_searched.write() = true;
+                                    let room_id = room_id.clone();
+                                    spawn(async move {
+                                        let items = search_room_messages(&room_id, &query).await;
+                                        *results.write() = items;
+                                        *loading.write() = false;
+                                    });
+                                }),
+                        ),
+                    )
+                    .maybe_child(if !query_input.read().is_empty() {
+                        Some(
+                            IconButton::new(
+                                freya_icons::lucide::x(),
+                                c.on_surface_faint,
+                                move |_| {
+                                    let mut query_input = query_input;
+                                    let mut results = results;
+                                    let mut has_searched = has_searched;
+                                    *query_input.write() = String::new();
+                                    *results.write() = vec![];
+                                    *has_searched.write() = false;
+                                },
                             )
-                            .child(
-                                Input::new(query_input)
-                                    .flat()
-                                    .placeholder("Search messages…")
-                                    .width(Size::fill())
-                                    .auto_focus(true)
-                                    .on_submit(move |query: String| {
-                                        if query.is_empty() {
-                                            return;
-                                        }
-                                        let mut results = results;
-                                        let mut loading = loading;
-                                        let mut has_searched = has_searched;
-                                        *loading.write() = true;
-                                        *has_searched.write() = true;
-                                        let room_id = room_id.clone();
-                                        spawn(async move {
-                                            let items =
-                                                search_room_messages(&room_id, &query).await;
-                                            *results.write() = items;
-                                            *loading.write() = false;
-                                        });
-                                    }),
-                            )
-                            .maybe_child(if !query_input.read().is_empty() {
-                                Some(
-                                    rect()
-                                        .width(Size::px(32.))
-                                        .height(Size::px(32.))
-                                        .corner_radius(16.)
-                                        .center()
-                                        .on_press(move |_| {
-                                            let mut query_input = query_input;
-                                            let mut results = results;
-                                            let mut has_searched = has_searched;
-                                            *query_input.write() = String::new();
-                                            *results.write() = vec![];
-                                            *has_searched.write() = false;
-                                        })
-                                        .child(
-                                            SvgViewer::new(freya_icons::lucide::x())
-                                                .color(c.on_surface_faint)
-                                                .width(Size::px(16.))
-                                                .height(Size::px(16.)),
-                                        )
-                                        .hoverable(Size::px(32.), Size::px(32.), 16.),
-                                )
-                            } else {
-                                None
-                            }),
-                    ),
+                            .size(32., 16.)
+                            .into_element(),
+                        )
+                    } else {
+                        None
+                    }),
             )
             .child(if is_loading {
                 rect()
@@ -168,10 +142,9 @@ async fn search_room_messages(room_id: &str, query: &str) -> Vec<SearchResultIte
         return vec![];
     };
 
-    let (tx, rx) = futures::channel::oneshot::channel::<Vec<SearchResultItem>>();
     let query = query.to_owned();
 
-    tokio::task::spawn(async move {
+    crate::utils::on_tokio(async move {
         let mut filter = RoomEventFilter::default();
         filter.rooms = Some(vec![parsed_id]);
 
@@ -196,17 +169,9 @@ async fn search_room_messages(room_id: &str, query: &str) -> Vec<SearchResultIte
                         continue;
                     };
                     let sender = msg.sender.to_string();
-                    let color = sender_color(&sender);
-                    let initial = sender
-                        .chars()
-                        .nth(1)
-                        .unwrap_or('?')
-                        .to_uppercase()
-                        .next()
-                        .unwrap_or('?');
+                    let color = id_color(&sender);
                     items.push(SearchResultItem {
                         sender_name: sender,
-                        sender_initial: initial,
                         sender_color: color,
                         body,
                         timestamp: format_timestamp(msg.origin_server_ts),
@@ -216,8 +181,8 @@ async fn search_room_messages(room_id: &str, query: &str) -> Vec<SearchResultIte
             }
             Err(_) => vec![],
         };
-        let _ = tx.send(items);
-    });
-
-    rx.await.unwrap_or_default()
+        items
+    })
+    .await
+    .unwrap_or_default()
 }

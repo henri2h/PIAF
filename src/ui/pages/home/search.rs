@@ -10,12 +10,6 @@ pub struct RoomResult {
     pub display_name: String,
 }
 
-pub struct UserResult {
-    pub user_id: String,
-    pub display_name: String,
-    pub avatar_mxc: Option<String>,
-}
-
 #[derive(Clone)]
 pub struct MessageResult {
     pub event_id: String,
@@ -47,23 +41,6 @@ pub fn search_rooms_local(client: &Client, query: &str) -> Vec<RoomResult> {
         })
         .take(8)
         .collect()
-}
-
-pub async fn search_users_remote(client: Client, query: String) -> Vec<UserResult> {
-    match client.search_users(&query, 5).await {
-        Ok(r) => r
-            .results
-            .into_iter()
-            .map(|u| UserResult {
-                display_name: u
-                    .display_name
-                    .unwrap_or_else(|| u.user_id.localpart().to_string()),
-                avatar_mxc: u.avatar_url.map(|a| a.to_string()),
-                user_id: u.user_id.to_string(),
-            })
-            .collect(),
-        Err(_) => vec![],
-    }
 }
 
 /// Fetch one page of message search results.

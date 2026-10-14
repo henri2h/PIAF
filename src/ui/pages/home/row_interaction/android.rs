@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use freya::animation::*;
 use freya::prelude::*;
 
 use crate::utils::const_values::AppColors;
@@ -18,16 +19,31 @@ pub struct RowInteraction {
     long_pressed: State<bool>,
     drag_start: State<Option<(f64, f64)>>,
     is_swiping: State<bool>,
+    /// Drag offset while swiping.
     offset_x: State<f32>,
+    /// `(release count, offset at release)`: each release eases from there to 0.
+    release: State<(u64, f32)>,
+    /// Offset while easing back after a release.
+    snap_offset: f32,
 }
 
 pub fn use_row_interaction() -> RowInteraction {
+    let release = use_state(|| (0u64, 0.0f32));
+    let released = *release.read();
+    let snap = use_animation_with_dependencies(&released, |conf, &(_, from)| {
+        conf.on_creation(OnCreation::Finish);
+        conf.on_change(OnChange::Rerun);
+        AnimNum::new(from, 0.).time(180).ease(Ease::Out)
+    });
+    let snap_offset = snap.get().value();
     RowInteraction {
         press_gen: use_state(|| 0u64),
         long_pressed: use_state(|| false),
         drag_start: use_state(|| None),
         is_swiping: use_state(|| false),
         offset_x: use_state(|| 0.0f32),
+        release,
+        snap_offset,
     }
 }
 
@@ -59,6 +75,15 @@ impl RowInteraction {
         });
     }
 
+    /// Ends a drag: the row eases back from where it was released.
+    fn release(&self) {
+        let (mut offset_x, mut release) = (self.offset_x, self.release);
+        let from = *offset_x.peek();
+        let count = release.peek().0 + 1;
+        release.set((count, from));
+        offset_x.set(0.0);
+    }
+
     fn cancel_long_press(&self) {
         *self.press_gen.write_unchecked() += 1;
         *self.long_pressed.write_unchecked() = false;
@@ -77,7 +102,11 @@ impl RowInteraction {
         let room_id_recontact = room_id.clone();
         let room_id_archive = room_id;
 
-        let offset = *state.offset_x.read();
+        let offset = if *state.is_swiping.read() {
+            *state.offset_x.read()
+        } else {
+            state.snap_offset
+        };
         let reveal_recontact = offset > 4.0;
         let reveal_archive = offset < -4.0;
 
@@ -180,13 +209,13 @@ impl RowInteraction {
                         });
                     }
                 }
-                offset_x.set(0.0);
+                state.release();
                 is_swiping.set(false);
                 drag_start.set(None);
             })
             .on_touch_cancel(move |_: Event<TouchEventData>| {
                 state.cancel_long_press();
-                offset_x.set(0.0);
+                state.release();
                 is_swiping.set(false);
                 drag_start.set(None);
             })

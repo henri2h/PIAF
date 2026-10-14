@@ -1,10 +1,9 @@
 use freya::prelude::*;
-use freya_query::prelude::{Query, use_query};
-use std::time::Duration;
+
+use crate::utils::avatars::AvatarSource;
 
 use crate::ui::components::Avatar;
 use crate::utils::const_values::AppColors;
-use crate::utils::queries::FetchRoomAvatar;
 
 #[derive(PartialEq)]
 pub(super) struct RoomStartBanner {
@@ -17,16 +16,6 @@ impl Component for RoomStartBanner {
     fn render(&self) -> impl IntoElement {
         let c = self.c;
         let room_name = self.room_name.clone();
-        let initial = room_name
-            .chars()
-            .next()
-            .map(|ch| ch.to_uppercase().to_string())
-            .unwrap_or_else(|| "?".to_string());
-
-        let avatar_query = use_query(
-            Query::new(self.room_id.clone(), FetchRoomAvatar).stale_time(Duration::from_secs(3600)),
-        );
-        let avatar_bytes = avatar_query.read().state().ok().cloned();
 
         rect()
             .vertical()
@@ -36,11 +25,9 @@ impl Component for RoomStartBanner {
             .spacing(12.)
             .child(Avatar {
                 size: 80.,
-                bytes: avatar_bytes,
-                initial,
+                source: Some(AvatarSource::Room(self.room_id.clone())),
+                name: room_name.to_string(),
                 color: c.primary,
-                image_key: format!("room-start-{}", self.room_id),
-                fetch_key: None,
             })
             .child(
                 label()

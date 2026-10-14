@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
+
+use crate::utils::avatars::AvatarSource;
 
 use crate::ui::components::Avatar;
 use crate::ui::components::{TopAppBar, TopAppBarTitle};
-use crate::utils::use_app_colors;
-use crate::{Route, utils::matrix::CLIENT};
+use crate::utils::matrix::CLIENT;
+use crate::utils::{on_tokio, use_app_colors};
 
 #[derive(PartialEq)]
 pub struct SettingsProfile {}
@@ -19,6 +20,8 @@ impl Component for SettingsProfile {
         let display_name: State<String> = use_state(String::new);
         let name_input: State<String> = use_state(String::new);
         let saving_name: State<bool> = use_state(|| false);
+        // Avatar upload is desktop-only (file picker).
+        #[cfg_attr(target_os = "android", allow(unused_variables))]
         let uploading_avatar: State<bool> = use_state(|| false);
         let status: State<Option<String>> = use_state(|| None);
 
@@ -30,8 +33,7 @@ impl Component for SettingsProfile {
                 let Some(client) = CLIENT.get().cloned() else {
                     return;
                 };
-                let (tx, rx) = futures::channel::oneshot::channel::<(String, Option<Vec<u8>>)>();
-                tokio::task::spawn(async move {
+                let rx = crate::utils::on_tokio::<(String, Option<Vec<u8>>), _>(async move {
                     let name = client
                         .account()
                         .get_display_name()
@@ -41,9 +43,9 @@ impl Component for SettingsProfile {
                         .or_else(|| client.user_id().map(|id| id.to_string()))
                         .unwrap_or_default();
                     let av = crate::utils::avatars::own(&client).await;
-                    let _ = tx.send((name, av));
+                    (name, av)
                 });
-                if let Ok((name, av)) = rx.await {
+                if let Some((name, av)) = rx.await {
                     *display_name.write() = name.clone();
                     *name_input.write() = name;
                     *avatar.write() = av;
@@ -54,6 +56,7 @@ impl Component for SettingsProfile {
         let avatar_bytes = avatar.read().clone();
         let current_name = display_name.read().clone();
         let is_saving = *saving_name.read();
+        #[cfg(not(target_os = "android"))]
         let is_uploading = *uploading_avatar.read();
         let status_msg = status.read().clone();
 
@@ -66,9 +69,7 @@ impl Component for SettingsProfile {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Profile".to_string()),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::Settings);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             .child(
@@ -89,15 +90,14 @@ impl Component for SettingsProfile {
                                     .width(Size::fill())
                                     .child(Avatar {
                                         size: 88.,
-                                        bytes: avatar_bytes.clone(),
-                                        initial: current_name
-                                            .chars()
-                                            .next()
-                                            .map(|c| c.to_uppercase().to_string())
-                                            .unwrap_or_else(|| "?".to_string()),
+                                        source: Some(
+                                            avatar_bytes
+                                                .clone()
+                                                .map(|b| AvatarSource::Bytes(b.into()))
+                                                .unwrap_or(AvatarSource::Me),
+                                        ),
+                                        name: current_name.clone(),
                                         color: c.primary,
-                                        image_key: "settings-avatar".to_string(),
-                                        fetch_key: None,
                                     })
                                     .child({
                                         #[cfg(not(target_os = "android"))]
@@ -111,8 +111,16 @@ impl Component for SettingsProfile {
                                                 let mut status = status;
                                                 *uploading_avatar.write() = true;
                                                 spawn(async move {
-                                                    let result =
-                                                        pick_and_upload_avatar(&mut avatar).await;
+                                                    let result = on_tokio(pick_and_upload_avatar())
+                                                        .await
+                                                        .unwrap_or_else(|| {
+                                                            Err(anyhow::anyhow!("cancelled"))
+                                                        })
+                                                        .map(|data| {
+                                                            if let Some(data) = data {
+                                                                avatar.set(Some(data));
+                                                            }
+                                                        });
                                                     *uploading_avatar.write() = false;
                                                     *status.write() = Some(match result {
                                                         Ok(()) => "Avatar updated.".into(),
@@ -175,9 +183,13 @@ impl Component for SettingsProfile {
                                                         let mut status = status;
                                                         *saving_name.write() = true;
                                                         spawn(async move {
-                                                            let result =
-                                                                save_display_name(new_name.clone())
-                                                                    .await;
+                                                            let result = on_tokio(
+                                                                save_display_name(new_name.clone()),
+                                                            )
+                                                            .await
+                                                            .unwrap_or_else(|| {
+                                                                Err(anyhow::anyhow!("cancelled"))
+                                                            });
                                                             *saving_name.write() = false;
                                                             match result {
                                                                 Ok(()) => {
@@ -233,66 +245,33 @@ impl Component for SettingsProfile {
     }
 }
 
+/// Runs on tokio (called through `on_tokio`).
 async fn save_display_name(name: String) -> anyhow::Result<()> {
     let client = CLIENT
         .get()
+        .cloned()
         .ok_or_else(|| anyhow::anyhow!("Not logged in"))?;
-    let (tx, rx) = futures::channel::oneshot::channel::<anyhow::Result<()>>();
-    let client = client.clone();
-    tokio::task::spawn(async move {
-        let result = client
-            .account()
-            .set_display_name(Some(name.as_str()))
-            .await
-            .map_err(anyhow::Error::from);
-        let _ = tx.send(result);
-    });
-    rx.await?
+    client
+        .account()
+        .set_display_name(Some(name.as_str()))
+        .await?;
+    Ok(())
 }
 
+/// Asks for an image and uploads it as the avatar; returns its bytes, or
+/// `None` when the dialog was cancelled. Runs on tokio (through `on_tokio`).
 #[cfg(not(target_os = "android"))]
-async fn pick_and_upload_avatar(avatar_state: &mut State<Option<Vec<u8>>>) -> anyhow::Result<()> {
-    let picked = tokio::task::spawn_blocking(|| {
-        rfd::FileDialog::new()
-            .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"])
-            .set_title("Choose avatar image")
-            .pick_file()
-    })
-    .await?;
-
-    let Some(path) = picked else { return Ok(()) };
-
-    let ext = path
-        .extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("")
-        .to_lowercase();
-    let mime_str = match ext.as_str() {
-        "png" => "image/png",
-        "gif" => "image/gif",
-        "webp" => "image/webp",
-        _ => "image/jpeg",
+async fn pick_and_upload_avatar() -> anyhow::Result<Option<Vec<u8>>> {
+    let Some(image) = crate::utils::media::pick_image("Choose avatar image").await else {
+        return Ok(None);
     };
-    let content_type: mime::Mime = mime_str.parse()?;
-    let data = tokio::fs::read(&path).await?;
-
     let client = CLIENT
         .get()
+        .cloned()
         .ok_or_else(|| anyhow::anyhow!("Not logged in"))?;
-    let (tx, rx) = futures::channel::oneshot::channel::<anyhow::Result<()>>();
-    let client = client.clone();
-    let data_clone = data.clone();
-    tokio::task::spawn(async move {
-        let result = client
-            .account()
-            .upload_avatar(&content_type, data_clone)
-            .await
-            .map(|_| ())
-            .map_err(anyhow::Error::from);
-        let _ = tx.send(result);
-    });
-
-    rx.await??;
-    *avatar_state.write() = Some(data);
-    Ok(())
+    client
+        .account()
+        .upload_avatar(&image.mime, image.bytes.clone())
+        .await?;
+    Ok(Some(image.bytes))
 }

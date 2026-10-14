@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use freya::prelude::*;
 use matrix_sdk::ruma::events::room::message::MessageType;
-use matrix_sdk_ui::timeline::{TimelineDetails, TimelineItemContent};
+use matrix_sdk_ui::timeline::TimelineItemContent;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::utils::bookmarks::BookmarkEntry;
@@ -44,10 +44,14 @@ pub(super) fn action_popup_overlay(
     let (reply_body, edit_body): (String, Option<String>) =
         if let TimelineItemContent::MsgLike(m) = event.content() {
             if let Some(msg) = m.as_message() {
-                match msg.msgtype() {
-                    MessageType::Text(t) => (t.body.clone(), Some(t.body.clone())),
-                    _ => ("[Message]".to_string(), None),
-                }
+                let edit_body = match msg.msgtype() {
+                    MessageType::Text(t) => Some(t.body.clone()),
+                    _ => None,
+                };
+                (
+                    crate::utils::room_preview::reply_preview(msg.msgtype()),
+                    edit_body,
+                )
             } else {
                 return Popup::new().into();
             }
@@ -55,13 +59,7 @@ pub(super) fn action_popup_overlay(
             return Popup::new().into();
         };
 
-    let sender_name: String = match event.sender_profile() {
-        TimelineDetails::Ready(p) => p
-            .display_name
-            .clone()
-            .unwrap_or_else(|| event.sender().to_string()),
-        _ => event.sender().to_string(),
-    };
+    let sender_name: String = crate::utils::room_preview::sender_name(event);
 
     let on_react: Rc<RefCell<dyn FnMut(String)>> = {
         let eid = event_id.clone();

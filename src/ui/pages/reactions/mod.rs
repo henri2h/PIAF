@@ -1,12 +1,11 @@
 use freya::prelude::*;
 
 use crate::ui::components::HoverableExt;
-use freya_router::prelude::RouterContext;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 use std::sync::Arc;
 
 use crate::REACTIONS_RX;
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::{TopAppBar, TopAppBarTitle, empty_state, loading_state};
 use crate::utils::{ReceivedReaction, format_timestamp, use_app_colors, use_watch};
 
 #[derive(PartialEq)]
@@ -20,12 +19,11 @@ impl Component for ReactionsPage {
         // Past reactions: scan recent history once per session.
         let mut loading = use_state(|| true);
         use_hook(move || {
-            let (tx, rx) = futures::channel::oneshot::channel::<()>();
-            tokio::spawn(async move {
+            let rx = crate::utils::on_tokio::<(), _>(async move {
                 if let Some(client) = crate::utils::matrix::CLIENT.get().cloned() {
                     crate::utils::reactions::backfill(client).await;
                 }
-                let _ = tx.send(());
+                ()
             });
             spawn(async move {
                 let _ = rx.await;
@@ -40,34 +38,19 @@ impl Component for ReactionsPage {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Reactions".to_string()),
-                on_back: Some(Arc::new(|| {
-                    RouterContext::get().go_back();
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
-            .child(if reactions.is_empty() {
-                rect()
-                    .expanded()
-                    .center()
-                    .vertical()
-                    .spacing(12.)
-                    .child(
-                        label()
-                            .text(if *loading.read() {
-                                "Loading reactions…"
-                            } else {
-                                "No reactions yet"
-                            })
-                            .font_size(16.)
-                            .color(c.on_surface_muted),
-                    )
-                    .child(
-                        label()
-                            .text("Reactions to your messages appear here")
-                            .font_size(13.)
-                            .color(c.on_surface_faint),
-                    )
-                    .into_element()
+            .child(if reactions.is_empty() && *loading.read() {
+                loading_state(Some("Loading reactions…"), c).into_element()
+            } else if reactions.is_empty() {
+                empty_state(
+                    freya_icons::lucide::heart(),
+                    "No reactions yet",
+                    Some("Reactions to your messages appear here"),
+                    c,
+                )
+                .into_element()
             } else {
                 let mut scroll = ScrollView::new()
                     .width(Size::fill())

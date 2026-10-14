@@ -1,10 +1,11 @@
 use freya::prelude::*;
+
 use freya_router::prelude::RouterContext;
 use std::sync::Arc;
 
 use crate::{
     Route,
-    ui::components::{Avatar, TopAppBar, TopAppBarTitle, user_color},
+    ui::components::{TopAppBar, TopAppBarTitle},
     utils::use_app_colors,
 };
 
@@ -31,21 +32,7 @@ impl Component for NewGroupConfig {
         let is_encrypted = *encrypted.read();
         let err_msg = error.read().clone();
 
-        let invitee_previews: Vec<(String, String, Option<String>)> = GROUP_DRAFT
-            .lock()
-            .map(|d| {
-                d.invitees
-                    .iter()
-                    .map(|u| {
-                        (
-                            u.user_id.clone(),
-                            u.display_name.clone(),
-                            u.avatar_mxc.clone(),
-                        )
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
+        let invitees = super::draft::invitees();
 
         // Save name + encryption to draft, then navigate to PendingGroup.
         let mut do_next = move || {
@@ -76,9 +63,7 @@ impl Component for NewGroupConfig {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Group settings".to_string()),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::NewGroup);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             // Participants recap
@@ -94,38 +79,7 @@ impl Component for NewGroupConfig {
                             .font_size(13.)
                             .color(c.on_surface_muted),
                     )
-                    .child({
-                        let mut row = rect().horizontal().width(Size::fill()).spacing(12.);
-                        for (uid, display_name, avatar_mxc) in &invitee_previews {
-                            let initial = display_name
-                                .chars()
-                                .next()
-                                .map(|ch| ch.to_uppercase().to_string())
-                                .unwrap_or_else(|| "?".to_string());
-                            let color = user_color(uid);
-                            row = row.child(
-                                rect()
-                                    .vertical()
-                                    .spacing(4.)
-                                    .cross_align(Alignment::Center)
-                                    .child(Avatar {
-                                        size: 44.,
-                                        bytes: None,
-                                        fetch_key: avatar_mxc.clone(),
-                                        initial,
-                                        color,
-                                        image_key: uid.clone(),
-                                    })
-                                    .child(
-                                        label()
-                                            .text(display_name.chars().take(8).collect::<String>())
-                                            .font_size(11.)
-                                            .color(c.on_surface_variant),
-                                    ),
-                            );
-                        }
-                        row
-                    }),
+                    .child(super::draft::invitee_strip(&invitees, 44., c)),
             )
             // Group name input
             .child(

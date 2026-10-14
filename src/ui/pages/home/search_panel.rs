@@ -6,13 +6,15 @@ use freya::prelude::*;
 
 use crate::ui::components::HoverableExt;
 
-use super::search::{
-    MessageResult, search_messages_remote, search_rooms_local, search_users_remote,
-};
+use super::search::{MessageResult, search_messages_remote, search_rooms_local};
 use super::search_tile::{MessageSearchTile, RoomSearchTile, UserSearchTile};
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::CLIENT;
 use crate::utils::use_app_colors;
+use crate::utils::users::UserInfo;
+
+/// Wait after the last keystroke before searching.
+const DEBOUNCE: Duration = Duration::from_millis(400);
 
 /// Progressive search results across rooms, people, and messages.
 ///
@@ -41,7 +43,7 @@ impl Component for SearchResults {
         // re-trigger the effect it's guarding.
         let search_ver: Arc<AtomicU64> = use_hook(|| Arc::new(AtomicU64::new(0)));
         let mut room_results: State<Vec<(String, String)>> = use_state(Vec::new);
-        let mut user_results: State<Vec<(String, String, Option<String>)>> = use_state(Vec::new);
+        let mut user_results: State<Vec<UserInfo>> = use_state(Vec::new);
         let mut msg_results: State<Vec<MessageResult>> = use_state(Vec::new);
         let mut searching: State<bool> = use_state(|| false);
         let mut users_searching: State<bool> = use_state(|| false);
@@ -68,13 +70,8 @@ impl Component for SearchResults {
                     return;
                 }
                 *searching.write() = true;
-                let (delay_tx, delay_rx) = futures::channel::oneshot::channel::<()>();
-                tokio::task::spawn(async move {
-                    tokio::time::sleep(Duration::from_millis(400)).await;
-                    let _ = delay_tx.send(());
-                });
                 spawn(async move {
-                    let _ = delay_rx.await;
+                    timer(DEBOUNCE).await;
                     if sv.load(Ordering::Relaxed) != ver {
                         return;
                     }
@@ -98,17 +95,13 @@ impl Component for SearchResults {
                     let sv_u = sv.clone();
                     let q_u = query.clone();
                     let client_u = client.clone();
-                    let (tx_u, rx_u) = futures::channel::oneshot::channel();
-                    tokio::task::spawn(async move {
-                        let _ = tx_u.send(search_users_remote(client_u, q_u).await);
+                    let rx_u = crate::utils::on_tokio(async move {
+                        crate::utils::users::search(&client_u, &q_u, 5).await
                     });
                     spawn(async move {
                         let results = rx_u.await.unwrap_or_default();
                         if sv_u.load(Ordering::Relaxed) == ver {
-                            *user_results.write() = results
-                                .into_iter()
-                                .map(|u| (u.user_id, u.display_name, u.avatar_mxc))
-                                .collect();
+                            *user_results.write() = results;
                             *users_searching.write() = false;
                         }
                     });
@@ -116,9 +109,8 @@ impl Component for SearchResults {
                     // 3. Messages — server-side, runs concurrently.
                     *msgs_searching.write() = true;
                     let sv_m = sv.clone();
-                    let (tx_m, rx_m) = futures::channel::oneshot::channel();
-                    tokio::task::spawn(async move {
-                        let _ = tx_m.send(search_messages_remote(client, query, None).await);
+                    let rx_m = crate::utils::on_tokio(async move {
+                        search_messages_remote(client, query, None).await
                     });
                     spawn(async move {
                         let (results, next_batch) = rx_m.await.unwrap_or_default();
@@ -192,9 +184,8 @@ fn load_more_footer(
                 let sv2 = sv.clone();
                 let q = query_for_more.clone();
                 let token = next_token.clone();
-                let (tx, rx) = futures::channel::oneshot::channel();
-                tokio::task::spawn(async move {
-                    let _ = tx.send(search_messages_remote(client, q, Some(token)).await);
+                let rx = crate::utils::on_tokio(async move {
+                    search_messages_remote(client, q, Some(token)).await
                 });
                 spawn(async move {
                     let (results, new_next) = rx.await.unwrap_or_default();
@@ -212,7 +203,7 @@ fn load_more_footer(
 
 fn build_search_results(
     rooms: Vec<(String, String)>,
-    users: Vec<(String, String, Option<String>)>,
+    users: Vec<UserInfo>,
     messages: Vec<MessageResult>,
     users_loading: bool,
     msgs_loading: bool,
@@ -243,12 +234,8 @@ fn build_search_results(
     } else if users.is_empty() {
         list = list.child(empty_row("No users found", c));
     } else {
-        for (user_id, display_name, avatar_mxc) in users {
-            list = list.child(UserSearchTile {
-                user_id,
-                display_name,
-                avatar_mxc,
-            });
+        for user in users {
+            list = list.child(UserSearchTile { user });
         }
     }
 

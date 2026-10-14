@@ -37,9 +37,7 @@ impl Component for Settings {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text("Settings".to_string()),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::HomePage);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             .child(

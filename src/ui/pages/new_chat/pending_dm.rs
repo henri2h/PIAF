@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
+use crate::utils::id_color;
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
 
 use crate::{
-    Route,
-    ui::components::{Avatar, TopAppBar, TopAppBarTitle, user_color},
+    ui::components::{Avatar, TopAppBar, TopAppBarTitle},
     utils::use_app_colors,
 };
 
@@ -28,26 +27,19 @@ impl Component for PendingDm {
         let mut error: State<Option<String>> = use_state(|| None);
 
         // Read display info set by the caller before navigating here.
-        let (display_name, avatar_mxc) = PENDING_DM
+        let (display_name, avatar) = PENDING_DM
             .lock()
             .ok()
             .and_then(|g| {
                 g.as_ref()
-                    .map(|u| (u.display_name.clone(), u.avatar_mxc.clone()))
+                    .map(|u| (u.display_name.clone(), u.avatar.clone()))
             })
             .unwrap_or_else(|| (user_id.clone(), None));
-
-        let initial = display_name
-            .chars()
-            .next()
-            .map(|c| c.to_uppercase().to_string())
-            .unwrap_or_else(|| "?".to_string());
-        let color = user_color(&user_id);
+        let color = id_color(&user_id);
 
         let is_sending = *sending.read();
         let err_msg = error.read().clone();
         let is_empty = text.read().trim().is_empty();
-        let uid_for_key = user_id.clone();
 
         let mut do_send = move || {
             let msg = text.read().trim().to_string();
@@ -58,8 +50,7 @@ impl Component for PendingDm {
             *error.write() = None;
 
             let uid = user_id.clone();
-            let (tx, rx) = futures::channel::oneshot::channel::<Result<String, String>>();
-            tokio::task::spawn(async move {
+            let rx = crate::utils::on_tokio::<Result<String, String>, _>(async move {
                 let result: Result<String, String> = async {
                     use matrix_sdk::ruma::events::{
                         AnyMessageLikeEventContent, room::message::RoomMessageEventContent,
@@ -76,11 +67,11 @@ impl Component for PendingDm {
                     Ok(room_id)
                 }
                 .await;
-                let _ = tx.send(result);
+                result
             });
             spawn(async move {
                 match rx.await {
-                    Ok(Ok(room_id)) => {
+                    Some(Ok(room_id)) => {
                         // Clear stale display info so a future PendingDm opened
                         // via back-navigation can't show the wrong name/avatar.
                         if let Ok(mut pending) = PENDING_DM.lock() {
@@ -88,11 +79,11 @@ impl Component for PendingDm {
                         }
                         crate::app::navigation::navigate_to_room(room_id);
                     }
-                    Ok(Err(e)) => {
+                    Some(Err(e)) => {
                         *error.write() = Some(format!("Error: {e}"));
                         *sending.write() = false;
                     }
-                    Err(_) => {
+                    None => {
                         *sending.write() = false;
                     }
                 }
@@ -108,9 +99,7 @@ impl Component for PendingDm {
             .background(c.surface)
             .child(TopAppBar {
                 title: TopAppBarTitle::Text(display_name.clone()),
-                on_back: Some(Arc::new(|| {
-                    let _ = RouterContext::get().push(Route::NewChat);
-                })),
+                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
                 actions: vec![],
             })
             // Recipient header
@@ -123,11 +112,9 @@ impl Component for PendingDm {
                     .spacing(8.)
                     .child(Avatar {
                         size: 64.,
-                        bytes: None,
-                        fetch_key: avatar_mxc,
-                        initial,
+                        source: avatar,
+                        name: display_name.to_string(),
                         color,
-                        image_key: uid_for_key,
                     })
                     .child(
                         label()

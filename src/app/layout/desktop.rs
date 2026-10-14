@@ -1,5 +1,6 @@
 use std::sync::atomic::Ordering;
 
+use freya::animation::*;
 use freya::prelude::*;
 use freya_router::prelude::{Outlet, RouterContext, use_route};
 
@@ -15,7 +16,7 @@ use crate::app::state::{ACTIVE_ROOM_RX, WIDE_MODE};
 use crate::app::theme::effective_theme;
 use crate::ui::pages::{home::HomePage, room::RoomPage, room_settings::RoomSettings};
 use crate::utils::const_values::AppColors;
-use crate::utils::{matrix::load_theme_is_dark, use_app_colors, use_watch};
+use crate::utils::{use_app_colors, use_watch};
 
 const WIDE_MIN_WIDTH: f32 = 800.;
 const THREE_PANEL_MIN_WIDTH: f32 = 1200.;
@@ -24,7 +25,7 @@ const SIDE_PANEL_WIDTH: f32 = 400.;
 /// Desktop: one, two (list | room) or three (list | room | settings) panels by width.
 impl Component for Layout {
     fn render(&self) -> impl IntoElement {
-        use_init_theme(|| effective_theme(load_theme_is_dark()));
+        use_init_theme(|| effective_theme(crate::app::theme::load_is_dark()));
 
         let c = use_app_colors();
         let mut width: State<f32> = use_state(|| 0.0f32);
@@ -67,7 +68,8 @@ impl Component for Layout {
             Route::RoomSettings { room_id } if w >= THREE_PANEL_MIN_WIDTH => Some(room_id.clone()),
             _ => None,
         };
-        // Settings, chat creation, reactions and bookmarks open as a modal over the split view.
+        // Settings, chat creation, reactions, bookmarks and room media open as a
+        // modal over the split view.
         let modal_route = is_wide
             && matches!(
                 route,
@@ -81,6 +83,7 @@ impl Component for Layout {
                     | Route::NewGroupConfig
                     | Route::ReactionsPage
                     | Route::BookmarksPage
+                    | Route::RoomMediaPage { .. }
             );
         let show_split = modal_route
             || is_wide
@@ -148,13 +151,16 @@ impl Component for Layout {
                 on_key(&e, nav, pending_g, is_wide);
             })
             .child(body)
-            .maybe_child(modal_route.then(modal_view))
+            .maybe_child(modal_route.then(|| modal_view(&route)))
             .child(ContextMenuViewer::new())
             .maybe_child(nav.help_open.read().then(|| help_overlay(c, nav)))
     }
 }
 
-fn modal_view() -> Element {
+fn modal_view(route: &Route) -> Element {
+    if matches!(route, Route::RoomMediaPage { .. }) {
+        return MediaModal.into_element();
+    }
     Popup::new()
         .width(Size::px(560.))
         .height(Size::px(680.))
@@ -170,6 +176,53 @@ fn modal_view() -> Element {
                 .child(Outlet::<Route>::new()),
         )
         .into_element()
+}
+
+/// Larger modal for the room media gallery. Not a `Popup`: its Esc would also
+/// fire while the image viewer is open; the gallery handles Esc itself.
+/// Opened from room settings, so closing goes back there. Opens with the same
+/// fade and zoom as `Popup`.
+#[derive(PartialEq)]
+struct MediaModal;
+
+impl Component for MediaModal {
+    fn render(&self) -> impl IntoElement {
+        let animation = use_animation(|conf| {
+            conf.on_creation(OnCreation::Run);
+            (
+                AnimNum::new(0., 150.).time(200).ease(Ease::Out),
+                AnimNum::new(0.95, 1.)
+                    .time(250)
+                    .ease(Ease::Out)
+                    .function(Function::Expo),
+                AnimNum::new(0., 1.).time(200).ease(Ease::Out),
+            )
+        });
+        let (backdrop, scale, opacity) = {
+            let values = animation.get();
+            (values.0.value(), values.1.value(), values.2.value())
+        };
+        rect()
+            .layer(Layer::Overlay)
+            .position(Position::new_global().top(0.).left(0.))
+            .width(Size::window_percent(100.))
+            .height(Size::window_percent(100.))
+            .center()
+            .background((0u8, 0u8, 0u8, backdrop as u8))
+            .on_press(|_| crate::app::navigation::go_back_or_home())
+            .child(
+                rect()
+                    .width(Size::window_percent(85.))
+                    .height(Size::window_percent(85.))
+                    .scale((scale, scale))
+                    .opacity(opacity)
+                    .corner_radius(12.)
+                    .overflow(Overflow::Clip)
+                    .shadow(Shadow::new().y(4.).blur(12.).color((0, 0, 0, 60)))
+                    .on_press(|e: Event<PressEventData>| e.stop_propagation())
+                    .child(Outlet::<Route>::new()),
+            )
+    }
 }
 
 fn side_panel(child: impl IntoElement) -> Rect {

@@ -2,12 +2,14 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use freya::prelude::*;
+
+use crate::utils::avatars::AvatarSource;
 use freya_query::prelude::*;
 use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
 use crate::ui::components::Avatar;
 use crate::utils::queries::FetchSenderName;
-use crate::utils::{format_timestamp, sender_color, use_app_colors};
+use crate::utils::{format_timestamp, id_color, use_app_colors};
 
 use super::{Reaction, ReactionSender};
 
@@ -148,7 +150,6 @@ impl Component for SeenByRow {
             .cloned()
             .unwrap_or_else(|| display_fallback.clone());
 
-        let avatar_key = member_key;
         rect()
             .horizontal()
             .width(Size::fill())
@@ -157,16 +158,9 @@ impl Component for SeenByRow {
             .spacing(10.)
             .child(Avatar {
                 size: 28.,
-                bytes: None,
-                initial: name
-                    .chars()
-                    .next()
-                    .unwrap_or('?')
-                    .to_uppercase()
-                    .to_string(),
-                color: sender_color(&uid),
-                image_key: avatar_key.clone(),
-                fetch_key: Some(avatar_key),
+                source: Some(AvatarSource::member(&self.room_id, &uid)),
+                name: name.clone(),
+                color: id_color(&uid),
             })
             .child(
                 rect()
@@ -290,7 +284,6 @@ impl Component for ReactionSenderRow {
             .cloned()
             .unwrap_or_else(|| display_fallback.clone());
 
-        let avatar_key = member_key;
         rect()
             .horizontal()
             .width(Size::fill())
@@ -299,16 +292,9 @@ impl Component for ReactionSenderRow {
             .spacing(8.)
             .child(Avatar {
                 size: 24.,
-                bytes: None,
-                initial: name
-                    .chars()
-                    .next()
-                    .unwrap_or('?')
-                    .to_uppercase()
-                    .to_string(),
-                color: sender_color(&uid),
-                image_key: avatar_key.clone(),
-                fetch_key: Some(avatar_key),
+                source: Some(AvatarSource::member(&self.room_id, &uid)),
+                name: name.clone(),
+                color: id_color(&uid),
             })
             .child(
                 rect()
