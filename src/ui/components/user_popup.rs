@@ -1,0 +1,154 @@
+use freya::prelude::*;
+
+use crate::utils::avatars::AvatarSource;
+
+use crate::ui::components::HoverableExt;
+use freya_query::prelude::*;
+
+use crate::ui::pages::home::room_list_item::{RoomListItem, RoomSummary};
+use crate::utils::matrix::CLIENT;
+use crate::utils::queries::FetchMutualRooms;
+
+use super::Avatar;
+
+#[derive(Clone, PartialEq)]
+pub struct UserPopupInfo {
+    pub user_id: String,
+    pub display_name: String,
+    pub avatar: Option<AvatarSource>,
+}
+
+#[derive(PartialEq)]
+pub struct UserPopupOverlay {
+    pub open: State<Option<UserPopupInfo>>,
+}
+
+impl Component for UserPopupOverlay {
+    fn render(&self) -> impl IntoElement {
+        let theme = use_theme();
+        let colors = theme.read().colors.clone();
+        let mut open = self.open;
+        let info_opt = self.open.read().clone();
+
+        // Hooks must always be called; use empty key when no user is selected.
+        let user_id_key = info_opt
+            .as_ref()
+            .map(|i| i.user_id.clone())
+            .unwrap_or_default();
+        let mutual_query = use_query(Query::new(user_id_key, FetchMutualRooms));
+        let mutual_state = mutual_query.read();
+        let is_loading = mutual_state.state().is_pending() || mutual_state.state().is_loading();
+        let common_room_ids = mutual_state.state().ok().cloned().unwrap_or_default();
+        drop(mutual_state);
+
+        let mut popup = Popup::new().on_close_request(move |_| *open.write() = None);
+
+        if let Some(info) = info_opt {
+            // Resolve room IDs to Room objects.
+            let common_rooms: Vec<_> = common_room_ids
+                .iter()
+                .filter_map(|id| crate::utils::matrix::get_room(id))
+                .collect();
+
+            let has_dm = CLIENT
+                .get()
+                .and_then(|client| {
+                    matrix_sdk::ruma::UserId::parse(&info.user_id)
+                        .ok()
+                        .and_then(|uid| client.get_dm_room(&uid))
+                })
+                .is_some();
+
+            let common_count = common_rooms.len();
+            let user = crate::utils::users::UserInfo {
+                user_id: info.user_id.clone(),
+                display_name: info.display_name.clone(),
+                avatar: info.avatar.clone(),
+            };
+
+            popup = popup
+                // ── Header ────────────────────────────────────────────────────
+                .child(
+                    rect()
+                        .horizontal()
+                        .spacing(16.)
+                        .cross_align(Alignment::Center)
+                        .child(Avatar {
+                            size: 56.,
+                            source: info.avatar.clone(),
+                            name: info.display_name.clone(),
+                            color: crate::utils::id_color(&info.user_id),
+                        })
+                        .child(
+                            rect()
+                                .vertical()
+                                .spacing(2.)
+                                .child(
+                                    label()
+                                        .text(info.display_name.clone())
+                                        .font_size(18.)
+                                        .font_weight(FontWeight::MEDIUM)
+                                        .color(colors.text_primary),
+                                )
+                                .child(
+                                    label()
+                                        .text(info.user_id.clone())
+                                        .font_size(13.)
+                                        .color(colors.text_secondary),
+                                ),
+                        ),
+                )
+                // ── Rooms in common ───────────────────────────────────────────
+                .maybe_child((!is_loading && common_count > 0).then(|| {
+                    rect()
+                        .vertical()
+                        .width(Size::fill())
+                        .spacing(2.)
+                        .child(
+                            label()
+                                .text(format!(
+                                    "{common_count} room{} in common",
+                                    if common_count == 1 { "" } else { "s" }
+                                ))
+                                .font_size(12.)
+                                .font_weight(FontWeight::MEDIUM)
+                                .color(colors.primary),
+                        )
+                        .child(
+                            ScrollView::new()
+                                .width(Size::fill())
+                                .height(Size::px(240.))
+                                .children(common_rooms.into_iter().map(|room| {
+                                    RoomListItem {
+                                        summary: RoomSummary::new(room),
+                                    }
+                                    .into_element()
+                                })),
+                        )
+                }))
+                // ── DM button ─────────────────────────────────────────────────
+                .child(
+                    rect()
+                        .width(Size::fill())
+                        .padding(Gaps::new(14., 0., 14., 0.))
+                        .corner_radius(8.)
+                        .background(colors.primary)
+                        .overflow(Overflow::Clip)
+                        .center()
+                        .on_press(move |_| {
+                            open.set(None);
+                            crate::app::navigation::open_dm(user.clone());
+                        })
+                        .child(
+                            label()
+                                .text(if has_dm { "Jump to DM" } else { "Send message" })
+                                .font_size(16.)
+                                .color(colors.text_inverse),
+                        )
+                        .hoverable(Size::fill(), Size::auto(), 8.),
+                );
+        }
+
+        popup
+    }
+}

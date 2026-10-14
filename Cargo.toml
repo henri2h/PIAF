@@ -1,0 +1,109 @@
+[package]
+name = "piaf"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "piaf"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+hotreload = ["freya/hotreload"]
+perf-overlay = []
+
+[dependencies]
+freya = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
+  "sdk",
+  "router",
+  "markdown",
+] }
+freya-components = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-core = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-engine = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-material-design = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-icons = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
+  "lucide",
+] }
+freya-metrics-plugin = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-router = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-query = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+freya-radio = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+ruma = { version = "0.15.1", features = ["client-api-c", "unstable-msc2666"] }
+matrix-sdk = { version = "0.17.0", default-features = false, features = [
+  "e2e-encryption",
+  "automatic-room-key-forwarding",
+  "bundled-sqlite",
+  "experimental-search",
+] }
+matrix-sdk-ui = { version = "0.17.0", default-features = false, features = [] }
+tokio = { version = "1.15.3", features = ["macros", "rt-multi-thread"] }
+matrix-sdk-crypto = "0.17.0"
+color-eyre = "0.6.5"
+serde = { version = "1.0.228", features = ["derive"] }
+anyhow = "1.0.100"
+dirs = "6.0.0"
+rand = "0.10.1"
+rand_distr = "0.6.0"
+futures = "0.3"
+bytes = "1"
+chrono = { version = "0.4", features = ["clock"] }
+eyeball-im = "0.8"
+mime = "0.3"
+blurhash = "0.2.3"
+png = "0.18.1"
+# `log` feature: with no subscriber installed (Android), events go to android_logger.
+tracing = { version = "0.1", features = ["log"] }
+
+[target.'cfg(not(target_os="android"))'.dependencies]
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+rfd = "0.15"
+arboard = { version = "3", default-features = false, features = [
+  "image-data",
+  "wayland-data-control",
+] }
+notify-rust = "4"
+
+[target.'cfg(target_os="android")'.dependencies]
+freya-android = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum", features = [
+] }
+freya-winit = { git = "https://github.com/henri2h/freya", branch = "henri2h/momentum" }
+android_logger = "0.15"
+log = "0.4"
+winit = { version = "0.30", features = ["android-native-activity", "rwh_06"] }
+jni = { version = "0.21", default-features = false }
+
+[dev-dependencies]
+# matrix-sdk "testing" feature enables test_utils (mock server, pre-built clients).
+# Cargo unions this with the [dependencies] features for test builds only.
+matrix-sdk = { version = "0.17.0", default-features = false, features = [
+  "testing",
+  "bundled-sqlite",
+] }
+wiremock = { version = "0.6.5", default-features = false }
+matrix-sdk-test = "0.17.0"
+serde_json = "1"
+tempfile = "3"
+
+# Compile dependencies with light optimization so they don't bottleneck incremental builds
+[profile.dev.package."*"]
+opt-level = 1
+
+# matrix-sdk-ui panics on a timeline consistency check ("duplicate read
+# receipts") in debug builds only; release builds log it. Match release so
+# opening such a room doesn't kill its timeline task.
+[profile.dev.package.matrix-sdk-ui]
+debug-assertions = false
+
+[patch."https://github.com/henri2h/freya"]
+freya                    = { path = "/home/user/dev/rust/freya/crates/freya" }
+freya-components         = { path = "/home/user/dev/rust/freya/crates/freya-components" }
+freya-core               = { path = "/home/user/dev/rust/freya/crates/freya-core" }
+freya-engine             = { path = "/home/user/dev/rust/freya/crates/freya-engine" }
+freya-material-design    = { path = "/home/user/dev/rust/freya/crates/freya-material-design" }
+freya-icons              = { path = "/home/user/dev/rust/freya/crates/freya-icons" }
+freya-metrics-plugin     = { path = "/home/user/dev/rust/freya/crates/freya-metrics-plugin" }
+freya-router             = { path = "/home/user/dev/rust/freya/crates/freya-router" }
+freya-query              = { path = "/home/user/dev/rust/freya/crates/freya-query" }
+freya-radio              = { path = "/home/user/dev/rust/freya/crates/freya-radio" }
+freya-android            = { path = "/home/user/dev/rust/freya/crates/freya-android" }
+freya-winit              = { path = "/home/user/dev/rust/freya/crates/freya-winit" }
