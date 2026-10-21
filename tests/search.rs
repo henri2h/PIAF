@@ -333,7 +333,7 @@ async fn search_rooms_local_filters_by_name() {
         .await
         .expect("sync failed");
 
-    let results = search_rooms_local(&client, "alice");
+    let results = search_rooms_local(&client, "alice", 8);
 
     assert_eq!(results.len(), 2);
     let names: Vec<&str> = results.iter().map(|r| r.display_name.as_str()).collect();
@@ -368,6 +368,6 @@ async fn search_rooms_local_returns_empty_for_no_match() {
         .await
         .expect("sync failed");
 
-    let results = search_rooms_local(&client, "xyz_no_match");
+    let results = search_rooms_local(&client, "xyz_no_match", 8);
     assert!(results.is_empty());
 }

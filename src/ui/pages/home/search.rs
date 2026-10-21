@@ -21,7 +21,65 @@ pub struct MessageResult {
     pub is_dm: bool,
 }
 
-pub fn search_rooms_local(client: &Client, query: &str) -> Vec<RoomResult> {
+/// Which results a search shows (the search page's chips).
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum SearchFilter {
+    All,
+    Rooms,
+    People,
+    Messages,
+}
+
+impl SearchFilter {
+    pub const ALL: [SearchFilter; 4] = [Self::All, Self::Rooms, Self::People, Self::Messages];
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            Self::All => "All",
+            Self::Rooms => "Rooms",
+            Self::People => "People",
+            Self::Messages => "Messages",
+        }
+    }
+
+    pub fn shows(&self, section: SearchFilter) -> bool {
+        *self == Self::All || *self == section
+    }
+}
+
+/// Byte range of `query` in `name`, ignoring case; `None` without a match.
+pub fn find_match(name: &str, query: &str) -> Option<(usize, usize)> {
+    let query: Vec<char> = query.trim().chars().flat_map(char::to_lowercase).collect();
+    if query.is_empty() {
+        return None;
+    }
+    for (start, _) in name.char_indices() {
+        let mut wanted = query.iter();
+        for (i, c) in name[start..].char_indices() {
+            let mut matched = true;
+            for lower in c.to_lowercase() {
+                match wanted.next() {
+                    Some(&w) if w == lower => {}
+                    Some(_) => {
+                        matched = false;
+                        break;
+                    }
+                    None => break,
+                }
+            }
+            if !matched {
+                break;
+            }
+            if wanted.as_slice().is_empty() {
+                return Some((start, start + i + c.len_utf8()));
+            }
+        }
+    }
+    None
+}
+
+/// Joined and invited rooms whose name contains `query`, most recent first.
+pub fn search_rooms_local(client: &Client, query: &str, limit: usize) -> Vec<RoomResult> {
     let ql = query.to_lowercase();
     let mut all_rooms = client.joined_rooms();
     all_rooms.extend(client.invited_rooms());
@@ -39,7 +97,7 @@ pub fn search_rooms_local(client: &Client, query: &str) -> Vec<RoomResult> {
                 None
             }
         })
-        .take(8)
+        .take(limit)
         .collect()
 }
 
@@ -118,4 +176,28 @@ pub async fn search_messages_remote(
     }
 
     (results, next_token)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::find_match;
+
+    #[test]
+    fn match_ignores_case() {
+        assert_eq!(find_match("Testers HQ", "hq"), Some((8, 10)));
+        assert_eq!(find_match("Testers HQ", "TEST"), Some((0, 4)));
+    }
+
+    #[test]
+    fn match_handles_multibyte_names() {
+        let name = "Café Été";
+        let (start, end) = find_match(name, "été").unwrap();
+        assert_eq!(&name[start..end], "Été");
+    }
+
+    #[test]
+    fn no_match() {
+        assert_eq!(find_match("Bob", "alice"), None);
+        assert_eq!(find_match("Bob", "  "), None);
+    }
 }

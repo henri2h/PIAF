@@ -255,12 +255,12 @@ impl Component for ManageListsOverlay {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
         let mut open = self.open;
+        // Before the early return: hooks run on every render, in order.
+        let mut new_name: State<String> = use_state(String::new);
 
         if !*self.open.read() {
             return Popup::new().into_element();
         }
-
-        let mut new_name: State<String> = use_state(String::new);
 
         Popup::new()
             .on_close_request(move |_| open.set(false))
@@ -356,5 +356,41 @@ impl Component for ManageListRow {
                 .tooltip("Delete list")
                 .size(28., 16.),
             )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use freya::prelude::*;
+    use freya_testing::prelude::launch_test;
+
+    use super::ManageListsOverlay;
+
+    /// Opening the overlay must not change its hook count (it used to panic).
+    #[test]
+    fn manage_lists_overlay_opens_and_closes() {
+        fn app() -> impl IntoElement {
+            use_init_theme(light_theme);
+            let mut open = use_state(|| false);
+            rect()
+                .expanded()
+                .child(
+                    rect()
+                        .width(Size::px(100.))
+                        .height(Size::px(40.))
+                        .on_press(move |_| open.toggle()),
+                )
+                .child(ManageListsOverlay {
+                    open,
+                    lists: vec![],
+                })
+        }
+
+        let mut test = launch_test(app);
+        test.sync_and_update();
+        test.click_cursor((10., 10.));
+        test.sync_and_update();
+        test.click_cursor((10., 10.));
+        test.sync_and_update();
     }
 }

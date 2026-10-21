@@ -3,10 +3,10 @@ use freya_router::prelude::{RouterContext, use_route};
 
 use super::Layout;
 use super::nav_bar::NavBar;
-use crate::utils::insets::use_insets;
-use crate::app::page_transition::PageTransition;
 use crate::app::Route;
+use crate::app::page_transition::PageTransition;
 use crate::app::theme::effective_theme;
+use crate::utils::insets::use_insets;
 use crate::utils::use_app_colors;
 
 /// Android: single panel with bottom navigation bar; double back press to exit.

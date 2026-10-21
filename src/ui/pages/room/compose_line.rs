@@ -2,7 +2,6 @@ use freya::prelude::*;
 use freya::text_edit::*;
 use freya_components::cursor_blink::use_cursor_blink;
 
-use super::compose_touch::{ComposeTouch, place_cursor};
 use crate::utils::const_values::AppColors;
 
 /// One line of the composer: text, selection and blinking cursor.
@@ -12,7 +11,7 @@ pub(super) struct ComposeLine {
     pub editable: UseEditable,
     pub c: AppColors,
     pub is_focused: bool,
-    pub touch: ComposeTouch,
+    pub touch: TouchEdit,
     /// Measured height of each line (wrapped lines are taller), for the composer's height.
     pub heights: State<Vec<f32>>,
 }
@@ -87,11 +86,14 @@ impl Component for ComposeLine {
             });
         };
 
-        // After a long press, the cursor follows the finger.
+        // After a long press, the selection follows the finger.
         let on_touch_move = move |e: Event<TouchEventData>| {
-            if touch.is_dragging() {
-                place_cursor(editable, &holder.read(), line_index, e.element_location);
-            }
+            touch.drag(
+                editable,
+                &holder.read(),
+                EditorLine::Paragraph(line_index),
+                e.element_location,
+            );
         };
 
         paragraph()
@@ -104,7 +106,7 @@ impl Component for ComposeLine {
             .cursor_color(cursor_color)
             .highlights(highlights.map(|h| vec![h]))
             .width(Size::fill())
-            .font_size(14.)
+            .font_size(16.)
             .color(c.compose_edit_text)
             .span(text)
     }

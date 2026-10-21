@@ -26,20 +26,34 @@ class ImeInputView(context: Context) : View(context) {
     private var connection: Connection? = null
     /** Bumped when the composer re-syncs: callbacks of older connections are dropped. */
     var generation = 0
+    /** Editing the search field: one line, the action key searches. */
+    var search = false
 
     init {
-        isFocusable = true
-        isFocusableInTouchMode = true
+        // Focusable only while shown (see ImeBridge.show / hide): otherwise
+        // Android hands it focus back after a clearFocus, and the keyboard of
+        // every other text field types into it.
+        setEditable(false)
+    }
+
+    fun setEditable(editable: Boolean) {
+        isFocusable = editable
+        isFocusableInTouchMode = editable
     }
 
     override fun onCheckIsTextEditor() = true
 
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
-        outAttrs.inputType = InputType.TYPE_CLASS_TEXT or
-            InputType.TYPE_TEXT_FLAG_MULTI_LINE or
-            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
-            InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
-        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_FLAG_NO_ENTER_ACTION
+        if (search) {
+            outAttrs.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
+            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_ACTION_SEARCH
+        } else {
+            outAttrs.inputType = InputType.TYPE_CLASS_TEXT or
+                InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
+                InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
+            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_FLAG_NO_ENTER_ACTION
+        }
         outAttrs.initialSelStart = cursor
         outAttrs.initialSelEnd = cursor
         return Connection(this, this).also {
@@ -121,6 +135,12 @@ class ImeInputView(context: Context) : View(context) {
             return true
         }
 
+        /** The action key (search): the field decides what it does. */
+        override fun performEditorAction(actionCode: Int): Boolean {
+            forward { ImeBridge.nativeImeAction() }
+            return true
+        }
+
         override fun deleteSurroundingText(beforeLength: Int, afterLength: Int): Boolean {
             super.deleteSurroundingText(beforeLength, afterLength)
             forward { ImeBridge.nativeImeDelete(beforeLength, afterLength) }
@@ -143,8 +163,12 @@ class ImeInputView(context: Context) : View(context) {
                     forward { ImeBridge.nativeImeDelete(0, 1) }
                 }
                 KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                    super.commitText("\n", 1)
-                    forward { ImeBridge.nativeImeCommit("\n") }
+                    if (owner.search) {
+                        forward { ImeBridge.nativeImeAction() }
+                    } else {
+                        super.commitText("\n", 1)
+                        forward { ImeBridge.nativeImeCommit("\n") }
+                    }
                 }
                 else -> {
                     val char = event.unicodeChar
@@ -180,11 +204,13 @@ object ImeBridge {
         }
     }
 
-    /** The composer got focus: show the keyboard on its text. */
+    /** A field (composer, search) got focus: show the keyboard on its text. */
     @JvmStatic
-    fun show(text: String, cursor: Int) = post { v, imm ->
+    fun show(text: String, cursor: Int, search: Boolean) = post { v, imm ->
         v.generation++
+        v.search = search
         v.setState(text, cursor)
+        v.setEditable(true)
         v.requestFocus()
         imm.restartInput(v)
         imm.showSoftInput(v, 0)
@@ -193,6 +219,8 @@ object ImeBridge {
     @JvmStatic
     fun hide() = post { v, imm ->
         imm.hideSoftInputFromWindow(v.windowToken, 0)
+        // Not focusable first: a plain clearFocus would hand focus straight back.
+        v.setEditable(false)
         v.clearFocus()
     }
 
@@ -209,4 +237,5 @@ object ImeBridge {
     @JvmStatic external fun nativeImeDelete(before: Int, after: Int)
     @JvmStatic external fun nativeImeComposingRegion(start: Int, end: Int)
     @JvmStatic external fun nativeImeSelect(start: Int, end: Int)
+    @JvmStatic external fun nativeImeAction()
 }

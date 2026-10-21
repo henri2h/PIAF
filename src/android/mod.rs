@@ -1,3 +1,4 @@
+pub mod attachments;
 pub mod ime;
 mod jni_push;
 

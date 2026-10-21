@@ -29,7 +29,9 @@ pub fn empty_state(
                 .color(c.on_surface_muted),
         )
         .maybe_child(hint.map(|hint| {
+            // Full width: an auto-width label draws centered text off its box.
             label()
+                .width(Size::fill())
                 .text(hint.to_string())
                 .font_size(13.)
                 .color(c.on_surface_faint)

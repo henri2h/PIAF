@@ -93,17 +93,21 @@ pub enum SenderPrefix {
     None,
     Me,
     Other(String),
+    /// Who sent the invite: "<name> invited you".
+    Inviter(String),
 }
 
 /// Preview of a room's latest event and who to attribute it to.
 pub fn last_message(room: &Room, my_user_id: Option<&str>) -> Option<(String, SenderPrefix)> {
     let latest = match room.latest_event() {
         LatestEventValue::RemoteInvite { inviter, .. } => {
-            let body = match inviter {
-                Some(id) => format!("You were invited by {}", id.localpart()),
-                None => "You were invited".to_string(),
-            };
-            return Some((body, SenderPrefix::None));
+            return Some(match inviter {
+                Some(id) => (
+                    "invited you".to_string(),
+                    SenderPrefix::Inviter(id.to_string()),
+                ),
+                None => ("You were invited".to_string(), SenderPrefix::None),
+            });
         }
         LatestEventValue::Remote(latest) => latest,
         _ => return None,
@@ -126,6 +130,9 @@ pub fn preview_text(body: &str, prefix: &SenderPrefix, sender_name: Option<&str>
         SenderPrefix::Me => format!("You: {body}"),
         SenderPrefix::Other(uid) => {
             format!("{}: {body}", sender_name.unwrap_or_else(|| localpart(uid)))
+        }
+        SenderPrefix::Inviter(uid) => {
+            format!("{} {body}", sender_name.unwrap_or_else(|| localpart(uid)))
         }
     }
 }
@@ -228,6 +235,15 @@ mod tests {
         let other = SenderPrefix::Other("@bob:example.org".into());
         assert_eq!(preview_text("hi", &other, None), "bob: hi");
         assert_eq!(preview_text("hi", &other, Some("Bob")), "Bob: hi");
+        let inviter = SenderPrefix::Inviter("@bob:example.org".into());
+        assert_eq!(
+            preview_text("invited you", &inviter, None),
+            "bob invited you"
+        );
+        assert_eq!(
+            preview_text("invited you", &inviter, Some("Bob")),
+            "Bob invited you"
+        );
     }
 
     #[test]

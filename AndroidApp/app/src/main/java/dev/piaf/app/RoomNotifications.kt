@@ -287,7 +287,7 @@ object RoomNotifications {
             .putExtra(MainActivity.EXTRA_ROOM_ID, roomId)
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         return NotificationCompat.Builder(context, PushReceiver.CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setContentIntent(PendingIntent.getActivity(context, id, open, flags))

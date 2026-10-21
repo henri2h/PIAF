@@ -1,7 +1,15 @@
 //! The soft keyboard on Android (`android::ime`), no-op elsewhere: desktop
 //! input reaches the composer as key events.
 
-/// What the keyboard did to the composer's text.
+/// What the keyboard edits: decides its layout (multiline, or a search key).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ImeKind {
+    Composer,
+    /// Single line; the action key searches.
+    Search,
+}
+
+/// What the keyboard did to the field's text.
 pub enum ImeEvent {
     /// Insert, replacing the composition (`"\n"`: new line).
     Commit(String),
@@ -13,6 +21,8 @@ pub enum ImeEvent {
     ComposingRegion { start: usize, end: usize },
     /// Move the cursor or select (UTF-16 range).
     Select { start: usize, end: usize },
+    /// The action key (search) was pressed.
+    Action,
 }
 
 impl ImeEvent {
@@ -24,6 +34,7 @@ impl ImeEvent {
             Self::Delete { .. } => "delete",
             Self::ComposingRegion { .. } => "composing region",
             Self::Select { .. } => "select",
+            Self::Action => "action",
         }
     }
 }
@@ -41,7 +52,7 @@ mod desktop {
     pub fn drain() -> Vec<ImeEvent> {
         Vec::new()
     }
-    pub fn show(_text: &str, _cursor: usize) -> u64 {
+    pub fn show(_text: &str, _cursor: usize, _kind: super::ImeKind) -> u64 {
         0
     }
     pub fn hide(_owner: u64) {}

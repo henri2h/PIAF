@@ -158,6 +158,7 @@ impl Component for RoomSettings {
                                             .cross_align(Alignment::Center)
                                             .child(
                                                 label()
+                                                    .width(Size::fill())
                                                     .text(desc.clone())
                                                     .font_size(14.)
                                                     .color(c.on_surface_variant)

@@ -1,7 +1,7 @@
 use crate::utils::id_color;
 use freya::prelude::*;
 
-use crate::ui::components::PersonRow;
+use crate::ui::components::{ListItem, PersonRow};
 use crate::utils::users::UserInfo;
 
 use crate::ui::components::HoverableExt;
@@ -13,7 +13,9 @@ use matrix_sdk::ruma::{MilliSecondsSinceUnixEpoch, UInt};
 use crate::ui::components::Avatar;
 use crate::utils::{format_timestamp, use_app_colors};
 
+use super::search::find_match;
 use crate::app::navigation::{navigate_to_room, navigate_to_room_at_event};
+use crate::utils::room_preview::{last_message, preview_text};
 
 // ---------------------------------------------------------------------------
 // RoomSearchTile
@@ -23,48 +25,55 @@ use crate::app::navigation::{navigate_to_room, navigate_to_room_at_event};
 pub struct RoomSearchTile {
     pub room_id: String,
     pub display_name: String,
+    /// The query: its match in the name is bold.
+    pub query: String,
 }
 
 impl Component for RoomSearchTile {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-
         let room_id = self.room_id.clone();
-        let display_name = self.display_name.clone();
-        let color = id_color(&room_id);
-        let bg = c.surface;
-        let rid = room_id.clone();
+        let display_name = &self.display_name;
+        let name = match find_match(display_name, &self.query) {
+            Some((start, end)) => paragraph()
+                .span(Span::new(display_name[..start].to_string()))
+                .span(Span::new(display_name[start..end].to_string()).font_weight(FontWeight::BOLD))
+                .span(Span::new(display_name[end..].to_string())),
+            None => paragraph().span(display_name.clone()),
+        }
+        .width(Size::fill())
+        .max_lines(1)
+        .text_overflow(TextOverflow::Ellipsis)
+        .font_size(15.)
+        .color(c.on_surface);
 
-        rect()
-            .width(Size::fill())
-            .background(bg)
-            .overflow(Overflow::Clip)
-            .on_press(move |_| navigate_to_room(rid.clone()))
-            .child(
-                Ripple::new().color(c.primary).width(Size::fill()).child(
-                    rect()
-                        .horizontal()
-                        .content(Content::Flex)
-                        .width(Size::fill())
-                        .padding(Gaps::new(10., 16., 10., 16.))
-                        .spacing(12.)
-                        .cross_align(Alignment::Center)
-                        .child(Avatar {
-                            size: 44.,
-                            source: Some(AvatarSource::Room(room_id.clone())),
-                            name: display_name.to_string(),
-                            color,
-                        })
-                        .child(
-                            label()
-                                .text(display_name)
-                                .font_size(15.)
-                                .color(c.on_surface)
-                                .width(Size::flex(1.0)),
-                        ),
-                ),
-            )
-            .hoverable(Size::fill(), Size::auto(), 0.)
+        let mut item = ListItem::with_headline(name).leading(Avatar {
+            size: 44.,
+            source: Some(AvatarSource::Room(room_id.clone())),
+            name: display_name.clone(),
+            color: id_color(&room_id),
+        });
+        if let Some(subtitle) = room_subtitle(&room_id) {
+            item = item.supporting(subtitle);
+        }
+        item.on_press(move |_| navigate_to_room(room_id.clone()))
+    }
+}
+
+/// The room's latest message, else its member count (groups).
+fn room_subtitle(room_id: &str) -> Option<String> {
+    let room = crate::utils::matrix::get_room(room_id)?;
+    let me = crate::utils::matrix::my_user_id();
+    if let Some((body, prefix)) = last_message(&room, me.as_deref()) {
+        return Some(preview_text(&body, &prefix, None));
+    }
+    if room.is_dm() {
+        return None;
+    }
+    match room.joined_members_count() {
+        0 => None,
+        1 => Some("1 member".to_string()),
+        n => Some(format!("{n} members")),
     }
 }
 

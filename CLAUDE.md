@@ -65,7 +65,8 @@ WIDE_MODE: AtomicBool                                        // Current layout m
 - `timeline_task.rs` — tokio side: builds the matrix timeline, applies diffs, runs `MsgAction`s. UI talks to it through `TimelineHandle` (`paginate()`, `actions()`); dropping the handle stops the task.
 - `use_room_timeline.rs` — hook returning `RoomTimeline { handle, state }`; `state` is a `Copy` bundle of `State`s (messages, loading, paginating, …). The smol receive loop must never hold the handle.
 - `timeline_view.rs` — `TimelineView`: scroll view, rows, row height measuring, pagination triggers. Only it reads `messages`, so timeline updates don't re-render `RoomPage`.
-- Composer on Android: the soft keyboard types into an invisible `ImeInputView` (`AndroidApp/.../ImeInput.kt`, an `InputConnection`: suggestions, accents, swipe typing); commits / compositions / deletes reach `compose_bar.rs` through `android/ime.rs` → `utils/ime.rs` (no-op on desktop). The composer shows/hides it on focus and re-syncs it (`ime::sync`) when its text changes elsewhere. Touch editing (long-press cursor drag, edit bar) is `compose_touch.rs`; the Android clipboard is `utils/clipboard.rs`.
+- Composer on Android: the soft keyboard types into an invisible `ImeInputView` (`AndroidApp/.../ImeInput.kt`, an `InputConnection`: suggestions, accents, swipe typing); commits / compositions / deletes reach `compose_bar.rs` through `android/ime.rs` → `utils/ime.rs` (no-op on desktop), applied by `utils/ime_edit.rs` (shared with the search field). `ime::show(text, cursor, ImeKind)`: `Composer` (multiline) or `Search` (one line, the action key arrives as `ImeEvent::Action`). `ImeInputView` is focusable only between show and hide, or it steals the keyboard from every other text field. The composer shows/hides it on focus and re-syncs it (`ime::sync`) when its text changes elsewhere. Touch editing (long press selects the word under the finger, dragging extends the selection; Cut / Copy / Paste / Select all bar) comes from Freya's `touch_edit` (`use_touch_edit`, `place_cursor`, `EditMenu`), shared with `SearchField` and built into Freya's `Input`. The Android text clipboard is installed by `freya-android`; `utils/clipboard.rs` only reads desktop clipboard images.
+- Composer layout (`compose_bar.rs`): one filled pill (reply / edit card on top, attach icon + text below, placeholder kept while focused and empty), and a round send button that fades in only with something to send. Attach: desktop opens the file dialog; Android a sheet (Photos & videos / Camera / File) → `media::pick_attachment(AttachSource)` → `android/attachments.rs` ↔ `AttachmentPicker.kt` (photo picker, `ACTION_IMAGE_CAPTURE` into the FileProvider cache, `ACTION_OPEN_DOCUMENT`; ≤ 100 MB) → `media::send_attachment`.
 - `ui_ctx.rs` — `RoomUiCtx` (popup/overlay states) provided as context; rows use `use_room_ui_ctx()` instead of props.
 - The `ScrollController` and `pending_focus` live in `RoomPage` scope so they survive the media viewer unmounting `TimelineView`.
 
@@ -95,10 +96,10 @@ All Matrix SDK calls happen off the UI thread:
 
 ### Search Feature (`src/ui/pages/home/search.rs`, `search_tile.rs`)
 
-Desktop searches inline in the home bar (`HomeAppBar`). Android opens search mode as its own page, `Route::SearchPage` (`ui/pages/search/`), reusing `SearchResults`; its query survives a result's round trip and is cleared when `HomePage` mounts.
+Desktop searches inline in the home bar (`HomeAppBar`). Android opens search mode as its own page, `Route::SearchPage` (`ui/pages/search/`), reusing `SearchResults`; its query survives a result's round trip and is cleared when `HomePage` mounts. The page's field is `SearchField` (the app bar's own text, typed through the IME bridge with `ImeKind::Search`: search key, × clear), filter chips (`SearchFilter`: All / Rooms / People / Messages; one section alone shows more results), and `EmptySearch` before typing (recent chats, recent searches from `utils/recent_searches.rs`, cleared on sign-out). Scrolling the results hides the keyboard.
 
 Three search functions:
-- `search_rooms_local(query)` — filters `joined_rooms()` + `invited_rooms()` client-side, returns top 8 by recency
+- `search_rooms_local(client, query, limit)` — filters `joined_rooms()` + `invited_rooms()` client-side, top `limit` by recency (8, or 50 with the Rooms chip)
 - `search_users_remote(query)` — calls `client.search_users()` (network)
 - `search_messages_remote(query, next_batch)` — calls Matrix search API with pagination
 
@@ -155,7 +156,8 @@ Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use
 - `Hoverable` / `.hoverable(w, h, radius)`: hover tint for anything pressable (fades in/out). No hand-rolled `hovered` states for highlights.
 - `IconButton`: round icon button (hover, ripple, optional `.tooltip()`, press doesn't reach the parent).
 - `Chip`: pill toggle for filters, tabs and option pickers (selection colours animate).
-- `PersonRow`: a person in a list (avatar, name, badge, subtitle, trailing, press). `badge("Admin", c)`.
+- `ListItem`: any list row (leading, headline + optional badge, supporting line, trailing, press). Text fills the space left and ellipsizes, so it never runs under `trailing`: build rows on it instead of hand-made `rect`s. `ListItem::with_headline(el)` for a styled headline.
+- `PersonRow`: a person (a `ListItem`: avatar, name, badge, subtitle or user ID, trailing, press). `badge("Admin", c)`.
 - `bottom_sheet(c, on_close)`: Freya's `BottomSheet` (shared with rusty_map, in the Freya fork) in piaf colours, above the navigation bar, grab bar on Android. `Dialog` (centered modal, any children, `dialog_button` for actions) / `confirm_dialog(title, message, confirm, on_cancel, on_confirm)`: dialogs and destructive confirmations.
 - `empty_state(icon, title, hint, c)` / `loading_state(caption, c)`: placeholders filling a list's area.
 - `search_input(state, placeholder, c)`: the search field (chain `auto_focus`, `on_submit`).
@@ -252,4 +254,4 @@ cargo test --test search       # Integration tests only (tests/search.rs)
 
 **Path versioning note:** The test client uses `MatrixVersion::V1_0`, so ruma routes requests to `/_matrix/client/r0/…` paths (not `/v3/`). When writing new integration tests, check the ruma `metadata! { history: { 1.0 => "...", 1.1 => "..." } }` block for the correct path per API.
 
-True GUI end-to-end tests are not feasible (Freya has no headless renderer).
+**Component tests** use `freya-testing` (headless runner): `launch_test(app)`, then `sync_and_update()`, `click_cursor`, `write_text`, `find(..)` / `layout()`, `render_to_file(path)` for a PNG. Call `use_init_theme(light_theme)` in the test app (`use_app_colors` needs a theme). Toggle a component's states in a test to catch hook-order panics (e.g. `bookmarks::tests`). Components reading the global singletons (`CLIENT`, `REQUESTER`…) need `app::state::init` first, or test their pure parts.

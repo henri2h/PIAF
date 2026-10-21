@@ -78,6 +78,7 @@ pub async fn logout() {
         }
     }
     crate::utils::drafts::delete_file().await;
+    crate::utils::recent_searches::clear();
     tracing::info!("signed out");
 }
 

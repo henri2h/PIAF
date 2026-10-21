@@ -10,8 +10,8 @@ use matrix_sdk::RoomHero;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
 use super::members_avatar::MembersAvatar;
-use super::room_menu::open_room_menu;
 use super::room_list::RoomListCtx;
+use super::room_menu::open_room_menu;
 use super::row_interaction::{OnMenu, use_row_interaction};
 use crate::app::keys::{Area, use_key_nav};
 use crate::app::navigation::navigate_to_room;
@@ -64,7 +64,9 @@ impl Component for RoomListItem {
         let (body, prefix) = last_message(&s.room, my_user_id().as_deref())
             .unwrap_or((String::new(), SenderPrefix::None));
         let sender_query_key = match &prefix {
-            SenderPrefix::Other(uid) => format!("{room_id}\x00{uid}"),
+            SenderPrefix::Other(uid) | SenderPrefix::Inviter(uid) => {
+                format!("{room_id}\x00{uid}")
+            }
             _ => String::new(),
         };
         let sender_query = use_query(
@@ -80,6 +82,14 @@ impl Component for RoomListItem {
             let sender_name = sender_query.read().state().ok().cloned();
             preview_text(&body, &prefix, sender_name.as_deref())
         };
+
+        // A second line only with something on it: the name centers otherwise.
+        let has_second_line = !preview.is_empty()
+            || s.send_failed
+            || (s.draft.is_some() && !s.is_invite)
+            || s.notifications > 0
+            || s.mentions > 0
+            || s.is_unread();
 
         let bg = if is_active {
             c.surface_container_high
@@ -128,9 +138,9 @@ impl Component for RoomListItem {
                                 s.is_favourite
                                     .then(|| small_icon(freya_icons::lucide::star(), c.primary)),
                             )
-                            .child(meta(s, c, font_weight)),
+                            .child(meta(s, c, font_weight).opacity(interaction.meta_opacity())),
                     )
-                    .child(
+                    .maybe_child(has_second_line.then(|| {
                         rect()
                             .horizontal()
                             .content(Content::Flex)
@@ -138,8 +148,8 @@ impl Component for RoomListItem {
                             .spacing(8.)
                             .cross_align(Alignment::Center)
                             .child(preview_line(s, preview, c))
-                            .child(unread_badge(s, c)),
-                    ),
+                            .child(unread_badge(s, c))
+                    })),
             );
 
         let highlighted: Element = rect()
@@ -342,7 +352,8 @@ fn unread_badge(s: &RoomSummary, c: AppColors) -> Element {
             .into();
     }
     let dot = rect().width(Size::px(8.)).height(Size::px(8.));
-    if s.is_unread() {
+    // Invites already carry their "Invite" pill.
+    if s.is_unread() && !s.is_invite {
         dot.corner_radius(4.).background(c.primary).into()
     } else {
         dot.into()

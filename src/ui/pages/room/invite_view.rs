@@ -148,6 +148,7 @@ impl Component for InviteView {
                                     })
                                     .child(
                                         label()
+                                            .width(Size::fill())
                                             .text(name.clone())
                                             .font_size(24.)
                                             .font_weight(FontWeight::BOLD)
@@ -156,6 +157,7 @@ impl Component for InviteView {
                                     )
                                     .maybe_child(invite_line.map(|line| {
                                         label()
+                                            .width(Size::fill())
                                             .text(line)
                                             .font_size(14.)
                                             .text_align(TextAlign::Center)
@@ -163,6 +165,7 @@ impl Component for InviteView {
                                     }))
                                     .maybe_child(topic.filter(|t| !t.is_empty()).map(|t| {
                                         label()
+                                            .width(Size::fill())
                                             .text(t)
                                             .font_size(13.)
                                             .max_lines(4)

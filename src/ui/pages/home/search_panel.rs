@@ -6,7 +6,7 @@ use freya::prelude::*;
 
 use crate::ui::components::HoverableExt;
 
-use super::search::{MessageResult, search_messages_remote, search_rooms_local};
+use super::search::{MessageResult, SearchFilter, search_messages_remote, search_rooms_local};
 use super::search_tile::{MessageSearchTile, RoomSearchTile, UserSearchTile};
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::CLIENT;
@@ -24,6 +24,10 @@ const DEBOUNCE: Duration = Duration::from_millis(400);
 /// in-flight queries when the text changes again before they land.
 pub struct SearchResults {
     pub search: State<String>,
+    /// Sections shown (and searched); a single one shows more results.
+    pub filter: SearchFilter,
+    /// Set once the results scroll (the search page hides the keyboard).
+    pub on_scroll: Option<State<bool>>,
 }
 
 impl PartialEq for SearchResults {
@@ -36,7 +40,20 @@ impl Component for SearchResults {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
         let search = self.search;
+        let filter = self.filter;
         let query_text = search.read().to_lowercase();
+        let scroll = use_scroll_controller(ScrollConfig::default);
+        let on_scroll = self.on_scroll;
+        // Scrolling the results by hand: the keyboard has done its job.
+        use_side_effect(move || {
+            let (_, y): (i32, i32) = scroll.into();
+            if let Some(mut dismiss) = on_scroll
+                && y < -8
+                && !*dismiss.peek()
+            {
+                dismiss.set(true);
+            }
+        });
 
         // Non-reactive counter: bumping it inside a `use_side_effect_with_deps`
         // closure must not itself be a reactive dependency, or it would
@@ -51,10 +68,12 @@ impl Component for SearchResults {
         let mut msg_next_batch: State<Option<String>> = use_state(|| None);
         let mut msgs_loading_more: State<bool> = use_state(|| false);
 
-        use_side_effect_with_deps(&query_text, {
+        use_side_effect_with_deps(&(query_text.clone(), filter), {
             let search_ver = search_ver.clone();
-            move |query: &String| {
-                let query = query.clone();
+            move |(query, filter): &(String, SearchFilter)| {
+                let (query, filter) = (query.clone(), *filter);
+                // One section alone shows more of it.
+                let many = filter != SearchFilter::All;
                 // Always bump version first so in-flight stale tasks are invalidated.
                 let ver = search_ver.fetch_add(1, Ordering::Relaxed) + 1;
                 let sv = search_ver.clone();
@@ -85,28 +104,41 @@ impl Component for SearchResults {
                     };
 
                     // 1. Rooms — client-side, instant.
-                    *room_results.write() = search_rooms_local(&client, &query)
-                        .into_iter()
-                        .map(|r| (r.room_id, r.display_name))
-                        .collect();
+                    *room_results.write() = if filter.shows(SearchFilter::Rooms) {
+                        search_rooms_local(&client, &query, if many { 50 } else { 8 })
+                            .into_iter()
+                            .map(|r| (r.room_id, r.display_name))
+                            .collect()
+                    } else {
+                        vec![]
+                    };
 
                     // 2. Users — server-side, runs concurrently.
-                    *users_searching.write() = true;
-                    let sv_u = sv.clone();
-                    let q_u = query.clone();
-                    let client_u = client.clone();
-                    let rx_u = crate::utils::on_tokio(async move {
-                        crate::utils::users::search(&client_u, &q_u, 5).await
-                    });
-                    spawn(async move {
-                        let results = rx_u.await.unwrap_or_default();
-                        if sv_u.load(Ordering::Relaxed) == ver {
-                            *user_results.write() = results;
-                            *users_searching.write() = false;
-                        }
-                    });
+                    if filter.shows(SearchFilter::People) {
+                        *users_searching.write() = true;
+                        let sv_u = sv.clone();
+                        let q_u = query.clone();
+                        let client_u = client.clone();
+                        let rx_u = crate::utils::on_tokio(async move {
+                            crate::utils::users::search(&client_u, &q_u, if many { 30 } else { 5 })
+                                .await
+                        });
+                        spawn(async move {
+                            let results = rx_u.await.unwrap_or_default();
+                            if sv_u.load(Ordering::Relaxed) == ver {
+                                *user_results.write() = results;
+                                *users_searching.write() = false;
+                            }
+                        });
+                    } else {
+                        *user_results.write() = vec![];
+                    }
 
                     // 3. Messages — server-side, runs concurrently.
+                    if !filter.shows(SearchFilter::Messages) {
+                        *msg_results.write() = vec![];
+                        return;
+                    }
                     *msgs_searching.write() = true;
                     let sv_m = sv.clone();
                     let rx_m = crate::utils::on_tokio(async move {
@@ -142,12 +174,17 @@ impl Component for SearchResults {
         );
 
         build_search_results(
-            room_results.read().clone(),
-            user_results.read().clone(),
-            msg_results.read().clone(),
-            *users_searching.read(),
-            *msgs_searching.read(),
+            SearchSections {
+                filter,
+                query: query_text,
+                rooms: room_results.read().clone(),
+                users: user_results.read().clone(),
+                messages: msg_results.read().clone(),
+                users_loading: *users_searching.read(),
+                msgs_loading: *msgs_searching.read(),
+            },
             load_more,
+            scroll,
             c,
         )
     }
@@ -201,64 +238,95 @@ fn load_more_footer(
     )
 }
 
-fn build_search_results(
+struct SearchSections {
+    filter: SearchFilter,
+    query: String,
     rooms: Vec<(String, String)>,
     users: Vec<UserInfo>,
     messages: Vec<MessageResult>,
     users_loading: bool,
     msgs_loading: bool,
+}
+
+fn build_search_results(
+    sections: SearchSections,
     load_more_msgs: Option<Element>,
+    scroll: ScrollController,
     c: AppColors,
 ) -> Element {
-    let mut list = ScrollView::new()
+    let SearchSections {
+        filter,
+        query,
+        rooms,
+        users,
+        messages,
+        users_loading,
+        msgs_loading,
+    } = sections;
+    let mut list = ScrollView::new_controlled(scroll)
         .width(Size::fill())
         .height(Size::flex(1.0));
+    // A header names the section only among others.
+    let headers = filter == SearchFilter::All;
 
     // ── Rooms section ──────────────────────────────────────────────────────
-    list = list.child(section_header("Rooms", c));
-    if rooms.is_empty() {
-        list = list.child(empty_row("No rooms found", c));
-    } else {
-        for (room_id, display_name) in rooms {
-            list = list.child(RoomSearchTile {
-                room_id,
-                display_name,
-            });
+    if filter.shows(SearchFilter::Rooms) {
+        if headers {
+            list = list.child(section_header("Rooms", c));
+        }
+        if rooms.is_empty() {
+            list = list.child(empty_row("No rooms found", c));
+        } else {
+            for (room_id, display_name) in rooms {
+                list = list.child(RoomSearchTile {
+                    room_id,
+                    display_name,
+                    query: query.clone(),
+                });
+            }
         }
     }
 
     // ── People section ─────────────────────────────────────────────────────
-    list = list.child(section_header("People", c));
-    if users_loading {
-        list = list.child(section_loader(c));
-    } else if users.is_empty() {
-        list = list.child(empty_row("No users found", c));
-    } else {
-        for user in users {
-            list = list.child(UserSearchTile { user });
+    if filter.shows(SearchFilter::People) {
+        if headers {
+            list = list.child(section_header("People", c));
+        }
+        if users_loading {
+            list = list.child(section_loader(c));
+        } else if users.is_empty() {
+            list = list.child(empty_row("No users found", c));
+        } else {
+            for user in users {
+                list = list.child(UserSearchTile { user });
+            }
         }
     }
 
     // ── Messages section ───────────────────────────────────────────────────
-    list = list.child(section_header("Messages", c));
-    if msgs_loading {
-        list = list.child(section_loader(c));
-    } else if messages.is_empty() {
-        list = list.child(empty_row("No messages found", c));
-    } else {
-        for m in messages {
-            list = list.child(MessageSearchTile {
-                event_id: m.event_id,
-                room_id: m.room_id,
-                room_name: m.room_name,
-                body: m.body,
-                sender_display_name: m.sender_display_name,
-                event_ts_ms: m.event_ts_ms,
-                is_dm: m.is_dm,
-            });
+    if filter.shows(SearchFilter::Messages) {
+        if headers {
+            list = list.child(section_header("Messages", c));
         }
-        if let Some(footer) = load_more_msgs {
-            list = list.child(footer);
+        if msgs_loading {
+            list = list.child(section_loader(c));
+        } else if messages.is_empty() {
+            list = list.child(empty_row("No messages found", c));
+        } else {
+            for m in messages {
+                list = list.child(MessageSearchTile {
+                    event_id: m.event_id,
+                    room_id: m.room_id,
+                    room_name: m.room_name,
+                    body: m.body,
+                    sender_display_name: m.sender_display_name,
+                    event_ts_ms: m.event_ts_ms,
+                    is_dm: m.is_dm,
+                });
+            }
+            if let Some(footer) = load_more_msgs {
+                list = list.child(footer);
+            }
         }
     }
 

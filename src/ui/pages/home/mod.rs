@@ -1,10 +1,11 @@
 mod app_bar;
 mod collapsing_filter_bar;
 mod filter_bar;
+mod invites_row;
 mod members_avatar;
 mod room_list;
 pub mod room_list_item;
-mod room_list_model;
+pub mod room_list_model;
 mod room_menu;
 mod row_interaction;
 pub mod search;
@@ -21,6 +22,7 @@ use crate::ui::components::{HoverableExt, use_fade};
 pub(crate) use room_list::RoomList;
 use room_list::FilterBarScroll;
 pub(crate) use room_list_model::{Mailbox, RoomFilter};
+pub use search::SearchFilter;
 pub use search_panel::SearchResults;
 
 use crate::logging::RenderTimer;
@@ -93,7 +95,12 @@ impl Component for HomePage {
                 rect().into_element()
             })
             .child(if search_active {
-                SearchResults { search }.into_element()
+                SearchResults {
+                    search,
+                    filter: SearchFilter::All,
+                    on_scroll: None,
+                }
+                .into_element()
             } else {
                 // The bar overlays the list, which leaves room for it at its top.
                 rect()

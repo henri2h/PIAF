@@ -11,7 +11,7 @@ use jni::objects::{JClass, JString, JValue};
 use jni::sys::jint;
 use tokio::sync::watch;
 
-use crate::utils::ime::ImeEvent;
+use crate::utils::ime::{ImeEvent, ImeKind};
 use crate::utils::push::{JAVA_VM, find_app_class};
 
 static QUEUE: Mutex<VecDeque<ImeEvent>> = Mutex::new(VecDeque::new());
@@ -101,15 +101,28 @@ pub extern "C" fn Java_dev_piaf_app_ImeBridge_nativeImeSelect(
     });
 }
 
-/// Calls `ImeBridge.<method>`, with `(text, cursor)` or no argument; logged on failure.
-fn call_bridge(method: &str, text: Option<(&str, usize)>) {
+#[unsafe(no_mangle)]
+pub extern "C" fn Java_dev_piaf_app_ImeBridge_nativeImeAction(_env: JNIEnv, _class: JClass) {
+    push(ImeEvent::Action);
+}
+
+/// Arguments of an `ImeBridge` call.
+enum BridgeArgs<'a> {
+    None,
+    Text(&'a str, usize),
+    /// `show`: text, cursor and whether it's the search field.
+    Show(&'a str, usize, bool),
+}
+
+/// Calls `ImeBridge.<method>`; logged on failure.
+fn call_bridge(method: &str, args: BridgeArgs) {
     let result = (|| -> jni::errors::Result<()> {
         let vm = JAVA_VM.get().ok_or(jni::errors::Error::NullPtr("JavaVM"))?;
         let mut env = vm.attach_current_thread()?;
         let class = find_app_class(&mut env, "dev/piaf/app/ImeBridge")
             .ok_or(jni::errors::Error::NullPtr("ImeBridge"))?;
-        match text {
-            Some((text, cursor)) => {
+        match args {
+            BridgeArgs::Text(text, cursor) => {
                 let text = env.new_string(text)?;
                 env.call_static_method(
                     &class,
@@ -118,7 +131,20 @@ fn call_bridge(method: &str, text: Option<(&str, usize)>) {
                     &[JValue::Object(&text), JValue::Int(cursor as jint)],
                 )?;
             }
-            None => {
+            BridgeArgs::Show(text, cursor, search) => {
+                let text = env.new_string(text)?;
+                env.call_static_method(
+                    &class,
+                    method,
+                    "(Ljava/lang/String;IZ)V",
+                    &[
+                        JValue::Object(&text),
+                        JValue::Int(cursor as jint),
+                        JValue::Bool(search.into()),
+                    ],
+                )?;
+            }
+            BridgeArgs::None => {
                 env.call_static_method(&class, method, "()V", &[])?;
             }
         }
@@ -134,20 +160,23 @@ static OWNER: AtomicU64 = AtomicU64::new(0);
 
 /// Shows the keyboard on `text`; returns the owner token for [`hide`].
 /// Events still queued were typed elsewhere: dropped.
-pub fn show(text: &str, cursor: usize) -> u64 {
+pub fn show(text: &str, cursor: usize, kind: ImeKind) -> u64 {
     drain();
     let owner = OWNER.fetch_add(1, Ordering::Relaxed) + 1;
-    call_bridge("show", Some((text, cursor)));
+    call_bridge(
+        "show",
+        BridgeArgs::Show(text, cursor, kind == ImeKind::Search),
+    );
     owner
 }
 
 /// Hides the keyboard, unless another composer showed it since `owner`'s show.
 pub fn hide(owner: u64) {
     if OWNER.load(Ordering::Relaxed) == owner {
-        call_bridge("hide", None);
+        call_bridge("hide", BridgeArgs::None);
     }
 }
 
 pub fn sync(text: &str, cursor: usize) {
-    call_bridge("sync", Some((text, cursor)));
+    call_bridge("sync", BridgeArgs::Text(text, cursor));
 }

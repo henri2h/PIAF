@@ -2,7 +2,6 @@ mod action_popup_overlay;
 mod bookmark_picker_overlay;
 mod compose_bar;
 mod compose_line;
-mod compose_touch;
 mod detail_modal;
 mod focus;
 mod invite_view;

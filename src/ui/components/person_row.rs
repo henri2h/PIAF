@@ -1,12 +1,12 @@
 use freya::prelude::*;
 
-use super::{Avatar, HoverableExt};
+use super::{Avatar, ListItem};
 use crate::utils::avatars::AvatarSource;
 use crate::utils::const_values::AppColors;
-use crate::utils::{id_color, use_app_colors};
+use crate::utils::id_color;
 
-/// List row for a person: avatar, name (with an optional `badge`), a second
-/// line (the user ID unless set) and an optional `trailing` element.
+/// [`ListItem`] for a person: avatar, name (with an optional `badge`), a
+/// second line (the user ID unless set) and an optional `trailing` element.
 /// Pressable when `on_press` is set.
 pub struct PersonRow {
     pub user_id: String,
@@ -80,59 +80,27 @@ pub fn badge(text: &'static str, c: AppColors) -> Rect {
 
 impl Component for PersonRow {
     fn render(&self) -> impl IntoElement {
-        let c = use_app_colors();
-        let row = rect()
-            .horizontal()
-            .content(Content::Flex)
-            .width(Size::fill())
-            .padding(Gaps::new(10., 16., 10., 16.))
-            .spacing(12.)
-            .cross_align(Alignment::Center)
-            .child(Avatar {
+        let mut item = ListItem::new(self.name.clone())
+            .supporting(
+                self.subtitle
+                    .clone()
+                    .unwrap_or_else(|| self.user_id.clone()),
+            )
+            .leading(Avatar {
                 size: 42.,
                 source: self.avatar.clone(),
                 name: self.name.clone(),
                 color: id_color(&self.user_id),
-            })
-            .child(
-                rect()
-                    .vertical()
-                    .width(Size::flex(1.))
-                    .spacing(2.)
-                    .child(
-                        rect()
-                            .horizontal()
-                            .spacing(6.)
-                            .cross_align(Alignment::Center)
-                            .child(
-                                label()
-                                    .text(self.name.clone())
-                                    .font_size(15.)
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .color(c.on_surface)
-                                    .max_lines(1),
-                            )
-                            .maybe_child(self.badge.clone()),
-                    )
-                    .child(
-                        label()
-                            .text(
-                                self.subtitle
-                                    .clone()
-                                    .unwrap_or_else(|| self.user_id.clone()),
-                            )
-                            .font_size(12.)
-                            .color(c.on_surface_muted)
-                            .max_lines(1),
-                    ),
-            )
-            .maybe_child(self.trailing.clone());
-        match self.on_press.clone() {
-            Some(on_press) => {
-                row.on_press(move |_| on_press.call(()))
-                    .hoverable(Size::fill(), Size::auto(), 0.)
-            }
-            None => row.into_element(),
+            });
+        if let Some(badge) = self.badge.clone() {
+            item = item.badge(badge);
         }
+        if let Some(trailing) = self.trailing.clone() {
+            item = item.trailing(trailing);
+        }
+        if let Some(on_press) = self.on_press.clone() {
+            item = item.on_press(move |_| on_press.call(()));
+        }
+        item
     }
 }

@@ -94,8 +94,8 @@ impl Component for HomeAppBar {
                             .width(Size::flex(1.0))
                             .padding(Gaps::new(0., 8., 0., 8.))
                             .child(
-                                search_input(search, "Search conversations, people…", c)
-                                    .a11y_id(search_a11y),
+                                // Short: the field is narrow beside the avatar and icons.
+                                search_input(search, "Search…", c).a11y_id(search_a11y),
                             )
                             .into_element()
                     } else {

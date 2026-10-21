@@ -22,24 +22,44 @@ pub fn image_mime(file_name: &str) -> mime::Mime {
     }
 }
 
-/// An image picked with the system file dialog.
-#[cfg(not(target_os = "android"))]
-pub struct PickedImage {
+/// A file picked to send.
+pub struct PickedFile {
     pub file_name: String,
     pub mime: mime::Mime,
     pub bytes: Vec<u8>,
 }
 
+/// Where an attachment comes from (Android's picker sheet).
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum AttachSource {
+    Gallery,
+    Camera,
+    File,
+}
+
+/// Asks for a file to send from `source`; `None` when cancelled. Run on tokio.
+pub async fn pick_attachment(source: AttachSource) -> Option<PickedFile> {
+    #[cfg(target_os = "android")]
+    {
+        crate::android::attachments::pick(source).await
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        let _ = source;
+        pick_image("Send an image").await
+    }
+}
+
 /// Asks for an image file; `None` when cancelled. Run on tokio.
 #[cfg(not(target_os = "android"))]
-pub async fn pick_image(title: &str) -> Option<PickedImage> {
+pub async fn pick_image(title: &str) -> Option<PickedFile> {
     let file = rfd::AsyncFileDialog::new()
         .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"])
         .set_title(title)
         .pick_file()
         .await?;
     let file_name = file.file_name();
-    Some(PickedImage {
+    Some(PickedFile {
         mime: image_mime(&file_name),
         bytes: file.read().await,
         file_name,

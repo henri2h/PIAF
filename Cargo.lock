@@ -2443,6 +2443,7 @@ dependencies = [
 name = "freya-android"
 version = "0.5.0-rc.9"
 dependencies = [
+ "freya-clipboard",
  "freya-components",
  "freya-core",
  "freya-winit",
@@ -2660,6 +2661,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.9",
+]
+
+[[package]]
+name = "freya-testing"
+version = "0.5.0-rc.9"
+dependencies = [
+ "accesskit",
+ "freya-clipboard",
+ "freya-components",
+ "freya-core",
+ "freya-engine",
+ "futures-channel",
+ "ragnarok",
+ "torin",
 ]
 
 [[package]]
@@ -5517,6 +5532,7 @@ dependencies = [
  "freya-query",
  "freya-radio",
  "freya-router",
+ "freya-testing",
  "freya-winit",
  "futures",
  "jni 0.21.1",

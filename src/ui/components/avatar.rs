@@ -143,9 +143,12 @@ impl Component for Avatar {
             return initial_disc(size, &initial, color, dark);
         };
         let holder = holder.downcast_ref::<ImageHandle>().unwrap().clone();
+        // Cover the disc: non-square pictures are cropped around their center.
         let image = freya_core::elements::image::image(holder)
             .width(Size::px(size))
             .height(Size::px(size))
+            .aspect_ratio(AspectRatio::Max)
+            .image_cover(ImageCover::Center)
             .corner_radius(radius);
         if opacity >= 1. {
             return image.into_element();

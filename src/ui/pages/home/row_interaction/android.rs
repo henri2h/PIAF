@@ -82,6 +82,11 @@ impl RowInteraction {
         inner.into()
     }
 
+    /// No hover buttons over the timestamp on touch screens.
+    pub fn meta_opacity(&self) -> f32 {
+        1.
+    }
+
     /// Changes once the list takes over this touch or sees it end (the row
     /// then gets neither `touchmove` nor `touchend`).
     fn touch_generation(&self) -> Option<u64> {
@@ -97,8 +102,7 @@ impl RowInteraction {
         press_gen.set(next_gen);
         let touch = this.touch_generation();
         spawn(async move {
-            let still_down =
-                || *press_gen.peek() == next_gen && this.touch_generation() == touch;
+            let still_down = || *press_gen.peek() == next_gen && this.touch_generation() == touch;
             timer(TAP_TIMEOUT).await;
             if !still_down() {
                 return;

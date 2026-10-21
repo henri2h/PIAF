@@ -29,7 +29,9 @@ fn depth(path: &str) -> usize {
     if TABS.contains(&path) {
         return 0;
     }
-    path.split('/').filter(|segment| !segment.is_empty()).count()
+    path.split('/')
+        .filter(|segment| !segment.is_empty())
+        .count()
 }
 
 fn direction(from: &str, to: &str) -> Direction {

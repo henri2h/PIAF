@@ -1,7 +1,8 @@
 use freya::prelude::*;
 use freya_material_design::prelude::Ripple;
 
-use crate::ui::components::{IconButton, use_fade};
+use crate::ui::components::IconButton;
+use crate::ui::pages::home::room_list_item::ROOM_ROW_HEIGHT;
 
 use crate::utils::const_values::AppColors;
 
@@ -9,7 +10,8 @@ use crate::utils::const_values::AppColors;
 #[derive(Clone, Copy)]
 pub struct RowInteraction {
     hovered: State<bool>,
-    /// Opacity of the hover buttons, fading with `hovered`.
+    /// Opacity of the hover buttons: shown at once while hovered (a fade
+    /// flickers when the pointer sweeps across rows).
     actions_opacity: f32,
 }
 
@@ -17,7 +19,7 @@ pub fn use_row_interaction() -> RowInteraction {
     let hovered = use_state(|| false);
     RowInteraction {
         hovered,
-        actions_opacity: use_fade(*hovered.read(), 120),
+        actions_opacity: if *hovered.read() { 1. } else { 0. },
     }
 }
 
@@ -28,6 +30,12 @@ impl RowInteraction {
 
     pub fn is_highlighted(&self) -> bool {
         *self.hovered.read()
+    }
+
+    /// Opacity of the timestamp, which the hover buttons replace (so they
+    /// need no background of their own).
+    pub fn meta_opacity(&self) -> f32 {
+        1. - self.actions_opacity
     }
 
     pub fn feedback(&self, inner: Rect) -> Element {
@@ -71,9 +79,14 @@ fn hover_action_buttons(c: AppColors, room_id: &str) -> Rect {
     let room_id_recontact = room_id.to_string();
     let room_id_archive = room_id.to_string();
 
+    // An explicit height: `fill` on an absolute child resolves to 0 and the
+    // buttons would center on the row's top edge.
     rect()
-        .position(Position::new_absolute().top(0.).right(6.).bottom(0.))
-        .height(Size::fill())
+        .position(Position::new_absolute().top(0.).right(8.))
+        // Above the row's content (the ripple raises it).
+        .layer(Layer::Relative(10))
+        .height(Size::px(ROOM_ROW_HEIGHT - 4.))
+        .padding(Gaps::new(0., 6., 0., 12.))
         .horizontal()
         .spacing(6.)
         .cross_align(Alignment::Center)

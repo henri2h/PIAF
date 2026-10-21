@@ -48,6 +48,7 @@ class MainActivity : NativeActivity() {
         val ime = ImeInputView(this)
         addContentView(ime, ViewGroup.LayoutParams(1, 1))
         ImeBridge.attach(ime)
+        AttachmentPicker.attach(this)
 
         RoomNotifications.ensureChannel(this)
         requestNotificationPermission()
@@ -69,6 +70,14 @@ class MainActivity : NativeActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         dismissNotificationForIntent(intent)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (!AttachmentPicker.onResult(requestCode, resultCode, data)) {
+            @Suppress("DEPRECATION")
+            super.onActivityResult(requestCode, resultCode, data)
+        }
     }
 
     override fun onResume() {
