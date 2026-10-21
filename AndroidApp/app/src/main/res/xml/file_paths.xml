@@ -2,4 +2,5 @@
 <paths>
     <cache-path name="notification_images" path="notification_images/" />
     <cache-path name="camera" path="camera/" />
+    <cache-path name="share" path="share/" />
 </paths>

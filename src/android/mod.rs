@@ -1,5 +1,6 @@
 pub mod attachments;
 pub mod ime;
+pub mod share;
 mod jni_push;
 
 use std::sync::OnceLock;

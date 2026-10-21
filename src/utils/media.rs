@@ -66,6 +66,31 @@ pub async fn pick_image(title: &str) -> Option<PickedFile> {
     })
 }
 
+/// Image type and file extension from the bytes' signature.
+pub fn sniff_image_mime(bytes: &[u8]) -> (mime::Mime, &'static str) {
+    match bytes {
+        [0x89, b'P', b'N', b'G', ..] => (mime::IMAGE_PNG, "png"),
+        [0xFF, 0xD8, 0xFF, ..] => (mime::IMAGE_JPEG, "jpg"),
+        [b'G', b'I', b'F', b'8', ..] => (mime::IMAGE_GIF, "gif"),
+        [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => {
+            ("image/webp".parse().expect("valid mime"), "webp")
+        }
+        _ => (mime::APPLICATION_OCTET_STREAM, "bin"),
+    }
+}
+
+/// Shares an image through the system share sheet (Android); `stem`: its
+/// file name without extension. No-op elsewhere.
+pub fn share_image(stem: &str, bytes: Vec<u8>) {
+    #[cfg(target_os = "android")]
+    {
+        let (mime, ext) = sniff_image_mime(&bytes);
+        crate::android::share::share_file(&format!("{stem}.{ext}"), mime.as_ref(), &bytes);
+    }
+    #[cfg(not(target_os = "android"))]
+    let _ = (stem, bytes);
+}
+
 /// Sends `bytes` to the room as a file message. Run on tokio.
 pub async fn send_attachment(room_id: &str, file_name: &str, mime: &mime::Mime, bytes: Vec<u8>) {
     use matrix_sdk::attachment::AttachmentConfig;
@@ -140,6 +165,16 @@ pub fn format_media_duration(d: std::time::Duration) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn sniffs_common_image_types() {
+        assert_eq!(super::sniff_image_mime(b"\x89PNG\r\n").1, "png");
+        assert_eq!(super::sniff_image_mime(&[0xFF, 0xD8, 0xFF, 0xE0]).1, "jpg");
+        assert_eq!(super::sniff_image_mime(b"GIF89a").1, "gif");
+        assert_eq!(super::sniff_image_mime(b"RIFF\0\0\0\0WEBPVP8 ").1, "webp");
+        assert_eq!(super::sniff_image_mime(b"hello").1, "bin");
+    }
+
     use super::{format_file_size, format_media_duration, image_mime, media_extension};
 
     #[test]

@@ -49,6 +49,7 @@ class MainActivity : NativeActivity() {
         addContentView(ime, ViewGroup.LayoutParams(1, 1))
         ImeBridge.attach(ime)
         AttachmentPicker.attach(this)
+        ShareSheet.attach(this)
 
         RoomNotifications.ensureChannel(this)
         requestNotificationPermission()
