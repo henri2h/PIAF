@@ -2,7 +2,7 @@ use freya::prelude::*;
 use matrix_sdk::notification_settings::RoomNotificationMode as Mode;
 use matrix_sdk::ruma::RoomId;
 
-use crate::ui::components::{BottomSheet, HoverableExt};
+use crate::ui::components::{HoverableExt, bottom_sheet};
 use crate::utils::{const_values::AppColors, matrix::CLIENT, on_tokio};
 
 /// `None`: follow the account's default setting.
@@ -63,7 +63,7 @@ pub(super) fn notif_sheet(
     c: AppColors,
 ) -> Element {
     let current = *mode.read();
-    BottomSheet::new(move |_| open.set(false))
+    bottom_sheet(c, move || open.set(false))
         .title("Notifications")
         .children(OPTIONS.into_iter().map(|(option, name, desc)| {
             let selected = option == current;

@@ -81,6 +81,15 @@ async fn persist() {
     }
 }
 
+/// Forgets all drafts (sign out).
+pub async fn delete_file() {
+    let _guard = WRITE_LOCK.lock().await;
+    DRAFTS.lock().unwrap().clear();
+    if let Some(path) = file() {
+        let _ = tokio::fs::remove_file(path).await;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::preview_of;

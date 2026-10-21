@@ -457,7 +457,7 @@ pub async fn get_read_rooms(client: &Client, entries: Vec<(String, u64)>) -> Vec
 /// and cannot see DEX classes.  This helper uses the ClassLoader stored in
 /// `APP_CLASS_LOADER` (set during `android_main`) which can resolve all app classes.
 #[cfg(target_os = "android")]
-fn find_app_class<'a>(
+pub(crate) fn find_app_class<'a>(
     env: &mut jni::JNIEnv<'a>,
     class_name: &str,
 ) -> Option<jni::objects::JClass<'a>> {

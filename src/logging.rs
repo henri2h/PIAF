@@ -10,7 +10,8 @@ use std::time::{Duration, Instant};
 
 /// `matrix_sdk_crypto` only at error: its warnings carry user, device and
 /// session identifiers of other people.
-pub const DEFAULT_FILTER: &str = "warn,matrix_sdk_crypto=error,piaf=info";
+// `piaf::composer=debug`: temporary, while debugging the Android keyboard (no text is logged).
+pub const DEFAULT_FILTER: &str = "warn,matrix_sdk_crypto=error,piaf=info,piaf::composer=debug";
 
 /// Target for render counts and timings.
 pub const PERF: &str = "piaf::perf";

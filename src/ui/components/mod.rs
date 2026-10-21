@@ -2,6 +2,7 @@ mod app_bar;
 mod avatar;
 mod bottom_sheet;
 mod chip;
+mod dialog;
 mod empty_state;
 mod fade;
 mod hoverable;
@@ -17,7 +18,8 @@ mod user_popup;
 
 pub use app_bar::{AppBarTint, TopAppBar, TopAppBarAction, TopAppBarTitle};
 pub use avatar::{Avatar, StackedAvatar};
-pub use bottom_sheet::{BottomSheet, confirm_sheet};
+pub use bottom_sheet::bottom_sheet;
+pub use dialog::{Dialog, confirm_dialog, dialog_button};
 pub use chip::Chip;
 pub use empty_state::{empty_state, loading_state};
 pub use fade::{use_color_transition, use_fade, use_fading};

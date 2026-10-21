@@ -4,7 +4,7 @@ use freya::prelude::*;
 
 use crate::ui::components::{
     IconButton, PersonRow, TopAppBar, TopAppBarTitle, UserPopupInfo, UserPopupOverlay, badge,
-    confirm_sheet, search_input,
+    confirm_dialog, search_input,
 };
 use crate::utils::const_values::AppColors;
 use crate::utils::members::{self, ADMIN_LEVEL, MemberItem};
@@ -132,7 +132,7 @@ impl Component for RoomMembers {
 
         let remove_sheet = confirm_remove.read().clone().map(|target| {
             let room_id = room_id.clone();
-            confirm_sheet(
+            confirm_dialog(
                 format!("Remove {}?", target.display_name),
                 "This will kick them from the room.",
                 "Remove",

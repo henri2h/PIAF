@@ -2,6 +2,7 @@ pub mod avatars;
 pub mod bookmarks;
 pub mod clipboard;
 pub mod const_values;
+pub mod ime;
 pub mod drafts;
 pub mod haptics;
 pub mod insets;

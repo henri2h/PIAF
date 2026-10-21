@@ -1,3 +1,4 @@
+pub mod ime;
 mod jni_push;
 
 use std::sync::OnceLock;
@@ -40,10 +41,19 @@ fn android_main(droid_app: AndroidApp) {
     let _rt_guard = runtime().enter();
     crate::app::state::init(data_path);
 
-    let event_loop = EventLoop::<NativeEvent>::with_user_event()
+    let event_loop = match EventLoop::<NativeEvent>::with_user_event()
         .with_android_app(droid_app.clone())
         .build()
-        .expect("Failed to build event loop");
+    {
+        Ok(event_loop) => event_loop,
+        // winit builds one event loop per process: a new activity in a process
+        // that already ran one (e.g. after a panic) can only start fresh.
+        Err(winit::error::EventLoopError::RecreationAttempt) => {
+            tracing::warn!("event loop already used in this process: restarting");
+            crate::app::restart::restart()
+        }
+        Err(e) => panic!("Failed to build event loop: {e}"),
+    };
 
     let launch_config = LaunchConfig::new()
         .with_plugin(AndroidPlugin::new(droid_app))

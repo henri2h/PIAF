@@ -1,7 +1,7 @@
 use freya::prelude::*;
 
 use super::room_list::RoomListCtx;
-use crate::ui::components::{BottomSheet, HoverableExt, confirm_sheet};
+use crate::ui::components::{HoverableExt, bottom_sheet, confirm_dialog};
 use crate::utils::const_values::AppColors;
 use crate::utils::room_actions::{RoomAction, run};
 use crate::utils::room_list::RoomSummary;
@@ -135,7 +135,7 @@ pub(super) fn room_sheet(mut sheet: State<Option<RoomSheet>>, c: AppColors) -> O
             _ => "Leave",
         };
         return Some(
-            confirm_sheet(
+            confirm_dialog(
                 open.summary.name.clone(),
                 if open.summary.is_invite {
                     "Decline this invite?"
@@ -184,7 +184,7 @@ pub(super) fn room_sheet(mut sheet: State<Option<RoomSheet>>, c: AppColors) -> O
     });
 
     Some(
-        BottomSheet::new(move |_| sheet.set(None))
+        bottom_sheet(c, move || sheet.set(None))
             .title(open.summary.name.clone())
             .children(rows)
             .into_element(),

@@ -7,7 +7,7 @@ use crate::utils::avatars::AvatarSource;
 use freya_query::prelude::*;
 use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
-use crate::ui::components::{Avatar, BottomSheet};
+use crate::ui::components::{Avatar, bottom_sheet};
 use crate::utils::queries::FetchSenderName;
 use crate::utils::{format_timestamp, id_color, use_app_colors};
 
@@ -36,7 +36,7 @@ impl Component for DetailModalOverlay {
             let Some(item) = modal_item else {
                 return rect().into_element();
             };
-            return BottomSheet::new(move |_| modal.set(None))
+            return bottom_sheet(c, move || modal.set(None))
                 .title("Message details")
                 .child(
                     ScrollView::new()

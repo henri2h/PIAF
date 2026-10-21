@@ -11,8 +11,9 @@ const LONG_PRESS: Duration = Duration::from_millis(400);
 /// A finger moving further than this before the long press is a scroll.
 const TOUCH_SLOP: f64 = 10.;
 
-/// Touch editing in the composer: long press then drag moves the cursor, and
-/// lifting it (or a double tap selecting a word) shows the edit menu.
+/// Touch editing in the composer: a long press selects all (moving the finger
+/// after it drags the cursor instead), and lifting it (or a double tap
+/// selecting a word) shows the edit menu.
 #[derive(Clone, Copy, PartialEq)]
 pub(super) struct ComposeTouch {
     /// Bumped by each touch start and end: a long-press timer only fires for its own touch.
@@ -21,7 +22,7 @@ pub(super) struct ComposeTouch {
     start: State<Option<CursorPoint>>,
     /// Whether a touch began in the composer and hasn't ended.
     active: State<bool>,
-    /// The cursor follows the finger.
+    /// Long press recognized: the cursor follows the finger if it moves.
     dragging: State<bool>,
     menu: State<bool>,
 }
@@ -49,7 +50,7 @@ impl ComposeTouch {
         *self.menu.read()
     }
 
-    pub fn touch_start(mut self, location: CursorPoint) {
+    pub fn touch_start(mut self, location: CursorPoint, mut editable: UseEditable) {
         self.menu.set_if_modified(false);
         self.active.set(true);
         self.start.set(Some(location));
@@ -58,6 +59,10 @@ impl ComposeTouch {
         spawn(async move {
             timer(LONG_PRESS).await;
             if *self.generation.peek() == generation && self.start.peek().is_some() {
+                let len = editable.editor().peek().len_utf16_cu();
+                if len > 0 {
+                    editable.editor_mut().write().set_selection((0, len));
+                }
                 self.dragging.set(true);
                 haptics::play(Haptic::HeavyClick);
             }

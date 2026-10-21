@@ -44,6 +44,11 @@ class MainActivity : NativeActivity() {
             reportInsets(insets)
             ViewCompat.onApplyWindowInsets(view, insets)
         }
+        // The soft keyboard's editor (see ImeInputView): 1px, never drawn over.
+        val ime = ImeInputView(this)
+        addContentView(ime, ViewGroup.LayoutParams(1, 1))
+        ImeBridge.attach(ime)
+
         RoomNotifications.ensureChannel(this)
         requestNotificationPermission()
         UnifiedPush.tryUseCurrentOrDefaultDistributor(this) { success ->
@@ -100,6 +105,13 @@ class MainActivity : NativeActivity() {
         // Back navigation is handled in native code (Freya on_global_key_down → BrowserBack).
         // Suppressing the default Java behavior prevents the activity from finishing
         // before the native layer has a chance to process the key event.
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // winit allows one event loop per process: the next launch must be a
+        // fresh process, or it fails to start (RecreationAttempt).
+        if (isFinishing) android.os.Process.killProcess(android.os.Process.myPid())
     }
 
     private fun requestNotificationPermission() {

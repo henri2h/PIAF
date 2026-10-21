@@ -13,6 +13,8 @@ pub(super) struct ComposeLine {
     pub c: AppColors,
     pub is_focused: bool,
     pub touch: ComposeTouch,
+    /// Measured height of each line (wrapped lines are taller), for the composer's height.
+    pub heights: State<Vec<f32>>,
 }
 
 impl Component for ComposeLine {
@@ -25,6 +27,7 @@ impl Component for ComposeLine {
         let mut editable = self.editable;
         let c = self.c;
         let touch = self.touch;
+        let mut heights = self.heights;
         let holder = use_state(ParagraphHolder::default);
 
         let (text, is_active, cursor_index, highlights) = {
@@ -46,10 +49,26 @@ impl Component for ComposeLine {
         };
 
         // Blink when this line is active and the composer has keyboard focus.
-        let (_, cursor_color) = use_cursor_blink(
+        let (mut blink_timeout, cursor_color) = use_cursor_blink(
             is_active && self.is_focused,
             Color::from(c.compose_edit_text),
         );
+        // Typing or moving the cursor keeps it solid; it only blinks once idle.
+        use_side_effect_with_deps(&(text.clone(), cursor_index), move |_| {
+            blink_timeout.reset();
+        });
+
+        let on_sized = move |e: Event<SizedEventData>| {
+            let height = e.area.height();
+            let known = heights.peek().get(line_index).copied();
+            if known != Some(height) {
+                let mut heights = heights.write();
+                if heights.len() <= line_index {
+                    heights.resize(line_index + 1, 0.);
+                }
+                heights[line_index] = height;
+            }
+        };
 
         // Pointer, not mouse: a tap places the cursor on touch screens too.
         let on_pointer_down = move |e: Event<PointerEventData>| {
@@ -78,6 +97,7 @@ impl Component for ComposeLine {
         paragraph()
             .holder(holder.read().clone())
             .on_touch_move(on_touch_move)
+            .on_sized(on_sized)
             .on_pointer_down(on_pointer_down)
             .on_mouse_move(on_mouse_move)
             .cursor_index(cursor_index)
@@ -86,7 +106,6 @@ impl Component for ComposeLine {
             .width(Size::fill())
             .font_size(14.)
             .color(c.compose_edit_text)
-            .max_lines(1)
             .span(text)
     }
 }

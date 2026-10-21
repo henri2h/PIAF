@@ -13,7 +13,7 @@ use crate::utils::use_app_colors;
 
 mod notif_mode_selector;
 use crate::ui::components::M3ListItem;
-use crate::ui::components::confirm_sheet;
+use crate::ui::components::confirm_dialog;
 use crate::ui::pages::room_members::member_row;
 use crate::utils::extract_urls;
 use crate::utils::members::{self, MemberItem};
@@ -330,7 +330,7 @@ fn leave_confirm_overlay(
     mut open: State<bool>,
     mut leaving: State<bool>,
 ) -> Element {
-    confirm_sheet(
+    confirm_dialog(
         "Leave room?",
         "You will leave this room. You can rejoin later if it is public or if you get an invite.",
         "Leave",

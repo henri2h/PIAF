@@ -65,6 +65,7 @@ WIDE_MODE: AtomicBool                                        // Current layout m
 - `timeline_task.rs` — tokio side: builds the matrix timeline, applies diffs, runs `MsgAction`s. UI talks to it through `TimelineHandle` (`paginate()`, `actions()`); dropping the handle stops the task.
 - `use_room_timeline.rs` — hook returning `RoomTimeline { handle, state }`; `state` is a `Copy` bundle of `State`s (messages, loading, paginating, …). The smol receive loop must never hold the handle.
 - `timeline_view.rs` — `TimelineView`: scroll view, rows, row height measuring, pagination triggers. Only it reads `messages`, so timeline updates don't re-render `RoomPage`.
+- Composer on Android: the soft keyboard types into an invisible `ImeInputView` (`AndroidApp/.../ImeInput.kt`, an `InputConnection`: suggestions, accents, swipe typing); commits / compositions / deletes reach `compose_bar.rs` through `android/ime.rs` → `utils/ime.rs` (no-op on desktop). The composer shows/hides it on focus and re-syncs it (`ime::sync`) when its text changes elsewhere. Touch editing (long-press cursor drag, edit bar) is `compose_touch.rs`; the Android clipboard is `utils/clipboard.rs`.
 - `ui_ctx.rs` — `RoomUiCtx` (popup/overlay states) provided as context; rows use `use_room_ui_ctx()` instead of props.
 - The `ScrollController` and `pending_focus` live in `RoomPage` scope so they survive the media viewer unmounting `TimelineView`.
 
@@ -155,7 +156,7 @@ Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use
 - `IconButton`: round icon button (hover, ripple, optional `.tooltip()`, press doesn't reach the parent).
 - `Chip`: pill toggle for filters, tabs and option pickers (selection colours animate).
 - `PersonRow`: a person in a list (avatar, name, badge, subtitle, trailing, press). `badge("Admin", c)`.
-- `BottomSheet` / `confirm_sheet(title, message, confirm, on_cancel, on_confirm)`: sheets and destructive confirmations.
+- `bottom_sheet(c, on_close)`: Freya's `BottomSheet` (shared with rusty_map, in the Freya fork) in piaf colours, above the navigation bar, grab bar on Android. `Dialog` (centered modal, any children, `dialog_button` for actions) / `confirm_dialog(title, message, confirm, on_cancel, on_confirm)`: dialogs and destructive confirmations.
 - `empty_state(icon, title, hint, c)` / `loading_state(caption, c)`: placeholders filling a list's area.
 - `search_input(state, placeholder, c)`: the search field (chain `auto_focus`, `on_submit`).
 - `use_fade(visible, ms) -> f32` and `use_fading(Option<T>, ms) -> Option<(T, opacity)>` (keeps the last value while fading out): for things that appear and disappear. Both start at their end value, so nothing animates on mount (virtual lists remount rows while scrolling).

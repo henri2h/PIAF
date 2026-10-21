@@ -3,7 +3,7 @@ use std::sync::Arc;
 use freya::prelude::*;
 
 use crate::Route;
-use crate::ui::components::{M3ListItem, TopAppBar, TopAppBarTitle};
+use crate::ui::components::{M3ListItem, TopAppBar, TopAppBarTitle, confirm_dialog};
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
 
@@ -28,6 +28,9 @@ impl Component for Settings {
         let theme_label = if is_dark { "Dark" } else { "Light" };
 
         let user_id = crate::utils::matrix::my_user_id().unwrap_or_default();
+        let mut confirm_sign_out = use_state(|| false);
+        let signing_out = use_state(|| false);
+        let is_signing_out = *signing_out.read();
 
         rect()
             .expanded()
@@ -87,10 +90,49 @@ impl Component for Settings {
                                 Arc::new(|| {
                                     crate::app::navigation::push(Route::SettingsAppearance);
                                 }),
-                            )),
+                            ))
+                            .child(section_label("Session", c))
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::log_out(),
+                                item_label: if is_signing_out {
+                                    "Signing out…".to_string()
+                                } else {
+                                    "Sign out".to_string()
+                                },
+                                sublabel: None,
+                                icon_color: c.error,
+                                destructive: true,
+                                on_press: EventHandler::new(move |_| {
+                                    if !is_signing_out {
+                                        confirm_sign_out.set(true);
+                                    }
+                                }),
+                            }),
                     ),
             )
+            .maybe_child(
+                (*confirm_sign_out.read()).then(|| sign_out_confirm(confirm_sign_out, signing_out)),
+            )
     }
+}
+
+fn sign_out_confirm(mut open: State<bool>, mut signing_out: State<bool>) -> Element {
+    confirm_dialog(
+        "Sign out?",
+        "This device will be signed out and its local data deleted. Without a key backup or another signed-in device, encrypted messages can't be read again.",
+        "Sign out",
+        move || open.set(false),
+        move || {
+            open.set(false);
+            signing_out.set(true);
+            // On tokio: a Freya task would be cancelled when this dialog unmounts.
+            tokio::spawn(async {
+                crate::utils::matrix::logout().await;
+                crate::app::restart::restart();
+            });
+        },
+    )
+    .into_element()
 }
 
 /// Icon + text content for a settings `Button`.

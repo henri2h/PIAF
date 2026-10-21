@@ -51,6 +51,36 @@ pub async fn on_session_expired() {
     let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
 }
 
+/// Signs this device out: stops sync, revokes the token (best effort: offline
+/// still signs out locally), then deletes the session, its stores and drafts.
+/// Downloads and preferences stay. The caller restarts the app.
+pub async fn logout() {
+    crate::utils::sync::stop().await;
+    if let Some(client) = CLIENT.get() {
+        if let Err(e) = client.logout().await {
+            tracing::warn!("logout request failed, signing out locally: {e}");
+        }
+    }
+    let Some(session_file) = SESSION_FILE.get() else {
+        return;
+    };
+    let db_path = fs::read_to_string(session_file)
+        .await
+        .ok()
+        .and_then(|s| serde_json::from_str::<FullSession>(&s).ok())
+        .map(|s| s.client_session.db_path);
+    if let Err(e) = fs::remove_file(session_file).await {
+        tracing::warn!("could not delete session file: {e}");
+    }
+    if let Some(db_path) = db_path {
+        if let Err(e) = fs::remove_dir_all(&db_path).await {
+            tracing::warn!("could not delete stores: {e}");
+        }
+    }
+    crate::utils::drafts::delete_file().await;
+    tracing::info!("signed out");
+}
+
 /// Catches token revocation on any request, not just sync.
 fn watch_session_expiry(client: &Client) {
     use matrix_sdk::SessionChange;

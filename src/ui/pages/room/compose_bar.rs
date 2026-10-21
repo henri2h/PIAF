@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
@@ -11,6 +13,7 @@ use freya::text_edit::*;
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::compose_touch::{self, EditAction, use_compose_touch};
+use crate::utils::ime::{self, ImeEvent};
 use crate::utils::drafts;
 use crate::utils::use_app_colors;
 
@@ -49,6 +52,10 @@ impl Component for ComposeBar {
         let a11y_id = use_a11y();
         let focus = use_focus(a11y_id);
         let touch = use_compose_touch();
+        // The soft keyboard's word in progress (Android): a UTF-16 range of the text.
+        let preedit: Composing = use_hook(|| Rc::new(RefCell::new(None)));
+        let line_heights: State<Vec<f32>> = use_state(Vec::new);
+        let scroll = use_scroll_controller(ScrollConfig::default);
         let mut editable = use_editable(String::new, EditableConfig::new);
         let mut editor_state = *editable.editor();
 
@@ -126,7 +133,9 @@ impl Component for ComposeBar {
         let room_id_send = room_id.clone();
         let draft_gen_send = draft_gen.clone();
 
+        let preedit_send = preedit.clone();
         let mut do_send = move || {
+            finish_composition(&preedit_send);
             let text = editable.editor().read().rope().to_string();
             let text = text.trim().to_string();
             let paste = paste_pending.read().clone();
@@ -211,7 +220,9 @@ impl Component for ComposeBar {
 
         let mut on_submit_btn = do_send.clone();
 
+        let preedit_keys = preedit.clone();
         let on_key_down = move |e: Event<KeyboardEventData>| {
+            finish_composition(&preedit_keys);
             // Esc cancels a reply or edit first, then leaves the composer
             // so keyboard navigation works again.
             if e.key == Key::Named(NamedKey::Escape) {
@@ -225,7 +236,17 @@ impl Component for ComposeBar {
                 return;
             }
             touch.show_menu(false);
-            if e.key == Key::Named(NamedKey::Enter) && !e.modifiers.shift() {
+            // The key only, never the typed text.
+            tracing::debug!(
+                target: "piaf::composer",
+                key = match &e.key {
+                    Key::Character(c) => format!("char({} chars)", c.chars().count()),
+                    key => format!("{key:?}"),
+                },
+                "key down",
+            );
+            // On a touch keyboard Enter starts a new line; the send button sends.
+            if e.key == Key::Named(NamedKey::Enter) && !e.modifiers.shift() && !cfg!(target_os = "android") {
                 do_send();
             } else {
                 // Let the editable handle the key normally (text paste, etc.).
@@ -284,12 +305,99 @@ impl Component for ComposeBar {
         };
 
         let line_count = editable.editor().read().len_lines().max(1);
-        let inner_h = (line_count as f32 * LINE_H).min(MAX_LINES as f32 * LINE_H);
+        // Measured heights: a long line wraps over several rows.
+        let content_h: f32 = (0..line_count)
+            .map(|i| line_heights.read().get(i).copied().filter(|h| *h > 0.).unwrap_or(LINE_H))
+            .sum();
+        let inner_h = content_h.min(MAX_LINES as f32 * LINE_H);
         let is_empty = editable.editor().read().rope().len_chars() == 0;
+        // Past `MAX_LINES` the text scrolls: keep the cursor in view as it moves.
+        use_side_effect(move || {
+            let editor = editable.editor().read();
+            let heights = line_heights.read();
+            let row = editor.cursor_row();
+            let row_len = editor.line(row).map(|l| l.utf16_len()).unwrap_or(0);
+            let fraction = if row_len == 0 {
+                0.
+            } else {
+                editor.cursor_col() as f32 / row_len as f32
+            };
+            let height = |i: usize| heights.get(i).copied().filter(|h| *h > 0.).unwrap_or(LINE_H);
+            let content: f32 = (0..editor.len_lines().max(1)).map(height).sum();
+            let viewport = content.min(MAX_LINES as f32 * LINE_H);
+            // The cursor's row inside a wrapped line, estimated from its column.
+            let line_top: f32 = (0..row).map(height).sum();
+            let top = line_top + fraction * (height(row) - LINE_H).max(0.);
+            scroll_cursor_into_view(scroll, top, top + LINE_H, content, viewport);
+        });
         let is_focused = focus().is_focused();
+        // The soft keyboard (Android): `ime_seen` is the text and cursor it
+        // last saw, so only changes made elsewhere (send, cursor tap) re-sync it.
+        let ime_seen = use_hook(|| Rc::new(RefCell::new((String::new(), 0usize))));
+        // Token of this composer's last `ime::show`: hiding never closes another's keyboard.
+        let ime_owner = use_hook(|| Rc::new(std::cell::Cell::new(0u64)));
+        // `peek`: callers that must re-run on edits read the editor themselves.
+        let editor_snapshot = move || {
+            let editor = editable.editor().peek();
+            (editor.rope().to_string(), editor.cursor_pos())
+        };
+        // Both a show and a re-sync restart the keyboard with no word in progress.
+        {
+            let ime_seen = ime_seen.clone();
+            let ime_owner = ime_owner.clone();
+            let preedit = preedit.clone();
+            use_side_effect_with_deps(&is_focused, move |&focused| {
+                tracing::debug!(target: "piaf::composer", focused, "focus changed");
+                if focused {
+                    finish_composition(&preedit);
+                    let (text, cursor) = editor_snapshot();
+                    ime_owner.set(ime::show(&text, cursor));
+                    *ime_seen.borrow_mut() = (text, cursor);
+                } else {
+                    ime::hide(ime_owner.get());
+                }
+            });
+        }
+        {
+            let ime_seen = ime_seen.clone();
+            let preedit = preedit.clone();
+            use_side_effect(move || {
+                // Subscribes: runs after every edit.
+                let _ = editable.editor().read();
+                let snapshot = editor_snapshot();
+                if focus.peek().is_focused() && *ime_seen.borrow() != snapshot {
+                    tracing::debug!(target: "piaf::composer", "text changed outside the keyboard: sync");
+                    finish_composition(&preedit);
+                    ime::sync(&snapshot.0, snapshot.1);
+                    *ime_seen.borrow_mut() = snapshot;
+                }
+            });
+        }
+        {
+            let ime_owner = ime_owner.clone();
+            use_drop(move || ime::hide(ime_owner.get()));
+        }
+        {
+            let ime_seen = ime_seen.clone();
+            let preedit = preedit.clone();
+            use_hook(move || {
+                crate::utils::bridge_watch(&ime::events(), move |_| {
+                    // Left queued for the focused composer (another one, mid-swap).
+                    if !focus.peek().is_focused() {
+                        return;
+                    }
+                    for event in ime::drain() {
+                        apply_ime_event(&mut editable.editor_mut().write(), &preedit, event);
+                    }
+                    *ime_seen.borrow_mut() = editor_snapshot();
+                });
+            });
+        }
         let edit_menu = (is_focused && touch.is_menu_shown()).then(|| {
             let has_selection = editable.editor().read().has_any_selection();
+            let preedit = preedit.clone();
             compose_touch::edit_menu(c, has_selection, move |action| {
+                finish_composition(&preedit);
                 action.apply(editable);
                 // Select all keeps the menu up, to copy or cut next.
                 touch.show_menu(action == EditAction::SelectAll);
@@ -476,7 +584,7 @@ impl Component for ComposeBar {
                             .on_global_pointer_up(on_global_pointer_up)
                             .on_pointer_down(move |_| a11y_id.request_focus())
                             .on_touch_start(move |e: Event<TouchEventData>| {
-                                touch.touch_start(e.global_location)
+                                touch.touch_start(e.global_location, editable)
                             })
                             .on_touch_move(move |e: Event<TouchEventData>| {
                                 touch.touch_move(e.global_location)
@@ -495,7 +603,7 @@ impl Component for ComposeBar {
                             })
                             .overflow(Overflow::Clip)
                             .child(
-                                ScrollView::new()
+                                ScrollView::new_controlled(scroll)
                                     .width(Size::fill())
                                     .height(Size::fill())
                                     .child(
@@ -525,6 +633,7 @@ impl Component for ComposeBar {
                                                     c,
                                                     is_focused,
                                                     touch,
+                                                    heights: line_heights,
                                                 }
                                                 .into_element()
                                             })),
@@ -548,5 +657,181 @@ impl Component for ComposeBar {
                         ),
                     ),
             )
+    }
+}
+
+/// Scrolls just enough for the cursor row `top..bottom` (content coordinates,
+/// below the top padding) to be visible in a `viewport` tall text area.
+/// Converges: the effect calling it re-runs on every scroll write (measured
+/// rows can be shorter than `LINE_H`, which used to make it oscillate forever).
+fn scroll_cursor_into_view(mut scroll: ScrollController, top: f32, bottom: f32, content: f32, viewport: f32) {
+    let (_, y) = Into::<(i32, i32)>::into(scroll);
+    let view_top = -y as f32;
+    // A row taller than the viewport shows its top.
+    let bottom = bottom.min(top + viewport);
+    let target = if top < view_top {
+        top
+    } else if bottom > view_top + viewport {
+        bottom - viewport
+    } else {
+        view_top
+    };
+    let target = -(target.clamp(0., (content - viewport).max(0.)) as i32);
+    if target != y {
+        scroll.scroll_to_y(target);
+    }
+}
+
+/// The soft keyboard's word in progress, as a UTF-16 range of ordinary text.
+/// Not the editor's preedit: that keeps its own copy of the range, which goes
+/// stale (and panics) when the text changes under it. This one is clamped to
+/// the text at every use.
+type Composing = Rc<RefCell<Option<(usize, usize)>>>;
+
+/// Applies what the soft keyboard did (see [`ImeEvent`]) to the editor.
+fn apply_ime_event(editor: &mut RopeEditor, composing: &RefCell<Option<(usize, usize)>>, event: ImeEvent) {
+    let len = editor.len_utf16_cu();
+    let clamp = |(a, b): (usize, usize)| (a.min(b).min(len), a.max(b).min(len));
+    // The composition, else the selection: what typed text replaces.
+    let target = composing
+        .borrow()
+        .or_else(|| editor.get_selection_range())
+        .unwrap_or_else(|| {
+            let cursor = editor.cursor_pos();
+            (cursor, cursor)
+        });
+    let (start, end) = clamp(target);
+    let mut replace = |text: &str| {
+        if end > start {
+            editor.remove(start..end);
+        }
+        editor.insert(text, start);
+        let text_end = start + text.encode_utf16().count();
+        *editor.selection_mut() = TextSelection::new_cursor(text_end);
+        text_end
+    };
+    match event {
+        ImeEvent::Commit(text) => {
+            replace(&text);
+            *composing.borrow_mut() = None;
+        }
+        ImeEvent::Preedit(text) => {
+            let text_end = replace(&text);
+            *composing.borrow_mut() = (!text.is_empty()).then_some((start, text_end));
+        }
+        ImeEvent::ComposingRegion { start, end } => {
+            *composing.borrow_mut() = Some(clamp((start, end))).filter(|(a, b)| b > a);
+        }
+        ImeEvent::Select { start, end } => {
+            let (start, end) = (start.min(len), end.min(len));
+            *editor.selection_mut() = if start == end {
+                TextSelection::new_cursor(start)
+            } else {
+                TextSelection::new_range((start, end))
+            };
+        }
+        // Around the selection (Android's `deleteSurroundingText`); the
+        // composition shifts with the text.
+        ImeEvent::Delete { before, after } => {
+            let (sel_start, sel_end) = editor
+                .get_selection_range()
+                .unwrap_or_else(|| (editor.cursor_pos(), editor.cursor_pos()));
+            let (sel_start, sel_end) = clamp((sel_start, sel_end));
+            let removed_after = (sel_end, (sel_end + after).min(len));
+            let removed_before = (sel_start.saturating_sub(before), sel_start);
+            for (a, b) in [removed_after, removed_before] {
+                if b > a {
+                    editor.remove(a..b);
+                    let shift = |pos: usize| if pos <= a { pos } else if pos >= b { pos - (b - a) } else { a };
+                    let range = *composing.borrow();
+                    *composing.borrow_mut() = range.map(|(s, e)| (shift(s), shift(e))).filter(|(s, e)| e > s);
+                }
+            }
+            let cursor = removed_before.0;
+            *editor.selection_mut() = if sel_end > sel_start {
+                TextSelection::new_range((cursor, cursor + (sel_end - sel_start)))
+            } else {
+                TextSelection::new_cursor(cursor)
+            };
+        }
+    }
+}
+
+/// Before an edit that doesn't come from the keyboard: the word in progress
+/// stays as plain text.
+fn finish_composition(composing: &RefCell<Option<(usize, usize)>>) {
+    composing.borrow_mut().take();
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::*;
+
+    fn editor(text: &str, cursor: usize) -> RopeEditor {
+        RopeEditor::new(
+            text.to_string(),
+            TextSelection::new_cursor(cursor),
+            0,
+            EditorHistory::new(Duration::from_millis(10)),
+        )
+    }
+
+    fn text(editor: &RopeEditor) -> String {
+        editor.rope().to_string()
+    }
+
+    #[test]
+    fn composition_is_rewritten_in_place_then_committed() {
+        let mut e = editor("", 0);
+        let composing = RefCell::new(None);
+        apply_ime_event(&mut e, &composing, ImeEvent::Preedit("he".into()));
+        apply_ime_event(&mut e, &composing, ImeEvent::Preedit("hel".into()));
+        apply_ime_event(&mut e, &composing, ImeEvent::Commit("hello ".into()));
+        assert_eq!(text(&e), "hello ");
+        assert_eq!(e.cursor_pos(), 6);
+        assert_eq!(*composing.borrow(), None);
+    }
+
+    #[test]
+    fn composing_region_re_edits_a_word_without_duplicating_it() {
+        let mut e = editor("hel world", 3);
+        let composing = RefCell::new(None);
+        apply_ime_event(&mut e, &composing, ImeEvent::ComposingRegion { start: 0, end: 3 });
+        apply_ime_event(&mut e, &composing, ImeEvent::Preedit("help".into()));
+        assert_eq!(text(&e), "help world");
+    }
+
+    #[test]
+    fn stale_ranges_are_clamped_instead_of_panicking() {
+        // The crashes: a range from longer text after select all / cut.
+        let mut e = editor("short", 5);
+        let composing = RefCell::new(Some((100, 141)));
+        apply_ime_event(&mut e, &composing, ImeEvent::ComposingRegion { start: 141, end: 221 });
+        apply_ime_event(&mut e, &composing, ImeEvent::Preedit("x".into()));
+        apply_ime_event(&mut e, &composing, ImeEvent::Commit("y".into()));
+        apply_ime_event(&mut e, &composing, ImeEvent::Delete { before: 50, after: 50 });
+        apply_ime_event(&mut e, &composing, ImeEvent::Select { start: 99, end: 300 });
+        assert!(text(&e).len() <= "shorty".len());
+    }
+
+    #[test]
+    fn delete_shifts_the_composition() {
+        let mut e = editor("ab cd", 5);
+        let composing = RefCell::new(Some((3, 5)));
+        *e.selection_mut() = TextSelection::new_cursor(3);
+        apply_ime_event(&mut e, &composing, ImeEvent::Delete { before: 1, after: 0 });
+        assert_eq!(text(&e), "abcd");
+        assert_eq!(*composing.borrow(), Some((2, 4)));
+    }
+
+    #[test]
+    fn commit_replaces_a_selection() {
+        let mut e = editor("hello", 0);
+        e.set_selection((0, 5));
+        let composing = RefCell::new(None);
+        apply_ime_event(&mut e, &composing, ImeEvent::Commit("bye".into()));
+        assert_eq!(text(&e), "bye");
     }
 }

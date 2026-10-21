@@ -177,7 +177,9 @@ fn bottom_bar(
 ) -> Rect {
     let (compose_key, initial_text) = match ui.edit_info.read().as_ref() {
         Some((eid, body)) => (format!("edit-{eid}"), body.clone()),
-        None => ("normal".to_string(), String::new()),
+        // Per room: a room → room navigation reusing the page gets a fresh
+        // composer (its draft, not the previous room's text).
+        None => (format!("normal-{room_id}"), String::new()),
     };
     rect()
         .vertical()
