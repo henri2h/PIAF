@@ -7,6 +7,8 @@ use crate::utils::const_values::AppColors;
 use crate::utils::media::{self, format_file_size, format_media_duration};
 use crate::utils::timeline_media::caption;
 
+use super::message_row::PressGuard;
+
 const MEDIA_W: f32 = 200.;
 const MEDIA_H: f32 = 150.;
 
@@ -16,6 +18,7 @@ pub(super) fn message_content(
     event_id: Option<String>,
     is_me: bool,
     mut image_viewer: State<Option<String>>,
+    guard: PressGuard,
     c: AppColors,
 ) -> Option<Element> {
     let text_color = if is_me {
@@ -46,10 +49,19 @@ pub(super) fn message_content(
                         fallback_source: Some(ViewerSource::Remote(img.source.clone())),
                         thumb_size: Some((400, 300)),
                     })
-                    .on_press(move |_| image_viewer.set(Some(open_key.clone())))
+                    .on_press(move |_| {
+                        if guard.allows() {
+                            image_viewer.set(Some(open_key.clone()));
+                        }
+                    })
                     .hoverable(Size::px(MEDIA_W), Size::px(MEDIA_H), 8.),
                 )
-                .maybe_child(caption(&img.body).map(|cap| label().text(cap).color(text_color)))
+                // The image fills the bubble edge to edge; its caption keeps the padding.
+                .maybe_child(caption(&img.body).map(|cap| {
+                    rect()
+                        .padding(Gaps::new(0., 12., 0., 12.))
+                        .child(label().text(cap).color(text_color))
+                }))
                 .into_element()
         }
         MessageType::File(f) => file_attachment(
@@ -61,6 +73,7 @@ pub(super) fn message_content(
                 .map(|s| format_file_size(s.into())),
             &f.source,
             text_color,
+            guard,
             c,
         ),
         MessageType::Audio(a) => file_attachment(
@@ -72,6 +85,7 @@ pub(super) fn message_content(
                 .map(format_media_duration),
             &a.source,
             text_color,
+            guard,
             c,
         ),
         MessageType::Video(v) => {
@@ -110,6 +124,7 @@ pub(super) fn message_content(
                         .map(format_media_duration),
                     &v.source,
                     text_color,
+                    guard,
                     c,
                 ))
                 .into_element()
@@ -123,7 +138,7 @@ fn media_frame(thumbnail: MediaThumbnail) -> Rect {
     rect()
         .width(Size::px(MEDIA_W))
         .height(Size::px(MEDIA_H))
-        .corner_radius(8.)
+        .corner_radius(4.)
         .overflow(Overflow::Clip)
         .child(thumbnail)
 }
@@ -135,6 +150,7 @@ fn file_attachment(
     detail: Option<String>,
     source: &MediaSource,
     text_color: (u8, u8, u8),
+    guard: PressGuard,
     c: AppColors,
 ) -> Element {
     let source = source.clone();
@@ -143,7 +159,11 @@ fn file_attachment(
         .cross_align(Alignment::Center)
         .spacing(8.)
         .padding(Gaps::new(4., 0., 4., 0.))
-        .on_press(move |_| media::download(&source))
+        .on_press(move |_| {
+            if guard.allows() {
+                media::download(&source);
+            }
+        })
         .child(
             SvgViewer::new(icon)
                 .color(text_color)

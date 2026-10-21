@@ -27,7 +27,7 @@ impl Component for RoomStartBanner {
                 size: 80.,
                 source: Some(AvatarSource::Room(self.room_id.clone())),
                 name: room_name.to_string(),
-                color: c.primary,
+                color: crate::utils::id_color(&self.room_id),
             })
             .child(
                 label()

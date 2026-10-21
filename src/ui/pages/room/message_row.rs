@@ -11,6 +11,7 @@ use matrix_sdk_ui::timeline::{
     EventSendState, MembershipChange, TimelineDetails, TimelineItem, TimelineItemContent,
     VirtualTimelineItem,
 };
+use matrix_sdk::ruma::events::room::message::MessageType;
 use tokio::sync::mpsc::UnboundedSender;
 
 use super::ui_ctx::{RoomUiCtx, use_room_ui_ctx};
@@ -19,10 +20,45 @@ use crate::logging::RenderTimer;
 use crate::ui::components::{Avatar, UserPopupInfo};
 use crate::utils::{format_timestamp, id_color, use_app_colors};
 
+/// Where a message sits in a run of consecutive messages from one sender
+/// (see `timeline_view::group_positions`): the avatar and time show on the
+/// last one, the name on the first.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub(super) struct GroupPosition {
+    pub first: bool,
+    pub last: bool,
+}
+
+/// Bubble corner radius, and the smaller one where bubbles of a group meet.
+const BUBBLE_RADIUS: f32 = 18.;
+const JOINED_RADIUS: f32 = 6.;
+const AVATAR_SIZE: f32 = 32.;
+const REACTION_HEIGHT: f32 = 22.;
+/// How far the reactions overlap the bottom of their bubble.
+const REACTION_OVERLAP: f32 = 8.;
+
+/// Whether a tap on part of a message (image, reaction, avatar…) should act:
+/// on Android not when it is the lift of a swipe-to-reply or a long press.
+#[derive(Clone, Copy)]
+pub(super) struct PressGuard {
+    #[cfg(target_os = "android")]
+    gesture: super::message_gesture::MessageGesture,
+}
+
+impl PressGuard {
+    pub fn allows(&self) -> bool {
+        #[cfg(target_os = "android")]
+        return self.gesture.allows_press();
+        #[cfg(not(target_os = "android"))]
+        true
+    }
+}
+
 pub struct MessageRow {
     pub room_id: String,
     pub item: Arc<TimelineItem>,
     pub date_label: Option<String>,
+    pub group: GroupPosition,
     pub my_user_id: Option<String>,
     pub action_tx: Arc<UnboundedSender<MsgAction>>,
     pub is_dm: bool,
@@ -32,6 +68,7 @@ impl PartialEq for MessageRow {
     fn eq(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.item, &other.item)
             && self.date_label == other.date_label
+            && self.group == other.group
             && self.is_dm == other.is_dm
             && Arc::ptr_eq(&self.action_tx, &other.action_tx)
     }
@@ -51,8 +88,7 @@ impl Component for MessageRow {
             mut user_popup,
             ..
         } = use_room_ui_ctx();
-        #[cfg(not(target_os = "android"))]
-        let mut reply_info = use_room_ui_ctx().reply_info;
+        let reply_info = use_room_ui_ctx().reply_info;
         #[cfg(not(target_os = "android"))]
         let mut hovered = use_state(|| false);
         #[cfg(not(target_os = "android"))]
@@ -61,7 +97,13 @@ impl Component for MessageRow {
         let my_user_id = self.my_user_id.clone();
         let date_label = self.date_label.clone();
         #[cfg(target_os = "android")]
-        let mut press_gen: State<u32> = use_state(|| 0u32);
+        let gesture = super::message_gesture::use_message_gesture();
+        let guard = PressGuard {
+            #[cfg(target_os = "android")]
+            gesture,
+        };
+        #[cfg(target_os = "android")]
+        let compose_focus = use_room_ui_ctx().compose_focus;
 
         // ── Date separator ────────────────────────────────────────────────
         let date_separator = if let Some(lbl) = &date_label {
@@ -288,39 +330,82 @@ impl Component for MessageRow {
             event_id.clone(),
             is_me,
             image_viewer,
+            guard,
             c,
         ) else {
             return rect();
         };
 
         // ── Bubble ────────────────────────────────────────────────────────
+        let group = self.group;
+        let pending_or_failed = matches!(
+            send_state,
+            Some(EventSendState::NotSentYet { .. } | EventSendState::SendingFailed { .. })
+        );
+        // One time per group, on its last bubble; a send problem always shows.
+        let show_meta = group.last || pending_or_failed;
+        // Images fill their bubble edge to edge; the text around them keeps padding.
+        let edge_to_edge = matches!(message.msgtype(), MessageType::Image(_));
+        let padded = move |el: Rect| {
+            if edge_to_edge {
+                el.padding(Gaps::new(6., 12., 0., 12.))
+            } else {
+                el
+            }
+        };
+        let top_inner = if group.first { BUBBLE_RADIUS } else { JOINED_RADIUS };
+        let bottom_inner = if group.last { BUBBLE_RADIUS } else { JOINED_RADIUS };
+        // The corners on the sender's side are smaller where bubbles join.
+        let radius = if is_me {
+            CornerRadius::new(BUBBLE_RADIUS, top_inner, bottom_inner, BUBBLE_RADIUS)
+        } else {
+            CornerRadius::new(top_inner, BUBBLE_RADIUS, BUBBLE_RADIUS, bottom_inner)
+        };
+        let has_reply = reply_to.is_some();
+        let reply_el = if has_reply {
+            padded(rect().child(reply_el)).into_element()
+        } else {
+            reply_el
+        };
+
         let bubble_inner = rect()
             .vertical()
             .max_width(Size::percent(82.))
-            .padding(Gaps::new_all(12.))
-            .corner_radius(18.)
+            .padding(if edge_to_edge {
+                Gaps::new(0., 0., 6., 0.)
+            } else {
+                Gaps::new(8., 12., 8., 12.)
+            })
+            .corner_radius(radius)
             .background(bubble_bg)
-            .spacing(4.);
+            .maybe(edge_to_edge, |b| b.overflow(Overflow::Clip))
+            .spacing(2.);
 
         let bubble_inner = if !is_me {
             bubble_inner
-                .maybe(!is_dm, |b| {
-                    b.child(
-                        label()
-                            .text(sender_name.clone())
-                            .font_size(12.)
-                            .font_weight(FontWeight::BOLD)
-                            .color(sender_color_val),
-                    )
+                .maybe(!is_dm && group.first, |b| {
+                    b.child(padded(
+                        rect().child(
+                            label()
+                                .text(sender_name.clone())
+                                .font_size(12.)
+                                .font_weight(FontWeight::BOLD)
+                                .color(sender_color_val),
+                        ),
+                    ))
                 })
                 .child(reply_el)
                 .child(content_el)
-                .child(
-                    label()
-                        .text(timestamp.clone())
-                        .font_size(11.)
-                        .color(c.on_surface_faint),
-                )
+                .maybe_child(show_meta.then(|| {
+                    padded(
+                        rect().child(
+                            label()
+                                .text(timestamp.clone())
+                                .font_size(11.)
+                                .color(c.on_surface_faint),
+                        ),
+                    )
+                }))
         } else {
             let (receipt_icon, receipt_color) = match &send_state {
                 Some(EventSendState::NotSentYet { .. }) => {
@@ -337,19 +422,24 @@ impl Component for MessageRow {
                     }
                 }
             };
-            bubble_inner.child(reply_el).child(content_el).child(
-                rect()
-                    .horizontal()
-                    .cross_align(Alignment::Center)
-                    .spacing(4.)
-                    .child(label().text(timestamp).font_size(11.).color(c.timestamp_me))
-                    .child(
-                        SvgViewer::new(receipt_icon)
-                            .color(receipt_color)
-                            .width(Size::px(13.))
-                            .height(Size::px(13.)),
-                    ),
-            )
+            bubble_inner
+                .child(reply_el)
+                .child(content_el)
+                .maybe_child(show_meta.then(|| {
+                    padded(
+                        rect()
+                            .horizontal()
+                            .cross_align(Alignment::Center)
+                            .spacing(4.)
+                            .child(label().text(timestamp).font_size(11.).color(c.timestamp_me))
+                            .child(
+                                SvgViewer::new(receipt_icon)
+                                    .color(receipt_color)
+                                    .width(Size::px(13.))
+                                    .height(Size::px(13.)),
+                            ),
+                    )
+                }))
         };
 
         // ── Reactions pills ───────────────────────────────────────────────
@@ -359,7 +449,7 @@ impl Component for MessageRow {
             let mut pills_row = rect()
                 .horizontal()
                 .spacing(4.)
-                .padding(Gaps::new(4., 0., 0., 0.))
+                .padding(Gaps::new(0., 8., 0., 8.))
                 .cross_align(Alignment::Center);
             for reaction in &reactions {
                 let key = reaction.key.clone();
@@ -381,12 +471,18 @@ impl Component for MessageRow {
                     rect()
                         .horizontal()
                         .cross_align(Alignment::Center)
-                        .padding(Gaps::new(4., 10., 4., 10.))
-                        .corner_radius(12.)
+                        .height(Size::px(REACTION_HEIGHT))
+                        .padding(Gaps::new(0., 8., 0., 8.))
+                        .corner_radius(REACTION_HEIGHT / 2.)
                         .background(pill_bg)
+                        // A ring in the page colour separates it from the bubble.
+                        .border(Border::new().fill(c.surface).width(2.))
                         .on_press({
                             let key = key.clone();
                             move |_| {
+                                if !guard.allows() {
+                                    return;
+                                }
                                 if let Some(event_id) = eid.clone() {
                                     let _ = tx.send(MsgAction::React {
                                         event_id,
@@ -401,10 +497,17 @@ impl Component for MessageRow {
                                 .font_size(13.)
                                 .color(pill_text_color),
                         )
-                        .hoverable(Size::auto(), Size::auto(), 12.),
+                        .hoverable(Size::auto(), Size::px(REACTION_HEIGHT), REACTION_HEIGHT / 2.),
                 );
             }
-            pills_row
+            // Overlaps the bubble's bottom edge, drawn over it. Negative
+            // margins are ignored, so the holder is shorter than the pills and
+            // `offset_y` (which moves its children) lifts them into the bubble.
+            rect()
+                .height(Size::px(REACTION_HEIGHT - REACTION_OVERLAP))
+                .offset_y(-REACTION_OVERLAP)
+                .layer(1)
+                .child(pills_row)
         };
 
         // ── Bubble column ─────────────────────────────────────────────────
@@ -415,15 +518,18 @@ impl Component for MessageRow {
             .on_secondary_down(move |_| {
                 *action_popup.write() = Some(item_for_popup.clone());
             })
+            .main_align(if is_me { Alignment::End } else { Alignment::Start })
+            .cross_align(if is_me { Alignment::End } else { Alignment::Start })
             .child(bubble_inner)
-            .child(reactions_section);
+            .maybe_child((!reactions.is_empty()).then_some(reactions_section));
 
         // ── Row with avatar ───────────────────────────────────────────────
         let row = rect()
             .horizontal()
             .width(Size::fill())
-            .padding(Gaps::new(2., 12., 2., 12.))
-            .spacing(10.)
+            // A group's bubbles sit close; groups get a gap between them.
+            .padding(Gaps::new(if group.first { 6. } else { 1. }, 8., 1., 8.))
+            .spacing(8.)
             .cross_align(Alignment::End)
             .main_align(if is_me {
                 Alignment::End
@@ -432,7 +538,10 @@ impl Component for MessageRow {
             });
 
         let room_id = self.room_id.clone();
-        let row = if !is_me && !is_dm {
+        let row = if !is_me && !is_dm && !group.last {
+            // Avatar only on a group's last bubble; keep its column aligned.
+            row.child(rect().width(Size::px(AVATAR_SIZE)))
+        } else if !is_me && !is_dm {
             let sender_name_c = sender_name.clone();
             let sender_uid = sender_str.clone();
             let sender_avatar = AvatarSource::member(&room_id, &sender_str);
@@ -440,8 +549,11 @@ impl Component for MessageRow {
             row.child(
                 rect()
                     .overflow(Overflow::Clip)
-                    .corner_radius(18.)
+                    .corner_radius(AVATAR_SIZE / 2.)
                     .on_press(move |_| {
+                        if !guard.allows() {
+                            return;
+                        }
                         *user_popup.write() = Some(UserPopupInfo {
                             user_id: sender_uid.clone(),
                             display_name: sender_name_c.clone(),
@@ -449,12 +561,12 @@ impl Component for MessageRow {
                         });
                     })
                     .child(Avatar {
-                        size: 36.,
+                        size: AVATAR_SIZE,
                         source: Some(sender_avatar),
                         name: sender_name.clone(),
                         color: sender_color_val,
                     })
-                    .hoverable(Size::auto(), Size::auto(), 18.),
+                    .hoverable(Size::auto(), Size::auto(), AVATAR_SIZE / 2.),
             )
         } else {
             row
@@ -470,6 +582,9 @@ impl Component for MessageRow {
                 .padding(Gaps::new(1., 12., 1., 12.))
                 .spacing(2.)
                 .on_press(move |_| {
+                    if !guard.allows() {
+                        return;
+                    }
                     *detail_modal.write() = Some(item_modal.clone());
                 });
             for (uid, _ts) in read_receipts.iter().take(5) {
@@ -518,6 +633,9 @@ impl Component for MessageRow {
                             .padding(Gaps::new(2., 8., 2., 8.))
                             .background(c.error)
                             .on_press(move |_| {
+                                if !guard.allows() {
+                                    return;
+                                }
                                 let h = handle.clone();
                                 tokio::task::spawn(async move {
                                     let _ = h.abort().await;
@@ -556,6 +674,7 @@ impl Component for MessageRow {
                 },
                 move || {
                     if let Some(event_id) = reply_eid.clone() {
+                        let mut reply_info = reply_info;
                         reply_info.set(Some((event_id, reply_sender.clone(), reply_body.clone())));
                     }
                 },
@@ -589,32 +708,36 @@ impl Component for MessageRow {
             .child(read_receipt_row);
 
         #[cfg(target_os = "android")]
-        return rect()
-            .vertical()
-            .width(Size::fill())
-            .on_touch_start(move |_: Event<TouchEventData>| {
-                let next_gen = *press_gen.read() + 1;
-                *press_gen.write() = next_gen;
-                let item_p = item.clone();
-                spawn(async move {
-                    tokio::time::sleep(std::time::Duration::from_millis(350)).await;
-                    if *press_gen.read() == next_gen {
-                        *action_popup.write() = Some(item_p);
-                    }
-                });
-            })
-            .on_touch_move(move |_: Event<TouchEventData>| {
-                *press_gen.write() += 1;
-            })
-            .on_touch_end(move |_: Event<TouchEventData>| {
-                *press_gen.write() += 1;
-            })
-            .on_touch_cancel(move |_: Event<TouchEventData>| {
-                *press_gen.write() += 1;
-            })
-            .child(date_separator)
-            .child(row.child(bubble_col))
-            .child(failed_send_row)
-            .child(read_receipt_row);
+        {
+            let item_popup = item.clone();
+            let reply_body = crate::utils::room_preview::reply_preview(message.msgtype());
+            let on_reply = event_id.clone().map(|event_id| {
+                move || {
+                    let (mut reply_info, mut compose_focus) = (reply_info, compose_focus);
+                    reply_info.set(Some((
+                        event_id.clone(),
+                        sender_name.clone(),
+                        reply_body.clone(),
+                    )));
+                    *compose_focus.write() += 1;
+                }
+            });
+            return rect()
+                .vertical()
+                .width(Size::fill())
+                .child(date_separator)
+                .child(gesture.attach(
+                    rect().width(Size::fill()),
+                    row.child(bubble_col),
+                    c,
+                    move || {
+                        let mut action_popup = action_popup;
+                        action_popup.set(Some(item_popup.clone()));
+                    },
+                    on_reply,
+                ))
+                .child(failed_send_row)
+                .child(read_receipt_row);
+        }
     }
 }

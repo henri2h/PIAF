@@ -133,7 +133,7 @@ impl Component for RoomSettings {
                                         size: 80.,
                                         source: Some(AvatarSource::Room(room_id.clone())),
                                         name: name.to_string(),
-                                        color: c.primary,
+                                        color: crate::utils::id_color(&room_id),
                                     })
                                     .child(
                                         label()
@@ -229,7 +229,7 @@ impl Component for RoomSettings {
                                 icon_color: c.on_surface_variant,
                                 destructive: false,
                                 on_press: EventHandler::new(move |_| {
-                                    let _ = RouterContext::get().push(Route::RoomMediaPage {
+                                    crate::app::navigation::push(Route::RoomMediaPage {
                                         room_id: room_id_media.clone(),
                                     });
                                 }),
@@ -278,7 +278,7 @@ impl Component for RoomSettings {
                                 icon_color: c.on_surface_variant,
                                 destructive: false,
                                 on_press: EventHandler::new(move |_| {
-                                    let _ = RouterContext::get().push(Route::RoomMembers {
+                                    crate::app::navigation::push(Route::RoomMembers {
                                         room_id: room_id_members.clone(),
                                     });
                                 }),

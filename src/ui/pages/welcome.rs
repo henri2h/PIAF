@@ -1,10 +1,12 @@
 use freya::prelude::*;
+
+use crate::utils::insets::status_bar_inset;
 use freya_material_design::prelude::ButtonRippleExt;
 use freya_router::prelude::RouterContext;
 
 use crate::{
     Route, SYNC_RX,
-    utils::{const_values::STATUS_BAR_INSET, matrix::CLIENT, use_app_colors},
+    utils::{matrix::CLIENT, use_app_colors},
 };
 
 #[derive(PartialEq)]
@@ -57,7 +59,7 @@ impl Component for WelcomePage {
             .background(c.splash_bg)
             .shadow((0., 4., 20., 4., (0, 0, 0, 80)))
             // Push content below the status bar; center the rest
-            .padding(Gaps::new(STATUS_BAR_INSET, 0., 0., 0.))
+            .padding(Gaps::new(status_bar_inset(), 0., 0., 0.))
             .cross_align(Alignment::center())
             .main_align(Alignment::center())
             .child(
@@ -94,7 +96,7 @@ impl Component for WelcomePage {
                         .filled()
                         .expanded()
                         .on_press(|_| {
-                            let _ = RouterContext::get().push(Route::LoginPage);
+                            crate::app::navigation::push(Route::LoginPage);
                         })
                         .ripple()
                         .child(

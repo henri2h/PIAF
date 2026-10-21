@@ -2,6 +2,7 @@ use freya::prelude::*;
 use freya::text_edit::*;
 use freya_components::cursor_blink::use_cursor_blink;
 
+use super::compose_touch::{ComposeTouch, place_cursor};
 use crate::utils::const_values::AppColors;
 
 /// One line of the composer: text, selection and blinking cursor.
@@ -11,6 +12,7 @@ pub(super) struct ComposeLine {
     pub editable: UseEditable,
     pub c: AppColors,
     pub is_focused: bool,
+    pub touch: ComposeTouch,
 }
 
 impl Component for ComposeLine {
@@ -22,6 +24,7 @@ impl Component for ComposeLine {
         let line_index = self.line_index;
         let mut editable = self.editable;
         let c = self.c;
+        let touch = self.touch;
         let holder = use_state(ParagraphHolder::default);
 
         let (text, is_active, cursor_index, highlights) = {
@@ -48,9 +51,10 @@ impl Component for ComposeLine {
             Color::from(c.compose_edit_text),
         );
 
-        let on_mouse_down = move |e: Event<MouseEventData>| {
+        // Pointer, not mouse: a tap places the cursor on touch screens too.
+        let on_pointer_down = move |e: Event<PointerEventData>| {
             editable.process_event(EditableEvent::Down {
-                location: e.element_location,
+                location: e.element_location(),
                 editor_line: EditorLine::Paragraph(line_index),
                 holder: &holder.read(),
             });
@@ -64,9 +68,17 @@ impl Component for ComposeLine {
             });
         };
 
+        // After a long press, the cursor follows the finger.
+        let on_touch_move = move |e: Event<TouchEventData>| {
+            if touch.is_dragging() {
+                place_cursor(editable, &holder.read(), line_index, e.element_location);
+            }
+        };
+
         paragraph()
             .holder(holder.read().clone())
-            .on_mouse_down(on_mouse_down)
+            .on_touch_move(on_touch_move)
+            .on_pointer_down(on_pointer_down)
             .on_mouse_move(on_mouse_move)
             .cursor_index(cursor_index)
             .cursor_color(cursor_color)

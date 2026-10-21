@@ -3,90 +3,144 @@ use std::time::Duration;
 use freya::animation::*;
 use freya::prelude::*;
 
+use super::super::room_list::RoomListCtx;
+use crate::ui::components::{Swipe, SwipeBounds, use_swipe};
 use crate::utils::const_values::AppColors;
+use crate::utils::haptics::{self, Haptic};
 
-const SWIPE_THRESHOLD: f64 = 12.0;
-const COMMIT_THRESHOLD: f32 = 88.0;
-const MAX_OFFSET: f64 = 120.0;
+const SWIPE: SwipeBounds = SwipeBounds {
+    max_left: 120.,
+    max_right: 120.,
+    commit: 88.,
+};
+/// A finger resting this long is a press, not the start of a scroll.
+const TAP_TIMEOUT: Duration = Duration::from_millis(90);
+/// How long a quick tap stays highlighted.
+const TAP_FLASH: Duration = Duration::from_millis(160);
 const LONG_PRESS_DELAY: Duration = Duration::from_millis(350);
 const LONG_PRESS_HIGHLIGHT: Duration = Duration::from_millis(500);
+/// Fade of the colour flash confirming a committed swipe.
+const COMMIT_FLASH_MS: u64 = 450;
 
-/// Android row: swipe to recontact / archive, long-press highlight.
-/// Bundled because a recognized swipe must cancel an in-flight long press.
+/// Android row: press highlight, swipe to recontact / archive, long-press menu.
+/// Bundled because a recognized swipe or scroll must cancel the press.
 #[derive(Clone, Copy)]
 pub struct RowInteraction {
     press_gen: State<u64>,
+    pressed: State<bool>,
     long_pressed: State<bool>,
-    drag_start: State<Option<(f64, f64)>>,
-    is_swiping: State<bool>,
-    /// Drag offset while swiping.
-    offset_x: State<f32>,
-    /// `(release count, offset at release)`: each release eases from there to 0.
-    release: State<(u64, f32)>,
-    /// Offset while easing back after a release.
-    snap_offset: f32,
+    /// Set when the touch was a swipe or long press, until the next touch: its
+    /// lift is no tap. Checked by the row's `on_press`, which can run before
+    /// or after `on_touch_end` cancels it.
+    press_consumed: State<bool>,
+    swipe: Swipe,
+    /// `(commit count, recontact?)`: each committed swipe flashes the row in
+    /// its panel's colour.
+    commit_flash: State<(u64, bool)>,
+    /// Opacity of that flash, fading out.
+    flash_opacity: f32,
+    /// The list's scroll: it cancels the row's touch events once it claims a
+    /// touch, so timers check its `touch_generation` instead.
+    scroll: Option<ScrollController>,
 }
 
 pub fn use_row_interaction() -> RowInteraction {
-    let release = use_state(|| (0u64, 0.0f32));
-    let released = *release.read();
-    let snap = use_animation_with_dependencies(&released, |conf, &(_, from)| {
+    let commit_flash = use_state(|| (0u64, false));
+    let flashed = *commit_flash.read();
+    let flash = use_animation_with_dependencies(&flashed, |conf, _| {
         conf.on_creation(OnCreation::Finish);
         conf.on_change(OnChange::Rerun);
-        AnimNum::new(from, 0.).time(180).ease(Ease::Out)
+        AnimNum::new(0.85, 0.)
+            .time(COMMIT_FLASH_MS)
+            .ease(Ease::In)
+            .function(Function::Quad)
     });
-    let snap_offset = snap.get().value();
+    let flash_opacity = flash.get().value();
     RowInteraction {
+        commit_flash,
+        flash_opacity,
         press_gen: use_state(|| 0u64),
+        pressed: use_state(|| false),
         long_pressed: use_state(|| false),
-        drag_start: use_state(|| None),
-        is_swiping: use_state(|| false),
-        offset_x: use_state(|| 0.0f32),
-        release,
-        snap_offset,
+        press_consumed: use_state(|| false),
+        swipe: use_swipe(),
+        scroll: try_consume_context::<RoomListCtx>().map(|ctx| ctx.scroll),
     }
 }
 
 impl RowInteraction {
+    /// Whether the touch being lifted is a tap that should open the room.
+    pub fn allows_press(&self) -> bool {
+        !*self.press_consumed.peek() && !self.swipe.is_swiping() && !*self.long_pressed.peek()
+    }
+
     pub fn is_highlighted(&self) -> bool {
-        *self.long_pressed.read()
+        *self.pressed.read() || *self.long_pressed.read()
     }
 
     pub fn feedback(&self, inner: Rect) -> Element {
         inner.into()
     }
 
-    fn start_long_press(&self, on_menu: super::OnMenu) {
-        let mut press_gen = self.press_gen;
-        let mut long_pressed = self.long_pressed;
-        let next_gen = *press_gen.read() + 1;
-        *press_gen.write() = next_gen;
-        // `timer`, not `tokio::time::sleep`: smol executor has no tokio timer.
+    /// Changes once the list takes over this touch or sees it end (the row
+    /// then gets neither `touchmove` nor `touchend`).
+    fn touch_generation(&self) -> Option<u64> {
+        self.scroll.map(|scroll| scroll.touch_generation())
+    }
+
+    /// Highlights after the tap timeout, then opens the menu after the long-press delay.
+    fn start_press(&self, on_menu: super::OnMenu) {
+        let this = *self;
+        let (mut press_gen, mut pressed, mut long_pressed) =
+            (self.press_gen, self.pressed, self.long_pressed);
+        let next_gen = *press_gen.peek() + 1;
+        press_gen.set(next_gen);
+        let touch = this.touch_generation();
         spawn(async move {
-            timer(LONG_PRESS_DELAY).await;
-            if *press_gen.read() == next_gen {
-                *long_pressed.write() = true;
-                on_menu(false);
-                timer(LONG_PRESS_HIGHLIGHT).await;
-                if *press_gen.read() == next_gen {
-                    *long_pressed.write() = false;
+            let still_down =
+                || *press_gen.peek() == next_gen && this.touch_generation() == touch;
+            timer(TAP_TIMEOUT).await;
+            if !still_down() {
+                return;
+            }
+            pressed.set(true);
+            timer(LONG_PRESS_DELAY - TAP_TIMEOUT).await;
+            if !still_down() {
+                // Its end may never reach the row: clear the highlight here.
+                if *press_gen.peek() == next_gen {
+                    pressed.set(false);
                 }
+                return;
+            }
+            pressed.set(false);
+            long_pressed.set(true);
+            haptics::play(Haptic::HeavyClick);
+            on_menu(false);
+            timer(LONG_PRESS_HIGHLIGHT).await;
+            if *press_gen.peek() == next_gen {
+                long_pressed.set(false);
             }
         });
     }
 
-    /// Ends a drag: the row eases back from where it was released.
-    fn release(&self) {
-        let (mut offset_x, mut release) = (self.offset_x, self.release);
-        let from = *offset_x.peek();
-        let count = release.peek().0 + 1;
-        release.set((count, from));
-        offset_x.set(0.0);
+    fn cancel_press(&self) {
+        *self.press_gen.write_unchecked() += 1;
+        *self.pressed.write_unchecked() = false;
+        *self.long_pressed.write_unchecked() = false;
     }
 
-    fn cancel_long_press(&self) {
-        *self.press_gen.write_unchecked() += 1;
-        *self.long_pressed.write_unchecked() = false;
+    /// Keeps a quick tap visible for a moment: it lifts before the tap timeout.
+    fn flash_tap(&self) {
+        let (mut press_gen, mut pressed) = (self.press_gen, self.pressed);
+        let next_gen = *press_gen.peek() + 1;
+        press_gen.set(next_gen);
+        pressed.set(true);
+        spawn(async move {
+            timer(TAP_FLASH).await;
+            if *press_gen.peek() == next_gen {
+                pressed.set(false);
+            }
+        });
     }
 
     /// Adds touch handlers and the recontact/archive panels revealed behind `highlighted`.
@@ -99,19 +153,21 @@ impl RowInteraction {
         on_menu: super::OnMenu,
     ) -> Rect {
         let state = self;
+        let swipe = self.swipe;
         let room_id_recontact = room_id.clone();
         let room_id_archive = room_id;
 
-        let offset = if *state.is_swiping.read() {
-            *state.offset_x.read()
-        } else {
-            state.snap_offset
-        };
+        let offset = swipe.offset();
         let reveal_recontact = offset > 4.0;
         let reveal_archive = offset < -4.0;
+        let past_commit = offset.abs() > SWIPE.commit;
+        let icon_size = if past_commit { 26. } else { 22. };
 
-        // Absolute so the row draws over the panels instead of sharing their height.
+        // Absolute so the row draws over the panels instead of sharing their
+        // height. Layers grow with nesting depth, so the panels' icons would
+        // otherwise paint over the row's background: push them far below.
         let action_panels = rect()
+            .layer(-100)
             .position(
                 Position::new_absolute()
                     .top(0.)
@@ -131,8 +187,8 @@ impl RowInteraction {
                     .center()
                     .maybe_child(reveal_recontact.then(|| {
                         SvgViewer::new(freya_icons::lucide::user_check())
-                            .width(Size::px(22.))
-                            .height(Size::px(22.))
+                            .width(Size::px(icon_size))
+                            .height(Size::px(icon_size))
                             .color(c.on_primary)
                             .into_element()
                     })),
@@ -145,8 +201,8 @@ impl RowInteraction {
                     .center()
                     .maybe_child(reveal_archive.then(|| {
                         SvgViewer::new(freya_icons::lucide::archive())
-                            .width(Size::px(22.))
-                            .height(Size::px(22.))
+                            .width(Size::px(icon_size))
+                            .height(Size::px(icon_size))
                             .color(c.on_surface)
                             .into_element()
                     })),
@@ -158,66 +214,70 @@ impl RowInteraction {
             .offset_x(offset)
             .child(highlighted);
 
-        let mut drag_start = state.drag_start;
-        let mut is_swiping = state.is_swiping;
-        let mut offset_x = state.offset_x;
+        let commit_flash = self.commit_flash;
+        let commit = move |released: f32| {
+            let mut commit_flash = commit_flash;
+            let count = commit_flash.peek().0 + 1;
+            commit_flash.set((count, released > 0.));
+            haptics::play(Haptic::Click);
+            if released > 0. {
+                let room_id = room_id_recontact.clone();
+                tokio::spawn(async move {
+                    crate::utils::room_mailbox::toggle_recontact(&room_id).await;
+                });
+            } else {
+                let room_id = room_id_archive.clone();
+                tokio::spawn(async move {
+                    crate::utils::room_mailbox::archive_room(&room_id).await;
+                });
+            }
+        };
+        let commit_fallback = commit.clone();
 
         outer
             .on_touch_start(move |e: Event<TouchEventData>| {
-                drag_start.set(Some((e.global_location.x, e.global_location.y)));
-                state.start_long_press(on_menu.clone());
+                *state.press_consumed.write_unchecked() = false;
+                swipe.start(e.global_location);
+                state.start_press(on_menu.clone());
             })
             .on_touch_move(move |e: Event<TouchEventData>| {
-                let Some((sx, sy)) = *drag_start.peek() else {
-                    return;
-                };
-                let dx = e.global_location.x - sx;
-                let dy = e.global_location.y - sy;
-
-                if !*is_swiping.peek() {
-                    if dx.abs() > SWIPE_THRESHOLD && dx.abs() > dy.abs() * 1.5 {
-                        is_swiping.set(true);
-                        state.cancel_long_press();
-                    } else {
-                        state.cancel_long_press();
-                        return;
-                    }
+                if swipe.moved(e.global_location, SWIPE) {
+                    state.cancel_press();
                 }
-
-                offset_x.set(dx.clamp(-MAX_OFFSET, MAX_OFFSET) as f32);
             })
             .on_touch_end(move |e: Event<TouchEventData>| {
-                // The lift after a long press (menu open) is not a tap.
-                if *state.long_pressed.peek() {
+                let long_pressed = *state.long_pressed.peek();
+                let swiped = swipe.is_swiping();
+                // The lift after a long press (menu open) or a swipe is not a tap:
+                // otherwise `on_press` opens the room just archived.
+                if long_pressed || swiped {
+                    *state.press_consumed.write_unchecked() = true;
                     e.prevent_default();
+                    state.cancel_press();
+                } else {
+                    state.flash_tap();
                 }
-                state.cancel_long_press();
-                if *is_swiping.peek() {
-                    // Otherwise the row's `on_press` fires and opens the room just archived.
-                    e.prevent_default();
-
-                    let dx = *offset_x.peek();
-                    if dx > COMMIT_THRESHOLD {
-                        let room_id = room_id_recontact.clone();
-                        tokio::spawn(async move {
-                            crate::utils::room_mailbox::toggle_recontact(&room_id).await;
-                        });
-                    } else if dx < -COMMIT_THRESHOLD {
-                        let room_id = room_id_archive.clone();
-                        tokio::spawn(async move {
-                            crate::utils::room_mailbox::archive_room(&room_id).await;
-                        });
-                    }
+                if let Some(released) = swipe.end(SWIPE) {
+                    commit(released);
                 }
-                state.release();
-                is_swiping.set(false);
-                drag_start.set(None);
+            })
+            // The list cancels `touchend` for rows once it claims the drag, and
+            // the finger may lift off another row: finish here too.
+            .on_global_pointer_up(move |_: Event<PointerEventData>| {
+                if !swipe.is_touching() {
+                    return;
+                }
+                if swipe.is_swiping() || *state.long_pressed.peek() {
+                    *state.press_consumed.write_unchecked() = true;
+                }
+                state.cancel_press();
+                if let Some(released) = swipe.end(SWIPE) {
+                    commit_fallback(released);
+                }
             })
             .on_touch_cancel(move |_: Event<TouchEventData>| {
-                state.cancel_long_press();
-                state.release();
-                is_swiping.set(false);
-                drag_start.set(None);
+                state.cancel_press();
+                swipe.cancel();
             })
             .child(
                 rect()
@@ -226,7 +286,26 @@ impl RowInteraction {
                     .overflow(Overflow::Clip)
                     // Hidden at rest: fully covered by the row.
                     .maybe_child((reveal_recontact || reveal_archive).then(|| action_panels))
-                    .child(shifted),
+                    .child(shifted)
+                    .maybe_child((self.flash_opacity > 0.01).then(|| {
+                        let recontact = self.commit_flash.peek().1;
+                        rect()
+                            .position(
+                                Position::new_absolute()
+                                    .top(0.)
+                                    .bottom(0.)
+                                    .left(0.)
+                                    .right(0.),
+                            )
+                            .width(Size::fill())
+                            .height(Size::fill())
+                            .background(if recontact {
+                                c.primary
+                            } else {
+                                c.surface_container_high
+                            })
+                            .opacity(self.flash_opacity)
+                    })),
             )
     }
 }

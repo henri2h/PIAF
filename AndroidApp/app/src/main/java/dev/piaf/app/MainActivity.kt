@@ -1,9 +1,8 @@
 package dev.piaf.app
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NativeActivity
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -13,6 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import org.unifiedpush.android.connector.UnifiedPush
 
 class MainActivity : NativeActivity() {
@@ -35,7 +37,14 @@ class MainActivity : NativeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        createNotificationChannel()
+        // Draw edge to edge on every version and report the insets to the
+        // app, which pads itself: NativeActivity never resizes for the keyboard.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            reportInsets(insets)
+            ViewCompat.onApplyWindowInsets(view, insets)
+        }
+        RoomNotifications.ensureChannel(this)
         requestNotificationPermission()
         UnifiedPush.tryUseCurrentOrDefaultDistributor(this) { success ->
             if (success) UnifiedPush.register(this)
@@ -62,32 +71,35 @@ class MainActivity : NativeActivity() {
         Thread { PushReceiver.cancelReadNotifications(this) }.start()
     }
 
-    /** If the activity was launched by tapping a notification, cancel that notification immediately. */
-    private fun dismissNotificationForIntent(intent: Intent) {
-        val roomId = intent.getStringExtra(EXTRA_ROOM_ID) ?: return
-        val nm = getSystemService(NotificationManager::class.java)
-        nm.cancel(roomId.hashCode())
-        PushReceiver.removeNotifiedRoom(this, roomId)
-        MessageStore.clearMessages(this, roomId)
+    private fun reportInsets(insets: WindowInsetsCompat) {
+        if (!PushReceiver.NativeBridge.tryLoad()) return
+        val density = resources.displayMetrics.density
+        val bars = insets.getInsets(
+            WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+        )
+        val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+        PushReceiver.NativeBridge.nativeSetInsets(
+            bars.top / density, bars.bottom / density, ime.bottom / density
+        )
     }
 
+    /** Launched by tapping a notification: open its room and clear the notification. */
+    private fun dismissNotificationForIntent(intent: Intent) {
+        val roomId = intent.getStringExtra(EXTRA_ROOM_ID) ?: return
+        // Handle a tap once: the activity can be recreated with the same intent.
+        intent.removeExtra(EXTRA_ROOM_ID)
+        RoomNotifications.cancel(this, roomId)
+        if (PushReceiver.NativeBridge.tryLoad()) PushReceiver.NativeBridge.nativeOpenRoom(roomId)
+    }
+
+    // Still called: the manifest opts out of predictive back
+    // (enableOnBackInvokedCallback="false"), which this lint ignores.
+    @SuppressLint("GestureBackNavigation")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // Back navigation is handled in native code (Freya on_global_key_down → BrowserBack).
         // Suppressing the default Java behavior prevents the activity from finishing
         // before the native layer has a chance to process the key event.
-    }
-
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            PushReceiver.CHANNEL_ID,
-            "Messages",
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = "New message notifications"
-        }
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
     }
 
     private fun requestNotificationPermission() {

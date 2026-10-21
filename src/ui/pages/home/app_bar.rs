@@ -7,10 +7,9 @@ use crate::ui::components::IconButton;
 
 use crate::utils::avatars::AvatarSource;
 use freya_query::prelude::*;
-use freya_router::prelude::RouterContext;
 
 use crate::app::keys::{KeyCommand, use_key_commands};
-use crate::ui::components::{Avatar, HoverableExt, search_input};
+use crate::ui::components::{Avatar, HoverableExt, search_input, use_color_transition};
 use crate::utils::queries::FetchUserDisplayName;
 use crate::utils::use_app_colors;
 use crate::{Route, WIDE_MODE};
@@ -21,6 +20,8 @@ use crate::{Route, WIDE_MODE};
 pub struct HomeAppBar {
     pub search: State<String>,
     pub search_open: State<bool>,
+    /// Content is scrolled under the bar: use the tinted surface.
+    pub tinted: State<bool>,
 }
 
 impl PartialEq for HomeAppBar {
@@ -43,14 +44,23 @@ impl Component for HomeAppBar {
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
         let my_name = name_query.read().state().ok().cloned().unwrap_or_default();
 
+        let background = use_color_transition(
+            if *self.tinted.read() {
+                c.surface_container
+            } else {
+                c.surface
+            },
+            200,
+        );
+
         rect()
             .vertical()
             .width(Size::fill())
-            .background(c.surface)
+            .background(background)
             .child(
                 rect()
                     .width(Size::fill())
-                    .height(Size::px(crate::utils::const_values::STATUS_BAR_INSET)),
+                    .height(Size::px(crate::utils::insets::status_bar_inset())),
             )
             .child(
                 rect()
@@ -68,7 +78,7 @@ impl Component for HomeAppBar {
                             .corner_radius(24.)
                             .center()
                             .on_press(move |_| {
-                                let _ = RouterContext::get().push(Route::Settings);
+                                crate::app::navigation::push(Route::Settings);
                             })
                             .child(Avatar {
                                 size: 36.,
@@ -91,7 +101,7 @@ impl Component for HomeAppBar {
                     } else {
                         label()
                             .text("Chats")
-                            .font_size(22.)
+                            .font_size(24.)
                             .font_weight(FontWeight::MEDIUM)
                             .color(c.on_surface)
                             .width(Size::flex(1.0))
@@ -109,6 +119,11 @@ impl Component for HomeAppBar {
                                 },
                                 c.on_surface_variant,
                                 move |_| {
+                                    // Android: search mode is its own page.
+                                    if cfg!(target_os = "android") {
+                                        crate::app::navigation::push(Route::SearchPage);
+                                        return;
+                                    }
                                     let new_val = !*search_open.read();
                                     if !new_val {
                                         *search.write() = String::new();
@@ -123,32 +138,32 @@ impl Component for HomeAppBar {
                     } else {
                         None
                     })
-                    // Bookmarks button (both modes)
-                    .child(
+                    // Bookmarks button (desktop; Android: More tab)
+                    .maybe_child((!cfg!(target_os = "android")).then(|| {
                         IconButton::new(
                             freya_icons::lucide::bookmark(),
                             c.on_surface_variant,
                             move |_| {
-                                let _ = RouterContext::get().push(crate::Route::BookmarksPage);
+                                crate::app::navigation::push(crate::Route::BookmarksPage);
                             },
                         )
                         .tooltip("Bookmarks")
                         .size(48., 22.)
-                        .into_element(),
-                    )
-                    // Reactions button (both modes)
-                    .child(
+                        .into_element()
+                    }))
+                    // Reactions button (desktop; Android: More tab)
+                    .maybe_child((!cfg!(target_os = "android")).then(|| {
                         IconButton::new(
                             freya_icons::lucide::heart(),
                             c.on_surface_variant,
                             move |_| {
-                                let _ = RouterContext::get().push(crate::Route::ReactionsPage);
+                                crate::app::navigation::push(crate::Route::ReactionsPage);
                             },
                         )
                         .tooltip("Reactions")
                         .size(48., 22.)
-                        .into_element(),
-                    ),
+                        .into_element()
+                    })),
             )
             // Narrow: search row below the bar, shown while toggled open.
             .maybe_child(if !is_wide && is_search_open {
@@ -156,7 +171,7 @@ impl Component for HomeAppBar {
                     rect()
                         .width(Size::fill())
                         .padding(Gaps::new(6., 16., 6., 16.))
-                        .background(c.surface)
+                        .background(background)
                         .child(
                             search_input(search, "Search conversations, people…", c)
                                 .a11y_id(search_a11y)

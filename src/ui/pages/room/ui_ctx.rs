@@ -21,9 +21,12 @@ pub(super) struct RoomUiCtx {
     pub user_popup: State<Option<UserPopupInfo>>,
     /// Bumped to move keyboard focus into the composer (`i`).
     pub compose_focus: State<u64>,
+    /// The timeline's scroll.
+    #[cfg_attr(not(target_os = "android"), allow(dead_code))]
+    pub scroll: ScrollController,
 }
 
-pub(super) fn use_provide_room_ui_ctx() -> RoomUiCtx {
+pub(super) fn use_provide_room_ui_ctx(scroll: ScrollController) -> RoomUiCtx {
     let ctx = RoomUiCtx {
         edit_info: use_state(|| None),
         reply_info: use_state(|| None),
@@ -33,6 +36,7 @@ pub(super) fn use_provide_room_ui_ctx() -> RoomUiCtx {
         bookmark_picker: use_state(|| None),
         user_popup: use_state(|| None),
         compose_focus: use_state(|| 0),
+        scroll,
     };
     use_provide_context(|| ctx);
     ctx

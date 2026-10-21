@@ -9,7 +9,9 @@ use freya_query::prelude::*;
 use matrix_sdk::RoomHero;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
+use super::members_avatar::MembersAvatar;
 use super::room_menu::open_room_menu;
+use super::room_list::RoomListCtx;
 use super::row_interaction::{OnMenu, use_row_interaction};
 use crate::app::keys::{Area, use_key_nav};
 use crate::app::navigation::navigate_to_room;
@@ -24,7 +26,7 @@ use crate::utils::{
     format_full_timestamp, format_timestamp, queries::FetchSenderName, use_app_colors,
 };
 
-pub const ROOM_ROW_HEIGHT: f32 = 80.;
+pub const ROOM_ROW_HEIGHT: f32 = 72.;
 
 #[derive(Clone, PartialEq)]
 pub struct RoomListItem {
@@ -39,6 +41,7 @@ impl Component for RoomListItem {
         let room_id = s.room_id.clone();
 
         let interaction = use_row_interaction();
+        let list_ctx = try_consume_context::<RoomListCtx>();
         let is_active = try_consume_context::<ActiveRoomCtx>()
             .is_some_and(|ctx| ctx.0.read().as_deref() == Some(room_id.as_str()));
         // Keyboard cursor, shown only while the list has keyboard focus.
@@ -97,7 +100,7 @@ impl Component for RoomListItem {
             .padding(Gaps::new(8., 12., 8., 12.))
             .spacing(14.)
             .cross_align(Alignment::Center)
-            .child(room_avatar(s, c, bg))
+            .child(room_avatar(s, bg))
             .child(
                 rect()
                     .vertical()
@@ -116,6 +119,7 @@ impl Component for RoomListItem {
                                     .text(s.name.clone())
                                     .width(Size::flex(1.0))
                                     .max_lines(1)
+                                    .text_overflow(TextOverflow::Ellipsis)
                                     .font_size(16.)
                                     .font_weight(font_weight)
                                     .color(c.on_surface),
@@ -160,25 +164,31 @@ impl Component for RoomListItem {
             .height(Size::px(ROOM_ROW_HEIGHT))
             .width(Size::fill())
             .padding(Gaps::new(2., 8., 2., 8.))
-            .on_press(move |_| navigate_to_room(room_id_nav.clone()));
+            .on_press(move |_| {
+                if interaction.allows_press() {
+                    navigate_to_room(room_id_nav.clone());
+                }
+            });
 
         let summary = s.clone();
-        let on_menu: OnMenu = Rc::new(move |from_down| open_room_menu(&summary, from_down));
+        let on_menu: OnMenu =
+            Rc::new(move |from_down| open_room_menu(&summary, from_down, list_ctx));
         interaction.attach(outer, room_id, c, highlighted, on_menu)
     }
 }
 
 /// The room's own avatar. Rooms without one (other than DMs, which show the
 /// other user) use their heroes that have a profile picture: two stacked, or
-/// one alone.
-fn room_avatar(s: &RoomSummary, c: AppColors, bg: (u8, u8, u8)) -> Element {
+/// one alone. Without heroes (named rooms), members with a picture.
+fn room_avatar(s: &RoomSummary, bg: (u8, u8, u8)) -> Element {
     let room_avatar = Avatar {
         size: 48.,
         source: Some(AvatarSource::Room(s.room_id.clone())),
         name: s.name.clone(),
-        color: c.primary,
+        color: id_color(&s.room_id),
     };
-    if s.is_dm || s.room.avatar_url().is_some() {
+    // An empty URL (avatar removed) counts as none.
+    if s.is_dm || s.room.avatar_url().is_some_and(|u| u.is_valid()) {
         return room_avatar.into();
     }
     let heroes = s.room.heroes();
@@ -205,6 +215,13 @@ fn room_avatar(s: &RoomSummary, c: AppColors, bg: (u8, u8, u8)) -> Element {
             color: id_color(h.user_id.as_str()),
         }
         .into(),
+        [] if heroes.is_empty() => MembersAvatar {
+            room_id: s.room_id.clone(),
+            name: s.name.clone(),
+            size: 48.,
+            border_color: bg,
+        }
+        .into(),
         [] => room_avatar.into(),
     }
 }
@@ -222,6 +239,7 @@ fn preview_line(s: &RoomSummary, preview: String, c: AppColors) -> Rect {
             .text(t)
             .width(Size::flex(1.))
             .max_lines(1)
+            .text_overflow(TextOverflow::Ellipsis)
             .font_size(13.5)
             .color(color)
     };
@@ -273,7 +291,7 @@ fn meta(s: &RoomSummary, c: AppColors, font_weight: FontWeight) -> Rect {
     let timestamp_color = if s.is_unread() {
         c.primary
     } else {
-        c.on_surface_faint
+        c.on_surface_variant
     };
     rect()
         .horizontal()

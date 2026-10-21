@@ -1,9 +1,10 @@
 pub mod avatars;
 pub mod bookmarks;
-#[cfg(not(target_os = "android"))]
 pub mod clipboard;
 pub mod const_values;
 pub mod drafts;
+pub mod haptics;
+pub mod insets;
 pub mod matrix;
 pub mod media;
 pub mod members;

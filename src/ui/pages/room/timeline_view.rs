@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use freya::prelude::*;
-use matrix_sdk_ui::timeline::TimelineItem;
+use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
 use super::focus::{event_offset, row_key, watch_focus_events};
-use super::message_row::MessageRow;
+use super::message_row::{GroupPosition, MessageRow};
 use super::room_start_banner::RoomStartBanner;
 use super::use_room_timeline::RoomTimeline;
 use crate::app::keys::{Area, KeyCommand, use_key_commands};
@@ -110,7 +110,11 @@ impl Component for TimelineView {
         let action_tx = tl.handle.actions();
         let date_labels: Vec<Option<String>> =
             (0..msgs.len()).map(|i| date_label_for(&msgs, i)).collect();
-        let rows = msgs.into_iter().zip(date_labels).map(|(item, date_label)| {
+        let groups = group_positions(
+            &msgs.iter().map(|item| group_key(item)).collect::<Vec<_>>(),
+            &date_labels.iter().map(Option::is_some).collect::<Vec<_>>(),
+        );
+        let rows = msgs.into_iter().zip(date_labels).zip(groups).map(|((item, date_label), group)| {
             let key = row_key(&item);
             rect()
                 .key(key.clone())
@@ -125,6 +129,7 @@ impl Component for TimelineView {
                     room_id: self.room_id.clone(),
                     item,
                     date_label,
+                    group,
                     my_user_id: my_uid.clone(),
                     action_tx: action_tx.clone(),
                     is_dm,
@@ -237,4 +242,83 @@ fn date_label_for(items: &[Arc<TimelineItem>], idx: usize) -> Option<String> {
         .checked_sub(1)
         .and_then(|i| items[i].as_event().map(|e| format_date_key(e.timestamp())));
     (prev.as_deref() != Some(curr.as_str())).then(|| format_date_label(&curr))
+}
+
+/// Messages this close in time from one sender join a group.
+const GROUP_GAP_MS: u64 = 5 * 60 * 1000;
+
+/// `(sender, timestamp ms)` of a message that can join a group; `None` for
+/// anything else (notices, read marker…), which breaks groups.
+fn group_key(item: &TimelineItem) -> Option<(String, u64)> {
+    let event = item.as_event()?;
+    let TimelineItemContent::MsgLike(msg_like) = event.content() else {
+        return None;
+    };
+    msg_like.as_message()?;
+    Some((event.sender().to_string(), event.timestamp().0.into()))
+}
+
+/// Each item's place in its run of consecutive messages from one sender:
+/// same sender, at most [`GROUP_GAP_MS`] apart, not across a day divider
+/// (`new_day[i]`: item `i` starts a new day).
+fn group_positions(keys: &[Option<(String, u64)>], new_day: &[bool]) -> Vec<GroupPosition> {
+    let joins = |i: usize| -> bool {
+        // Whether item `i` continues the group of item `i - 1`.
+        if i == 0 || new_day[i] {
+            return false;
+        }
+        match (&keys[i - 1], &keys[i]) {
+            (Some((prev_sender, prev_ts)), Some((sender, ts))) => {
+                prev_sender == sender && ts.saturating_sub(*prev_ts) <= GROUP_GAP_MS
+            }
+            _ => false,
+        }
+    };
+    (0..keys.len())
+        .map(|i| GroupPosition {
+            first: !joins(i),
+            last: i + 1 >= keys.len() || !joins(i + 1),
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn msg(sender: &str, minute: u64) -> Option<(String, u64)> {
+        Some((sender.to_string(), minute * 60 * 1000))
+    }
+
+    fn positions(keys: &[Option<(String, u64)>]) -> Vec<(bool, bool)> {
+        group_positions(keys, &vec![false; keys.len()])
+            .into_iter()
+            .map(|g| (g.first, g.last))
+            .collect()
+    }
+
+    #[test]
+    fn consecutive_messages_from_one_sender_group() {
+        let keys = [msg("a", 0), msg("a", 1), msg("a", 2), msg("b", 3)];
+        assert_eq!(
+            positions(&keys),
+            [(true, false), (false, false), (false, true), (true, true)]
+        );
+    }
+
+    #[test]
+    fn a_long_pause_or_a_notice_breaks_the_group() {
+        let keys = [msg("a", 0), msg("a", 10), None, msg("a", 11)];
+        assert_eq!(
+            positions(&keys),
+            [(true, true), (true, true), (true, true), (true, true)]
+        );
+    }
+
+    #[test]
+    fn a_new_day_breaks_the_group() {
+        let keys = [msg("a", 0), msg("a", 1)];
+        let groups = group_positions(&keys, &[false, true]);
+        assert!(groups[0].last && groups[1].first);
+    }
 }

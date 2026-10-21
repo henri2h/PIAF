@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use freya::prelude::*;
-use freya_router::prelude::RouterContext;
 
 use crate::Route;
 use crate::ui::components::{M3ListItem, TopAppBar, TopAppBarTitle};
@@ -56,7 +55,7 @@ impl Component for Settings {
                                 freya_icons::lucide::user(),
                                 c,
                                 Arc::new(|| {
-                                    let _ = RouterContext::get().push(Route::SettingsProfile);
+                                    crate::app::navigation::push(Route::SettingsProfile);
                                 }),
                             ))
                             .child(section_label("Privacy & Security", c))
@@ -66,7 +65,7 @@ impl Component for Settings {
                                 freya_icons::lucide::shield(),
                                 c,
                                 Arc::new(|| {
-                                    let _ = RouterContext::get().push(Route::SettingsSecurity);
+                                    crate::app::navigation::push(Route::SettingsSecurity);
                                 }),
                             ))
                             .child(section_label("System", c))
@@ -76,7 +75,7 @@ impl Component for Settings {
                                 freya_icons::lucide::bell(),
                                 c,
                                 Arc::new(|| {
-                                    let _ = RouterContext::get().push(Route::SettingsNotifications);
+                                    crate::app::navigation::push(Route::SettingsNotifications);
                                 }),
                             ))
                             .child(section_label("Appearance", c))
@@ -86,7 +85,7 @@ impl Component for Settings {
                                 freya_icons::lucide::sun_moon(),
                                 c,
                                 Arc::new(|| {
-                                    let _ = RouterContext::get().push(Route::SettingsAppearance);
+                                    crate::app::navigation::push(Route::SettingsAppearance);
                                 }),
                             )),
                     ),

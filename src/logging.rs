@@ -8,7 +8,9 @@
 
 use std::time::{Duration, Instant};
 
-pub const DEFAULT_FILTER: &str = "warn,piaf=info";
+/// `matrix_sdk_crypto` only at error: its warnings carry user, device and
+/// session identifiers of other people.
+pub const DEFAULT_FILTER: &str = "warn,matrix_sdk_crypto=error,piaf=info";
 
 /// Target for render counts and timings.
 pub const PERF: &str = "piaf::perf";

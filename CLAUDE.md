@@ -32,6 +32,7 @@ The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo
 - `src/app/navigation.rs` — navigation helpers
 - `src/app/state.rs` — global singletons + `init()`
 - `src/app/theme.rs` — `effective_theme`
+- `src/app/page_transition.rs` — Android: incoming page slides/fades in around the `Outlet` (direction from path depth)
 
 ### Routing & Layout (`src/app/`)
 
@@ -43,7 +44,7 @@ The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo
 
 Navigation uses `RouterContext::get().push(Route::...)`. In wide mode, the right panel is driven by `ACTIVE_ROOM_TX`/`ACTIVE_ROOM_RX` (watch channel) rather than router navigation.
 
-**Always navigate rooms via the shared helper** `navigate_to_room(room_id)` (and `navigate_to_room_at_event`) in `src/app/navigation.rs` — it handles both wide-mode (`ACTIVE_ROOM_TX`) and narrow-mode (router push) correctly. Open a DM with `open_dm(UserInfo)` (existing room, else the pending-DM page; never create rooms on a tap). Back buttons use `go_back_or_home`, never a push of the parent route (that grows the history).
+**Always navigate rooms via the shared helper** `navigate_to_room(room_id)` (and `navigate_to_room_at_event`) in `src/app/navigation.rs` — it handles both wide-mode (`ACTIVE_ROOM_TX`) and narrow-mode (router push) correctly. Open a DM with `open_dm(UserInfo)` (existing room, else the pending-DM page; never create rooms on a tap). Back buttons use `go_back_or_home`, never a push of the parent route (that grows the history). Other taps that navigate use `navigation::push(route)`: all of these play the navigation haptic. Raw `RouterContext::get().push` only for programmatic redirects (session restore, after login / leaving a room).
 
 ### Global Singletons (`src/app/state.rs`, re-exported at crate root)
 
@@ -86,7 +87,14 @@ All Matrix SDK calls happen off the UI thread:
 - `restore_matrix_client()` is called at startup; if a session exists, it fires sync immediately
 - Use `create_or_get_dm(user_id)` for DM creation — it checks for an existing DM room first
 
+### Notifications
+
+- Desktop (`utils/notifications.rs`): event handler on new messages, gated by window focus and session start, then the account's push rules (`room.event_push_actions`); icon = the room's avatar (`AvatarSource::Room`, DM → other user).
+- Android: UnifiedPush → Kotlin `PushReceiver` → `RoomNotifications.show` (`AndroidApp/.../RoomNotifications.kt`): one MessagingStyle notification per room. Content comes from Rust over JNI (`android/jni_push.rs` → `push::fetch_notification_payload`: `Show` / `Skip` (edits, non-messages) / `Unavailable`), else `HttpFallback`. Large icon: other user in a DM, room avatar in a group, letter avatar (`id_color`) without picture. `SeenEvents` dedupes event IDs; swiping a notification away (`NotificationDismissedReceiver`) or reading the room clears its history. Tapping one calls `nativeOpenRoom` → `navigation::request_open_room`, opened by the Android layout once past welcome/login. Each room notification has Reply / Mark as read actions (`NotificationActionReceiver` → `nativeSendReply` / `nativeMarkRead` → `push::send_text` / `push::mark_read`) and a long-lived conversation shortcut (id = room id); no group summary. `fetch_notification_payload` skips events the user's read receipt already covers.
+
 ### Search Feature (`src/ui/pages/home/search.rs`, `search_tile.rs`)
+
+Desktop searches inline in the home bar (`HomeAppBar`). Android opens search mode as its own page, `Route::SearchPage` (`ui/pages/search/`), reusing `SearchResults`; its query survives a result's round trip and is cleared when `HomePage` mounts.
 
 Three search functions:
 - `search_rooms_local(query)` — filters `joined_rooms()` + `invited_rooms()` client-side, returns top 8 by recency
@@ -101,7 +109,9 @@ Room list data lives in `src/utils/room_list.rs`, built off the UI thread:
 - `RoomList` reads it with `use_watch(room_list::receiver())`; `home/room_list_model.rs` only has the UI-side `RoomFilter` and `visible_rooms`.
 - `sort_rooms_by_recency(&mut Vec<Room>)` for code working on raw `Room`s (search).
 
-Context menu (right-click / long-press): `home/room_menu.rs`, actions in `utils/room_actions.rs`. `ContextMenuViewer` is mounted in both layouts.
+Android bottom tabs: Chats, More (Settings opens from the avatar in the home app bar). The More tab (`ui/pages/more/`) holds Reactions, Bookmarks and the Recontact / Archived mailboxes (`ui/pages/mailbox/`, `RoomList` with `filter_bar: None`); desktop keeps them in the home app bar and the filter bar's mailbox selector.
+
+Room actions: `home/room_menu.rs` (one entry list; desktop right-click opens a `ContextMenu`, Android long-press a `BottomSheet` held in `RoomListCtx`), actions in `utils/room_actions.rs`. `ContextMenuViewer` is mounted in both layouts.
 
 Drafts: `utils/drafts.rs` (in-memory, mirrored to `drafts.json`). Read with `drafts::get`/`preview`, write with `drafts::set`/`clear`; `set` refreshes the list when the preview changes.
 
@@ -116,6 +126,8 @@ Row gestures are in `home/row_interaction/{desktop,android}.rs`, same API on bot
 - `utils/users.rs`: `UserInfo`, `search` (user directory), `dm_contacts`. `utils/members.rs`: `MemberItem`, `joined(&Room)`, `ADMIN_LEVEL`.
 - `utils::id_color(id)`: the one color for a user/room ID (avatars, sender names).
 - `utils/room_mailbox.rs`: `is_archived_hidden(latest_ts, archived_until_ts)`.
+- `utils/haptics.rs`: `play(Haptic::Click | HeavyClick)` (Android vibrator, no-op elsewhere). `navigate_to_room` and `go_back_or_home` already tick.
+- `utils/insets.rs`: system insets in logical px, reported by `MainActivity` (edge to edge). `status_bar_inset()` for app bars drawn under the status bar; `use_insets()` (reactive: keyboard) — the Android `Layout` pads the app above the keyboard / navigation bar and hides the tab bar while typing. Never hard-code bottom paddings for the gesture bar.
 
 Search state in `HomePage` uses an `Arc<AtomicU64>` version counter to invalidate stale in-flight requests. Version is incremented on each new query; async tasks compare against the version before writing results.
 
@@ -147,7 +159,9 @@ Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use
 - `empty_state(icon, title, hint, c)` / `loading_state(caption, c)`: placeholders filling a list's area.
 - `search_input(state, placeholder, c)`: the search field (chain `auto_focus`, `on_submit`).
 - `use_fade(visible, ms) -> f32` and `use_fading(Option<T>, ms) -> Option<(T, opacity)>` (keeps the last value while fading out): for things that appear and disappear. Both start at their end value, so nothing animates on mount (virtual lists remount rows while scrolling).
+- `use_color_transition(target, ms)`: a colour easing to each new target (bars tinting on scroll). A page whose content scrolls under its `TopAppBar` provides `AppBarTint(State<bool>)` to tint it.
 - `Avatar` + `AvatarSource` (see Avatars).
+- `use_swipe()` / `SwipeBounds` (Android): horizontal swipe on a touch row (follows the finger, haptic tick at the commit point, spring back). Used by room rows and swipe-to-reply (`room/message_gesture.rs`). Rows inside a scroll view must also finish on `on_global_pointer_up`, and long-press timers must snapshot `ScrollController::touch_generation()` at touch start and give up if it changed: once the list claims a touch (or cancels its lift, e.g. a tap that stops a fling), rows get no more `touchmove`/`touchend`/global pointer up. Taps on parts of a swipeable row (message image, reactions, avatar…) check a guard (`allows_press()` / `PressGuard`) in their `on_press`: it can run before the row's `on_touch_end` cancels it.
 
 #### Hooks rules (Freya)
 
@@ -213,7 +227,7 @@ All colors are Material Design 3 tokens as `(u8, u8, u8)` RGB tuples: `PRIMARY`,
 
 ## Logging
 
-Use `tracing` (`tracing::info!` etc.), never `println!`. Setup in `src/logging.rs`: desktop filters with `RUST_LOG` (default `warn,piaf=info`); Android forwards to logcat through the `log` bridge.
+Use `tracing` (`tracing::info!` etc.), never `println!`. Setup in `src/logging.rs`: desktop filters with `RUST_LOG` (default `DEFAULT_FILTER`: `warn,matrix_sdk_crypto=error,piaf=info`); Android forwards to logcat through the `log` bridge. Never log secrets or private data: push endpoints, tokens, keys, message content, user IDs or names at info and above.
 
 Perf diagnostics use the `piaf::perf` target (`crate::logging::PERF`): hold a `RenderTimer::new("Name")` for a component's whole `render` (trace = every render, debug = slow renders). Sync batches and timeline updates also log there.
 

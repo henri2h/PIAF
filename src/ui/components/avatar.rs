@@ -9,7 +9,7 @@ use freya_components::{
 use freya_core::elements::image::{ImageHandle, SamplingMode};
 
 use super::use_fade;
-use crate::utils::avatars::AvatarSource;
+use crate::utils::{avatars::AvatarSource, use_app_colors};
 
 /// Letter shown when there is no picture: the first letter or digit of
 /// `name`, uppercased (skips the `@`/`#`/`!` of Matrix IDs).
@@ -20,20 +20,39 @@ pub fn initial(name: &str) -> String {
         .unwrap_or_else(|| "?".to_string())
 }
 
-fn initial_disc(size: f32, initial: &str, color: (u8, u8, u8)) -> Element {
+fn mix(a: (u8, u8, u8), b: (u8, u8, u8), t: f32) -> (u8, u8, u8) {
+    let m = |x: u8, y: u8| (x as f32 + (y as f32 - x as f32) * t).round() as u8;
+    (m(a.0, b.0), m(a.1, b.1), m(a.2, b.2))
+}
+
+/// Tonal (background, letter) pair from an ID color: a soft tint with the
+/// letter in a deep shade (light theme), or the reverse (dark theme).
+fn disc_colors(color: (u8, u8, u8), dark: bool) -> ((u8, u8, u8), (u8, u8, u8)) {
+    const WHITE: (u8, u8, u8) = (255, 255, 255);
+    const BLACK: (u8, u8, u8) = (0, 0, 0);
+    if dark {
+        (mix(color, BLACK, 0.6), mix(color, WHITE, 0.65))
+    } else {
+        (mix(color, WHITE, 0.8), mix(color, BLACK, 0.3))
+    }
+}
+
+fn initial_disc(size: f32, initial: &str, color: (u8, u8, u8), dark: bool) -> Element {
     let radius = size / 2.;
     let font_size = (size * 0.41).floor();
+    let (background, foreground) = disc_colors(color, dark);
     rect()
         .width(Size::px(size))
         .height(Size::px(size))
         .corner_radius(radius)
-        .background(color)
+        .background(background)
         .center()
         .child(
             label()
                 .text(initial.to_string())
                 .font_size(font_size)
-                .color((255u8, 255u8, 255u8)),
+                .font_weight(FontWeight::MEDIUM)
+                .color(foreground),
         )
         .into()
 }
@@ -59,6 +78,7 @@ impl Component for Avatar {
         let radius = size / 2.;
         let initial = initial(&self.name);
         let color = self.color;
+        let dark = use_app_colors().on_surface.0 > 128;
 
         // Cache key only: the bytes are fetched in the effect below and
         // written straight into the asset cache.
@@ -120,7 +140,7 @@ impl Component for Avatar {
         let opacity = use_fade(matches!(asset, Asset::Cached(_)), 150);
 
         let Asset::Cached(holder) = asset else {
-            return initial_disc(size, &initial, color);
+            return initial_disc(size, &initial, color, dark);
         };
         let holder = holder.downcast_ref::<ImageHandle>().unwrap().clone();
         let image = freya_core::elements::image::image(holder)
@@ -133,7 +153,7 @@ impl Component for Avatar {
         rect()
             .width(Size::px(size))
             .height(Size::px(size))
-            .child(initial_disc(size, &initial, color))
+            .child(initial_disc(size, &initial, color, dark))
             .child(
                 rect()
                     .position(Position::new_absolute().top(0.).left(0.))

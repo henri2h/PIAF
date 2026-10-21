@@ -2,12 +2,13 @@ use std::rc::Rc;
 
 use bytes::Bytes;
 use freya::prelude::*;
+
+use crate::utils::insets::status_bar_inset;
 use freya_query::prelude::QueryCapability;
 use matrix_sdk::ruma::events::room::MediaSource;
 
 use crate::utils::{
-    const_values::STATUS_BAR_INSET,
-    media::save_to_downloads,
+        media::save_to_downloads,
     queries::{FetchMediaContent, media_source_key},
     timeline_media::{MediaContent, MediaEntry},
 };
@@ -388,7 +389,7 @@ impl Component for MediaViewer {
                     .child(
                         rect()
                             .width(Size::fill())
-                            .height(Size::px(STATUS_BAR_INSET)),
+                            .height(Size::px(status_bar_inset())),
                     )
                     .child(
                         rect()

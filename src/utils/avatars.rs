@@ -39,6 +39,37 @@ pub async fn of_room(room: &Room) -> Option<Vec<u8>> {
     }
 }
 
+/// A room member with a picture: `(user_id, display name, avatar URI)`.
+#[derive(Clone, PartialEq)]
+pub struct MemberWithAvatar {
+    pub user_id: String,
+    pub name: String,
+    pub avatar: String,
+}
+
+/// Up to `max` joined members other than us that have a picture, from the
+/// store only (members are lazy-loaded: often just recent senders). Stands in
+/// for heroes, which servers only send for rooms without a name.
+pub async fn members_with_avatar(room: &Room, max: usize) -> Vec<MemberWithAvatar> {
+    let me = room.own_user_id().to_owned();
+    let Ok(members) = room.members_no_sync(matrix_sdk::RoomMemberships::JOIN).await else {
+        return Vec::new();
+    };
+    members
+        .iter()
+        .filter(|m| m.user_id() != me)
+        .filter_map(|m| {
+            let avatar = m.avatar_url().filter(|u| u.is_valid())?;
+            Some(MemberWithAvatar {
+                user_id: m.user_id().to_string(),
+                name: m.name().to_string(),
+                avatar: avatar.to_string(),
+            })
+        })
+        .take(max)
+        .collect()
+}
+
 /// The logged-in user's avatar, thumbnailed.
 pub async fn own(client: &Client) -> Option<Vec<u8>> {
     let account = client.account();
@@ -144,6 +175,11 @@ async fn room_avatar(client: &Client, room_id: &str) -> Option<Vec<u8>> {
         if let Some(uri) = hero.avatar_url
             && let Some(bytes) = by_mxc(client, uri).await
         {
+            return Some(bytes);
+        }
+    }
+    for member in members_with_avatar(&room, 3).await {
+        if let Some(bytes) = by_mxc(client, OwnedMxcUri::from(member.avatar)).await {
             return Some(bytes);
         }
     }

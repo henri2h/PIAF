@@ -2,12 +2,14 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
+use super::use_color_transition;
+
 use crate::ui::components::IconButton;
 
 use crate::utils::avatars::AvatarSource;
 
 use crate::ui::components::Avatar;
-use crate::utils::const_values::STATUS_BAR_INSET;
+use crate::utils::insets::status_bar_inset;
 use crate::utils::use_app_colors;
 
 // MD3 Small Top App Bar constants
@@ -89,6 +91,11 @@ impl PartialEq for TopAppBarAction {
 // TopAppBar
 // ---------------------------------------------------------------------------
 
+/// Provided by a page whose content scrolls under its [`TopAppBar`]: `true`
+/// while it does, and the bar takes the tinted surface.
+#[derive(Clone, Copy)]
+pub struct AppBarTint(pub State<bool>);
+
 pub struct TopAppBar {
     pub title: TopAppBarTitle,
     /// If `Some`, a leading back-arrow button is shown.
@@ -106,6 +113,15 @@ impl PartialEq for TopAppBar {
 impl Component for TopAppBar {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
+        let tinted = try_consume_context::<AppBarTint>().is_some_and(|tint| *tint.0.read());
+        let background = use_color_transition(
+            if tinted {
+                c.surface_container
+            } else {
+                c.surface
+            },
+            200,
+        );
         let on_back = self.on_back.clone();
         let actions = self.actions.clone();
 
@@ -191,12 +207,12 @@ impl Component for TopAppBar {
         rect()
             .vertical()
             .width(Size::fill())
-            .background(c.surface)
+            .background(background)
             // Status-bar spacer (non-zero only on Android)
             .child(
                 rect()
                     .width(Size::fill())
-                    .height(Size::px(STATUS_BAR_INSET)),
+                    .height(Size::px(status_bar_inset())),
             )
             .child(
                 rect()

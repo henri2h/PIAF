@@ -27,6 +27,7 @@ use matrix_sdk::{
         push::{HttpPusherData, PushFormat},
     },
 };
+use matrix_sdk::ruma::exports::serde_json;
 use tokio::fs;
 
 const APP_ID: &str = "app.piaf.android";
@@ -79,7 +80,8 @@ pub async fn register_pusher_if_stored(client: &Client, base_dir: &Path) {
         Ok(endpoint) => {
             let endpoint = endpoint.trim().to_string();
             if !endpoint.is_empty() {
-                tracing::info!("Registering persisted UP pusher: {endpoint}");
+                // Never log the endpoint: anyone holding it can push to this device.
+                tracing::info!("Registering persisted UP pusher");
                 register_pusher(client, &endpoint).await;
             }
         }
@@ -206,68 +208,169 @@ pub async fn unregister(client: &Client) -> Result<(), String> {
 
 pub struct NotifPayload {
     pub room_name: String,
+    pub is_dm: bool,
     pub sender_id: String,
     pub sender_display_name: String,
     pub body: String,
     pub is_image: bool,
 }
 
-/// Fetch enriched notification content for a given room + event.
-/// Returns None if the event can't be found or isn't a displayable message.
+/// What a push for an event should show.
+pub enum NotifOutcome {
+    Show(NotifPayload),
+    /// Nothing to show: not a message (reaction, state…), an edit, or redacted.
+    Skip,
+    /// The event or room couldn't be loaded; the caller falls back to a
+    /// generic notification.
+    Unavailable,
+}
+
+impl NotifPayload {
+    /// JSON handed to the Kotlin `PushReceiver`.
+    pub fn to_json(&self, room_id: &str) -> serde_json::Value {
+        let hex = |id: &str| {
+            let (r, g, b) = crate::utils::id_color(id);
+            format!("#{r:02x}{g:02x}{b:02x}")
+        };
+        serde_json::json!({
+            "roomName": self.room_name,
+            "isDm": self.is_dm,
+            "roomColor": hex(room_id),
+            "senderId": self.sender_id,
+            "senderName": self.sender_display_name,
+            "senderColor": hex(&self.sender_id),
+            "body": self.body,
+            "isImage": self.is_image,
+        })
+    }
+}
+
+/// Builds the notification content for a pushed room + event.
 pub async fn fetch_notification_payload(
     client: &Client,
     room_id_str: &str,
     event_id_str: &str,
-) -> Option<NotifPayload> {
-    use matrix_sdk::ruma::UserId;
+) -> NotifOutcome {
+    use matrix_sdk::ruma::events::room::message::Relation;
 
-    let room_id = RoomId::parse(room_id_str).ok()?;
-    let event_id = EventId::parse(event_id_str).ok()?;
-    let room = client.get_room(&room_id)?;
+    let (Ok(room_id), Ok(event_id)) = (RoomId::parse(room_id_str), EventId::parse(event_id_str))
+    else {
+        return NotifOutcome::Skip;
+    };
+    let Some(room) = client.get_room(&room_id) else {
+        return NotifOutcome::Unavailable;
+    };
+    let Ok(timeline_event) = room.event(&event_id, None).await else {
+        return NotifOutcome::Unavailable;
+    };
+    let Ok(event) = timeline_event.kind.raw().deserialize() else {
+        return NotifOutcome::Unavailable;
+    };
+
+    let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
+        SyncMessageLikeEvent::Original(msg),
+    )) = event
+    else {
+        return NotifOutcome::Skip;
+    };
+    // An edit re-sends the whole message: the original was already notified.
+    if matches!(msg.content.relates_to, Some(Relation::Replacement(_))) {
+        return NotifOutcome::Skip;
+    }
+    let Some(body) = crate::utils::room_preview::message_body(&msg.content.msgtype) else {
+        return NotifOutcome::Skip;
+    };
+    // Pushes can arrive late: skip what was already read (on any device).
+    if already_read(client, &room, &event_id, msg.origin_server_ts).await {
+        return NotifOutcome::Skip;
+    }
 
     let room_name = room
         .display_name()
         .await
-        .ok()
         .map(|n| n.to_string())
-        .unwrap_or_else(|| "PIAF".to_string());
-
-    let timeline_event = room.event(&event_id, None).await.ok()?;
-
-    let (sender_id, body, is_image) = match timeline_event.kind.raw().deserialize().ok()? {
-        AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
-            SyncMessageLikeEvent::Original(msg),
-        )) => {
-            let body = crate::utils::room_preview::message_body(&msg.content.msgtype)?;
-            let is_image = matches!(msg.content.msgtype, MessageType::Image(_));
-            (msg.sender.to_string(), body, is_image)
-        }
-        _ => return None,
-    };
-
-    let sender_uid = UserId::parse(&sender_id).ok()?;
+        .unwrap_or_else(|_| "PIAF".to_string());
     let sender_display_name = room
-        .get_member_no_sync(&sender_uid)
+        .get_member_no_sync(&msg.sender)
         .await
         .ok()
         .flatten()
         .and_then(|m| m.display_name().map(|s| s.to_string()))
-        .unwrap_or_else(|| {
-            sender_id
-                .trim_start_matches('@')
-                .split(':')
-                .next()
-                .unwrap_or(&sender_id)
-                .to_string()
-        });
+        .unwrap_or_else(|| msg.sender.localpart().to_string());
 
-    Some(NotifPayload {
+    NotifOutcome::Show(NotifPayload {
         room_name,
-        sender_id,
+        is_dm: room.is_direct().await.unwrap_or(false),
+        sender_id: msg.sender.to_string(),
         sender_display_name,
         body,
-        is_image,
+        is_image: matches!(msg.content.msgtype, MessageType::Image(_)),
     })
+}
+
+/// Whether the user's read receipt (public or private) covers `event_id`: on
+/// it, or set after it was sent.
+async fn already_read(
+    client: &Client,
+    room: &matrix_sdk::Room,
+    event_id: &EventId,
+    sent: matrix_sdk::ruma::MilliSecondsSinceUnixEpoch,
+) -> bool {
+    use matrix_sdk::ruma::events::receipt::{ReceiptThread, ReceiptType};
+
+    let Some(user_id) = client.user_id() else {
+        return false;
+    };
+    for receipt_type in [ReceiptType::Read, ReceiptType::ReadPrivate] {
+        let receipt = room
+            .load_user_receipt(receipt_type, ReceiptThread::Unthreaded, user_id)
+            .await
+            .ok()
+            .flatten();
+        if let Some((receipt_event_id, receipt)) = receipt
+            && (receipt_event_id == event_id || receipt.ts.is_some_and(|ts| ts >= sent))
+        {
+            return true;
+        }
+    }
+    false
+}
+
+/// Sends a plain text message (a notification's quick reply).
+pub async fn send_text(client: &Client, room_id: &str, body: &str) -> bool {
+    use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
+
+    let Some(room) = RoomId::parse(room_id).ok().and_then(|id| client.get_room(&id)) else {
+        return false;
+    };
+    match room.send(RoomMessageEventContent::text_plain(body)).await {
+        Ok(_) => true,
+        Err(e) => {
+            tracing::warn!("notification reply failed: {e}");
+            false
+        }
+    }
+}
+
+/// Marks the room read up to `event_id` (a notification's "Mark as read").
+pub async fn mark_read(client: &Client, room_id: &str, event_id: &str) -> bool {
+    use matrix_sdk::room::Receipts;
+
+    let (Some(room), Ok(event_id)) = (
+        RoomId::parse(room_id).ok().and_then(|id| client.get_room(&id)),
+        EventId::parse(event_id),
+    ) else {
+        return false;
+    };
+    let receipts = Receipts::new()
+        .fully_read_marker(event_id.clone())
+        .public_read_receipt(event_id);
+    let sent = room.send_multiple_receipts(receipts).await;
+    let _ = room.set_unread_flag(false).await;
+    if let Err(e) = &sent {
+        tracing::warn!("notification mark as read failed: {e}");
+    }
+    sent.is_ok()
 }
 
 /// Fetch the image bytes for an image message event (for notification thumbnail).
@@ -388,7 +491,6 @@ fn find_app_class<'a>(
 ///   3. JNI call → Kotlin `cancelNotificationsForRooms` (NotificationManager + SharedPrefs cleanup)
 #[cfg(target_os = "android")]
 pub async fn cancel_read_notifications_after_sync(client: &Client) {
-    use matrix_sdk::ruma::exports::serde_json;
 
     let vm = match JAVA_VM.get() {
         Some(v) => v,

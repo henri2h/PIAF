@@ -4,6 +4,7 @@ use freya_material_design::prelude::Ripple;
 
 use super::HoverableExt;
 use crate::utils::const_values::AppColors;
+use crate::utils::haptics::{self, Haptic};
 use crate::utils::use_app_colors;
 
 /// Pill toggle for filters, tabs and option pickers: filled primary when
@@ -63,7 +64,7 @@ impl PartialEq for Chip {
 
 fn colors(c: AppColors, selected: bool) -> ((u8, u8, u8), (u8, u8, u8)) {
     if selected {
-        (c.primary, c.on_primary)
+        (c.primary_container, c.on_primary_container)
     } else {
         (c.surface_container, c.on_surface_variant)
     }
@@ -99,10 +100,13 @@ impl Component for Chip {
             .width(inner_width.clone())
             .height(Size::fill())
             .background(bg)
-            .on_press(move |_| on_press.call(()))
+            .on_press(move |_| {
+                haptics::play(Haptic::Click);
+                on_press.call(())
+            })
             .child(
                 Ripple::new()
-                    .color(if selected { c.on_primary } else { c.primary })
+                    .color(c.primary)
                     .width(inner_width.clone())
                     .height(Size::fill())
                     .child(
@@ -114,12 +118,18 @@ impl Component for Chip {
                             .cross_align(Alignment::Center)
                             .padding(Gaps::new(0., 14., 0., 14.))
                             .spacing(6.)
-                            .maybe_child(self.icon.clone().map(|icon| {
-                                SvgViewer::new(icon)
-                                    .color(fg)
-                                    .width(Size::px(15.))
-                                    .height(Size::px(15.))
-                            }))
+                            // Selected and no icon of its own: a check, like Material filter chips.
+                            .maybe_child(
+                                self.icon
+                                    .clone()
+                                    .or_else(|| selected.then(freya_icons::lucide::check))
+                                    .map(|icon| {
+                                        SvgViewer::new(icon)
+                                            .color(fg)
+                                            .width(Size::px(15.))
+                                            .height(Size::px(15.))
+                                    }),
+                            )
                             .child(
                                 label()
                                     .text(self.label.clone())

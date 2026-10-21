@@ -1,9 +1,10 @@
 use freya::prelude::*;
-use freya_icons::lucide;
-use freya_material_design::prelude::FloatingTabRippleExt;
-use freya_router::prelude::{Outlet, RouterContext, use_route};
+use freya_router::prelude::{RouterContext, use_route};
 
 use super::Layout;
+use super::nav_bar::NavBar;
+use crate::utils::insets::use_insets;
+use crate::app::page_transition::PageTransition;
 use crate::app::Route;
 use crate::app::theme::effective_theme;
 use crate::utils::use_app_colors;
@@ -16,14 +17,47 @@ impl Component for Layout {
         let mut back_pressed: State<bool> = use_state(|| false);
 
         let route = use_route::<Route>();
-        let show_navbar = !matches!(
+        // A tapped notification opens its room once the session is restored.
+        crate::app::navigation::use_open_room_requests(!matches!(
             route,
-            Route::WelcomePage | Route::LoginPage | Route::BookmarksPage
-        );
+            Route::WelcomePage | Route::LoginPage
+        ));
+        let insets = *use_insets().read();
+        // Tabs only on the top-level pages: conversations and their pages get
+        // the full height, and the keyboard covers the tab bar's spot anyway.
+        let show_navbar = !insets.keyboard_open()
+            && !matches!(
+                route,
+                Route::WelcomePage
+                    | Route::LoginPage
+                    | Route::BookmarksPage
+                    | Route::SearchPage
+                    | Route::RoomPage { .. }
+                    | Route::RoomSearch { .. }
+                    | Route::RoomSettings { .. }
+                    | Route::RoomMediaPage { .. }
+                    | Route::RoomMembers { .. }
+                    | Route::PendingDm { .. }
+                    | Route::PendingGroup
+            );
+        // Keep the content above the keyboard and the system navigation bar
+        // (the tab bar pads itself for the latter).
+        let bottom_padding = if show_navbar {
+            0.
+        } else {
+            insets.content_bottom()
+        };
 
         rect()
             .vertical()
             .expanded()
+            // The page is `Size::flex`: without this it takes the whole height
+            // and pushes the tab bar off the screen.
+            .content(Content::Flex)
+            .padding(Gaps::new(0., 0., bottom_padding, 0.))
+            // Behind the page while it fades in: without it the window's
+            // clear colour (white) shows through.
+            .background(c.surface)
             .native_router()
             .child(ContextMenuViewer::new())
             .on_global_key_down(move |e: Event<KeyboardEventData>| {
@@ -51,7 +85,7 @@ impl Component for Layout {
                 rect()
                     .width(Size::fill())
                     .height(Size::flex(1.0))
-                    .child(Outlet::<Route>::new()),
+                    .child(PageTransition),
             )
             .maybe_child(back_pressed.read().then(|| {
                 rect()
@@ -67,43 +101,9 @@ impl Component for Layout {
                     )
             }))
             .child(if show_navbar {
-                rect()
-                    .horizontal()
-                    .width(Size::fill())
-                    .main_align(Alignment::center())
-                    .padding(Gaps::new(4., 4., 20., 4.))
-                    .spacing(4.)
-                    .background(c.surface)
-                    .child(navbar_tab(Route::HomePage, "Chats", lucide::message_circle))
-                    .child(navbar_tab(Route::Settings, "Settings", lucide::settings))
-                    .into_element()
+                NavBar.into_element()
             } else {
                 rect().into_element()
             })
     }
-}
-
-fn navbar_tab(
-    route: Route,
-    tab_label: &'static str,
-    icon: fn() -> bytes::Bytes,
-) -> ActivableRoute<Route> {
-    ActivableRoute::new(
-        route.clone(),
-        Link::new(route).child(
-            FloatingTab::new().ripple().child(
-                rect()
-                    .center()
-                    .vertical()
-                    .spacing(2.)
-                    .child(
-                        SvgViewer::new(icon())
-                            .width(Size::px(22.))
-                            .height(Size::px(22.)),
-                    )
-                    .child(label().text(tab_label).font_size(11.)),
-            ),
-        ),
-    )
-    .routes(vec![])
 }

@@ -10,6 +10,7 @@ use crate::ui::components::use_fading;
 use freya::text_edit::*;
 use tokio::sync::mpsc::UnboundedSender;
 
+use super::compose_touch::{self, EditAction, use_compose_touch};
 use crate::utils::drafts;
 use crate::utils::use_app_colors;
 
@@ -47,18 +48,24 @@ impl Component for ComposeBar {
 
         let a11y_id = use_a11y();
         let focus = use_focus(a11y_id);
-        let mut editable = use_editable(|| initial_text.clone(), EditableConfig::new);
+        let touch = use_compose_touch();
+        let mut editable = use_editable(String::new, EditableConfig::new);
         let mut editor_state = *editable.editor();
 
-        // Restore the draft on mount (not in edit mode, which pre-fills the text).
+        // On mount: the message being edited, else the draft, with the cursor
+        // at the end to continue typing (positions are UTF-16 code units).
         let room_id_draft = room_id.clone();
         use_hook(move || {
-            if initial_text.is_empty()
-                && let Some(text) = drafts::get(&room_id_draft)
-            {
+            let text = if initial_text.is_empty() {
+                drafts::get(&room_id_draft)
+            } else {
+                Some(initial_text)
+            };
+            if let Some(text) = text {
+                let end = text.encode_utf16().count();
                 *editor_state.write() = RopeEditor::new(
                     text,
-                    TextSelection::new_cursor(0),
+                    TextSelection::new_cursor(end),
                     0,
                     EditorHistory::new(Duration::from_millis(10)),
                 );
@@ -217,6 +224,7 @@ impl Component for ComposeBar {
                 }
                 return;
             }
+            touch.show_menu(false);
             if e.key == Key::Named(NamedKey::Enter) && !e.modifiers.shift() {
                 do_send();
             } else {
@@ -241,8 +249,11 @@ impl Component for ComposeBar {
             editable.process_event(EditableEvent::KeyUp { key: &e.key });
         };
 
-        let on_global_pointer_up = move |_: Event<PointerEventData>| {
+        let on_global_pointer_up = move |e: Event<PointerEventData>| {
             editable.process_event(EditableEvent::Release);
+            if matches!(*e, PointerEventData::Touch(_)) {
+                touch.touch_end(editable.editor().peek().has_any_selection());
+            }
         };
 
         let on_cancel = move |_| {
@@ -276,11 +287,19 @@ impl Component for ComposeBar {
         let inner_h = (line_count as f32 * LINE_H).min(MAX_LINES as f32 * LINE_H);
         let is_empty = editable.editor().read().rope().len_chars() == 0;
         let is_focused = focus().is_focused();
+        let edit_menu = (is_focused && touch.is_menu_shown()).then(|| {
+            let has_selection = editable.editor().read().has_any_selection();
+            compose_touch::edit_menu(c, has_selection, move |action| {
+                action.apply(editable);
+                // Select all keeps the menu up, to copy or cut next.
+                touch.show_menu(action == EditAction::SelectAll);
+            })
+        });
 
-        let bar = rect().vertical().width(Size::fill()).background(c.surface);
-        #[cfg(target_os = "android")]
-        let bar = bar.padding(Gaps::new(0., 0., 34., 0.));
-        bar
+        rect()
+            .vertical()
+            .width(Size::fill())
+            .background(c.surface)
             // ── Context banner: editing or replying ───────────────────────
             .child(if let Some((preview, opacity)) = banner {
                 let (icon, label_text, label_color) = match preview {
@@ -432,6 +451,7 @@ impl Component for ComposeBar {
             // ── Input row ─────────────────────────────────────────────────
             .child(
                 rect()
+                    .maybe_child(edit_menu)
                     .horizontal()
                     .content(Content::Flex)
                     .width(Size::fill())
@@ -455,6 +475,12 @@ impl Component for ComposeBar {
                             .on_key_up(on_key_up)
                             .on_global_pointer_up(on_global_pointer_up)
                             .on_pointer_down(move |_| a11y_id.request_focus())
+                            .on_touch_start(move |e: Event<TouchEventData>| {
+                                touch.touch_start(e.global_location)
+                            })
+                            .on_touch_move(move |e: Event<TouchEventData>| {
+                                touch.touch_move(e.global_location)
+                            })
                             .width(Size::flex(1.0))
                             .height(Size::px(inner_h + V_PAD * 2.))
                             .corner_radius(20.)
@@ -498,6 +524,7 @@ impl Component for ComposeBar {
                                                     editable,
                                                     c,
                                                     is_focused,
+                                                    touch,
                                                 }
                                                 .into_element()
                                             })),

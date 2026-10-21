@@ -3,7 +3,6 @@ use freya::prelude::*;
 
 use crate::ui::components::IconButton;
 
-use freya_router::prelude::RouterContext;
 use std::sync::Arc;
 
 use crate::{
@@ -184,7 +183,7 @@ impl Component for NewGroup {
                     .child(if has_invitees {
                         Button::new()
                             .on_press(|_| {
-                                let _ = RouterContext::get().push(Route::NewGroupConfig);
+                                crate::app::navigation::push(Route::NewGroupConfig);
                             })
                             .child(
                                 rect()

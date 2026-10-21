@@ -22,6 +22,10 @@ pub fn use_row_interaction() -> RowInteraction {
 }
 
 impl RowInteraction {
+    pub fn allows_press(&self) -> bool {
+        true
+    }
+
     pub fn is_highlighted(&self) -> bool {
         *self.hovered.read()
     }

@@ -53,12 +53,19 @@ tasks.register<Exec>("buildRustLibrary") {
         }
     environment("ANDROID_HOME", androidHome)
     environment("ANDROID_JAR", "$androidHome/platforms/android-36/android.jar")
-    commandLine("cargo", "ndk",
-        "-o", "AndroidApp/app/src/main/jniLibs/",
-        "-t", "arm64-v8a",
-        "-t", "x86_64-linux-android",
-        "--platform", "31",
-        "build", "--lib", "--release")
+    // Release APKs: every ABI, fully optimised. Debug APKs (`just`): the device
+    // ABI only, with the incremental `android-dev` profile (see Cargo.toml).
+    val releaseBuild = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+    val targets = if (releaseBuild) {
+        listOf("-t", "arm64-v8a", "-t", "x86_64-linux-android")
+    } else {
+        listOf("-t", "arm64-v8a")
+    }
+    val profile = if (releaseBuild) listOf("--release") else listOf("--profile", "android-dev")
+    commandLine(
+        listOf("cargo", "ndk", "-o", "AndroidApp/app/src/main/jniLibs/") +
+            targets + listOf("--platform", "31", "build", "--lib") + profile
+    )
 }
 
 tasks.named("preBuild") {

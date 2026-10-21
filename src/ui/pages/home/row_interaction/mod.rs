@@ -1,5 +1,5 @@
 //! Room row gestures. Both platforms expose the same API:
-//! `use_row_interaction()`, `is_highlighted()`, `feedback()`, `attach()`.
+//! `use_row_interaction()`, `is_highlighted()`, `allows_press()`, `feedback()`, `attach()`.
 
 #[cfg(target_os = "android")]
 mod android;

@@ -240,3 +240,24 @@ impl QueryCapability for FetchMutualRooms {
         rx.await.unwrap_or(Err(()))
     }
 }
+
+/// Members with a picture standing in for a room's avatar
+/// ([`crate::utils::avatars::members_with_avatar`], at most 2). Key: room id.
+#[derive(Clone, PartialEq, Hash, Eq)]
+pub struct FetchAvatarMembers;
+
+impl QueryCapability for FetchAvatarMembers {
+    type Ok = Vec<crate::utils::avatars::MemberWithAvatar>;
+    type Err = ();
+    type Keys = String;
+
+    async fn run(&self, room_id: &String) -> Result<Self::Ok, ()> {
+        let room_id = room_id.clone();
+        on_tokio(async move {
+            let room = crate::utils::matrix::get_room(&room_id).ok_or(())?;
+            Ok(crate::utils::avatars::members_with_avatar(&room, 2).await)
+        })
+        .await
+        .ok_or(())?
+    }
+}

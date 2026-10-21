@@ -1,7 +1,7 @@
 use std::sync::atomic::Ordering;
 
 use matrix_sdk::{
-    Client, ClientBuilder, Room, ServerName,
+    Client, ClientBuilder, Room, ServerName, SqliteStoreConfig,
     authentication::matrix::MatrixSession,
     encryption::{BackupDownloadStrategy, EncryptionSettings},
     ruma::{UserId, exports::serde_json},
@@ -79,7 +79,12 @@ pub fn latest_event_ts(room: &Room) -> Option<u64> {
 pub fn my_user_id() -> Option<String> {
     CLIENT.get()?.user_id().map(|id| id.to_string())
 }
-#[derive(Debug, Serialize, Deserialize)]
+/// Raw key of the stores. A passphrase costs a 200k-round PBKDF2 per store
+/// (4 stores, ~370ms at startup on a phone); a key opens them directly.
+type StoreKey = [u8; 32];
+
+// No `Debug`: it would print the store secrets.
+#[derive(Serialize, Deserialize)]
 struct ClientSession {
     /// The URL of the homeserver of the user.
     homeserver: String,
@@ -87,12 +92,16 @@ struct ClientSession {
     /// The path of the database.
     db_path: PathBuf,
 
-    /// The passphrase of the database.
+    /// The stores' former passphrase: set until they are all re-keyed to
+    /// `store_key` (see [`migrate_to_store_key`]), empty after.
     passphrase: String,
+
+    #[serde(default)]
+    store_key: Option<StoreKey>,
 }
 
 /// The full session to persist.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct FullSession {
     /// The data to re-build the client.
     client_session: ClientSession,
@@ -113,6 +122,10 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
     if session_file.exists() {
         // If the push context already restored the client, reuse it and only
         // re-read the sync token so the main sync loop can resume where it left off.
+        // Serialized: the push context and the app can restore at the same
+        // time in one process, and two store key migrations must never race.
+        static RESTORE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+        let guard = RESTORE.lock().await;
         let client = if let Some(existing) = CLIENT.get() {
             existing.clone()
         } else {
@@ -121,6 +134,7 @@ pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
             tracing::debug!("restore_matrix_client: CLIENT set");
             c
         };
+        drop(guard);
 
         // Signal immediately so the UI can navigate to the room list and show
         // cached rooms from the local store without waiting for the network.
@@ -151,24 +165,28 @@ async fn restore_session(session_file: &Path) -> anyhow::Result<Client> {
 
     // The session was serialized as JSON in a file.
     let serialized_session = fs::read_to_string(session_file).await?;
+    let mut session: FullSession = serde_json::from_str(&serialized_session)?;
+    let store_config = match migrate_to_store_key(session_file, &mut session).await {
+        Ok(()) => store_config(&session.client_session),
+        Err(e) => {
+            tracing::warn!("store key migration failed, keeping the passphrase: {e:#}");
+            SqliteStoreConfig::new(&session.client_session.db_path)
+                .passphrase(Some(&session.client_session.passphrase))
+        }
+    };
     let FullSession {
         client_session,
         user_session,
-    } = serde_json::from_str(&serialized_session)?;
+    } = session;
 
     // discover: false — homeserver is already a resolved base URL from the
     // prior login, so this builds instantly with no network I/O and works offline.
-    let client = get_client_builder(
-        &client_session.homeserver,
-        &client_session.db_path,
-        &client_session.passphrase,
-        false,
-    )
-    .build()
-    .await?;
+    let client = get_client_builder(&client_session.homeserver, store_config, false)
+        .build()
+        .await?;
     crate::logging::boot("stores opened");
 
-    tracing::info!("Restoring session for {}…", user_session.meta.user_id);
+    tracing::info!("Restoring session");
 
     // Restore the Matrix user session.
     client.restore_session(user_session).await?;
@@ -236,7 +254,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
 
     let matrix_auth = client.matrix_auth();
 
-    tracing::info!("Trying login in user {username}");
+    tracing::info!("Logging in");
 
     match matrix_auth
         .login_username(&username, &password)
@@ -244,7 +262,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
         .await
     {
         Ok(_) => {
-            tracing::info!("Logged in as {username}");
+            tracing::info!("Logged in");
 
             // Persist session
             let user_session = matrix_auth
@@ -283,6 +301,100 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
     }
 }
 
+fn store_config(session: &ClientSession) -> SqliteStoreConfig {
+    let config = SqliteStoreConfig::new(&session.db_path);
+    match &session.store_key {
+        Some(key) => config.key(Some(key)),
+        None => config.passphrase(Some(&session.passphrase)),
+    }
+}
+
+/// Re-keys the stores of a session made with a passphrase (once), so they open
+/// with `store_key`. Crash-safe: the new key is saved before any store changes,
+/// each store is skipped once it opens with the key, and the passphrase is only
+/// dropped after all of them did.
+async fn migrate_to_store_key(session_file: &Path, session: &mut FullSession) -> anyhow::Result<()> {
+    let client_session = &mut session.client_session;
+    if client_session.passphrase.is_empty() {
+        return Ok(());
+    }
+    let key = match client_session.store_key {
+        Some(key) => key,
+        None => {
+            let key: StoreKey = rng().random();
+            client_session.store_key = Some(key);
+            write_session(session_file, session).await?;
+            key
+        }
+    };
+    let client_session = &mut session.client_session;
+    let db_path = client_session.db_path.clone();
+    let passphrase = client_session.passphrase.clone();
+    tokio::task::spawn_blocking(move || {
+        // One thread per store: each runs a slow PBKDF2 one last time.
+        std::thread::scope(|scope| {
+            let migrations: Vec<_> = matrix_sdk_sqlite_files(&db_path)
+                .map(|path| {
+                    let passphrase = &passphrase;
+                    scope.spawn(move || rekey_store(&path, passphrase, &key))
+                })
+                .collect();
+            migrations
+                .into_iter()
+                .try_for_each(|m| m.join().map_err(|_| anyhow::anyhow!("re-key panicked"))?)
+        })
+    })
+    .await??;
+    session.client_session.passphrase.clear();
+    write_session(session_file, session).await?;
+    tracing::info!("stores re-keyed");
+    Ok(())
+}
+
+/// The databases `sqlite_store` creates in `db_path`.
+fn matrix_sdk_sqlite_files(db_path: &Path) -> impl Iterator<Item = PathBuf> + '_ {
+    [
+        "matrix-sdk-state.sqlite3",
+        "matrix-sdk-crypto.sqlite3",
+        "matrix-sdk-event-cache.sqlite3",
+        "matrix-sdk-media.sqlite3",
+    ]
+    .into_iter()
+    .map(|name| db_path.join(name))
+}
+
+/// Re-encrypts a store's cipher (`kv` row `cipher`) from the passphrase to `key`.
+fn rekey_store(path: &Path, passphrase: &str, key: &StoreKey) -> anyhow::Result<()> {
+    use matrix_sdk_store_encryption::StoreCipher;
+    use rusqlite::OptionalExtension;
+
+    if !path.exists() {
+        return Ok(());
+    }
+    let conn = rusqlite::Connection::open(path)?;
+    let encrypted: Option<Vec<u8>> = conn
+        .query_row("SELECT value FROM kv WHERE key = 'cipher'", [], |row| row.get(0))
+        .optional()?;
+    // No cipher yet: the store creates one with the key.
+    let Some(encrypted) = encrypted else {
+        return Ok(());
+    };
+    if StoreCipher::import_with_key(key, &encrypted).is_ok() {
+        return Ok(());
+    }
+    let export = StoreCipher::import(passphrase, &encrypted)?.export_with_key(key)?;
+    conn.execute("UPDATE kv SET value = ?1 WHERE key = 'cipher'", (export,))?;
+    Ok(())
+}
+
+/// Writes the session file atomically (temporary file, then rename).
+async fn write_session(session_file: &Path, session: &FullSession) -> anyhow::Result<()> {
+    let tmp = session_file.with_extension("tmp");
+    fs::write(&tmp, serde_json::to_string(session)?).await?;
+    fs::rename(&tmp, session_file).await?;
+    Ok(())
+}
+
 /// `discover`: whether to resolve `homeserver` via a `.well-known` network
 /// lookup. This blocks on network I/O with no timeout, so it must be `false`
 /// when restoring a session — `homeserver` is already the fully-resolved
@@ -292,8 +404,7 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
 /// bare server name) still need `discover: true`.
 fn get_client_builder(
     homeserver: &String,
-    db_path: &PathBuf,
-    passphrase: &String,
+    store_config: SqliteStoreConfig,
     discover: bool,
 ) -> ClientBuilder {
     let builder = if discover {
@@ -303,7 +414,7 @@ fn get_client_builder(
     };
     // Build the client with the previous settings from the session.
     builder
-        .sqlite_store(db_path, Some(&passphrase))
+        .sqlite_store_with_config_and_cache_path(store_config, None::<PathBuf>)
         .with_encryption_settings(EncryptionSettings {
             auto_enable_cross_signing: true,
             backup_download_strategy: BackupDownloadStrategy::AfterDecryptionFailure,
@@ -317,7 +428,7 @@ async fn new_client(
     data_dir: &Path,
     homeserver: &ServerName,
 ) -> anyhow::Result<(Client, ClientSession)> {
-    let (db_path, passphrase) = {
+    let (db_path, store_key) = {
         let mut rng = rng();
 
         // Generating a subfolder for the database is not mandatory, but it is useful if
@@ -330,33 +441,27 @@ async fn new_client(
             .collect();
         let db_path = data_dir.join(db_subfolder);
 
-        // Generate a random passphrase.
-        let passphrase: String = (&mut rng)
-            .sample_iter(Alphanumeric)
-            .take(32)
-            .map(char::from)
-            .collect();
+        let store_key: StoreKey = rng.random();
 
-        (db_path, passphrase)
+        (db_path, store_key)
+    };
+    let session = ClientSession {
+        homeserver: homeserver.to_string(),
+        db_path,
+        passphrase: String::new(),
+        store_key: Some(store_key),
     };
 
     tracing::info!("checking homeserver {homeserver}");
 
-    let client_build = get_client_builder(&homeserver.to_string(), &db_path, &passphrase, true)
+    let client_build = get_client_builder(&session.homeserver, store_config(&session), true)
         .build()
         .await;
 
     match client_build {
         Ok(client) => {
             let homeserver = client.homeserver().to_string();
-            return Ok((
-                client,
-                ClientSession {
-                    homeserver,
-                    db_path,
-                    passphrase,
-                },
-            ));
+            return Ok((client, ClientSession { homeserver, ..session }));
         }
         Err(error) => match &error {
             matrix_sdk::ClientBuildError::AutoDiscovery(_)
@@ -400,4 +505,36 @@ pub async fn create_or_get_dm(user_id: String) -> Option<String> {
     })
     .await
     .flatten()
+}
+
+#[cfg(test)]
+mod tests {
+    use matrix_sdk::SqliteCryptoStore;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn rekey_store_moves_a_passphrase_store_to_the_key() {
+        let dir = tempfile::tempdir().unwrap();
+        let passphrase = "old passphrase";
+        let key: StoreKey = [7; 32];
+        drop(SqliteCryptoStore::open(dir.path(), Some(passphrase)).await.unwrap());
+
+        let db = dir.path().join("matrix-sdk-crypto.sqlite3");
+        rekey_store(&db, passphrase, &key).unwrap();
+        // Idempotent: a second run (after a crash) leaves it keyed.
+        rekey_store(&db, passphrase, &key).unwrap();
+
+        assert!(SqliteCryptoStore::open_with_key(dir.path(), Some(&key)).await.is_ok());
+        assert!(SqliteCryptoStore::open_with_key(dir.path(), Some(&[8; 32])).await.is_err());
+        assert!(SqliteCryptoStore::open(dir.path(), Some(passphrase)).await.is_err());
+    }
+
+    #[test]
+    fn rekey_store_skips_missing_stores() {
+        let dir = tempfile::tempdir().unwrap();
+        let missing = dir.path().join("matrix-sdk-media.sqlite3");
+        rekey_store(&missing, "passphrase", &[0; 32]).unwrap();
+        assert!(!missing.exists());
+    }
 }

@@ -123,7 +123,7 @@ impl Component for InviteView {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(room_app_bar(&self.room_id, &name, c, false))
+            .child(room_app_bar(&self.room_id, &name, false))
             .child(
                 ScrollView::new()
                     .width(Size::fill())

@@ -1,6 +1,5 @@
 use freya::prelude::*;
 
-use freya_router::prelude::RouterContext;
 use std::sync::Arc;
 
 use crate::{
@@ -53,7 +52,7 @@ impl Component for NewGroupConfig {
                 draft.name = room_name;
                 draft.encrypted = is_encrypted;
             }
-            let _ = RouterContext::get().push(Route::PendingGroup);
+            crate::app::navigation::push(Route::PendingGroup);
         };
 
         rect()

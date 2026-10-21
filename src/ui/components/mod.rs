@@ -11,14 +11,16 @@ mod media_thumbnail;
 mod media_viewer;
 mod person_row;
 mod search_input;
+#[cfg(target_os = "android")]
+mod swipe;
 mod user_popup;
 
-pub use app_bar::{TopAppBar, TopAppBarAction, TopAppBarTitle};
+pub use app_bar::{AppBarTint, TopAppBar, TopAppBarAction, TopAppBarTitle};
 pub use avatar::{Avatar, StackedAvatar};
 pub use bottom_sheet::{BottomSheet, confirm_sheet};
 pub use chip::Chip;
 pub use empty_state::{empty_state, loading_state};
-pub use fade::{use_fade, use_fading};
+pub use fade::{use_color_transition, use_fade, use_fading};
 pub use hoverable::{Hoverable, HoverableExt};
 pub use icon_button::IconButton;
 pub use m3::M3ListItem;
@@ -26,4 +28,6 @@ pub use media_thumbnail::MediaThumbnail;
 pub use media_viewer::{MediaViewer, MediaViewerItem, ViewerSource};
 pub use person_row::{PersonRow, badge};
 pub use search_input::search_input;
+#[cfg(target_os = "android")]
+pub use swipe::{Swipe, SwipeBounds, use_swipe};
 pub use user_popup::{UserPopupInfo, UserPopupOverlay};

@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
-use freya_router::prelude::RouterContext;
 
 use crate::{
     Route,
@@ -68,7 +67,7 @@ impl Component for NewChat {
                 icon_color: c.primary,
                 destructive: false,
                 on_press: EventHandler::new(|_| {
-                    let _ = RouterContext::get().push(Route::NewGroup);
+                    crate::app::navigation::push(Route::NewGroup);
                 }),
             })
             // Divider + section label

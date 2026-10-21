@@ -9,7 +9,8 @@ use freya_icons::lucide;
 use freya_material_design::prelude::ButtonRippleExt;
 use freya_router::prelude::RouterContext;
 
-use crate::utils::const_values::{AppColors, STATUS_BAR_INSET};
+use crate::utils::const_values::{AppColors};
+use crate::utils::insets::status_bar_inset;
 use crate::utils::use_app_colors;
 use crate::{REQUESTER, Route};
 use field::{field, icon};
@@ -243,10 +244,10 @@ fn top_bar(c: AppColors) -> Rect {
     let can_go_back = RouterContext::get().can_go_back();
     rect()
         .width(Size::fill())
-        .padding(Gaps::new(STATUS_BAR_INSET + 8., 8., 0., 8.))
+        .padding(Gaps::new(status_bar_inset() + 8., 8., 0., 8.))
         .maybe_child(can_go_back.then(|| {
             IconButton::new(lucide::arrow_left(), c.on_surface, |_| {
-                RouterContext::get().go_back()
+                crate::app::navigation::go_back_or_home()
             })
             .size(40., 18.)
         }))

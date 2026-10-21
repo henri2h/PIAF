@@ -30,3 +30,16 @@ pub fn use_fading<T: Clone + PartialEq + 'static>(current: Option<T>, ms: u64) -
     };
     Some((shown, opacity))
 }
+
+/// `target`, easing from the previous colour whenever it changes (e.g. a
+/// bar tinting as content scrolls under it). No animation on mount.
+pub fn use_color_transition(target: (u8, u8, u8), ms: u64) -> Color {
+    let previous = use_hook(|| std::rc::Rc::new(std::cell::Cell::new(target)));
+    let animation = use_animation_with_dependencies(&target, move |conf, &to| {
+        conf.on_creation(OnCreation::Finish);
+        conf.on_change(OnChange::Rerun);
+        let from = previous.replace(to);
+        AnimColor::new(from, to).time(ms).ease(Ease::Out)
+    });
+    animation.get().value()
+}

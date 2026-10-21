@@ -38,8 +38,12 @@ pub static APP_FOCUSED: AtomicBool = AtomicBool::new(true);
 pub static SESSION_EXPIRED: AtomicBool = AtomicBool::new(false);
 
 /// Initializes all globals, then restores the session in the background.
-/// Must run inside a Tokio runtime context.
+/// Must run inside a Tokio runtime context. Runs once per process: on Android
+/// a new activity in the same process finds everything already running.
 pub fn init(data_dir: PathBuf) {
+    if REQUESTER.get().is_some() {
+        return;
+    }
     REQUESTER.set(MatrixClientWorker::spawn()).unwrap();
 
     let (tx, rx) = watch::channel(());

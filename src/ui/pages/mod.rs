@@ -1,6 +1,8 @@
 pub mod bookmarks;
 pub mod home;
 pub mod login;
+pub mod mailbox;
+pub mod more;
 pub mod new_chat;
 pub mod reactions;
 pub mod room;
@@ -8,5 +10,6 @@ pub mod room_media;
 pub mod room_members;
 pub mod room_search;
 pub mod room_settings;
+pub mod search;
 pub mod settings;
 pub mod welcome;

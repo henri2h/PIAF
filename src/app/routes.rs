@@ -6,6 +6,8 @@ use crate::ui::pages::{
     bookmarks::BookmarksPage,
     home::HomePage,
     login::LoginPage,
+    mailbox::{ArchivedPage, RecontactPage},
+    more::MorePage,
     new_chat::{NewChat, NewGroup, NewGroupConfig, PendingDm, PendingGroup},
     reactions::ReactionsPage,
     room::RoomPage,
@@ -13,6 +15,7 @@ use crate::ui::pages::{
     room_members::RoomMembers,
     room_search::RoomSearch,
     room_settings::RoomSettings,
+    search::SearchPage,
     settings::{
         Settings, SettingsAppearance, SettingsNotifications, SettingsProfile, SettingsSecurity,
     },
@@ -63,4 +66,14 @@ pub enum Route {
         ReactionsPage,
         #[route("/bookmarks")]
         BookmarksPage,
+        /// Android "More" tab and its mailbox pages.
+        #[route("/more")]
+        MorePage,
+        #[route("/recontact")]
+        RecontactPage,
+        #[route("/archived")]
+        ArchivedPage,
+        /// Android search mode (desktop searches inline in the home bar).
+        #[route("/search")]
+        SearchPage,
 }

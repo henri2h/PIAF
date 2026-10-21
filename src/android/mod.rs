@@ -11,9 +11,20 @@ use winit::{event_loop::EventLoop, platform::android::EventLoopBuilderExtAndroid
 
 use crate::utils::push::{ANDROID_APP_CONTEXT, APP_CLASS_LOADER, JAVA_VM};
 
-pub static TOKIO_HANDLE: OnceLock<tokio::runtime::Handle> = OnceLock::new();
-/// Runtime created by JNI push calls while the app is killed; kept alive for `TOKIO_HANDLE`.
-pub static PUSH_RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
+static RUNTIME: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
+
+/// The process' tokio runtime, shared by the activity and JNI push calls (app
+/// killed). Never dropped: the process outlives an activity, and a new one
+/// (`android_main` again) must find the client, sync and worker still running.
+pub fn runtime() -> &'static tokio::runtime::Runtime {
+    RUNTIME.get_or_init(|| {
+        tokio::runtime::Builder::new_multi_thread()
+            .worker_threads(crate::TOKIO_WORKERS)
+            .enable_all()
+            .build()
+            .expect("Failed to build tokio runtime")
+    })
+}
 
 #[unsafe(no_mangle)]
 fn android_main(droid_app: AndroidApp) {
@@ -23,17 +34,10 @@ fn android_main(droid_app: AndroidApp) {
         .internal_data_path()
         .expect("No internal data path on Android");
 
-    let rt = tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(crate::TOKIO_WORKERS)
-        .enable_all()
-        .build()
-        .expect("Failed to build tokio runtime");
-    let _ = TOKIO_HANDLE.set(rt.handle().clone());
-
     cache_jni_globals(&droid_app);
 
     // Kept entered for the app lifetime: freya calls `tokio::spawn` internally.
-    let _rt_guard = rt.enter();
+    let _rt_guard = runtime().enter();
     crate::app::state::init(data_path);
 
     let event_loop = EventLoop::<NativeEvent>::with_user_event()

@@ -2,12 +2,15 @@ mod action_popup_overlay;
 mod bookmark_picker_overlay;
 mod compose_bar;
 mod compose_line;
+mod compose_touch;
 mod detail_modal;
 mod focus;
 mod invite_view;
 mod media_items;
 mod message_action_popup;
 mod message_content;
+#[cfg(target_os = "android")]
+mod message_gesture;
 #[cfg(not(target_os = "android"))]
 mod message_hover_bar;
 mod message_row;
@@ -97,7 +100,6 @@ impl Component for RoomView {
         let _timer = RenderTimer::new("RoomView");
         use_hook(|| tracing::debug!(target: PERF, room_id, "mount RoomView"));
 
-        let ui = use_provide_room_ui_ctx();
         let focus_event_id = use_hook(|| take_focus_event(&room_id));
         let timeline = use_room_timeline(&room_id, focus_event_id.clone());
         let typing = use_fading(typing_label(&timeline.state.typing_users.read()), 150);
@@ -110,6 +112,8 @@ impl Component for RoomView {
             vertical_anchor: ScrollAnchor::Bottom,
             ..Default::default()
         });
+        let ui = use_provide_room_ui_ctx(scroll_controller);
+        use_app_bar_tint(scroll_controller);
 
         let body = if ui.image_viewer.read().is_some() {
             let handle = timeline.handle.clone();
@@ -144,7 +148,7 @@ impl Component for RoomView {
                 .child(BookmarkPickerOverlay {
                     pending: ui.bookmark_picker,
                 })
-                .child(room_app_bar(&room_id, &name, c, true))
+                .child(room_app_bar(&room_id, &name, true))
                 .child(TimelineView {
                     room_id: room_id.clone(),
                     timeline: timeline.clone(),
@@ -211,4 +215,18 @@ fn typing_label(users: &[String]) -> Option<String> {
         [a, b] => Some(format!("{a} and {b} are typing…")),
         _ => Some("Several people are typing…".to_string()),
     }
+}
+
+/// Tints the room's app bar while messages are scrolled under it, i.e. the
+/// timeline is not at its very top.
+fn use_app_bar_tint(scroll: ScrollController) {
+    let mut tint = use_state(|| false);
+    use_provide_context(|| crate::ui::components::AppBarTint(tint));
+    use_side_effect(move || {
+        let (_, y): (i32, i32) = scroll.into();
+        let scrolled_under = y < -1;
+        if *tint.peek() != scrolled_under {
+            tint.set(scrolled_under);
+        }
+    });
 }

@@ -7,7 +7,7 @@ use crate::utils::avatars::AvatarSource;
 use freya_query::prelude::*;
 use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
-use crate::ui::components::Avatar;
+use crate::ui::components::{Avatar, BottomSheet};
 use crate::utils::queries::FetchSenderName;
 use crate::utils::{format_timestamp, id_color, use_app_colors};
 
@@ -30,6 +30,31 @@ impl Component for DetailModalOverlay {
         let modal_item = self.modal.read().clone();
         let room_id = self.room_id.clone();
         let mut modal = self.modal;
+
+        // Android: a bottom sheet, the mobile way to show details.
+        if cfg!(target_os = "android") {
+            let Some(item) = modal_item else {
+                return rect().into_element();
+            };
+            return BottomSheet::new(move |_| modal.set(None))
+                .title("Message details")
+                .child(
+                    ScrollView::new()
+                        .width(Size::fill())
+                        .max_height(Size::window_percent(60.))
+                        .height(Size::auto())
+                        .child(
+                            rect()
+                                .vertical()
+                                .width(Size::fill())
+                                .padding(Gaps::new(0., 24., 0., 24.))
+                                .spacing(16.)
+                                .child(seen_by_section(&item, &room_id, c))
+                                .child(reactions_section(&item, &room_id, c)),
+                        ),
+                )
+                .into_element();
+        }
 
         let mut popup = Popup::new().on_close_request(move |_| *modal.write() = None);
 
@@ -65,7 +90,7 @@ impl Component for DetailModalOverlay {
                 );
         }
 
-        popup
+        popup.into_element()
     }
 }
 
