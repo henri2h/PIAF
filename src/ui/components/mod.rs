@@ -1,6 +1,7 @@
 mod app_bar;
 mod avatar;
 mod bottom_sheet;
+mod brand;
 mod chip;
 mod dialog;
 mod empty_state;
@@ -19,6 +20,7 @@ mod user_popup;
 pub use app_bar::{AppBarTint, TopAppBar, TopAppBarAction, TopAppBarTitle};
 pub use avatar::{Avatar, StackedAvatar};
 pub use bottom_sheet::bottom_sheet;
+pub use brand::{AUTH_SHORT_MAX_HEIGHT, AUTH_WIDE_MIN_WIDTH, TAGLINE, brand_hero, brand_logo};
 pub use dialog::{Dialog, confirm_dialog, dialog_button};
 pub use chip::Chip;
 pub use empty_state::{empty_state, loading_state};

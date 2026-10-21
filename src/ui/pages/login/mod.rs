@@ -1,24 +1,46 @@
 mod field;
 mod user_id;
 
+use std::time::Duration;
+
 use freya::prelude::*;
 
-use crate::ui::components::IconButton;
+use crate::ui::components::{
+    AUTH_SHORT_MAX_HEIGHT, AUTH_WIDE_MIN_WIDTH, IconButton, brand_hero, brand_logo,
+};
 
 use freya_icons::lucide;
 use freya_material_design::prelude::ButtonRippleExt;
 use freya_router::prelude::RouterContext;
 
-use crate::utils::const_values::{AppColors};
+use crate::utils::const_values::AppColors;
 use crate::utils::insets::status_bar_inset;
 use crate::utils::use_app_colors;
 use crate::{REQUESTER, Route};
 use field::{field, icon};
 use user_id::normalize_user_id;
 
-/// Two panes (brand | form) from this width, one scrolling column below.
-const WIDE_MIN_WIDTH: f32 = 720.;
 const FORM_MAX_WIDTH: f32 = 400.;
+/// Typing pause before the server in the user ID is looked up.
+const SERVER_CHECK_DELAY: Duration = Duration::from_millis(600);
+
+/// Lookup of the server in the user ID, shown under the field.
+#[derive(Clone, PartialEq)]
+enum ServerCheck {
+    None,
+    Checking(String),
+    Found(String),
+    NotFound(String),
+}
+
+impl ServerCheck {
+    fn server(&self) -> Option<&str> {
+        match self {
+            Self::None => None,
+            Self::Checking(s) | Self::Found(s) | Self::NotFound(s) => Some(s),
+        }
+    }
+}
 
 #[derive(PartialEq)]
 pub struct LoginPage {}
@@ -26,12 +48,52 @@ pub struct LoginPage {}
 impl Component for LoginPage {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let mut width = use_state(|| 0.0f32);
+        let mut size = use_state(|| (0.0f32, 0.0f32));
         let login = use_state(String::new);
         let password = use_state(String::new);
         let mut show_password = use_state(|| false);
         let mut error: State<Option<String>> = use_state(|| None);
         let mut logging_in = use_state(|| false);
+        let user_a11y = use_a11y();
+        let password_a11y = use_a11y();
+        let user_focus = use_focus(user_a11y);
+        let password_focus = use_focus(password_a11y);
+        let mut server_check = use_state(|| ServerCheck::None);
+
+        // Looks the server up once typing pauses; a newer server supersedes it.
+        use_side_effect(move || {
+            let server = normalize_user_id(&login.read())
+                .and_then(|id| id.split_once(':').map(|(_, s)| s.to_string()));
+            let Some(server) = server else {
+                if *server_check.peek() != ServerCheck::None {
+                    server_check.set(ServerCheck::None);
+                }
+                return;
+            };
+            if server_check.peek().server() == Some(server.as_str()) {
+                return;
+            }
+            server_check.set(ServerCheck::Checking(server.clone()));
+            spawn(async move {
+                timer(SERVER_CHECK_DELAY).await;
+                if *server_check.peek() != ServerCheck::Checking(server.clone()) {
+                    return;
+                }
+                let lookup = server.clone();
+                let found = crate::utils::on_tokio(async move {
+                    crate::utils::matrix::homeserver_exists(&lookup).await
+                })
+                .await
+                .unwrap_or(false);
+                if *server_check.peek() == ServerCheck::Checking(server.clone()) {
+                    server_check.set(if found {
+                        ServerCheck::Found(server)
+                    } else {
+                        ServerCheck::NotFound(server)
+                    });
+                }
+            });
+        });
 
         let is_logging_in = *logging_in.read();
         let user_id = normalize_user_id(&login.read());
@@ -69,14 +131,22 @@ impl Component for LoginPage {
             });
         };
 
-        let user_helper = match &user_id {
-            Some(id) => id
-                .split_once(':')
-                .map(|(_, server)| (format!("Server: {server}"), false)),
-            None if !login.read().trim().is_empty() => {
-                Some(("Include your server, e.g. @you:matrix.org".into(), false))
+        let user_helper = match (&user_id, server_check.read().clone()) {
+            (Some(_), ServerCheck::Checking(server)) => {
+                Some((format!("Checking {server}…"), c.on_surface_muted))
             }
-            None => None,
+            (Some(_), ServerCheck::Found(server)) => {
+                Some((format!("✓ Server found: {server}"), c.status_online))
+            }
+            (Some(_), ServerCheck::NotFound(server)) => {
+                Some((format!("No Matrix server found at {server}"), c.error))
+            }
+            (Some(_), ServerCheck::None) => None,
+            (None, _) if !login.read().trim().is_empty() => Some((
+                "Include your server, e.g. @you:matrix.org".into(),
+                c.on_surface_muted,
+            )),
+            (None, _) => None,
         };
 
         let hidden = !*show_password.read();
@@ -127,8 +197,11 @@ impl Component for LoginPage {
                     .flat()
                     .placeholder("@you:matrix.org")
                     .auto_focus(true)
+                    .a11y_id(user_a11y)
                     .leading(icon(lucide::at_sign(), c.on_surface_muted))
-                    .on_submit(move |_| submit()),
+                    // Enter moves on to the password, as Tab does.
+                    .on_submit(move |_| password_a11y.request_focus()),
+                user_focus() != Focus::Not,
                 None,
                 user_helper,
             ))
@@ -143,8 +216,10 @@ impl Component for LoginPage {
                     } else {
                         InputMode::Shown
                     })
+                    .a11y_id(password_a11y)
                     .leading(icon(lucide::lock(), c.on_surface_muted))
                     .on_submit(move |_| submit()),
+                password_focus() != Focus::Not,
                 Some(eye_toggle),
                 None,
             ))
@@ -153,6 +228,7 @@ impl Component for LoginPage {
                 Button::new()
                     .filled()
                     .expanded()
+                    .width(Size::fill())
                     .enabled(!is_logging_in)
                     .on_press(move |_| submit())
                     .ripple()
@@ -178,13 +254,19 @@ impl Component for LoginPage {
                     ),
             );
 
-        let is_wide = *width.read() >= WIDE_MIN_WIDTH;
+        let (width, height) = *size.read();
+        let is_wide = width >= AUTH_WIDE_MIN_WIDTH;
+        let is_short = height > 0. && height < AUTH_SHORT_MAX_HEIGHT;
         let body = if is_wide {
             rect()
                 .horizontal()
                 .expanded()
                 .content(Content::Flex)
-                .child(brand_panel(c))
+                .child(
+                    brand_hero(c, is_short, 0.)
+                        .width(Size::flex(1.))
+                        .height(Size::fill()),
+                )
                 .child(
                     rect()
                         .vertical()
@@ -192,14 +274,28 @@ impl Component for LoginPage {
                         .height(Size::fill())
                         .content(Content::Flex)
                         .child(top_bar(c))
-                        .child(
+                        // Centered; scrolls from the top when too short for it.
+                        .child(if is_short {
+                            ScrollView::new()
+                                .width(Size::fill())
+                                .height(Size::flex(1.))
+                                .child(
+                                    rect()
+                                        .width(Size::fill())
+                                        .cross_align(Alignment::Center)
+                                        .padding(Gaps::new(8., 48., 24., 48.))
+                                        .child(form),
+                                )
+                                .into_element()
+                        } else {
                             rect()
                                 .width(Size::fill())
                                 .height(Size::flex(1.))
                                 .center()
                                 .padding(Gaps::new_symmetric(24., 48.))
-                                .child(form),
-                        ),
+                                .child(form)
+                                .into_element()
+                        }),
                 )
                 .into_element()
         } else {
@@ -219,7 +315,7 @@ impl Component for LoginPage {
                                 .cross_align(Alignment::Center)
                                 .padding(Gaps::new(8., 24., 32., 24.))
                                 .spacing(32.)
-                                .child(brand_mark(c))
+                                .child(brand_mark(is_short))
                                 .child(form),
                         ),
                 )
@@ -230,9 +326,9 @@ impl Component for LoginPage {
             .expanded()
             .background(c.surface)
             .on_sized(move |e: Event<SizedEventData>| {
-                let w = e.area.width();
-                if (*width.peek() - w).abs() > 0.5 {
-                    width.set(w);
+                let area = (e.area.width(), e.area.height());
+                if *size.peek() != area {
+                    size.set(area);
                 }
             })
             .child(body)
@@ -253,68 +349,13 @@ fn top_bar(c: AppColors) -> Rect {
         }))
 }
 
-/// Wide layout: full-height brand pane.
-fn brand_panel(c: AppColors) -> Rect {
+/// Narrow layout: the logo, centered above the form.
+fn brand_mark(short: bool) -> Rect {
     rect()
-        .vertical()
-        .width(Size::flex(1.))
-        .height(Size::fill())
-        .center()
-        .spacing(12.)
-        .background(c.splash_bg)
-        .child(
-            rect()
-                .width(Size::px(88.))
-                .height(Size::px(88.))
-                .corner_radius(44.)
-                .center()
-                .background((255, 255, 255, 30u8))
-                .child(
-                    SvgViewer::new(lucide::message_circle())
-                        .width(Size::px(44.))
-                        .height(Size::px(44.))
-                        .color(c.on_primary),
-                ),
-        )
-        .child(
-            label()
-                .text("PIAF")
-                .font_size(48.)
-                .font_weight(FontWeight::BOLD)
-                .color(c.on_primary),
-        )
-        .child(
-            label()
-                .text("A Matrix client")
-                .font_size(16.)
-                .color((255, 255, 255, 190u8)),
-        )
-}
-
-/// Narrow layout: small logo above the form.
-fn brand_mark(c: AppColors) -> Rect {
-    rect()
-        .horizontal()
         .width(Size::fill())
         .max_width(Size::px(FORM_MAX_WIDTH))
-        .spacing(10.)
         .cross_align(Alignment::Center)
-        .child(
-            rect()
-                .width(Size::px(40.))
-                .height(Size::px(40.))
-                .corner_radius(20.)
-                .center()
-                .background(c.primary)
-                .child(icon(lucide::message_circle(), c.on_primary)),
-        )
-        .child(
-            label()
-                .text("PIAF")
-                .font_size(20.)
-                .font_weight(FontWeight::BOLD)
-                .color(c.primary),
-        )
+        .child(brand_logo(if short { 64. } else { 96. }))
 }
 
 fn error_box(c: AppColors, message: String) -> Rect {

@@ -343,7 +343,10 @@ fn store_config(session: &ClientSession) -> SqliteStoreConfig {
 /// with `store_key`. Crash-safe: the new key is saved before any store changes,
 /// each store is skipped once it opens with the key, and the passphrase is only
 /// dropped after all of them did.
-async fn migrate_to_store_key(session_file: &Path, session: &mut FullSession) -> anyhow::Result<()> {
+async fn migrate_to_store_key(
+    session_file: &Path,
+    session: &mut FullSession,
+) -> anyhow::Result<()> {
     let client_session = &mut session.client_session;
     if client_session.passphrase.is_empty() {
         return Ok(());
@@ -403,7 +406,9 @@ fn rekey_store(path: &Path, passphrase: &str, key: &StoreKey) -> anyhow::Result<
     }
     let conn = rusqlite::Connection::open(path)?;
     let encrypted: Option<Vec<u8>> = conn
-        .query_row("SELECT value FROM kv WHERE key = 'cipher'", [], |row| row.get(0))
+        .query_row("SELECT value FROM kv WHERE key = 'cipher'", [], |row| {
+            row.get(0)
+        })
         .optional()?;
     // No cipher yet: the store creates one with the key.
     let Some(encrypted) = encrypted else {
@@ -491,7 +496,13 @@ async fn new_client(
     match client_build {
         Ok(client) => {
             let homeserver = client.homeserver().to_string();
-            return Ok((client, ClientSession { homeserver, ..session }));
+            return Ok((
+                client,
+                ClientSession {
+                    homeserver,
+                    ..session
+                },
+            ));
         }
         Err(error) => match &error {
             matrix_sdk::ClientBuildError::AutoDiscovery(_)
@@ -548,16 +559,32 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let passphrase = "old passphrase";
         let key: StoreKey = [7; 32];
-        drop(SqliteCryptoStore::open(dir.path(), Some(passphrase)).await.unwrap());
+        drop(
+            SqliteCryptoStore::open(dir.path(), Some(passphrase))
+                .await
+                .unwrap(),
+        );
 
         let db = dir.path().join("matrix-sdk-crypto.sqlite3");
         rekey_store(&db, passphrase, &key).unwrap();
         // Idempotent: a second run (after a crash) leaves it keyed.
         rekey_store(&db, passphrase, &key).unwrap();
 
-        assert!(SqliteCryptoStore::open_with_key(dir.path(), Some(&key)).await.is_ok());
-        assert!(SqliteCryptoStore::open_with_key(dir.path(), Some(&[8; 32])).await.is_err());
-        assert!(SqliteCryptoStore::open(dir.path(), Some(passphrase)).await.is_err());
+        assert!(
+            SqliteCryptoStore::open_with_key(dir.path(), Some(&key))
+                .await
+                .is_ok()
+        );
+        assert!(
+            SqliteCryptoStore::open_with_key(dir.path(), Some(&[8; 32]))
+                .await
+                .is_err()
+        );
+        assert!(
+            SqliteCryptoStore::open(dir.path(), Some(passphrase))
+                .await
+                .is_err()
+        );
     }
 
     #[test]
@@ -567,4 +594,16 @@ mod tests {
         rekey_store(&missing, "passphrase", &[0; 32]).unwrap();
         assert!(!missing.exists());
     }
+}
+
+/// Whether `server` (a server name, or a URL) leads to a Matrix homeserver:
+/// the discovery a login does, without logging in.
+pub async fn homeserver_exists(server: &str) -> bool {
+    let build = Client::builder()
+        .server_name_or_homeserver_url(server)
+        .build();
+    matches!(
+        tokio::time::timeout(std::time::Duration::from_secs(10), build).await,
+        Ok(Ok(_))
+    )
 }
