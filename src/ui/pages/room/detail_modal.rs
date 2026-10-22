@@ -1,0 +1,292 @@
+use std::sync::Arc;
+
+use freya::prelude::*;
+
+use crate::utils::avatars::AvatarSource;
+use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
+
+use crate::ui::components::{Avatar, bottom_sheet};
+use crate::utils::queries::use_member_name;
+use crate::utils::{format_timestamp, id_color, use_app_colors};
+
+use super::{Reaction, ReactionSender};
+
+pub(super) struct DetailModalOverlay {
+    pub modal: State<Option<Arc<TimelineItem>>>,
+    pub room_id: String,
+}
+
+impl PartialEq for DetailModalOverlay {
+    fn eq(&self, other: &Self) -> bool {
+        self.room_id == other.room_id && self.modal == other.modal
+    }
+}
+
+impl Component for DetailModalOverlay {
+    fn render(&self) -> impl IntoElement {
+        let c = use_app_colors();
+        let modal_item = self.modal.read().clone();
+        let room_id = self.room_id.clone();
+        let mut modal = self.modal;
+
+        // Android: a bottom sheet, the mobile way to show details.
+        if cfg!(target_os = "android") {
+            let Some(item) = modal_item else {
+                return rect().into_element();
+            };
+            return bottom_sheet(c, move || modal.set(None))
+                .title("Message details")
+                .child(
+                    ScrollView::new()
+                        .width(Size::fill())
+                        .max_height(Size::window_percent(60.))
+                        .height(Size::auto())
+                        .child(
+                            rect()
+                                .vertical()
+                                .width(Size::fill())
+                                .padding(Gaps::new(0., 24., 0., 24.))
+                                .spacing(16.)
+                                .child(seen_by_section(&item, &room_id, c))
+                                .child(reactions_section(&item, &room_id, c)),
+                        ),
+                )
+                .into_element();
+        }
+
+        let mut popup = Popup::new().on_close_request(move |_| *modal.write() = None);
+
+        if let Some(item) = modal_item {
+            popup = popup
+                // ── Header ────────────────────────────────────────────────────
+                .child(
+                    rect()
+                        .horizontal()
+                        .width(Size::fill())
+                        .cross_align(Alignment::Center)
+                        .child(
+                            label()
+                                .text("Message details")
+                                .font_size(16.)
+                                .font_weight(FontWeight::BOLD)
+                                .color(c.on_surface),
+                        ),
+                )
+                // ── Scrollable content ────────────────────────────────────────
+                .child(
+                    ScrollView::new()
+                        .width(Size::fill())
+                        .height(Size::px(400.))
+                        .child(
+                            rect()
+                                .vertical()
+                                .width(Size::fill())
+                                .spacing(16.)
+                                .child(seen_by_section(&item, &room_id, c))
+                                .child(reactions_section(&item, &room_id, c)),
+                        ),
+                );
+        }
+
+        popup.into_element()
+    }
+}
+
+fn section_title(text: &str, c: crate::utils::const_values::AppColors) -> Element {
+    label()
+        .text(text.to_string())
+        .font_size(13.)
+        .font_weight(FontWeight::BOLD)
+        .color(c.primary)
+        .into()
+}
+
+fn seen_by_section(
+    item: &Arc<TimelineItem>,
+    room_id: &str,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
+    let mut col = rect()
+        .vertical()
+        .width(Size::fill())
+        .spacing(4.)
+        .child(section_title("Seen by", c));
+
+    let receipts: Vec<(String, String, String)> = item
+        .as_event()
+        .map(|e| {
+            e.read_receipts()
+                .iter()
+                .map(|(uid, receipt)| {
+                    let ts = receipt.ts.map(format_timestamp).unwrap_or_default();
+                    let display = uid.localpart().to_string();
+                    (uid.to_string(), display, ts)
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+
+    if receipts.is_empty() {
+        col = col.child(
+            label()
+                .text("No read receipts yet")
+                .font_size(13.)
+                .color(c.on_surface_muted),
+        );
+    } else {
+        for (uid, display_fallback, timestamp) in &receipts {
+            col = col.child(SeenByRow {
+                room_id: room_id.to_string(),
+                uid: uid.clone(),
+                display_fallback: display_fallback.clone(),
+                timestamp: timestamp.clone(),
+            });
+        }
+    }
+    col.into()
+}
+
+#[derive(PartialEq, Clone)]
+struct SeenByRow {
+    room_id: String,
+    uid: String,
+    display_fallback: String,
+    timestamp: String,
+}
+
+impl Component for SeenByRow {
+    fn render(&self) -> impl IntoElement {
+        let c = use_app_colors();
+        let uid = self.uid.clone();
+        let room_id = self.room_id.clone();
+        let display_fallback = self.display_fallback.clone();
+        let timestamp = self.timestamp.clone();
+
+        let name = use_member_name(&room_id, &uid).unwrap_or_else(|| display_fallback.clone());
+
+        rect()
+            .horizontal()
+            .width(Size::fill())
+            .cross_align(Alignment::Center)
+            .padding(Gaps::new(6., 0., 6., 0.))
+            .spacing(10.)
+            .child(Avatar {
+                size: 28.,
+                source: Some(AvatarSource::member(&self.room_id, &uid)),
+                name: name.clone(),
+                color: id_color(&uid),
+            })
+            .child(
+                rect()
+                    .vertical()
+                    .spacing(1.)
+                    .child(label().text(name).font_size(13.).color(c.on_surface))
+                    .child(
+                        label()
+                            .text(timestamp)
+                            .font_size(11.)
+                            .color(c.on_surface_muted),
+                    ),
+            )
+    }
+}
+
+fn reactions_section(
+    item: &Arc<TimelineItem>,
+    room_id: &str,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
+    let reactions = match item.as_event().map(|e| e.content()) {
+        Some(TimelineItemContent::MsgLike(m)) => {
+            super::reactions(&m.reactions, crate::utils::matrix::my_user_id().as_deref())
+        }
+        _ => vec![],
+    };
+
+    if reactions.is_empty() {
+        return rect().into();
+    }
+
+    let mut col = rect()
+        .vertical()
+        .width(Size::fill())
+        .spacing(12.)
+        .child(section_title("Reactions", c));
+
+    for reaction in &reactions {
+        col = col.child(reaction_group(reaction, room_id, c));
+    }
+    col.into()
+}
+
+fn reaction_group(
+    reaction: &Reaction,
+    room_id: &str,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
+    let mut group = rect().vertical().width(Size::fill()).spacing(4.).child(
+        label()
+            .text(format!(
+                "{} · {} {}",
+                reaction.key,
+                reaction.count,
+                if reaction.count == 1 {
+                    "person"
+                } else {
+                    "people"
+                }
+            ))
+            .font_size(13.)
+            .color(c.on_surface),
+    );
+
+    for sender in &reaction.senders {
+        group = group.child(ReactionSenderRow {
+            room_id: room_id.to_string(),
+            sender: sender.clone(),
+        });
+    }
+    group.into()
+}
+
+#[derive(PartialEq, Clone)]
+struct ReactionSenderRow {
+    room_id: String,
+    sender: ReactionSender,
+}
+
+impl Component for ReactionSenderRow {
+    fn render(&self) -> impl IntoElement {
+        let c = use_app_colors();
+        let uid = self.sender.user_id.clone();
+        let timestamp = self.sender.timestamp.clone();
+        let display_fallback = self.sender.display.clone();
+
+        let name = use_member_name(&self.room_id, &uid).unwrap_or_else(|| display_fallback.clone());
+
+        rect()
+            .horizontal()
+            .width(Size::fill())
+            .cross_align(Alignment::Center)
+            .padding(Gaps::new(4., 8., 4., 0.))
+            .spacing(8.)
+            .child(Avatar {
+                size: 24.,
+                source: Some(AvatarSource::member(&self.room_id, &uid)),
+                name: name.clone(),
+                color: id_color(&uid),
+            })
+            .child(
+                rect()
+                    .vertical()
+                    .spacing(1.)
+                    .child(label().text(name).font_size(12.).color(c.on_surface))
+                    .child(
+                        label()
+                            .text(timestamp)
+                            .font_size(11.)
+                            .color(c.on_surface_muted),
+                    ),
+            )
+    }
+}

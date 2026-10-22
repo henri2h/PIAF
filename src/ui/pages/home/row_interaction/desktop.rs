@@ -1,0 +1,127 @@
+use freya::prelude::*;
+use freya_material_design::prelude::Ripple;
+
+use crate::ui::components::IconButton;
+use crate::ui::pages::home::room_list_item::ROOM_ROW_HEIGHT;
+
+use crate::utils::const_values::AppColors;
+
+/// Desktop row: hover highlight, ripple, and recontact/archive buttons on hover.
+#[derive(Clone, Copy)]
+pub struct RowInteraction {
+    hovered: State<bool>,
+    /// Opacity of the hover buttons: shown at once while hovered (a fade
+    /// flickers when the pointer sweeps across rows).
+    actions_opacity: f32,
+}
+
+pub fn use_row_interaction() -> RowInteraction {
+    let hovered = use_state(|| false);
+    RowInteraction {
+        hovered,
+        actions_opacity: if *hovered.read() { 1. } else { 0. },
+    }
+}
+
+impl RowInteraction {
+    pub fn allows_press(&self) -> bool {
+        true
+    }
+
+    pub fn is_highlighted(&self) -> bool {
+        *self.hovered.read()
+    }
+
+    /// Opacity of the timestamp, which the hover buttons replace (so they
+    /// need no background of their own).
+    pub fn meta_opacity(&self) -> f32 {
+        1. - self.actions_opacity
+    }
+
+    pub fn feedback(&self, inner: Rect) -> Element {
+        Ripple::new()
+            .width(Size::fill())
+            .height(Size::fill())
+            .child(inner)
+            .into()
+    }
+
+    pub fn attach(
+        self,
+        outer: Rect,
+        room_id: String,
+        c: AppColors,
+        highlighted: Element,
+        on_menu: super::OnMenu,
+    ) -> Rect {
+        let mut hovered = self.hovered;
+        let opacity = self.actions_opacity;
+        let hover_actions =
+            (opacity > 0.).then(|| hover_action_buttons(c, &room_id).opacity(opacity));
+        outer
+            .on_secondary_down(move |_| on_menu(true))
+            .on_pointer_over(move |_| {
+                if !*hovered.peek() {
+                    hovered.set(true);
+                }
+            })
+            .on_pointer_out(move |_| {
+                if *hovered.peek() {
+                    hovered.set(false);
+                }
+            })
+            .child(highlighted)
+            .maybe_child(hover_actions)
+    }
+}
+
+fn hover_action_buttons(c: AppColors, room_id: &str) -> Rect {
+    let room_id_recontact = room_id.to_string();
+    let room_id_archive = room_id.to_string();
+
+    // An explicit height: `fill` on an absolute child resolves to 0 and the
+    // buttons would center on the row's top edge.
+    rect()
+        .position(Position::new_absolute().top(0.).right(8.))
+        // Above the row's content (the ripple raises it).
+        .layer(Layer::Relative(10))
+        .height(Size::px(ROOM_ROW_HEIGHT - 4.))
+        .padding(Gaps::new(0., 6., 0., 12.))
+        .horizontal()
+        .spacing(6.)
+        .cross_align(Alignment::Center)
+        .child(action_button(
+            c,
+            "Recontact",
+            freya_icons::lucide::user_check(),
+            move || {
+                let room_id = room_id_recontact.clone();
+                tokio::spawn(async move {
+                    crate::utils::room_mailbox::toggle_recontact(&room_id).await;
+                });
+            },
+        ))
+        .child(action_button(
+            c,
+            "Archive",
+            freya_icons::lucide::archive(),
+            move || {
+                let room_id = room_id_archive.clone();
+                tokio::spawn(async move {
+                    crate::utils::room_mailbox::archive_room(&room_id).await;
+                });
+            },
+        ))
+}
+
+fn action_button(
+    c: AppColors,
+    tooltip: &'static str,
+    icon: bytes::Bytes,
+    mut on_press: impl FnMut() + 'static,
+) -> Element {
+    IconButton::new(icon, c.on_surface_variant, move |_| on_press())
+        .tooltip(tooltip)
+        .background(c.surface_container_high)
+        .into_element()
+}
