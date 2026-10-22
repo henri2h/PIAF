@@ -23,6 +23,11 @@ android {
     }
 
     buildTypes {
+        // `buildRustLibrary` builds only the device ABI for debug: leave out
+        // other ABIs' libraries left in jniLibs by a release build.
+        debug {
+            ndk { abiFilters += "arm64-v8a" }
+        }
         release {
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")

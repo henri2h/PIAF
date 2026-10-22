@@ -136,7 +136,8 @@ impl Component for RoomView {
             ..Default::default()
         });
         let ui = use_provide_room_ui_ctx(scroll_controller);
-        use_app_bar_tint(scroll_controller);
+        // Tinted while messages are scrolled under the bar.
+        crate::ui::components::use_app_bar_tint(scroll_controller);
 
         let body = if ui.image_viewer.read().is_some() {
             let handle = timeline.handle.clone();
@@ -240,18 +241,4 @@ fn typing_label(users: &[String]) -> Option<String> {
         [a, b] => Some(format!("{a} and {b} are typing…")),
         _ => Some("Several people are typing…".to_string()),
     }
-}
-
-/// Tints the room's app bar while messages are scrolled under it, i.e. the
-/// timeline is not at its very top.
-fn use_app_bar_tint(scroll: ScrollController) {
-    let mut tint = use_state(|| false);
-    use_provide_context(|| crate::ui::components::AppBarTint(tint));
-    use_side_effect(move || {
-        let (_, y): (i32, i32) = scroll.into();
-        let scrolled_under = y < -1;
-        if *tint.peek() != scrolled_under {
-            tint.set(scrolled_under);
-        }
-    });
 }

@@ -22,7 +22,7 @@ mod search_input;
 mod swipe;
 mod user_popup;
 
-pub use app_bar::{AppBarTint, TopAppBar, TopAppBarAction, TopAppBarTitle};
+pub use app_bar::{AppBarTint, TopAppBar, TopAppBarAction, TopAppBarTitle, use_app_bar_tint};
 pub use avatar::{Avatar, StackedAvatar};
 pub use bottom_sheet::bottom_sheet;
 pub use brand::{AuthSize, TAGLINE, brand_hero, brand_logo, use_auth_size};

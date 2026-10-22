@@ -16,7 +16,7 @@ cargo test <name>           # Run tests whose name contains <name>
 
 `Cargo.lock` is edited by hand in one place: `bindgen` (Freya's skia build) uses `prettyplease 0.3` while `bon-macros` (matrix-sdk's search, via tantivy) keeps `0.2`. Both are allowed, but cargo would unify them onto 0.2, which doesn't compile with the `syn 3` bindgen then gets. After a `cargo update` that touches them, re-point bindgen's `prettyplease` to `0.3.x`.
 
-The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo.toml [profile.dev.package."*"]`), so incremental rebuilds are fast.
+The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo.toml [profile.dev.package."*"]`, line-table debug info only), so incremental rebuilds are fast. Android debug APKs (`just build`) use the `android-dev` profile: dependencies optimised, the piaf crate at `opt-level = 0` (an edit rebuilds in ~5s), arm64 only. `just build` also caps `target/` at 30 GB with `cargo sweep` (`cargo install cargo-sweep`); `just -f AndroidApp/Justfile sweep` also drops artifacts of uninstalled toolchains. Cargo never deletes build files of configurations it stops using (~1 GB per piaf configuration).
 
 ## Architecture
 

@@ -94,6 +94,19 @@ impl PartialEq for TopAppBarAction {
 #[derive(Clone, Copy)]
 pub struct AppBarTint(pub State<bool>);
 
+/// Provides [`AppBarTint`]: on while `scroll` is away from its top.
+pub fn use_app_bar_tint(scroll: ScrollController) {
+    let mut tint = use_state(|| false);
+    use_provide_context(|| AppBarTint(tint));
+    use_side_effect(move || {
+        let (_, y): (i32, i32) = scroll.into();
+        let scrolled_under = y < -1;
+        if *tint.peek() != scrolled_under {
+            tint.set(scrolled_under);
+        }
+    });
+}
+
 pub struct TopAppBar {
     pub title: TopAppBarTitle,
     /// If `Some`, a leading back-arrow button is shown.

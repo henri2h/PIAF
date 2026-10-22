@@ -32,11 +32,14 @@ pub(super) fn notif_icon(mode: Option<Mode>) -> bytes::Bytes {
     }
 }
 
-pub(super) fn notif_label(mode: Option<Mode>) -> &'static str {
-    OPTIONS
-        .iter()
-        .find(|(m, ..)| *m == mode)
-        .map_or("Default", |(_, name, _)| name)
+/// Caption of the notifications button under the room header.
+pub(super) fn notif_short_label(mode: Option<Mode>) -> &'static str {
+    match mode {
+        None => "Default",
+        Some(Mode::AllMessages) => "All",
+        Some(Mode::MentionsAndKeywordsOnly) => "Mentions",
+        Some(Mode::Mute) => "Muted",
+    }
 }
 
 /// The room's own notification mode; `None` when it follows the default.
