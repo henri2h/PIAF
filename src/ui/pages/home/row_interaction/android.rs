@@ -19,6 +19,9 @@ const TAP_TIMEOUT: Duration = Duration::from_millis(90);
 const TAP_FLASH: Duration = Duration::from_millis(160);
 const LONG_PRESS_DELAY: Duration = Duration::from_millis(350);
 const LONG_PRESS_HIGHLIGHT: Duration = Duration::from_millis(500);
+/// Layers grow with nesting depth: the sliding row is lifted above the
+/// panels' icons (nested deeper than its background).
+const ROW_LAYER: i16 = 2;
 /// Fade of the colour flash confirming a committed swipe.
 const COMMIT_FLASH_MS: u64 = 450;
 
@@ -168,10 +171,9 @@ impl RowInteraction {
         let icon_size = if past_commit { 26. } else { 22. };
 
         // Absolute so the row draws over the panels instead of sharing their
-        // height. Layers grow with nesting depth, so the panels' icons would
-        // otherwise paint over the row's background: push them far below.
+        // height. No negative layer for them: the page's background would
+        // paint over it.
         let action_panels = rect()
-            .layer(-100)
             .position(
                 Position::new_absolute()
                     .top(0.)
@@ -215,6 +217,7 @@ impl RowInteraction {
         let shifted = rect()
             .width(Size::fill())
             .height(Size::fill())
+            .layer(ROW_LAYER)
             .offset_x(offset)
             .child(highlighted);
 
@@ -303,6 +306,7 @@ impl RowInteraction {
                             )
                             .width(Size::fill())
                             .height(Size::fill())
+                            .layer(ROW_LAYER + 2)
                             .background(if recontact {
                                 c.primary
                             } else {

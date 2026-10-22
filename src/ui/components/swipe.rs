@@ -3,8 +3,10 @@ use freya::prelude::*;
 
 use crate::utils::haptics::{self, Haptic};
 
-/// Horizontal travel before a touch counts as a swipe.
-const SWIPE_SLOP: f64 = 12.0;
+/// Travel before a touch picks its direction. The scroll view decides with
+/// the same rule (`claim_drag`: 8px, vertical when `|dy| >= |dx|`), so a drag
+/// is always either the list's or the row's, never neither.
+const SWIPE_SLOP: f64 = 8.0;
 const SNAP_BACK_MS: u64 = 420;
 
 /// Underdamped spring from 0 to 1: a slight overshoot past rest, then settles.
@@ -95,13 +97,17 @@ impl Swipe {
 
         if !*swiping.peek() {
             let allowed = (dx > 0. && bounds.max_right > 0.) || (dx < 0. && bounds.max_left > 0.);
-            if allowed && dx.abs() > SWIPE_SLOP && dx.abs() > dy.abs() * 1.5 {
+            if allowed && dx.abs().max(dy.abs()) > SWIPE_SLOP && dx.abs() > dy.abs() {
                 swiping.set(true);
+                // Follows the finger from here, without jumping by the slop.
+                let mut start = self.start;
+                start.set(Some((location.x, sy)));
             } else {
                 return dx != 0. || dy != 0.;
             }
         }
 
+        let dx = location.x - self.start.peek().map_or(location.x, |(x, _)| x);
         let value = dx.clamp(-bounds.max_left, bounds.max_right) as f32;
         offset.set(value);
         let past = value.abs() > bounds.commit;
@@ -144,5 +150,75 @@ impl Swipe {
         offset.set(0.);
         armed.set(false);
         start.set(None);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cell::Cell;
+
+    use freya::prelude::*;
+    use freya_testing::prelude::launch_test;
+
+    use super::{SwipeBounds, use_swipe};
+
+    const BOUNDS: SwipeBounds = SwipeBounds {
+        max_left: 120.,
+        max_right: 120.,
+        commit: 88.,
+    };
+
+    thread_local! {
+        static OFFSET: Cell<f32> = const { Cell::new(0.) };
+        static COMMITTED: Cell<Option<f32>> = const { Cell::new(None) };
+    }
+
+    fn app() -> impl IntoElement {
+        let swipe = use_swipe();
+        OFFSET.with(|o| o.set(swipe.offset()));
+        rect()
+            .width(Size::px(300.))
+            .height(Size::px(60.))
+            .on_touch_start(move |e: Event<TouchEventData>| swipe.start(e.global_location))
+            .on_touch_move(move |e: Event<TouchEventData>| {
+                swipe.moved(e.global_location, BOUNDS);
+            })
+            .on_touch_end(move |_: Event<TouchEventData>| {
+                COMMITTED.with(|c| c.set(swipe.end(BOUNDS)))
+            })
+    }
+
+    /// A drag leaning horizontal past the scroll view's slop is the row's,
+    /// even at a steep angle, and the row starts from where it was.
+    #[test]
+    fn diagonal_drag_swipes_without_jumping() {
+        let mut test = launch_test(app);
+        test.sync_and_update();
+        test.press_touch((100., 30.));
+        test.move_touch((110., 37.));
+        test.sync_and_update();
+        assert_eq!(OFFSET.with(Cell::get), 0.);
+        test.move_touch((140., 45.));
+        test.sync_and_update();
+        assert_eq!(OFFSET.with(Cell::get), 30.);
+        test.move_touch((230., 50.));
+        test.release_touch((230., 50.));
+        test.sync_and_update();
+        assert_eq!(COMMITTED.with(Cell::get), Some(120.));
+    }
+
+    /// A drag leaning vertical is the list's scroll, not a swipe.
+    #[test]
+    fn vertical_drag_is_no_swipe() {
+        let mut test = launch_test(app);
+        test.sync_and_update();
+        test.press_touch((100., 10.));
+        test.move_touch((108., 20.));
+        test.move_touch((200., 30.));
+        test.sync_and_update();
+        assert_eq!(OFFSET.with(Cell::get), 0.);
+        test.release_touch((200., 30.));
+        test.sync_and_update();
+        assert_eq!(COMMITTED.with(Cell::get), None);
     }
 }
