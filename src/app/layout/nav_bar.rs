@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use freya::prelude::*;
 use freya_icons::lucide;
 use freya_router::prelude::use_route;
@@ -8,7 +10,7 @@ use crate::ui::components::HoverableExt;
 use crate::ui::pages::home::room_list_model::unread_conversations;
 use crate::utils::const_values::AppColors;
 use crate::utils::insets::use_insets;
-use crate::utils::{room_list, use_app_colors, use_watch, use_watch_tick};
+use crate::utils::{room_list, spaces, use_app_colors, use_watch, use_watch_tick};
 
 /// Android bottom navigation (Material 3): tabs on their own surface, the
 /// selected one marked by a tonal pill behind its icon. Settings is reached
@@ -28,15 +30,32 @@ impl Component for NavBar {
                 .get()
                 .expect("not initialized")
                 .borrow();
-            unread_conversations(&snapshot.read().rooms, &mailbox)
+            unread_conversations(&snapshot.read().rooms, &mailbox, None)
         };
+        let spaces = use_watch(spaces::receiver());
+        // Unread conversations inside any space.
+        let space_unread = {
+            let rooms: HashSet<String> = spaces
+                .read()
+                .iter()
+                .flat_map(|s| s.rooms.iter().cloned())
+                .collect();
+            let mailbox = crate::ROOM_MAILBOX_RX
+                .get()
+                .expect("not initialized")
+                .borrow();
+            unread_conversations(&snapshot.read().rooms, &mailbox, Some(&rooms))
+        };
+        // Sub-pages of a tab keep it selected.
+        let in_space = matches!(current, Route::SpacePage { .. });
         let tab = |route: Route,
                    label: &'static str,
                    icon: fn() -> bytes::Bytes,
                    sub: &[Route],
                    badge: usize| {
             let on_root = current == route;
-            let active = on_root || sub.contains(&current);
+            let active =
+                on_root || sub.contains(&current) || (route == Route::SpacesPage && in_space);
             nav_tab(c, route, label, icon(), active, on_root, badge)
         };
 
@@ -53,6 +72,13 @@ impl Component for NavBar {
                 lucide::message_circle,
                 &[],
                 unread,
+            ))
+            .child(tab(
+                Route::SpacesPage,
+                "Spaces",
+                lucide::layers,
+                &[],
+                space_unread,
             ))
             .child(tab(
                 Route::MorePage,

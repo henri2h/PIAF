@@ -11,6 +11,7 @@ mod row_interaction;
 pub mod search;
 mod search_panel;
 mod search_tile;
+mod space_rail;
 
 use std::sync::atomic::Ordering;
 
@@ -19,15 +20,18 @@ use collapsing_filter_bar::CollapsingFilterBar;
 use freya::prelude::*;
 
 use crate::ui::components::{HoverableExt, use_fade};
+use filter_bar::filter_bar_height;
 use room_list::FilterBarScroll;
 pub(crate) use room_list::RoomList;
 pub(crate) use room_list_model::{Mailbox, RoomFilter};
 pub use search::SearchFilter;
 pub use search_panel::SearchResults;
+use space_rail::SpaceRail;
 
 use crate::ACTIVE_ROOM_RX;
 use crate::logging::RenderTimer;
 use crate::utils::const_values::AppColors;
+use crate::utils::spaces;
 use crate::utils::{use_app_colors, use_watch, use_watch_tick};
 
 // ---------------------------------------------------------------------------
@@ -78,12 +82,28 @@ impl Component for HomePage {
         // The FAB stays put while scrolling; hidden only while searching.
         let fab_shown = use_fade(!search_active, 200);
         let session_expired = crate::SESSION_EXPIRED.load(Ordering::Relaxed);
+        // Desktop: the space picked in the rail narrows the list (Android
+        // has a Spaces tab instead).
+        let spaces = use_watch(spaces::receiver());
+        let selection = use_watch(spaces::selection());
+        let show_rail = !cfg!(target_os = "android") && !spaces.read().is_empty();
+        let (space, sub) = if show_rail {
+            let selection = selection.read();
+            (
+                spaces::selected(&spaces.read(), &selection).cloned(),
+                selection.sub.clone(),
+            )
+        } else {
+            (None, None)
+        };
+        let scope = space.as_ref().map(|s| s.scope(sub.as_deref()));
+        let bar_height = filter_bar_height(space.as_ref());
 
-        rect()
-            .expanded()
+        let column = rect()
+            .width(Size::flex(1.))
+            .height(Size::fill())
             .vertical()
             .content(Content::Flex)
-            .background(c.surface)
             .child(HomeAppBar {
                 search,
                 search_open,
@@ -114,17 +134,35 @@ impl Component for HomePage {
                             hidden: chips_hidden,
                             visible: chips_visible,
                             scrolled: list_scrolled,
+                            height: bar_height,
                         }),
+                        scope,
                     })
                     .child(CollapsingFilterBar {
                         hidden: chips_hidden,
                         tinted: list_scrolled,
                         mailbox,
                         filter,
+                        space,
+                        sub,
                     })
                     .into_element()
             })
-            .maybe_child((fab_shown > 0.).then(|| new_chat_fab(c, fab_shown)))
+            .maybe_child((fab_shown > 0.).then(|| new_chat_fab(c, fab_shown)));
+
+        rect()
+            .expanded()
+            .horizontal()
+            .content(Content::Flex)
+            .background(c.surface)
+            .maybe_child(show_rail.then(|| SpaceRail))
+            .maybe_child(show_rail.then(|| {
+                rect()
+                    .width(Size::px(1.))
+                    .height(Size::fill())
+                    .background(c.outline_variant_light)
+            }))
+            .child(column)
     }
 }
 

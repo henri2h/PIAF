@@ -55,6 +55,7 @@ pub fn start(client: Client) {
     };
     tokio::spawn(watch_state(service.clone()));
     tokio::spawn(watch_room_info(client.clone()));
+    crate::utils::spaces::start(client.clone());
     tokio::spawn(watch_room_updates(client));
     tokio::spawn(async move { service.start().await });
 }

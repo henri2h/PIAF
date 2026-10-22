@@ -1,6 +1,6 @@
 //! Room list filters (UI side). The summaries themselves live in `utils::room_list`.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::utils::room_list::RoomSummary;
 use crate::utils::room_mailbox::{RoomMailboxState, is_archived_hidden};
@@ -94,27 +94,37 @@ impl RoomFilter {
     }
 }
 
-/// Rooms in `view` passing `filter`; order preserved.
+/// Whether `room` is in `scope` (a space's rooms; `None`: every room).
+fn in_scope(room: &RoomSummary, scope: Option<&HashSet<String>>) -> bool {
+    scope.is_none_or(|rooms| rooms.contains(&room.room_id))
+}
+
+/// Rooms in `view` and `scope` passing `filter`; order preserved.
 pub fn visible_rooms(
     rooms: &[RoomSummary],
     view: Mailbox,
     filter: &RoomFilter,
     mailbox: &HashMap<String, RoomMailboxState>,
+    scope: Option<&HashSet<String>>,
 ) -> Vec<RoomSummary> {
     rooms
         .iter()
+        .filter(|r| in_scope(r, scope))
         .filter(|r| filter.matches(r) && view.matches(r, mailbox.get(&r.room_id)))
         .cloned()
         .collect()
 }
 
-/// Conversations counted by the Chats tab badge: unread, not muted, in the inbox.
+/// Conversations counted by the tab badges: unread, not muted, in the inbox
+/// (and in `scope` when set).
 pub fn unread_conversations(
     rooms: &[RoomSummary],
     mailbox: &HashMap<String, RoomMailboxState>,
+    scope: Option<&HashSet<String>>,
 ) -> usize {
     rooms
         .iter()
+        .filter(|r| in_scope(r, scope))
         .filter(|r| r.is_unread() && !r.is_muted)
         .filter(|r| Mailbox::Inbox.matches(r, mailbox.get(&r.room_id)))
         .count()
@@ -230,7 +240,13 @@ mod tests {
     async fn invites_show_in_all() {
         let (server, client) = server().await;
         let invite = invited(&server, &client, room_id!("!i:x")).await;
-        let visible = visible_rooms(&[invite], Mailbox::Inbox, &RoomFilter::All, &HashMap::new());
+        let visible = visible_rooms(
+            &[invite],
+            Mailbox::Inbox,
+            &RoomFilter::All,
+            &HashMap::new(),
+            None,
+        );
         assert_eq!(visible.len(), 1);
     }
 
@@ -310,7 +326,7 @@ mod tests {
         let invite = invited(&server, &client, room_id!("!i:x")).await;
         let plain = joined(&server, &client, room_id!("!p:x"), vec![]).await;
         let rooms = [marked, invite, plain];
-        assert_eq!(unread_conversations(&rooms, &HashMap::new()), 2);
+        assert_eq!(unread_conversations(&rooms, &HashMap::new(), None), 2);
         let archived = HashMap::from([(
             "!m:x".to_string(),
             RoomMailboxState {
@@ -318,6 +334,27 @@ mod tests {
                 ..Default::default()
             },
         )]);
-        assert_eq!(unread_conversations(&rooms, &archived), 1);
+        assert_eq!(unread_conversations(&rooms, &archived, None), 1);
+    }
+
+    #[tokio::test]
+    async fn a_space_scope_keeps_only_its_rooms() {
+        let (server, client) = server().await;
+        let inside = joined(&server, &client, room_id!("!in:x"), vec![marked_unread()]).await;
+        let outside = joined(&server, &client, room_id!("!out:x"), vec![marked_unread()]).await;
+        let rooms = [inside, outside];
+        let space = HashSet::from(["!in:x".to_string()]);
+        let none = HashMap::new();
+        let visible = visible_rooms(
+            &rooms,
+            Mailbox::Inbox,
+            &RoomFilter::All,
+            &none,
+            Some(&space),
+        );
+        assert_eq!(visible.len(), 1);
+        assert_eq!(visible[0].room_id, "!in:x");
+        assert_eq!(unread_conversations(&rooms, &none, Some(&space)), 1);
+        assert_eq!(unread_conversations(&rooms, &none, None), 2);
     }
 }

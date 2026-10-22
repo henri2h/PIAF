@@ -43,6 +43,7 @@ pub async fn on_session_expired() {
     }
     tracing::warn!("access token revoked, session expired");
     crate::utils::sync::stop().await;
+    crate::utils::spaces::stop();
     if let Some(file) = SESSION_FILE.get() {
         if let Err(e) = fs::rename(file, file.with_extension("expired")).await {
             tracing::warn!("could not set expired session file aside: {e}");

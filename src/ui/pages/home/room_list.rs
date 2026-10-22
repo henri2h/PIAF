@@ -1,9 +1,10 @@
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use freya::prelude::*;
 
-use super::filter_bar::FILTER_BAR_HEIGHT;
 use super::invites_row::InvitesRow;
 use super::room_list_item::{ROOM_ROW_HEIGHT, RoomListItem};
 use super::room_list_model::{ListRow, Mailbox, RoomFilter, list_rows, visible_rooms};
@@ -28,6 +29,8 @@ pub struct FilterBarScroll {
     pub visible: State<bool>,
     /// Whether the list is scrolled away from the top (the bars above tint).
     pub scrolled: State<bool>,
+    /// The bar's height (it grows with the sub-space chips).
+    pub height: f32,
 }
 
 /// Height of a section header row ("Favourites", "Low priority").
@@ -65,6 +68,8 @@ pub struct RoomList {
     pub filter: RoomFilter,
     /// `None` for lists shown without the filter bar.
     pub filter_bar: Option<FilterBarScroll>,
+    /// Only these rooms (a space's), or all.
+    pub scope: Option<Arc<HashSet<String>>>,
 }
 
 impl Component for RoomList {
@@ -81,18 +86,20 @@ impl Component for RoomList {
         // Latest visible rooms, for the key handler (its closure outlives renders).
         let shown: Rc<RefCell<Rc<Shown>>> = use_hook(Default::default);
         let invites_expanded = use_state(|| false);
-        let bar_height = if self.filter_bar.is_some() {
-            FILTER_BAR_HEIGHT
-        } else {
-            0.
-        };
+        let bar_height = self.filter_bar.map_or(0., |bar| bar.height);
         use_list_keys(shown.clone(), scroll, viewport_height, bar_height);
         use_chips_follow_scroll(scroll, self.filter_bar);
 
         let snapshot = snapshot.read().clone();
         let filtered_rooms = Rc::new({
             let mailbox = ROOM_MAILBOX_RX.get().expect("not initialized").borrow();
-            visible_rooms(&snapshot.rooms, self.mailbox, &self.filter, &mailbox)
+            visible_rooms(
+                &snapshot.rooms,
+                self.mailbox,
+                &self.filter,
+                &mailbox,
+                self.scope.as_deref(),
+            )
         });
         let rows = Rc::new(list_rows(&filtered_rooms, *invites_expanded.read()));
         *shown.borrow_mut() = Rc::new(shown_rooms(&filtered_rooms, &rows));
@@ -115,7 +122,12 @@ impl Component for RoomList {
             return below_bar(loading_state(Some("Loading conversations…"), c).into_element());
         }
         if rooms_len == 0 {
-            return below_bar(no_rooms(c, self.mailbox, &self.filter));
+            return below_bar(no_rooms(
+                c,
+                self.mailbox,
+                &self.filter,
+                self.scope.is_some(),
+            ));
         }
 
         // The builder closure captures `filtered_rooms` and `rows`, which these change.
@@ -123,6 +135,7 @@ impl Component for RoomList {
             snapshot.version,
             *mailbox_tick.read(),
             *invites_expanded.read(),
+            self.scope.as_ref().map(|s| Arc::as_ptr(s) as usize),
         );
         let rows_len = rows.len();
         let sizes = rows.clone();
@@ -211,6 +224,7 @@ fn use_chips_follow_scroll(scroll: ScrollController, filter_bar: Option<FilterBa
             mut hidden,
             visible: mut chips_visible,
             mut scrolled,
+            height,
         }) = filter_bar
         else {
             return;
@@ -222,13 +236,11 @@ fn use_chips_follow_scroll(scroll: ScrollController, filter_bar: Option<FilterBa
         if WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed) {
             return;
         }
-        let next = (*hidden.peek() - delta)
-            .clamp(0., FILTER_BAR_HEIGHT)
-            .min(-y);
+        let next = (*hidden.peek() - delta).clamp(0., height).min(-y);
         if next != *hidden.peek() {
             hidden.set(next);
         }
-        let visible = next < FILTER_BAR_HEIGHT / 2.;
+        let visible = next < height / 2.;
         if visible != *chips_visible.peek() {
             chips_visible.set(visible);
         }
@@ -347,8 +359,11 @@ fn scroll_into_view(
     }
 }
 
-fn no_rooms(c: AppColors, mailbox: Mailbox, filter: &RoomFilter) -> Element {
+fn no_rooms(c: AppColors, mailbox: Mailbox, filter: &RoomFilter, in_space: bool) -> Element {
     let (title, subtitle) = match (mailbox, filter) {
+        (Mailbox::Inbox, RoomFilter::All) if in_space => {
+            ("No rooms in this space", "Rooms you join in it appear here")
+        }
         (Mailbox::Recontact, RoomFilter::All) => {
             ("Nothing to recontact", "Mark a room to recontact it later")
         }

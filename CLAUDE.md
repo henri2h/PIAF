@@ -113,7 +113,9 @@ Room list data lives in `src/utils/room_list.rs`, built off the UI thread:
 - `RoomList` reads it with `use_watch(room_list::receiver())`; `home/room_list_model.rs` only has the UI-side `RoomFilter` and `visible_rooms`.
 - `sort_rooms_by_recency(&mut Vec<Room>)` for code working on raw `Room`s (search).
 
-Android bottom tabs: Chats, More (Settings opens from the avatar in the home app bar). The More tab (`ui/pages/more/`) holds Reactions, Bookmarks and the Recontact / Archived mailboxes (`ui/pages/mailbox/`, `RoomList` with `filter_bar: None`); desktop keeps them in the home app bar and the filter bar's mailbox selector.
+Spaces (`utils/spaces.rs`): matrix-sdk-ui's `SpaceService` (started by `sync::start`, stopped on logout) publishes the joined top-level spaces on `spaces::receiver()`: `Space { rooms, subspaces }`, `rooms` covering sub-spaces too (`build`, unit-tested). Joined spaces are not listed as chats (`room_list::listed_rooms`); invites to them are. `RoomList { scope }` and `visible_rooms` / `unread_conversations(.., scope)` narrow to a space. Desktop: `home/space_rail.rs` (left of the list, inside the 400px side panel) selects through the global `spaces::selection()`; a space's sub-spaces become a chip row in `RoomFilterBar` (`filter_bar_height`). Android: a Spaces tab (`ui/pages/spaces/`: `SpacesPage`, `SpacePage` with sub-space chips over a scoped `RoomList`).
+
+Android bottom tabs: Chats, Spaces, More (Settings opens from the avatar in the home app bar). The More tab (`ui/pages/more/`) holds Reactions, Bookmarks and the Recontact / Archived mailboxes (`ui/pages/mailbox/`, `RoomList` with `filter_bar: None`); desktop keeps them in the home app bar and the filter bar's mailbox selector.
 
 Room actions: `home/room_menu.rs` (one entry list; desktop right-click opens a `ContextMenu`, Android long-press a `BottomSheet` held in `RoomListCtx`), actions in `utils/room_actions.rs`. `ContextMenuViewer` is mounted in both layouts.
 

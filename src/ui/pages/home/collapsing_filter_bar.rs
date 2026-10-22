@@ -2,6 +2,7 @@ use freya::prelude::*;
 
 use super::filter_bar::RoomFilterBar;
 use super::room_list_model::{Mailbox, RoomFilter};
+use crate::utils::spaces::Space;
 
 /// The filter bar overlaid on top of the room list, pushed up by `hidden`
 /// pixels as the list scrolls down (see `RoomList`). Moving with the scroll
@@ -13,6 +14,8 @@ pub struct CollapsingFilterBar {
     pub tinted: State<bool>,
     pub mailbox: State<Mailbox>,
     pub filter: State<RoomFilter>,
+    pub space: Option<Space>,
+    pub sub: Option<String>,
 }
 
 impl Component for CollapsingFilterBar {
@@ -30,6 +33,8 @@ impl Component for CollapsingFilterBar {
                 mailbox: self.mailbox,
                 filter: self.filter,
                 tinted,
+                space: self.space.clone(),
+                sub: self.sub.clone(),
             })
             // Hairline separating the bar from rows scrolled under it.
             .maybe_child(tinted.then(|| {

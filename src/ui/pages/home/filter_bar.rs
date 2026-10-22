@@ -2,10 +2,21 @@ use freya::prelude::*;
 
 use super::room_list_model::{Mailbox, RoomFilter};
 use crate::ui::components::{Chip, use_color_transition};
+use crate::utils::spaces::{self, Selection, Space};
 use crate::utils::use_app_colors;
 
+/// Height of one row of [`RoomFilterBar`].
+const FILTER_BAR_HEIGHT: f32 = 48.;
+
 /// Height of [`RoomFilterBar`]: the room list leaves this much space at its top.
-pub(super) const FILTER_BAR_HEIGHT: f32 = 48.;
+/// A space with sub-spaces adds a row of their chips.
+pub(super) fn filter_bar_height(space: Option<&Space>) -> f32 {
+    if space.is_some_and(|s| !s.subspaces.is_empty()) {
+        2. * FILTER_BAR_HEIGHT
+    } else {
+        FILTER_BAR_HEIGHT
+    }
+}
 const FADE_WIDTH: f32 = 24.;
 
 /// Mailbox selector (Inbox / Recontact / Archived) followed by the filter
@@ -15,11 +26,18 @@ pub struct RoomFilterBar {
     pub filter: State<RoomFilter>,
     /// Tinted surface while the list is scrolled under it.
     pub tinted: bool,
+    /// The selected space (desktop rail) and sub-space: chips for its sub-spaces.
+    pub space: Option<Space>,
+    pub sub: Option<String>,
 }
 
 impl PartialEq for RoomFilterBar {
     fn eq(&self, other: &Self) -> bool {
-        self.mailbox == other.mailbox && self.filter == other.filter && self.tinted == other.tinted
+        self.mailbox == other.mailbox
+            && self.filter == other.filter
+            && self.tinted == other.tinted
+            && self.space == other.space
+            && self.sub == other.sub
     }
 }
 
@@ -60,7 +78,7 @@ impl Component for RoomFilterBar {
         // Room past the last chip, so the fade never covers it once scrolled.
         let chips = chips.child(rect().width(Size::px(FADE_WIDTH - 6.)));
 
-        rect()
+        let filters = rect()
             .horizontal()
             .width(Size::fill())
             .height(Size::px(FILTER_BAR_HEIGHT))
@@ -68,7 +86,6 @@ impl Component for RoomFilterBar {
             .cross_align(Alignment::Center)
             .padding(Gaps::new(0., 16., 0., 16.))
             .spacing(6.)
-            .background(background)
             // Android: the mailboxes are pages of the "More" tab.
             .maybe_child((!cfg!(target_os = "android")).then_some(selector))
             .child(
@@ -99,6 +116,55 @@ impl Component for RoomFilterBar {
                                     .stop((background, 100.)),
                             ),
                     ),
+            );
+
+        rect()
+            .vertical()
+            .width(Size::fill())
+            .background(background)
+            .maybe_child(
+                self.space
+                    .as_ref()
+                    .filter(|space| !space.subspaces.is_empty())
+                    .map(|space| subspace_chips(space, self.sub.as_deref())),
             )
+            .child(filters)
     }
+}
+
+/// "All" and each sub-space of `space`; picking one narrows the list to it.
+fn subspace_chips(space: &Space, sub: Option<&str>) -> Rect {
+    let chip = |label: &str, selected: bool, sub: Option<String>| {
+        let target = Selection {
+            space: Some(space.room_id.clone()),
+            sub,
+        };
+        Chip::new(label, selected, move |_| spaces::select(target.clone()))
+            .icon(freya_icons::lucide::layers())
+            .into_element()
+    };
+    let chips = rect()
+        .horizontal()
+        .spacing(6.)
+        .child(chip(&space.name, sub.is_none(), None))
+        .children(space.subspaces.iter().map(|s| {
+            chip(
+                &s.name,
+                sub == Some(s.room_id.as_str()),
+                Some(s.room_id.clone()),
+            )
+        }));
+    rect()
+        .width(Size::fill())
+        .height(Size::px(FILTER_BAR_HEIGHT))
+        .main_align(Alignment::Center)
+        .padding(Gaps::new(0., 16., 0., 16.))
+        .child(
+            ScrollView::new()
+                .direction(Direction::Horizontal)
+                .show_scrollbar(false)
+                .width(Size::fill())
+                .height(Size::auto())
+                .child(chips),
+        )
 }

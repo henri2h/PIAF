@@ -131,8 +131,11 @@ impl Component for Chip {
                                     }),
                             )
                             .child(
+                                // One line at its full width: in a scrolling row the
+                                // space left would otherwise wrap it.
                                 label()
                                     .text(self.label.clone())
+                                    .max_lines(1)
                                     .font_size(13.)
                                     .font_weight(FontWeight::MEDIUM)
                                     .color(fg),

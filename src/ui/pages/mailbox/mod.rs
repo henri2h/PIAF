@@ -34,6 +34,7 @@ impl Component for MailboxRooms {
                         mailbox: self.mailbox,
                         filter: RoomFilter::All,
                         filter_bar: None,
+                        scope: None,
                     }),
             )
     }

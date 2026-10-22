@@ -137,6 +137,17 @@ pub fn sort_rooms_by_recency(rooms: &mut Vec<Room>) {
     rooms.extend(keyed.into_iter().map(|(_, r)| r));
 }
 
+/// Joined rooms and invites. Joined spaces aren't chats: they have their
+/// own tabs (see `spaces`); invites to one stay, to be accepted.
+fn listed_rooms(client: &matrix_sdk::Client) -> Vec<Room> {
+    client
+        .joined_rooms()
+        .into_iter()
+        .filter(|room| !room.is_space())
+        .chain(client.invited_rooms())
+        .collect()
+}
+
 /// Sections (invites, favourites, rooms, low priority), each newest first.
 /// Pending local changes are applied on top of the room state.
 fn build() -> Vec<RoomSummary> {
@@ -144,10 +155,8 @@ fn build() -> Vec<RoomSummary> {
         return vec![];
     };
     let pending = PENDING.lock().unwrap().clone();
-    let mut rooms: Vec<RoomSummary> = client
-        .joined_rooms()
+    let mut rooms: Vec<RoomSummary> = listed_rooms(client)
         .into_iter()
-        .chain(client.invited_rooms())
         .map(RoomSummary::new)
         .filter_map(|mut s| {
             if let Some(p) = pending.get(&s.room_id) {
@@ -493,6 +502,35 @@ mod tests {
         let mut s = low.clone();
         Pending::default().apply(&mut s);
         assert!(s == low, "no override, no change");
+    }
+
+    #[tokio::test]
+    async fn joined_spaces_are_not_listed() {
+        use matrix_sdk_test::JoinedRoomBuilder;
+        let (server, client) = server().await;
+        joined(&server, &client, room_id!("!room:x"), vec![]).await;
+        let create_space = serde_json::json!({
+            "type": "m.room.create",
+            "state_key": "",
+            "event_id": "$create",
+            "sender": "@a:x",
+            "origin_server_ts": 1,
+            "content": { "creator": "@a:x", "type": "m.space" }
+        });
+        server
+            .sync_room(
+                &client,
+                JoinedRoomBuilder::new(room_id!("!space:x")).add_state_event(
+                    matrix_sdk::ruma::serde::Raw::from_json_string(create_space.to_string())
+                        .unwrap(),
+                ),
+            )
+            .await;
+        let ids: Vec<String> = listed_rooms(&client)
+            .iter()
+            .map(|r| r.room_id().to_string())
+            .collect();
+        assert_eq!(ids, ["!room:x"]);
     }
 
     #[tokio::test]

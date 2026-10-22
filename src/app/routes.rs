@@ -20,6 +20,7 @@ use crate::ui::pages::{
     settings::{
         Settings, SettingsAppearance, SettingsNotifications, SettingsProfile, SettingsSecurity,
     },
+    spaces::{SpacePage, SpacesPage},
     welcome::WelcomePage,
 };
 
@@ -69,6 +70,11 @@ pub enum Route {
         ReactionsPage,
         #[route("/bookmarks")]
         BookmarksPage,
+        /// Android "Spaces" tab and a space's rooms.
+        #[route("/spaces")]
+        SpacesPage,
+        #[route("/spaces/:space_id")]
+        SpacePage { space_id: String },
         /// Android "More" tab and its mailbox pages.
         #[route("/more")]
         MorePage,

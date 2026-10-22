@@ -23,6 +23,7 @@ pub mod room_list;
 pub mod room_mailbox;
 pub mod room_preview;
 pub mod room_search;
+pub mod spaces;
 pub mod sync;
 pub mod timeline_media;
 pub mod users;

@@ -13,4 +13,5 @@ pub mod room_search;
 pub mod room_settings;
 pub mod search;
 pub mod settings;
+pub mod spaces;
 pub mod welcome;
