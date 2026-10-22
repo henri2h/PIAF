@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
 
-use crate::ui::components::{Chip, TopAppBar, TopAppBarTitle};
+use crate::ui::components::{Chip, TopAppBar};
 use crate::utils::use_app_colors;
 
 #[derive(PartialEq)]
@@ -19,11 +17,7 @@ impl Component for SettingsAppearance {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Appearance".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Appearance"))
             .child(
                 rect()
                     .vertical()

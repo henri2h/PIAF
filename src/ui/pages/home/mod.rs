@@ -19,16 +19,16 @@ use collapsing_filter_bar::CollapsingFilterBar;
 use freya::prelude::*;
 
 use crate::ui::components::{HoverableExt, use_fade};
-pub(crate) use room_list::RoomList;
 use room_list::FilterBarScroll;
+pub(crate) use room_list::RoomList;
 pub(crate) use room_list_model::{Mailbox, RoomFilter};
 pub use search::SearchFilter;
 pub use search_panel::SearchResults;
 
+use crate::ACTIVE_ROOM_RX;
 use crate::logging::RenderTimer;
 use crate::utils::const_values::AppColors;
 use crate::utils::{use_app_colors, use_watch, use_watch_tick};
-use crate::ACTIVE_ROOM_RX;
 
 // ---------------------------------------------------------------------------
 // Shared context for the currently active room ID

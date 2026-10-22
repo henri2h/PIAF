@@ -1,17 +1,12 @@
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
-
 use crate::ui::components::{TopAppBar, TopAppBarAction, TopAppBarTitle};
 use crate::{Route, WIDE_MODE};
 
 /// Room title, with search + settings actions when `with_actions`; back button
 /// in narrow mode only.
-pub(super) fn room_app_bar(
-    room_id: &str,
-    name: &str,
-    with_actions: bool,
-) -> TopAppBar {
+pub(super) fn room_app_bar(room_id: &str, name: &str, with_actions: bool) -> TopAppBar {
     let on_back: Option<Arc<dyn Fn()>> = if WIDE_MODE.load(Ordering::Relaxed) {
         None
     } else {
@@ -25,6 +20,12 @@ pub(super) fn room_app_bar(
             color: crate::utils::id_color(room_id),
             room_id: room_id.to_string(),
             name: name.to_string(),
+            // Like other messaging apps: the title opens the room's info.
+            on_press: with_actions.then(|| {
+                push(Route::RoomSettings {
+                    room_id: room_id.to_string(),
+                })
+            }),
         },
         on_back,
         actions: if !with_actions {

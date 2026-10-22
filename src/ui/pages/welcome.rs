@@ -3,7 +3,7 @@ use freya_icons::lucide;
 use freya_material_design::prelude::ButtonRippleExt;
 use freya_router::prelude::RouterContext;
 
-use crate::ui::components::{AUTH_SHORT_MAX_HEIGHT, AUTH_WIDE_MIN_WIDTH, HoverableExt, brand_hero};
+use crate::ui::components::{HoverableExt, brand_hero, use_auth_size};
 use crate::utils::const_values::AppColors;
 use crate::utils::insets::status_bar_inset;
 use crate::{
@@ -22,7 +22,7 @@ impl Component for WelcomePage {
         let c = use_app_colors();
 
         let mut loading: State<bool> = use_state(|| true);
-        let mut size = use_state(|| (0.0f32, 0.0f32));
+        let size = use_auth_size();
 
         use_hook(|| {
             spawn(async move {
@@ -56,9 +56,7 @@ impl Component for WelcomePage {
         });
 
         let is_loading = *loading.read();
-        let (width, height) = *size.read();
-        let is_wide = width >= AUTH_WIDE_MIN_WIDTH;
-        let is_short = height > 0. && height < AUTH_SHORT_MAX_HEIGHT;
+        let (is_wide, is_short) = (size.is_wide(), size.is_short());
 
         let actions = if is_loading {
             CircularLoader::new().size(36.).into_element()
@@ -109,16 +107,7 @@ impl Component for WelcomePage {
                 )
         };
 
-        rect()
-            .expanded()
-            .background(c.surface)
-            .on_sized(move |e: Event<SizedEventData>| {
-                let area = (e.area.width(), e.area.height());
-                if *size.peek() != area {
-                    size.set(area);
-                }
-            })
-            .child(body)
+        size.page(body, c)
     }
 }
 

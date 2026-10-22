@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
 
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::TopAppBar;
 #[cfg(target_os = "android")]
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
@@ -87,11 +85,7 @@ impl Component for SettingsNotifications {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Notifications".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Notifications"))
             .child(
                 ScrollView::new()
                     .width(Size::fill())

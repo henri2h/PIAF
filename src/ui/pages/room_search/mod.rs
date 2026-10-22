@@ -1,22 +1,21 @@
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
 
 use freya::prelude::*;
 
-use crate::ui::components::IconButton;
-
-use matrix_sdk::ruma::{
-    OwnedRoomId,
-    api::client::{filter::RoomEventFilter, search::search_events::v3 as search_v3},
-    events::{AnyMessageLikeEvent, AnyTimelineEvent, MessageLikeEvent},
-};
-
-use crate::ui::components::{TopAppBar, TopAppBarTitle, search_input};
-use crate::utils::use_app_colors;
-use crate::utils::{format_timestamp, id_color, matrix::CLIENT, room_preview::message_body};
+use crate::ui::components::{SearchField, empty_state, loading_state, search_app_bar};
+use crate::utils::room_search::{self, Hit};
+use crate::utils::{on_tokio, use_app_colors};
 
 mod search_result_row;
-use search_result_row::{SearchResultItem, SearchResultRow};
+use search_result_row::SearchResultRow;
 
+/// Pause after the last keystroke before searching.
+const DEBOUNCE: Duration = Duration::from_millis(400);
+
+/// Searching one room's messages, as you type (encrypted rooms are searched
+/// on the device: see `utils::room_search`).
 #[derive(Clone, PartialEq)]
 pub struct RoomSearch {
     pub room_id: String,
@@ -25,164 +24,111 @@ pub struct RoomSearch {
 impl Component for RoomSearch {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
+        let query: State<String> = use_state(String::new);
+        let results: State<Vec<Hit>> = use_state(Vec::new);
+        let loading = use_state(|| false);
+        // The query the results are for (`None`: nothing searched yet).
+        let searched: State<Option<String>> = use_state(|| None);
+        let dismiss = use_state(|| false);
+        // Bumped per query: a slower, older search never overwrites a newer one.
+        let version: Arc<AtomicU64> = use_hook(|| Arc::new(AtomicU64::new(0)));
+
         let room_id = self.room_id.clone();
+        let run = {
+            let version = version.clone();
+            move |text: String, delay: bool| {
+                let (mut results, mut searched, mut loading) = (results, searched, loading);
+                let ver = version.fetch_add(1, Ordering::Relaxed) + 1;
+                let text = text.trim().to_string();
+                if text.is_empty() {
+                    results.set(vec![]);
+                    searched.set(None);
+                    loading.set(false);
+                    return;
+                }
+                loading.set(true);
+                let (room_id, version) = (room_id.clone(), version.clone());
+                spawn(async move {
+                    if delay {
+                        timer(DEBOUNCE).await;
+                    }
+                    if version.load(Ordering::Relaxed) != ver {
+                        return;
+                    }
+                    let q = text.clone();
+                    let hits = on_tokio(async move { room_search::search(&room_id, &q).await })
+                        .await
+                        .unwrap_or_default();
+                    if version.load(Ordering::Relaxed) == ver {
+                        results.set(hits);
+                        searched.set(Some(text));
+                        loading.set(false);
+                    }
+                });
+            }
+        };
+        {
+            let run = run.clone();
+            use_side_effect_with_deps(&query.read().clone(), move |text: &String| {
+                run(text.clone(), true)
+            });
+        }
 
-        let query_input: State<String> = use_state(String::new);
-        let results: State<Vec<SearchResultItem>> = use_state(|| vec![]);
-        let loading: State<bool> = use_state(|| false);
-        let has_searched: State<bool> = use_state(|| false);
-
-        let results_data = results.read().clone();
-        let is_loading = *loading.read();
-        let searched = *has_searched.read();
+        let hits = results.read().clone();
+        let searched_for = searched.read().clone();
+        let content = if *loading.read() && hits.is_empty() {
+            loading_state(Some("Searching…"), c).into_element()
+        } else if let Some(text) = searched_for.filter(|_| !hits.is_empty()) {
+            let room_id = self.room_id.clone();
+            ScrollView::new()
+                .width(Size::fill())
+                .height(Size::flex(1.))
+                .children(hits.into_iter().map(|hit| {
+                    rect()
+                        .key(hit.event_id.as_str())
+                        .width(Size::fill())
+                        .child(SearchResultRow {
+                            room_id: room_id.clone(),
+                            hit,
+                            query: text.clone(),
+                        })
+                        .into_element()
+                }))
+                .into_element()
+        } else if searched.read().is_some() {
+            empty_state(
+                freya_icons::lucide::search_x(),
+                "No messages found",
+                Some("Try other words"),
+                c,
+            )
+            .into_element()
+        } else {
+            empty_state(
+                freya_icons::lucide::message_square_text(),
+                "Search this conversation",
+                Some("Encrypted messages are searched on this device"),
+                c,
+            )
+            .into_element()
+        };
 
         rect()
             .expanded()
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Search messages".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
-            .child(
-                rect()
-                    .horizontal()
-                    .width(Size::fill())
-                    .padding(Gaps::new(6., 12., 6., 12.))
-                    .background(c.surface)
-                    .content(Content::Flex)
-                    .cross_align(Alignment::Center)
-                    .spacing(6.)
-                    .child(
-                        rect().width(Size::flex(1.)).child(
-                            search_input(query_input, "Search messages…", c)
-                                .auto_focus(true)
-                                .on_submit(move |query: String| {
-                                    if query.is_empty() {
-                                        return;
-                                    }
-                                    let mut results = results;
-                                    let mut loading = loading;
-                                    let mut has_searched = has_searched;
-                                    *loading.write() = true;
-                                    *has_searched.write() = true;
-                                    let room_id = room_id.clone();
-                                    spawn(async move {
-                                        let items = search_room_messages(&room_id, &query).await;
-                                        *results.write() = items;
-                                        *loading.write() = false;
-                                    });
-                                }),
-                        ),
-                    )
-                    .maybe_child(if !query_input.read().is_empty() {
-                        Some(
-                            IconButton::new(
-                                freya_icons::lucide::x(),
-                                c.on_surface_faint,
-                                move |_| {
-                                    let mut query_input = query_input;
-                                    let mut results = results;
-                                    let mut has_searched = has_searched;
-                                    *query_input.write() = String::new();
-                                    *results.write() = vec![];
-                                    *has_searched.write() = false;
-                                },
-                            )
-                            .size(32., 16.)
-                            .into_element(),
-                        )
-                    } else {
-                        None
-                    }),
-            )
-            .child(if is_loading {
-                rect()
-                    .width(Size::fill())
-                    .height(Size::flex(1.0))
-                    .center()
-                    .child(CircularLoader::new())
-                    .into_element()
-            } else if results_data.is_empty() {
-                rect()
-                    .width(Size::fill())
-                    .height(Size::flex(1.0))
-                    .center()
-                    .child(
-                        label()
-                            .text(if searched {
-                                "No results"
-                            } else {
-                                "Type to search, press Enter to confirm"
-                            })
-                            .color(c.on_surface_faint),
-                    )
-                    .into_element()
-            } else {
-                ScrollView::new()
-                    .width(Size::fill())
-                    .height(Size::flex(1.0))
-                    .children(
-                        results_data
-                            .into_iter()
-                            .map(|item| SearchResultRow { item }.into_element()),
-                    )
-                    .into_element()
-            })
+            .child(search_app_bar(
+                SearchField {
+                    value: query,
+                    placeholder: "Search messages",
+                    on_submit: EventHandler::new(move |text: String| run(text, false)),
+                    dismiss,
+                    auto_focus: true,
+                    font_size: 18.,
+                },
+                c,
+            ))
+            .child(content)
     }
-}
-
-async fn search_room_messages(room_id: &str, query: &str) -> Vec<SearchResultItem> {
-    let Some(client) = CLIENT.get().cloned() else {
-        return vec![];
-    };
-    let Ok(parsed_id) = OwnedRoomId::try_from(room_id) else {
-        return vec![];
-    };
-
-    let query = query.to_owned();
-
-    crate::utils::on_tokio(async move {
-        let mut filter = RoomEventFilter::default();
-        filter.rooms = Some(vec![parsed_id]);
-
-        let mut criteria = search_v3::Criteria::new(query);
-        criteria.filter = filter;
-
-        let mut categories = search_v3::Categories::new();
-        categories.room_events = Some(criteria);
-
-        let items = match client.send(search_v3::Request::new(categories)).await {
-            Ok(response) => {
-                let mut items = Vec::new();
-                for result in response.search_categories.room_events.results {
-                    let Some(raw) = result.result else { continue };
-                    let Ok(AnyTimelineEvent::MessageLike(AnyMessageLikeEvent::RoomMessage(
-                        MessageLikeEvent::Original(msg),
-                    ))) = raw.deserialize()
-                    else {
-                        continue;
-                    };
-                    let Some(body) = message_body(&msg.content.msgtype) else {
-                        continue;
-                    };
-                    let sender = msg.sender.to_string();
-                    let color = id_color(&sender);
-                    items.push(SearchResultItem {
-                        sender_name: sender,
-                        sender_color: color,
-                        body,
-                        timestamp: format_timestamp(msg.origin_server_ts),
-                    });
-                }
-                items
-            }
-            Err(_) => vec![],
-        };
-        items
-    })
-    .await
-    .unwrap_or_default()
 }

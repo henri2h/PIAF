@@ -1,3 +1,6 @@
+// matrix-sdk 0.19 futures nest deeper than the default 128 (timeline task).
+#![recursion_limit = "256"]
+
 pub mod app;
 pub mod logging;
 pub mod ui;

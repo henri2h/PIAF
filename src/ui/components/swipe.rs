@@ -129,8 +129,13 @@ impl Swipe {
 
     /// Springs back from wherever the row is.
     fn reset(&self) {
-        let (mut start, mut swiping, mut offset, mut release, mut armed) =
-            (self.start, self.swiping, self.offset, self.release, self.armed);
+        let (mut start, mut swiping, mut offset, mut release, mut armed) = (
+            self.start,
+            self.swiping,
+            self.offset,
+            self.release,
+            self.armed,
+        );
         if *swiping.peek() {
             let count = release.peek().0 + 1;
             release.set((count, *offset.peek()));

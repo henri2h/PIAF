@@ -14,11 +14,13 @@ cargo test                  # Run all unit tests
 cargo test <name>           # Run tests whose name contains <name>
 ```
 
+`Cargo.lock` is edited by hand in one place: `bindgen` (Freya's skia build) uses `prettyplease 0.3` while `bon-macros` (matrix-sdk's search, via tantivy) keeps `0.2`. Both are allowed, but cargo would unify them onto 0.2, which doesn't compile with the `syn 3` bindgen then gets. After a `cargo update` that touches them, re-point bindgen's `prettyplease` to `0.3.x`.
+
 The project optimizes dependency crates at `opt-level = 1` in dev builds (`Cargo.toml [profile.dev.package."*"]`), so incremental rebuilds are fast.
 
 ## Architecture
 
-**PIAF** is a Matrix messaging client built with the [Freya](https://freyaui.dev) Rust GUI framework and `matrix-sdk` 0.17.
+**PIAF** is a Matrix messaging client built with the [Freya](https://freyaui.dev) Rust GUI framework and `matrix-sdk` 0.19 (needs Rust ≥ 1.96; TLS via its `rustls-aws-lc-rs` feature, required with `default-features = false`). On Android, certificates are checked by `rustls-platform-verifier` against the system trust store: `android_main` initializes it (`init_tls_verifier`, jni 0.22 as `jni22`), and Gradle pulls its Kotlin component (`org.rustls:rustls-platform-verifier`, from the GitHub Maven repo in `settings.gradle.kts`) at the version of `rustls-platform-verifier-android` in `Cargo.lock` (read by `app/build.gradle.kts`). Without the init every HTTPS request panics (`Expect rustls-platform-verifier to be initialized`); with a component older than 0.2.0, Let's Encrypt certificates (no OCSP URL) fail as `Revoked` (its manifest allows the CA revocation lists over HTTP).
 
 **Freya dependency is a local path** (`../freya/crates/freya`), not from crates.io. Changes to Freya itself are in the sibling repo.
 
@@ -157,12 +159,17 @@ Key Freya hooks: `use_state`, `use_hook` (runs once on mount), `use_query`, `use
 - `IconButton`: round icon button (hover, ripple, optional `.tooltip()`, press doesn't reach the parent).
 - `Chip`: pill toggle for filters, tabs and option pickers (selection colours animate).
 - `ListItem`: any list row (leading, headline + optional badge, supporting line, trailing, press). Text fills the space left and ellipsizes, so it never runs under `trailing`: build rows on it instead of hand-made `rect`s. `ListItem::with_headline(el)` for a styled headline.
+- `TopAppBar::new(title)`: a page's bar with a back button (`go_back_or_home`); `.action(icon, on_press)` adds trailing buttons. `search_app_bar(SearchField {..}, c)`: a search page's bar.
+- `picked_users(users, on_remove, c)`: removable chips for people being picked (invites, new group). `sender_in_room(sender, room, c)` / `row_time(ts_ms, c)`: headline and time of a `ListItem` pointing at a message elsewhere (bookmarks, reactions).
+- `use_member_name(room_id, user_id) -> Option<String>` (`utils/queries.rs`): a member's display name, cached. `matrix::own_display_name(&client)`.
+- `use_auth_size()` → `AuthSize` (`is_wide`, `is_short`, `page(body, c)`): the welcome / login layout.
 - `PersonRow`: a person (a `ListItem`: avatar, name, badge, subtitle or user ID, trailing, press). `badge("Admin", c)`.
 - `bottom_sheet(c, on_close)`: Freya's `BottomSheet` (shared with rusty_map, in the Freya fork) in piaf colours, above the navigation bar, grab bar on Android. `Dialog` (centered modal, any children, `dialog_button` for actions) / `confirm_dialog(title, message, confirm, on_cancel, on_confirm)`: dialogs and destructive confirmations.
 - `empty_state(icon, title, hint, c)` / `loading_state(caption, c)`: placeholders filling a list's area.
-- `search_input(state, placeholder, c)`: the search field (chain `auto_focus`, `on_submit`).
+- `SearchBox { value, placeholder, auto_focus }`: a search box filtering a page's list (Android: types through the IME bridge, like `SearchField`; desktop: `search_input`). `SearchField`: the query field of a search page's app bar. Plain `search_input(state, placeholder, c)` only for desktop-only UI: an `Input` gets Android's raw keyboard (no suggestions, accents or swipe typing).
 - `use_fade(visible, ms) -> f32` and `use_fading(Option<T>, ms) -> Option<(T, opacity)>` (keeps the last value while fading out): for things that appear and disappear. Both start at their end value, so nothing animates on mount (virtual lists remount rows while scrolling).
 - `use_color_transition(target, ms)`: a colour easing to each new target (bars tinting on scroll). A page whose content scrolls under its `TopAppBar` provides `AppBarTint(State<bool>)` to tint it.
+- `MediaViewer` (`components/media_viewer/`): full-bleed image on black, controls over it on gradients (a tap hides them). Touch gestures live in the pure, unit-tested `gesture.rs` model (page between images, swipe down/up to close, double tap / pinch to zoom, pan); `settle` eases the offsets after a release. Desktop keeps arrow keys and round overlay arrows. Share uses `media::share_image` → `android/share.rs` ↔ `ShareSheet.kt`.
 - `Avatar` + `AvatarSource` (see Avatars).
 - `use_swipe()` / `SwipeBounds` (Android): horizontal swipe on a touch row (follows the finger, haptic tick at the commit point, spring back). Used by room rows and swipe-to-reply (`room/message_gesture.rs`). Rows inside a scroll view must also finish on `on_global_pointer_up`, and long-press timers must snapshot `ScrollController::touch_generation()` at touch start and give up if it changed: once the list claims a touch (or cancels its lift, e.g. a tap that stops a fling), rows get no more `touchmove`/`touchend`/global pointer up. Taps on parts of a swipeable row (message image, reactions, avatar…) check a guard (`allows_press()` / `PressGuard`) in their `on_press`: it can run before the row's `on_touch_end` cancels it.
 

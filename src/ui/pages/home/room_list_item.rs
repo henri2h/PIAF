@@ -5,7 +5,6 @@ use crate::utils::id_color;
 use freya::prelude::*;
 
 use crate::utils::avatars::AvatarSource;
-use freya_query::prelude::*;
 use matrix_sdk::RoomHero;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
@@ -23,7 +22,7 @@ use crate::utils::matrix::my_user_id;
 pub use crate::utils::room_list::RoomSummary;
 use crate::utils::room_preview::{SenderPrefix, last_message, preview_text};
 use crate::utils::{
-    format_full_timestamp, format_timestamp, queries::FetchSenderName, use_app_colors,
+    format_full_timestamp, format_timestamp, queries::use_member_name, use_app_colors,
 };
 
 pub const ROOM_ROW_HEIGHT: f32 = 72.;
@@ -63,15 +62,11 @@ impl Component for RoomListItem {
 
         let (body, prefix) = last_message(&s.room, my_user_id().as_deref())
             .unwrap_or((String::new(), SenderPrefix::None));
-        let sender_query_key = match &prefix {
-            SenderPrefix::Other(uid) | SenderPrefix::Inviter(uid) => {
-                format!("{room_id}\x00{uid}")
-            }
-            _ => String::new(),
+        let sender_id = match &prefix {
+            SenderPrefix::Other(uid) | SenderPrefix::Inviter(uid) => uid.as_str(),
+            _ => "",
         };
-        let sender_query = use_query(
-            Query::new(sender_query_key, FetchSenderName).stale_time(Duration::from_secs(3600)),
-        );
+        let sender_name = use_member_name(&room_id, sender_id);
         let preview = if body.is_empty() {
             if s.is_invite {
                 "Invitation".to_string()
@@ -79,7 +74,6 @@ impl Component for RoomListItem {
                 String::new()
             }
         } else {
-            let sender_name = sender_query.read().state().ok().cloned();
             preview_text(&body, &prefix, sender_name.as_deref())
         };
 
@@ -201,7 +195,8 @@ fn room_avatar(s: &RoomSummary, bg: (u8, u8, u8)) -> Element {
     if s.is_dm || s.room.avatar_url().is_some_and(|u| u.is_valid()) {
         return room_avatar.into();
     }
-    let heroes = s.room.heroes();
+    // The stored heroes (`Room::heroes` is async: it also loads their profiles).
+    let heroes = s.room.clone_info().heroes().to_vec();
     let with_avatar: Vec<(&RoomHero, AvatarSource)> = heroes
         .iter()
         .filter_map(|h| Some((h, AvatarSource::Mxc(h.avatar_url.as_ref()?.to_string()))))

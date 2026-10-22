@@ -85,7 +85,12 @@ mod android {
             )?
             .l()?;
         let vibrator = env
-            .call_method(&manager, "getDefaultVibrator", "()Landroid/os/Vibrator;", &[])?
+            .call_method(
+                &manager,
+                "getDefaultVibrator",
+                "()Landroid/os/Vibrator;",
+                &[],
+            )?
             .l()?;
         env.new_global_ref(vibrator)
     }

@@ -41,11 +41,20 @@ impl Point {
 enum Mode {
     Idle,
     /// One finger down, not moved past the slop yet: maybe a tap.
-    Pressed { start: Point, time: f64 },
+    Pressed {
+        start: Point,
+        time: f64,
+    },
     /// Swiping between images.
-    Page { start: Point, time: f64 },
+    Page {
+        start: Point,
+        time: f64,
+    },
     /// Swiping vertically to close.
-    Dismiss { start: Point, time: f64 },
+    Dismiss {
+        start: Point,
+        time: f64,
+    },
     /// Moving a zoomed image; `moved`: past the slop (else a tap).
     Pan {
         start: Point,
@@ -150,6 +159,12 @@ impl Gesture {
     pub fn down(&mut self, id: u64, at: Point, time: f64) {
         self.fingers.retain(|(f, _)| *f != id);
         self.fingers.push((id, at));
+        if self.fingers.len() >= 2 {
+            // The first finger usually moved before the second landed: drop the
+            // page / dismiss drag it started, or the zoom centres off the fingers.
+            self.dx = 0.;
+            self.dy = 0.;
+        }
         self.mode = match self.fingers.as_slice() {
             [(_, a), (_, b), ..] => Mode::Pinch {
                 dist: a.dist(*b).max(1.),
@@ -340,21 +355,42 @@ mod tests {
     #[test]
     fn long_swipe_left_pages_to_the_next_image() {
         let mut g = gesture();
-        let r = swipe(&mut g, Point::new(300., 400.), Point::new(100., 410.), 600., true, true);
+        let r = swipe(
+            &mut g,
+            Point::new(300., 400.),
+            Point::new(100., 410.),
+            600.,
+            true,
+            true,
+        );
         assert_eq!(r, Release::Next);
     }
 
     #[test]
     fn quick_short_flick_right_pages_back() {
         let mut g = gesture();
-        let r = swipe(&mut g, Point::new(100., 400.), Point::new(180., 400.), 80., true, true);
+        let r = swipe(
+            &mut g,
+            Point::new(100., 400.),
+            Point::new(180., 400.),
+            80.,
+            true,
+            true,
+        );
         assert_eq!(r, Release::Prev);
     }
 
     #[test]
     fn slow_short_swipe_snaps_back() {
         let mut g = gesture();
-        let r = swipe(&mut g, Point::new(200., 400.), Point::new(150., 400.), 800., true, true);
+        let r = swipe(
+            &mut g,
+            Point::new(200., 400.),
+            Point::new(150., 400.),
+            800.,
+            true,
+            true,
+        );
         assert_eq!(r, Release::None);
     }
 
@@ -364,13 +400,23 @@ mod tests {
         g.down(0, Point::new(300., 400.), 0.);
         g.moved(0, Point::new(100., 400.), true, false);
         assert!(g.dx > -100., "resisted: {}", g.dx);
-        assert_eq!(g.up(0, Point::new(100., 400.), 600., true, false), Release::None);
+        assert_eq!(
+            g.up(0, Point::new(100., 400.), 600., true, false),
+            Release::None
+        );
     }
 
     #[test]
     fn swipe_down_closes() {
         let mut g = gesture();
-        let r = swipe(&mut g, Point::new(200., 300.), Point::new(205., 500.), 400., true, true);
+        let r = swipe(
+            &mut g,
+            Point::new(200., 300.),
+            Point::new(205., 500.),
+            400.,
+            true,
+            true,
+        );
         assert_eq!(r, Release::Close);
         assert!(g.dismiss_progress() > 0.5);
     }
@@ -379,10 +425,16 @@ mod tests {
     fn tap_then_double_tap_zooms_and_unzooms() {
         let mut g = gesture();
         g.down(0, Point::new(100., 200.), 0.);
-        assert_eq!(g.up(0, Point::new(100., 200.), 50., false, false), Release::Tap);
+        assert_eq!(
+            g.up(0, Point::new(100., 200.), 50., false, false),
+            Release::Tap
+        );
         let first = g.tap_count();
         g.down(0, Point::new(102., 201.), 150.);
-        assert_eq!(g.up(0, Point::new(102., 201.), 200., false, false), Release::Zoomed);
+        assert_eq!(
+            g.up(0, Point::new(102., 201.), 200., false, false),
+            Release::Zoomed
+        );
         assert!(!g.tap_is_current(first), "the single tap is cancelled");
         assert!(g.is_zoomed());
         // Zoomed on the tapped point: the image moves right and down.
@@ -391,7 +443,10 @@ mod tests {
         g.down(0, Point::new(200., 400.), 1000.);
         g.up(0, Point::new(200., 400.), 1050., false, false);
         g.down(0, Point::new(200., 400.), 1150.);
-        assert_eq!(g.up(0, Point::new(200., 400.), 1200., false, false), Release::Zoomed);
+        assert_eq!(
+            g.up(0, Point::new(200., 400.), 1200., false, false),
+            Release::Zoomed
+        );
         assert!(!g.is_zoomed());
     }
 
@@ -399,7 +454,14 @@ mod tests {
     fn zoomed_drag_pans_within_the_edges_instead_of_paging() {
         let mut g = gesture();
         g.scale = 2.;
-        let r = swipe(&mut g, Point::new(300., 400.), Point::new(-500., 400.), 300., true, true);
+        let r = swipe(
+            &mut g,
+            Point::new(300., 400.),
+            Point::new(-500., 400.),
+            300.,
+            true,
+            true,
+        );
         assert_eq!(r, Release::None);
         assert_eq!(g.dx, 0.);
         assert_eq!(g.offset.x, -200., "clamped to (scale - 1) * width / 2");
@@ -412,7 +474,11 @@ mod tests {
         g.down(1, Point::new(250., 400.), 10.);
         g.moved(0, Point::new(100., 400.), true, true);
         g.moved(1, Point::new(300., 400.), true, true);
-        assert!((g.scale - 2.).abs() < 0.01, "spread twice as far: {}", g.scale);
+        assert!(
+            (g.scale - 2.).abs() < 0.01,
+            "spread twice as far: {}",
+            g.scale
+        );
         g.up(0, Point::new(100., 400.), 200., true, true);
         g.up(1, Point::new(300., 400.), 210., true, true);
         assert!(g.is_zoomed());
@@ -424,5 +490,34 @@ mod tests {
         g.up(0, Point::new(150., 400.), 200., true, true);
         g.up(1, Point::new(252., 400.), 210., true, true);
         assert!(!g.is_zoomed());
+    }
+
+    /// Where an image point `q` (relative to the centre, unzoomed) is drawn.
+    fn drawn(g: &Gesture, q: Point) -> Point {
+        Point::new(
+            g.viewport.x / 2. + g.dx + g.offset.x + q.x * g.scale,
+            g.viewport.y / 2. + g.dy + g.offset.y + q.y * g.scale,
+        )
+    }
+
+    #[test]
+    fn pinch_keeps_the_point_under_the_fingers_after_a_first_finger_drift() {
+        let mut g = gesture();
+        // The first finger lands and drifts past the slop before the second.
+        g.down(0, Point::new(120., 300.), 0.);
+        g.moved(0, Point::new(150., 300.), true, true);
+        assert!(g.dx != 0.);
+        g.down(1, Point::new(250., 300.), 50.);
+        assert_eq!((g.dx, g.dy), (0., 0.), "the drag is dropped");
+        // The image point under the midpoint (200, 300).
+        let q = Point::new(200. - 200., 300. - 400.);
+        g.moved(0, Point::new(100., 340.), true, true);
+        g.moved(1, Point::new(300., 340.), true, true);
+        let at = drawn(&g, q);
+        // Fingers now centred on (200, 340): the point followed them.
+        assert!(
+            (at.x - 200.).abs() < 0.5 && (at.y - 340.).abs() < 0.5,
+            "drawn at {at:?}"
+        );
     }
 }

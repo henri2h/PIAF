@@ -5,7 +5,7 @@ use crate::app::navigation::go_back_or_home;
 use freya::prelude::*;
 
 use crate::ui::components::{
-    Chip, MediaViewer, MediaViewerItem, TopAppBar, TopAppBarTitle, empty_state, loading_state,
+    Chip, MediaViewer, MediaViewerItem, TopAppBar, empty_state, loading_state,
 };
 use crate::utils::const_values::AppColors;
 use crate::utils::timeline_media::{MediaEntry, MediaKind};
@@ -136,11 +136,7 @@ impl Component for RoomMediaPage {
                     go_back_or_home();
                 }
             })
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Media".to_string()),
-                on_back: Some(Arc::new(go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Media"))
             .child(tab_bar(tab, &entries))
             .child(
                 rect()

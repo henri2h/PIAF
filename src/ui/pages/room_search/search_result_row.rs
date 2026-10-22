@@ -1,68 +1,53 @@
 use freya::prelude::*;
 
-use crate::ui::components::Avatar;
-use crate::utils::use_app_colors;
+use crate::app::navigation::navigate_to_room_at_event;
+use crate::ui::components::{Avatar, ListItem};
+use crate::ui::pages::home::search::find_match;
+use crate::utils::avatars::AvatarSource;
+use crate::utils::room_search::Hit;
+use crate::utils::{format_timestamp, id_color, use_app_colors};
 
-#[derive(Debug, Clone, PartialEq)]
-pub(super) struct SearchResultItem {
-    pub sender_name: String,
-    pub sender_color: (u8, u8, u8),
-    pub body: String,
-    pub timestamp: String,
-}
-
-#[derive(Clone, PartialEq)]
-pub(super) struct SearchResultRow {
-    pub item: SearchResultItem,
+/// One matching message: its text (the match in bold), sender and time; a tap
+/// opens the room at it.
+#[derive(PartialEq)]
+pub struct SearchResultRow {
+    pub room_id: String,
+    pub hit: Hit,
+    pub query: String,
 }
 
 impl Component for SearchResultRow {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let item = &self.item;
-        rect()
-            .horizontal()
-            .width(Size::fill())
-            .padding(Gaps::new(10., 16., 10., 16.))
-            .spacing(12.)
-            .cross_align(Alignment::Start)
-            .child(Avatar {
-                size: 36.,
-                source: None,
-                name: item.sender_name.clone(),
-                color: item.sender_color,
+        let hit = &self.hit;
+        let body = hit.body.replace('\n', " ");
+        let text = match find_match(&body, &self.query) {
+            Some((start, end)) => paragraph()
+                .span(Span::new(body[..start].to_string()))
+                .span(Span::new(body[start..end].to_string()).font_weight(FontWeight::BOLD))
+                .span(Span::new(body[end..].to_string())),
+            None => paragraph().span(body.clone()),
+        }
+        .width(Size::fill())
+        .max_lines(2)
+        .text_overflow(TextOverflow::Ellipsis)
+        .font_size(15.)
+        .color(c.on_surface);
+
+        let sender = hit.sender.to_string();
+        let (room_id, event_id) = (self.room_id.clone(), hit.event_id.to_string());
+        ListItem::with_headline(text)
+            .supporting(format!(
+                "{} · {}",
+                hit.sender_name,
+                format_timestamp(hit.ts)
+            ))
+            .leading(Avatar {
+                size: 40.,
+                source: Some(AvatarSource::member(&self.room_id, &sender)),
+                name: hit.sender_name.clone(),
+                color: id_color(&sender),
             })
-            .child(
-                rect()
-                    .vertical()
-                    .spacing(2.)
-                    .width(Size::fill())
-                    .child(
-                        rect()
-                            .horizontal()
-                            .content(Content::Flex)
-                            .width(Size::fill())
-                            .child(
-                                label()
-                                    .text(item.sender_name.clone())
-                                    .width(Size::flex(1.0))
-                                    .font_weight(FontWeight::MEDIUM)
-                                    .font_size(14.),
-                            )
-                            .child(
-                                label()
-                                    .text(item.timestamp.clone())
-                                    .font_size(12.)
-                                    .color(c.on_surface_faint),
-                            ),
-                    )
-                    .child(
-                        label()
-                            .text(item.body.clone())
-                            .width(Size::fill())
-                            .font_size(13.)
-                            .color(c.reply_other_text),
-                    ),
-            )
+            .on_press(move |_| navigate_to_room_at_event(room_id.clone(), event_id.clone()))
     }
 }

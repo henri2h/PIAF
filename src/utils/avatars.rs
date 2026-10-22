@@ -52,7 +52,10 @@ pub struct MemberWithAvatar {
 /// for heroes, which servers only send for rooms without a name.
 pub async fn members_with_avatar(room: &Room, max: usize) -> Vec<MemberWithAvatar> {
     let me = room.own_user_id().to_owned();
-    let Ok(members) = room.members_no_sync(matrix_sdk::RoomMemberships::JOIN).await else {
+    let Ok(members) = room
+        .members_no_sync(matrix_sdk::RoomMemberships::JOIN)
+        .await
+    else {
         return Vec::new();
     };
     members
@@ -171,7 +174,7 @@ async fn room_avatar(client: &Client, room_id: &str) -> Option<Vec<u8>> {
     if let Some(bytes) = of_room(&room).await {
         return Some(bytes);
     }
-    for hero in room.heroes() {
+    for hero in room.clone_info().heroes().iter().cloned() {
         if let Some(uri) = hero.avatar_url
             && let Some(bytes) = by_mxc(client, uri).await
         {

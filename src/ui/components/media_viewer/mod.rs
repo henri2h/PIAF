@@ -10,7 +10,7 @@ use freya_query::prelude::QueryCapability;
 use matrix_sdk::ruma::events::room::MediaSource;
 
 use crate::utils::{
-        media::save_to_downloads,
+    media::save_to_downloads,
     queries::{FetchMediaContent, media_source_key},
     timeline_media::{MediaContent, MediaEntry},
 };
@@ -274,8 +274,9 @@ impl Component for MediaViewer {
                         gesture.write().moved(e.finger_id, at, has_prev, has_next);
                     }
                     TouchPhase::Ended | TouchPhase::Cancelled => {
-                        let release =
-                            gesture.write().up(e.finger_id, at, time, has_prev, has_next);
+                        let release = gesture
+                            .write()
+                            .up(e.finger_id, at, time, has_prev, has_next);
                         if gesture.peek().is_active() {
                             return;
                         }
@@ -358,9 +359,7 @@ impl Component for MediaViewer {
         let strip = rect()
             .expanded()
             .overflow(Overflow::Clip)
-            .maybe_child(has_prev.then(|| {
-                pane(g.dx - width, placeholder(&items[idx - 1]))
-            }))
+            .maybe_child(has_prev.then(|| pane(g.dx - width, placeholder(&items[idx - 1]))))
             .child(
                 pane(g.dx, current)
                     .key(item.key.clone())
@@ -368,9 +367,7 @@ impl Component for MediaViewer {
                     .offset_y(g.offset.y + g.dy)
                     .scale((shrink, shrink)),
             )
-            .maybe_child(has_next.then(|| {
-                pane(g.dx + width, placeholder(&items[idx + 1]))
-            }));
+            .maybe_child(has_next.then(|| pane(g.dx + width, placeholder(&items[idx + 1]))));
 
         // ── Controls over the image ──────────────────────────────────────────
         const WHITE: (u8, u8, u8) = (255, 255, 255);
@@ -430,6 +427,12 @@ impl Component for MediaViewer {
             .tooltip("Download")
             .size(44., 22.)
         };
+        // Touches on the controls are theirs, not the image's gestures.
+        let own_touches = |el: Rect| {
+            el.on_touch_start(|e: Event<TouchEventData>| e.stop_propagation())
+                .on_touch_move(|e: Event<TouchEventData>| e.stop_propagation())
+                .on_touch_end(|e: Event<TouchEventData>| e.stop_propagation())
+        };
         let top_bar = rect()
             .position(Position::new_absolute().top(0.).left(0.))
             .width(Size::fill())
@@ -481,7 +484,7 @@ impl Component for MediaViewer {
                     .child(download),
             );
         let bottom = caption.map(|cap| {
-            rect()
+            own_touches(rect())
                 .position(Position::new_absolute().bottom(0.).left(0.))
                 .width(Size::fill())
                 .opacity(chrome_opacity)
@@ -504,7 +507,11 @@ impl Component for MediaViewer {
         });
         // Desktop: round arrows over the image's sides (touch swipes instead).
         let arrows = (!cfg!(target_os = "android")).then(|| {
-            let arrow = |svg: Bytes, tooltip: &'static str, enabled: bool, side: Position, on_press: Box<dyn FnMut()>| {
+            let arrow = |svg: Bytes,
+                         tooltip: &'static str,
+                         enabled: bool,
+                         side: Position,
+                         on_press: Box<dyn FnMut()>| {
                 let mut on_press = on_press;
                 rect()
                     .position(side)
@@ -557,9 +564,10 @@ impl Component for MediaViewer {
             .on_touch_end(on_touch.clone())
             .on_touch_cancel(on_touch)
             .child(strip)
-            .maybe_child(arrows)
-            .child(top_bar)
-            .maybe_child(bottom)
+            // Fully faded controls leave: no invisible buttons to hit.
+            .maybe_child(arrows.filter(|_| chrome_opacity > 0.))
+            .maybe_child((chrome_opacity > 0.).then(|| own_touches(top_bar)))
+            .maybe_child(bottom.filter(|_| chrome_opacity > 0.))
             .into()
     }
 }
@@ -620,4 +628,104 @@ fn settle(
         g.dx = 0.;
         g.dy = 0.;
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use std::cell::RefCell;
+    use std::time::Duration;
+
+    use freya::prelude::*;
+    use freya_testing::prelude::*;
+
+    use super::{MediaViewer, MediaViewerItem, ViewerSource};
+
+    thread_local! {
+        static SELECTED: RefCell<Option<String>> = const { RefCell::new(None) };
+    }
+
+    fn item(key: &str) -> MediaViewerItem {
+        MediaViewerItem {
+            key: key.to_string(),
+            source: ViewerSource::Bytes(vec![]),
+            info: Some(("Henri".into(), "Apr 22".into())),
+            caption: Some("A caption".into()),
+            blurhash: None,
+            thumbnail_source: None,
+        }
+    }
+
+    fn app() -> impl IntoElement {
+        use_init_theme(dark_theme);
+        let selected = use_state(|| Some("b".to_string()));
+        SELECTED.with(|s| *s.borrow_mut() = selected.read().clone());
+        MediaViewer {
+            items: vec![item("a"), item("b"), item("c")],
+            selected_key: selected,
+            on_load_more: None,
+            on_show_in_chat: None,
+        }
+    }
+
+    fn runner() -> (tokio::runtime::Runtime, TestingRunner) {
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let test = {
+            let _guard = runtime.enter();
+            let (mut test, _) = TestingRunner::new(app, Size2D::new(400., 800.), |_| {}, 1.0);
+            test.sync_and_update();
+            test
+        };
+        (runtime, test)
+    }
+
+    fn drag(test: &mut TestingRunner, from: (f64, f64), to: (f64, f64)) {
+        test.press_touch(from);
+        for i in 1..=6 {
+            let f = i as f64 / 6.;
+            test.move_touch((from.0 + (to.0 - from.0) * f, from.1 + (to.1 - from.1) * f));
+        }
+        test.release_touch(to);
+        // The settle animation, then the switch.
+        test.poll(Duration::from_millis(16), Duration::from_millis(400));
+    }
+
+    fn selected() -> Option<String> {
+        SELECTED.with(|s| s.borrow().clone())
+    }
+
+    fn controls_shown(test: &TestingRunner) -> bool {
+        test.find(|_, element| Label::try_downcast(element).filter(|l| l.text.as_ref() == "Henri"))
+            .is_some()
+    }
+
+    #[test]
+    fn swipe_left_shows_the_next_image() {
+        let (runtime, mut test) = runner();
+        let _guard = runtime.enter();
+        drag(&mut test, (300., 400.), (60., 410.));
+        assert_eq!(selected().as_deref(), Some("c"));
+    }
+
+    #[test]
+    fn swipe_down_closes() {
+        let (runtime, mut test) = runner();
+        let _guard = runtime.enter();
+        drag(&mut test, (200., 300.), (205., 560.));
+        assert_eq!(selected(), None);
+    }
+
+    #[test]
+    fn a_tap_toggles_the_controls() {
+        let (runtime, mut test) = runner();
+        let _guard = runtime.enter();
+        assert!(controls_shown(&test));
+        test.press_touch((200., 400.));
+        test.release_touch((200., 400.));
+        test.poll(Duration::from_millis(16), Duration::from_millis(600));
+        assert!(!controls_shown(&test), "hidden after a tap");
+        test.press_touch((200., 400.));
+        test.release_touch((200., 400.));
+        test.poll(Duration::from_millis(16), Duration::from_millis(600));
+        assert!(controls_shown(&test), "back after another");
+    }
 }

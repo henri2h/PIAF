@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
 use matrix_sdk::encryption::{CrossSigningStatus, VerificationState};
 
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::TopAppBar;
 use crate::utils::const_values::AppColors;
 use crate::utils::matrix::CLIENT;
 use crate::utils::use_app_colors;
@@ -124,11 +122,7 @@ impl Component for SettingsSecurity {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Security".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Security"))
             .child(
                 ScrollView::new()
                     .width(Size::fill())

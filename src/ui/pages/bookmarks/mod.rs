@@ -1,16 +1,14 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
 
-use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
-
 use crate::BOOKMARKS_RX;
-use crate::ui::components::{HoverableExt, IconButton, TopAppBar, TopAppBarAction, TopAppBarTitle};
+use crate::ui::components::{
+    HoverableExt, IconButton, ListItem, TopAppBar, row_time, sender_in_room,
+};
 use crate::utils::bookmarks::{
     BookmarkEntry, BookmarkList, delete_list, mutate_bookmarks, remove_entry, rename_list,
 };
 use crate::utils::const_values::AppColors;
-use crate::utils::{format_timestamp, use_app_colors, use_watch};
+use crate::utils::{use_app_colors, use_watch};
 
 #[derive(PartialEq)]
 pub struct BookmarksPage {}
@@ -41,14 +39,11 @@ impl Component for BookmarksPage {
             .expanded()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Bookmarks".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![TopAppBarAction::IconButton {
-                    icon: freya_icons::lucide::settings(),
-                    on_press: Arc::new(move || *manage_open.write_unchecked() = true),
-                }],
-            })
+            .child(
+                TopAppBar::new("Bookmarks").action(freya_icons::lucide::settings(), move || {
+                    *manage_open.write_unchecked() = true
+                }),
+            )
             .maybe_child((!lists.is_empty()).then(|| tabs_row(&lists, current_id, selected, c)))
             .child(match current_list {
                 Some(list) if !list.entries.is_empty() => {
@@ -139,103 +134,39 @@ struct BookmarkItem {
 impl Component for BookmarkItem {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let entry = self.entry.clone();
-        let list_id = self.list_id.clone();
-        let room_id = entry.room_id.clone();
-        let event_id = entry.event_id.clone();
-
-        let ts = MilliSecondsSinceUnixEpoch(
-            matrix_sdk::ruma::UInt::try_from(entry.added_ts_ms).unwrap_or_default(),
-        );
-        let time_str = format_timestamp(ts);
-
-        rect()
-            .width(Size::fill())
-            .padding(Gaps::new(2., 8., 2., 8.))
-            .child(
+        let entry = &self.entry;
+        let (room_id, event_id) = (entry.room_id.clone(), entry.event_id.clone());
+        let remove = {
+            let (list_id, room_id, event_id) =
+                (self.list_id.clone(), room_id.clone(), event_id.clone());
+            move |_| {
+                let (list_id, room_id, event_id) =
+                    (list_id.clone(), room_id.clone(), event_id.clone());
+                tokio::spawn(async move {
+                    mutate_bookmarks(|content| {
+                        remove_entry(content, &list_id, &room_id, &event_id)
+                    })
+                    .await;
+                });
+            }
+        };
+        ListItem::with_headline(sender_in_room(&entry.sender_display, &entry.room_name, c))
+            .supporting(entry.message_preview.clone())
+            .trailing(
                 rect()
                     .horizontal()
-                    .width(Size::fill())
-                    .content(Content::Flex)
-                    .padding(Gaps::new(10., 8., 10., 8.))
-                    .spacing(8.)
-                    .corner_radius(12.)
+                    .spacing(4.)
                     .cross_align(Alignment::Center)
-                    .on_press(move |_| {
-                        crate::app::navigation::navigate_to_room_at_event(
-                            room_id.clone(),
-                            event_id.clone(),
-                        );
-                    })
+                    .child(row_time(entry.added_ts_ms, c))
                     .child(
-                        rect()
-                            .vertical()
-                            .width(Size::flex(1.0))
-                            .spacing(2.)
-                            .child(
-                                rect()
-                                    .horizontal()
-                                    .width(Size::fill())
-                                    .content(Content::Flex)
-                                    .spacing(4.)
-                                    .cross_align(Alignment::Center)
-                                    .child(
-                                        label()
-                                            .text(entry.sender_display.clone())
-                                            .font_size(14.)
-                                            .font_weight(FontWeight::MEDIUM)
-                                            .color(c.on_surface),
-                                    )
-                                    .child(
-                                        label()
-                                            .text("in".to_string())
-                                            .font_size(13.)
-                                            .color(c.on_surface_muted),
-                                    )
-                                    .child(
-                                        label()
-                                            .text(entry.room_name.clone())
-                                            .font_size(13.)
-                                            .color(c.on_surface_muted)
-                                            .width(Size::flex(1.0)),
-                                    )
-                                    .child(
-                                        label()
-                                            .text(time_str)
-                                            .font_size(11.)
-                                            .color(c.on_surface_faint),
-                                    ),
-                            )
-                            .child(
-                                label()
-                                    .text(entry.message_preview.clone())
-                                    .font_size(13.)
-                                    .color(c.on_surface_muted),
-                            ),
-                    )
-                    .child(
-                        IconButton::new(freya_icons::lucide::trash_2(), c.on_surface_muted, {
-                            let list_id = list_id.clone();
-                            let room_id = entry.room_id.clone();
-                            let event_id = entry.event_id.clone();
-                            move |_| {
-                                let list_id = list_id.clone();
-                                let room_id = room_id.clone();
-                                let event_id = event_id.clone();
-                                tokio::spawn(async move {
-                                    mutate_bookmarks(|content| {
-                                        remove_entry(content, &list_id, &room_id, &event_id)
-                                    })
-                                    .await;
-                                });
-                            }
-                        })
-                        .tooltip("Remove")
-                        .size(28., 16.)
-                        .into_element(),
-                    )
-                    .hoverable(Size::fill(), Size::auto(), 12.),
+                        IconButton::new(freya_icons::lucide::trash_2(), c.on_surface_muted, remove)
+                            .tooltip("Remove")
+                            .size(28., 16.),
+                    ),
             )
+            .on_press(move |_| {
+                crate::app::navigation::navigate_to_room_at_event(room_id.clone(), event_id.clone())
+            })
     }
 }
 

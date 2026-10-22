@@ -1,10 +1,8 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
 
 use crate::ui::components::{
-    IconButton, PersonRow, TopAppBar, TopAppBarTitle, UserPopupInfo, UserPopupOverlay, badge,
-    confirm_dialog, search_input,
+    IconButton, PersonRow, SearchBox, TopAppBar, UserPopupInfo, UserPopupOverlay, badge,
+    confirm_dialog,
 };
 use crate::utils::const_values::AppColors;
 use crate::utils::members::{self, ADMIN_LEVEL, MemberItem};
@@ -98,7 +96,11 @@ impl Component for RoomMembers {
                     rect()
                         .width(Size::fill())
                         .padding(Gaps::new(8., 16., 8., 16.))
-                        .child(search_input(search, "Search members…", c)),
+                        .child(SearchBox {
+                            value: search,
+                            placeholder: "Search members…",
+                            auto_focus: false,
+                        }),
                 )
                 .child(
                     ScrollView::new()
@@ -159,11 +161,7 @@ impl Component for RoomMembers {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text(format!("Members ({count})")),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new(format!("Members ({count})")))
             .child(body)
             .maybe_child(remove_sheet)
             .child(UserPopupOverlay { open: user_popup })

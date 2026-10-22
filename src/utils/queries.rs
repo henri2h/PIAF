@@ -1,6 +1,7 @@
 use std::sync::{Arc, OnceLock};
 
 use freya_query::prelude::QueryCapability;
+use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
 use matrix_sdk::ruma::events::room::MediaSource;
 
 use crate::utils::matrix::CLIENT;
@@ -22,10 +23,38 @@ fn media_semaphore() -> Arc<tokio::sync::Semaphore> {
         .clone()
 }
 
+/// Downloads (or reads from the store) a media item in `format`, on tokio,
+/// at most 4 at a time.
+async fn fetch_media(source: MediaSource, format: MediaFormat) -> Result<Vec<u8>, ()> {
+    let client = CLIENT.get().cloned().ok_or(())?;
+    on_tokio(async move {
+        let _permit = media_semaphore().acquire_owned().await.map_err(|_| ())?;
+        let request = MediaRequestParameters { source, format };
+        client
+            .media()
+            .get_media_content(&request, true)
+            .await
+            .map_err(|_| ())
+    })
+    .await
+    .ok_or(())?
+}
+
 // ---------------------------------------------------------------------------
 // Helpers — run directly as parallel tokio tasks, bypassing the sequential
 // worker, so many rooms can load their avatars/names concurrently.
 // ---------------------------------------------------------------------------
+
+/// A room member's display name (cached for an hour), `None` until loaded.
+/// A hook: call it unconditionally.
+pub fn use_member_name(room_id: &str, user_id: &str) -> Option<String> {
+    use freya_query::prelude::{Query, use_query};
+    let query = use_query(
+        Query::new(format!("{room_id}\x00{user_id}"), FetchSenderName)
+            .stale_time(std::time::Duration::from_secs(3600)),
+    );
+    query.read().state().ok().cloned()
+}
 
 async fn fetch_sender_name_direct(key: &str) -> Result<String, ()> {
     let mut parts = key.splitn(2, '\x00');
@@ -85,38 +114,12 @@ impl QueryCapability for FetchMediaContent {
     type Keys = String; // output of `media_source_key()`
 
     async fn run(&self, key: &String) -> Result<Vec<u8>, ()> {
-        use matrix_sdk::media::{MediaFormat, MediaRequestParameters};
-
         let source: MediaSource =
             matrix_sdk::ruma::exports::serde_json::from_str(key).map_err(|_| ())?;
-        let client = CLIENT.get().cloned().ok_or(())?;
-
         // Spawn a real tokio task so the semaphore acquire and the download
         // both happen in a tokio context — never on the freya/smol main thread.
         // The freya task only awaits a futures::oneshot, which is smol-safe.
-        let rx = on_tokio::<Result<Vec<u8>, ()>, _>(async move {
-            // Acquire the permit inside the tokio task (safe: real tokio context).
-            let permit = match media_semaphore().acquire_owned().await {
-                Ok(p) => p,
-                Err(_) => {
-                    return Err(());
-                }
-            };
-            let _permit = permit; // released when this task finishes
-            let request = MediaRequestParameters {
-                source,
-                format: MediaFormat::File,
-            };
-            let result = client
-                .media()
-                .get_media_content(&request, true)
-                .await
-                .map(|b| b.to_vec())
-                .map_err(|_| ());
-            result
-        });
-
-        rx.await.ok_or(())?
+        fetch_media(source, MediaFormat::File).await
     }
 }
 
@@ -136,7 +139,7 @@ impl QueryCapability for FetchMediaThumbnail {
     type Keys = String; // output of `media_thumbnail_key()`
 
     async fn run(&self, key: &String) -> Result<Vec<u8>, ()> {
-        use matrix_sdk::media::{MediaFormat, MediaRequestParameters, MediaThumbnailSettings};
+        use matrix_sdk::media::MediaThumbnailSettings;
         use matrix_sdk::ruma::UInt;
 
         // Parse "WxH:{json_source}"
@@ -147,34 +150,12 @@ impl QueryCapability for FetchMediaThumbnail {
 
         let source: MediaSource =
             matrix_sdk::ruma::exports::serde_json::from_str(json).map_err(|_| ())?;
-        let client = CLIENT.get().cloned().ok_or(())?;
 
-        let rx = on_tokio::<Result<Vec<u8>, ()>, _>(async move {
-            let permit = match media_semaphore().acquire_owned().await {
-                Ok(p) => p,
-                Err(_) => {
-                    return Err(());
-                }
-            };
-            let _permit = permit;
-            let settings = MediaThumbnailSettings::new(
-                UInt::new(width as u64).unwrap_or(UInt::MAX),
-                UInt::new(height as u64).unwrap_or(UInt::MAX),
-            );
-            let request = MediaRequestParameters {
-                source,
-                format: MediaFormat::Thumbnail(settings),
-            };
-            let result = client
-                .media()
-                .get_media_content(&request, true)
-                .await
-                .map(|b| b.to_vec())
-                .map_err(|_| ());
-            result
-        });
-
-        rx.await.ok_or(())?
+        let settings = MediaThumbnailSettings::new(
+            UInt::new(width as u64).unwrap_or(UInt::MAX),
+            UInt::new(height as u64).unwrap_or(UInt::MAX),
+        );
+        fetch_media(source, MediaFormat::Thumbnail(settings)).await
     }
 }
 
@@ -189,15 +170,7 @@ impl QueryCapability for FetchUserDisplayName {
     async fn run(&self, _: &()) -> Result<String, ()> {
         let client = CLIENT.get().cloned().ok_or(())?;
         let rx = on_tokio::<Result<String, ()>, _>(async move {
-            let name = client
-                .account()
-                .get_display_name()
-                .await
-                .ok()
-                .flatten()
-                .or_else(|| client.user_id().map(|id| id.to_string()))
-                .unwrap_or_default();
-            Ok(name)
+            Ok(crate::utils::matrix::own_display_name(&client).await)
         });
         rx.await.ok_or(())?
     }
@@ -214,7 +187,7 @@ impl QueryCapability for FetchMutualRooms {
     type Keys = String; // user_id
 
     async fn run(&self, user_id: &String) -> Result<Vec<String>, ()> {
-        use ruma::api::client::membership::mutual_rooms::unstable::Request as MutualRoomsRequest;
+        use ruma::api::client::membership::get_mutual_rooms::unstable::Request as MutualRoomsRequest;
 
         let client = CLIENT.get().cloned().ok_or(())?;
         let parsed = ruma::UserId::parse(user_id.as_str()).map_err(|_| ())?;

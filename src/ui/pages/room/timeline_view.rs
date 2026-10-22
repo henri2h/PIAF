@@ -114,28 +114,32 @@ impl Component for TimelineView {
             &msgs.iter().map(|item| group_key(item)).collect::<Vec<_>>(),
             &date_labels.iter().map(Option::is_some).collect::<Vec<_>>(),
         );
-        let rows = msgs.into_iter().zip(date_labels).zip(groups).map(|((item, date_label), group)| {
-            let key = row_key(&item);
-            rect()
-                .key(key.clone())
-                .width(Size::fill())
-                .on_sized(move |e: Event<SizedEventData>| {
-                    let h = e.area.height();
-                    if heights.peek().get(&key) != Some(&h) {
-                        heights.write().insert(key.clone(), h);
-                    }
-                })
-                .child(MessageRow {
-                    room_id: self.room_id.clone(),
-                    item,
-                    date_label,
-                    group,
-                    my_user_id: my_uid.clone(),
-                    action_tx: action_tx.clone(),
-                    is_dm,
-                })
-                .into_element()
-        });
+        let rows =
+            msgs.into_iter()
+                .zip(date_labels)
+                .zip(groups)
+                .map(|((item, date_label), group)| {
+                    let key = row_key(&item);
+                    rect()
+                        .key(key.clone())
+                        .width(Size::fill())
+                        .on_sized(move |e: Event<SizedEventData>| {
+                            let h = e.area.height();
+                            if heights.peek().get(&key) != Some(&h) {
+                                heights.write().insert(key.clone(), h);
+                            }
+                        })
+                        .child(MessageRow {
+                            room_id: self.room_id.clone(),
+                            item,
+                            date_label,
+                            group,
+                            my_user_id: my_uid.clone(),
+                            action_tx: action_tx.clone(),
+                            is_dm,
+                        })
+                        .into_element()
+                });
 
         let content = rect()
             .vertical()

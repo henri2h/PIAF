@@ -1,14 +1,12 @@
 use std::sync::Arc;
-use std::time::Duration;
 
 use freya::prelude::*;
 
 use crate::utils::avatars::AvatarSource;
-use freya_query::prelude::*;
 use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
 use crate::ui::components::{Avatar, bottom_sheet};
-use crate::utils::queries::FetchSenderName;
+use crate::utils::queries::use_member_name;
 use crate::utils::{format_timestamp, id_color, use_app_colors};
 
 use super::{Reaction, ReactionSender};
@@ -164,16 +162,7 @@ impl Component for SeenByRow {
         let display_fallback = self.display_fallback.clone();
         let timestamp = self.timestamp.clone();
 
-        let member_key = format!("{}\x00{}", room_id, uid);
-        let name_query = use_query(
-            Query::new(member_key.clone(), FetchSenderName).stale_time(Duration::from_secs(3600)),
-        );
-        let name = name_query
-            .read()
-            .state()
-            .ok()
-            .cloned()
-            .unwrap_or_else(|| display_fallback.clone());
+        let name = use_member_name(&room_id, &uid).unwrap_or_else(|| display_fallback.clone());
 
         rect()
             .horizontal()
@@ -207,37 +196,12 @@ fn reactions_section(
     room_id: &str,
     c: crate::utils::const_values::AppColors,
 ) -> Element {
-    let reactions: Vec<Reaction> = item
-        .as_event()
-        .and_then(|e| {
-            if let TimelineItemContent::MsgLike(m) = e.content() {
-                let r: Vec<Reaction> = m
-                    .reactions
-                    .iter()
-                    .map(|(key, senders)| {
-                        let count = senders.len();
-                        let sender_list: Vec<ReactionSender> = senders
-                            .iter()
-                            .map(|(uid, info)| ReactionSender {
-                                display: uid.localpart().to_string(),
-                                user_id: uid.to_string(),
-                                timestamp: format_timestamp(info.timestamp),
-                            })
-                            .collect();
-                        Reaction {
-                            key: key.clone(),
-                            count,
-                            reacted_by_me: false,
-                            senders: sender_list,
-                        }
-                    })
-                    .collect();
-                Some(r)
-            } else {
-                None
-            }
-        })
-        .unwrap_or_default();
+    let reactions = match item.as_event().map(|e| e.content()) {
+        Some(TimelineItemContent::MsgLike(m)) => {
+            super::reactions(&m.reactions, crate::utils::matrix::my_user_id().as_deref())
+        }
+        _ => vec![],
+    };
 
     if reactions.is_empty() {
         return rect().into();
@@ -298,16 +262,7 @@ impl Component for ReactionSenderRow {
         let timestamp = self.sender.timestamp.clone();
         let display_fallback = self.sender.display.clone();
 
-        let member_key = format!("{}\x00{}", self.room_id, uid);
-        let name_query = use_query(
-            Query::new(member_key.clone(), FetchSenderName).stale_time(Duration::from_secs(3600)),
-        );
-        let name = name_query
-            .read()
-            .state()
-            .ok()
-            .cloned()
-            .unwrap_or_else(|| display_fallback.clone());
+        let name = use_member_name(&self.room_id, &uid).unwrap_or_else(|| display_fallback.clone());
 
         rect()
             .horizontal()

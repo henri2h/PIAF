@@ -72,9 +72,21 @@ pub fn sniff_image_mime(bytes: &[u8]) -> (mime::Mime, &'static str) {
         [0x89, b'P', b'N', b'G', ..] => (mime::IMAGE_PNG, "png"),
         [0xFF, 0xD8, 0xFF, ..] => (mime::IMAGE_JPEG, "jpg"),
         [b'G', b'I', b'F', b'8', ..] => (mime::IMAGE_GIF, "gif"),
-        [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => {
-            ("image/webp".parse().expect("valid mime"), "webp")
-        }
+        [
+            b'R',
+            b'I',
+            b'F',
+            b'F',
+            _,
+            _,
+            _,
+            _,
+            b'W',
+            b'E',
+            b'B',
+            b'P',
+            ..,
+        ] => ("image/webp".parse().expect("valid mime"), "webp"),
         _ => (mime::APPLICATION_OCTET_STREAM, "bin"),
     }
 }

@@ -11,6 +11,7 @@ use crate::ui::pages::{
     new_chat::{NewChat, NewGroup, NewGroupConfig, PendingDm, PendingGroup},
     reactions::ReactionsPage,
     room::RoomPage,
+    room_invite::RoomInvite,
     room_media::RoomMediaPage,
     room_members::RoomMembers,
     room_search::RoomSearch,
@@ -62,6 +63,8 @@ pub enum Route {
         RoomMediaPage { room_id: String },
         #[route("/room/:room_id/members")]
         RoomMembers { room_id: String },
+        #[route("/room/:room_id/invite")]
+        RoomInvite { room_id: String },
         #[route("/reactions")]
         ReactionsPage,
         #[route("/bookmarks")]

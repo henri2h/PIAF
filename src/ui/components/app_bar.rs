@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use freya::prelude::*;
 
+use super::HoverableExt;
 use super::use_color_transition;
 
 use crate::ui::components::IconButton;
@@ -29,11 +30,8 @@ pub enum TopAppBarTitle {
         name: String,
         room_id: String,
         color: (u8, u8, u8),
-    },
-    /// Replaces the title with an inline search input (MD3 search bar).
-    SearchInput {
-        state: State<String>,
-        placeholder: &'static str,
+        /// Tapping the avatar and name (opens the room's info).
+        on_press: Option<Arc<dyn Fn()>>,
     },
 }
 
@@ -104,6 +102,27 @@ pub struct TopAppBar {
     pub actions: Vec<TopAppBarAction>,
 }
 
+impl TopAppBar {
+    /// A page's bar: `title` and a back button ([`go_back_or_home`]).
+    ///
+    /// [`go_back_or_home`]: crate::app::navigation::go_back_or_home
+    pub fn new(title: impl Into<String>) -> Self {
+        Self {
+            title: TopAppBarTitle::Text(title.into()),
+            on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
+            actions: vec![],
+        }
+    }
+
+    pub fn action(mut self, icon: Bytes, on_press: impl Fn() + 'static) -> Self {
+        self.actions.push(TopAppBarAction::IconButton {
+            icon,
+            on_press: Arc::new(on_press),
+        });
+        self
+    }
+}
+
 impl PartialEq for TopAppBar {
     fn eq(&self, other: &Self) -> bool {
         self.title == other.title && self.on_back.is_some() == other.on_back.is_some()
@@ -140,6 +159,14 @@ impl Component for TopAppBar {
             rect().width(Size::px(12.)).into_element()
         };
 
+        // A tappable room title takes the space up to the actions.
+        let title_fills = matches!(
+            &self.title,
+            TopAppBarTitle::Room {
+                on_press: Some(_),
+                ..
+            }
+        );
         let title_el = match self.title.clone() {
             TopAppBarTitle::Text(t) => label()
                 .text(t)
@@ -151,46 +178,38 @@ impl Component for TopAppBar {
                 name,
                 room_id,
                 color,
-            } => rect()
-                .horizontal()
-                .spacing(10.)
-                .cross_align(Alignment::Center)
-                .child(Avatar {
-                    size: 36.,
-                    source: Some(AvatarSource::Room(room_id.clone())),
-                    name: name.clone(),
-                    color,
-                })
-                .child(
-                    label()
-                        .text(name)
-                        .font_size(18.)
-                        .font_weight(FontWeight::MEDIUM)
-                        .color(c.on_surface),
-                )
-                .into_element(),
-            TopAppBarTitle::SearchInput { state, placeholder } => rect()
-                .horizontal()
-                .width(Size::flex(1.0))
-                .height(Size::px(40.))
-                .corner_radius(20.)
-                .background(c.surface_container)
-                .padding(Gaps::new(0., 12., 0., 12.))
-                .cross_align(Alignment::Center)
-                .spacing(6.)
-                .child(
-                    SvgViewer::new(freya_icons::lucide::search())
-                        .color(c.on_surface_variant)
-                        .width(Size::px(18.))
-                        .height(Size::px(18.)),
-                )
-                .child(
-                    Input::new(state)
-                        .flat()
-                        .placeholder(placeholder)
-                        .width(Size::fill()),
-                )
-                .into_element(),
+                on_press,
+            } => {
+                let title = rect()
+                    .horizontal()
+                    .content(Content::Flex)
+                    .spacing(10.)
+                    .padding(Gaps::new(6., 8., 6., 4.))
+                    .cross_align(Alignment::Center)
+                    .child(Avatar {
+                        size: 36.,
+                        source: Some(AvatarSource::Room(room_id.clone())),
+                        name: name.clone(),
+                        color,
+                    })
+                    .child(
+                        label()
+                            .width(Size::flex(1.))
+                            .text(name)
+                            .max_lines(1)
+                            .text_overflow(TextOverflow::Ellipsis)
+                            .font_size(18.)
+                            .font_weight(FontWeight::MEDIUM)
+                            .color(c.on_surface),
+                    );
+                match on_press {
+                    Some(on_press) => title
+                        .width(Size::fill())
+                        .on_press(move |_| on_press())
+                        .hoverable(Size::flex(1.), Size::px(48.), 12.),
+                    None => title.into_element(),
+                }
+            }
         };
 
         let trailing: Vec<Element> = actions
@@ -224,7 +243,7 @@ impl Component for TopAppBar {
                     .padding(Gaps::new(0., 4., 0., 0.))
                     .child(leading)
                     .child(title_el)
-                    .child(rect().width(Size::flex(1.0)))
+                    .maybe_child((!title_fills).then(|| rect().width(Size::flex(1.0))))
                     .children(trailing),
             )
     }

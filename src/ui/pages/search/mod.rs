@@ -3,15 +3,11 @@ use std::sync::Mutex;
 use freya::prelude::*;
 
 mod empty_search;
-mod search_field;
 
-use crate::app::navigation::go_back_or_home;
-use crate::ui::components::{Chip, IconButton};
+use crate::ui::components::{Chip, SearchField, search_app_bar};
 use crate::ui::pages::home::{SearchFilter, SearchResults};
-use crate::utils::insets::status_bar_inset;
 use crate::utils::{recent_searches, use_app_colors};
 use empty_search::EmptySearch;
-use search_field::SearchField;
 
 /// Query kept across a result's round trip (search → room → back), so the
 /// results are still there. Cleared when the room list shows again.
@@ -62,41 +58,17 @@ impl Component for SearchPage {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(
-                rect()
-                    .width(Size::fill())
-                    .height(Size::px(status_bar_inset())),
-            )
-            .child(
-                rect()
-                    .horizontal()
-                    .width(Size::fill())
-                    .height(Size::px(64.))
-                    .content(Content::Flex)
-                    .cross_align(Alignment::Center)
-                    .padding(Gaps::new(0., 8., 0., 4.))
-                    .spacing(4.)
-                    .child(
-                        IconButton::new(
-                            freya_icons::lucide::arrow_left(),
-                            c.on_surface_variant,
-                            |_| go_back_or_home(),
-                        )
-                        .size(48., 22.),
-                    )
-                    .child(SearchField {
-                        value: search,
-                        placeholder: "Search chats, people, messages",
-                        on_submit: EventHandler::new(|query: String| recent_searches::add(&query)),
-                        dismiss,
-                    }),
-            )
-            .child(
-                rect()
-                    .width(Size::fill())
-                    .height(Size::px(1.))
-                    .background(c.outline_variant_light),
-            )
+            .child(search_app_bar(
+                SearchField {
+                    value: search,
+                    placeholder: "Search chats, people, messages",
+                    on_submit: EventHandler::new(|query: String| recent_searches::add(&query)),
+                    dismiss,
+                    auto_focus: true,
+                    font_size: 18.,
+                },
+                c,
+            ))
             .child(chips)
             .child(if has_query {
                 SearchResults {

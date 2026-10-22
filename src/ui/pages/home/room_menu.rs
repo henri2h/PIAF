@@ -50,6 +50,40 @@ fn entries(s: &RoomSummary) -> Vec<Entry> {
     ]
 }
 
+/// The entry's icon, in the sheet and the menu.
+fn icon(entry: &Entry) -> bytes::Bytes {
+    use freya_icons::lucide;
+    match entry {
+        Entry::Action(_, RoomAction::MarkRead) => lucide::mail_open(),
+        Entry::Action(_, RoomAction::MarkUnread) => lucide::mail(),
+        Entry::Action(_, RoomAction::Favourite(true)) => lucide::star(),
+        Entry::Action(_, RoomAction::Favourite(false)) => lucide::star_off(),
+        Entry::Action(_, RoomAction::LowPriority(true)) => lucide::arrow_down_to_line(),
+        Entry::Action(_, RoomAction::LowPriority(false)) => lucide::arrow_up_from_line(),
+        Entry::Action(_, RoomAction::Mute(true)) => lucide::bell_off(),
+        Entry::Action(_, RoomAction::Mute(false)) => lucide::bell(),
+        Entry::Action(_, RoomAction::Leave) => lucide::log_out(),
+        Entry::Archive => lucide::archive(),
+        Entry::Leave("Decline invite", _) => lucide::circle_x(),
+        Entry::Leave(..) => lucide::log_out(),
+    }
+}
+
+/// Icon and label of a sheet row or menu item.
+fn entry_row(entry: &Entry, text: &'static str, color: (u8, u8, u8), size: f32) -> Rect {
+    rect()
+        .horizontal()
+        .spacing(16.)
+        .cross_align(Alignment::Center)
+        .child(
+            SvgViewer::new(icon(entry))
+                .width(Size::px(size))
+                .height(Size::px(size))
+                .color(color),
+        )
+        .child(label().text(text).font_size(15.).color(color))
+}
+
 fn archive(room_id: String) {
     tokio::spawn(async move {
         crate::utils::room_mailbox::archive_room(&room_id).await;
@@ -89,39 +123,41 @@ pub(super) fn open_room_menu(s: &RoomSummary, from_pointer_down: bool, ctx: Opti
 }
 
 fn room_menu(s: &RoomSummary) -> Menu {
-    entries(s)
-        .into_iter()
-        .fold(Menu::new(), |menu, entry| {
-            let room_id = s.room_id.clone();
-            match entry {
-                Entry::Action(text, action) => menu.child(
+    // Not a hook: the menu is built from an event handler.
+    let color =
+        crate::utils::const_values::AppColors::from_colors(&get_theme_or_default().read().colors)
+            .on_surface_variant;
+    entries(s).into_iter().fold(Menu::new(), |menu, entry| {
+        let room_id = s.room_id.clone();
+        match entry {
+            Entry::Action(text, action) => menu.child(
+                MenuButton::new()
+                    .on_press(move |_| {
+                        run(room_id.clone(), action);
+                        ContextMenu::close();
+                    })
+                    .child(entry_row(&Entry::Action(text, action), text, color, 16.)),
+            ),
+            Entry::Archive => menu.child(
+                MenuButton::new()
+                    .on_press(move |_| {
+                        archive(room_id.clone());
+                        ContextMenu::close();
+                    })
+                    .child(entry_row(&Entry::Archive, "Archive", color, 16.)),
+            ),
+            Entry::Leave(text, confirm) => menu.child(
+                SubMenu::new().label(text).child(
                     MenuButton::new()
                         .on_press(move |_| {
-                            run(room_id.clone(), action);
+                            leave(room_id.clone());
                             ContextMenu::close();
                         })
-                        .child(text),
+                        .child(confirm),
                 ),
-                Entry::Archive => menu.child(
-                    MenuButton::new()
-                        .on_press(move |_| {
-                            archive(room_id.clone());
-                            ContextMenu::close();
-                        })
-                        .child("Archive"),
-                ),
-                Entry::Leave(text, confirm) => menu.child(
-                    SubMenu::new().label(text).child(
-                        MenuButton::new()
-                            .on_press(move |_| {
-                                leave(room_id.clone());
-                                ContextMenu::close();
-                            })
-                            .child(confirm),
-                    ),
-                ),
-            }
-        })
+            ),
+        }
+    })
 }
 
 /// The open room sheet, if any.
@@ -161,6 +197,7 @@ pub(super) fn room_sheet(mut sheet: State<Option<RoomSheet>>, c: AppColors) -> O
             Entry::Archive => ("Archive", c.on_surface),
             Entry::Leave(text, _) => (*text, c.error),
         };
+        let row = entry_row(&entry, text, color, 22.);
         rect()
             .width(Size::fill())
             .padding(Gaps::new(14., 24., 14., 24.))
@@ -178,7 +215,7 @@ pub(super) fn room_sheet(mut sheet: State<Option<RoomSheet>>, c: AppColors) -> O
                     confirm_leave: true,
                 })),
             })
-            .child(label().text(text).font_size(15.).color(color))
+            .child(row)
             .hoverable(Size::fill(), Size::auto(), 0.)
             .into_element()
     });

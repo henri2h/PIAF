@@ -37,6 +37,7 @@ impl Component for Layout {
                     | Route::RoomSettings { .. }
                     | Route::RoomMediaPage { .. }
                     | Route::RoomMembers { .. }
+                    | Route::RoomInvite { .. }
                     | Route::PendingDm { .. }
                     | Route::PendingGroup
             );

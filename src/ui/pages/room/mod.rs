@@ -4,6 +4,7 @@ mod compose_bar;
 mod compose_line;
 mod detail_modal;
 mod focus;
+mod invite_mutual_rooms;
 mod invite_view;
 mod media_items;
 mod message_action_popup;
@@ -54,6 +55,29 @@ pub(super) struct Reaction {
     pub count: usize,
     pub reacted_by_me: bool,
     pub senders: Vec<ReactionSender>,
+}
+
+/// One [`Reaction`] per emoji of a timeline event; `me` marks ours.
+pub(super) fn reactions(
+    by_key: &matrix_sdk_ui::timeline::ReactionsByKeyBySender,
+    me: Option<&str>,
+) -> Vec<Reaction> {
+    by_key
+        .iter()
+        .map(|(key, senders)| Reaction {
+            key: key.clone(),
+            count: senders.len(),
+            reacted_by_me: me.is_some_and(|me| senders.keys().any(|uid| uid.as_str() == me)),
+            senders: senders
+                .iter()
+                .map(|(uid, info)| ReactionSender {
+                    display: uid.localpart().to_string(),
+                    user_id: uid.to_string(),
+                    timestamp: crate::utils::format_timestamp(info.timestamp),
+                })
+                .collect(),
+        })
+        .collect()
 }
 
 /// A room, or its invite screen while the invite is pending.

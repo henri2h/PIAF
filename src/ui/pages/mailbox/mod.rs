@@ -4,11 +4,9 @@ mod recontact;
 pub use archived::ArchivedPage;
 pub use recontact::RecontactPage;
 
-use std::sync::Arc;
-
 use freya::prelude::*;
 
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::TopAppBar;
 use crate::ui::pages::home::{Mailbox, RoomFilter, RoomList};
 use crate::utils::use_app_colors;
 
@@ -27,11 +25,7 @@ impl Component for MailboxRooms {
             .expanded()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text(self.mailbox.label().to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new(self.mailbox.label().to_string()))
             .child(
                 rect()
                     .width(Size::fill())

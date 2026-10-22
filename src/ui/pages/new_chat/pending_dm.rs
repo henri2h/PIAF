@@ -1,14 +1,12 @@
 use std::sync::Arc;
 
-use crate::utils::id_color;
 use freya::prelude::*;
-
-use crate::{
-    ui::components::{Avatar, TopAppBar, TopAppBarTitle},
-    utils::use_app_colors,
-};
+use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
 
 use super::draft::PENDING_DM;
+use super::pending_chat::PendingChat;
+use crate::ui::components::Avatar;
+use crate::utils::{id_color, use_app_colors};
 
 /// Compose-first DM page: the room is created only when the first message is sent.
 /// Display info (name, avatar) is read from PENDING_DM which is set before navigation.
@@ -22,10 +20,6 @@ impl Component for PendingDm {
         let c = use_app_colors();
         let user_id = self.user_id.clone();
 
-        let text: State<String> = use_state(String::new);
-        let mut sending: State<bool> = use_state(|| false);
-        let mut error: State<Option<String>> = use_state(|| None);
-
         // Read display info set by the caller before navigating here.
         let (display_name, avatar) = PENDING_DM
             .lock()
@@ -35,158 +29,48 @@ impl Component for PendingDm {
                     .map(|u| (u.display_name.clone(), u.avatar.clone()))
             })
             .unwrap_or_else(|| (user_id.clone(), None));
-        let color = id_color(&user_id);
 
-        let is_sending = *sending.read();
-        let err_msg = error.read().clone();
-        let is_empty = text.read().trim().is_empty();
-
-        let mut do_send = move || {
-            let msg = text.read().trim().to_string();
-            if msg.is_empty() || is_sending {
-                return;
-            }
-            *sending.write() = true;
-            *error.write() = None;
-
-            let uid = user_id.clone();
-            let rx = crate::utils::on_tokio::<Result<String, String>, _>(async move {
-                let result: Result<String, String> = async {
-                    use matrix_sdk::ruma::events::{
-                        AnyMessageLikeEventContent, room::message::RoomMessageEventContent,
-                    };
-
-                    let room_id = crate::utils::matrix::create_or_get_dm(uid)
-                        .await
-                        .ok_or_else(|| "Failed to create DM".to_string())?;
-                    let room = crate::utils::matrix::get_room(&room_id).ok_or("Room not found")?;
-                    let content = AnyMessageLikeEventContent::RoomMessage(
-                        RoomMessageEventContent::text_plain(msg),
-                    );
-                    room.send(content).await.map_err(|e| e.to_string())?;
-                    Ok(room_id)
-                }
-                .await;
-                result
-            });
-            spawn(async move {
-                match rx.await {
-                    Some(Ok(room_id)) => {
-                        // Clear stale display info so a future PendingDm opened
-                        // via back-navigation can't show the wrong name/avatar.
-                        if let Ok(mut pending) = PENDING_DM.lock() {
-                            *pending = None;
-                        }
-                        crate::app::navigation::navigate_to_room(room_id);
-                    }
-                    Some(Err(e)) => {
-                        *error.write() = Some(format!("Error: {e}"));
-                        *sending.write() = false;
-                    }
-                    None => {
-                        *sending.write() = false;
-                    }
-                }
-            });
-        };
-
-        let mut on_submit = do_send.clone();
-
-        rect()
-            .expanded()
+        let header = rect()
+            .width(Size::fill())
+            .padding(Gaps::new(24., 16., 16., 16.))
+            .center()
             .vertical()
-            .content(Content::Flex)
-            .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text(display_name.clone()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
+            .spacing(8.)
+            .child(Avatar {
+                size: 64.,
+                source: avatar,
+                name: display_name.clone(),
+                color: id_color(&user_id),
             })
-            // Recipient header
             .child(
-                rect()
-                    .width(Size::fill())
-                    .padding(Gaps::new(24., 16., 16., 16.))
-                    .center()
-                    .vertical()
-                    .spacing(8.)
-                    .child(Avatar {
-                        size: 64.,
-                        source: avatar,
-                        name: display_name.to_string(),
-                        color,
-                    })
-                    .child(
-                        label()
-                            .text(display_name)
-                            .font_size(17.)
-                            .font_weight(FontWeight::MEDIUM)
-                            .color(c.on_surface),
-                    ),
+                label()
+                    .text(display_name.clone())
+                    .font_size(17.)
+                    .font_weight(FontWeight::MEDIUM)
+                    .color(c.on_surface),
             )
-            // Body hint
-            .child(
-                rect().expanded().center().child(
-                    label()
-                        .text("No messages yet")
-                        .font_size(14.)
-                        .color(c.on_surface_muted),
-                ),
-            )
-            // Error
-            .maybe_child(err_msg.map(|msg| {
-                rect()
-                    .width(Size::fill())
-                    .padding(Gaps::new(0., 16., 4., 16.))
-                    .child(label().text(msg).font_size(13.).color(c.error))
-            }))
-            // Compose row
-            .child(
-                rect()
-                    .horizontal()
-                    .width(Size::fill())
-                    .padding(Gaps::new(8., 8., 8., 8.))
-                    .content(Content::Flex)
-                    .cross_align(Alignment::Center)
-                    .spacing(8.)
-                    .background(c.surface)
-                    .child(
-                        rect()
-                            .width(Size::flex(1.0))
-                            .corner_radius(20.)
-                            .background(c.surface_container)
-                            .padding(Gaps::new(0., 4., 0., 12.))
-                            .child(
-                                Input::new(text)
-                                    .flat()
-                                    .auto_focus(true)
-                                    .placeholder("Message")
-                                    .width(Size::fill())
-                                    .on_submit(move |_: String| on_submit()),
-                            ),
-                    )
-                    .child(
-                        Button::new()
-                            .on_press(move |_| do_send())
-                            .child(if is_sending {
-                                rect()
-                                    .center()
-                                    .width(Size::px(18.))
-                                    .height(Size::px(18.))
-                                    .child(CircularLoader::new().size(16.))
-                                    .into_element()
-                            } else {
-                                SvgViewer::new(freya_icons::lucide::send_horizontal())
-                                    .color(if is_empty {
-                                        c.on_surface_muted
-                                    } else {
-                                        c.primary
-                                    })
-                                    .width(Size::px(18.))
-                                    .height(Size::px(18.))
-                                    .into_element()
-                            }),
-                    ),
-            )
+            .into_element();
+
+        PendingChat {
+            title: display_name,
+            header,
+            create: Arc::new(move |msg| {
+                let user_id = user_id.clone();
+                Box::pin(async move {
+                    let room_id = crate::utils::matrix::create_or_get_dm(user_id)
+                        .await
+                        .ok_or("Failed to create DM")?;
+                    let room = crate::utils::matrix::get_room(&room_id).ok_or("Room not found")?;
+                    room.send(RoomMessageEventContent::text_plain(msg))
+                        .await
+                        .map_err(|e| e.to_string())?;
+                    // A PendingDm reopened by back-navigation can't show stale info.
+                    if let Ok(mut pending) = PENDING_DM.lock() {
+                        *pending = None;
+                    }
+                    Ok(room_id)
+                })
+            }),
+        }
     }
 }

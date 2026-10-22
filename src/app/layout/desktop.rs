@@ -89,7 +89,12 @@ impl Component for Layout {
             || is_wide
                 && matches!(
                     route,
-                    Route::HomePage | Route::RoomPage { .. } | Route::RoomSettings { .. }
+                    Route::HomePage
+                        | Route::RoomPage { .. }
+                        | Route::RoomSettings { .. }
+                        | Route::RoomSearch { .. }
+                        | Route::RoomMembers { .. }
+                        | Route::RoomInvite { .. }
                 );
 
         let body = if let Some(rid) = settings_room {

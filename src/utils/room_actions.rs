@@ -80,8 +80,12 @@ async fn apply(room: &Room, action: RoomAction) -> anyhow::Result<()> {
             if let LatestEventValue::Remote(event) = room.latest_event()
                 && let Some(event_id) = event.event_id()
             {
-                room.send_single_receipt(ReceiptType::Read, ReceiptThread::Unthreaded, event_id)
-                    .await?;
+                room.send_single_receipt(
+                    ReceiptType::Read,
+                    ReceiptThread::Unthreaded,
+                    event_id.to_owned(),
+                )
+                .await?;
             }
             room.set_unread_flag(false).await?;
         }

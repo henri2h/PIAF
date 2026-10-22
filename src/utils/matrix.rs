@@ -608,3 +608,15 @@ pub async fn homeserver_exists(server: &str) -> bool {
         Ok(Ok(_))
     )
 }
+
+/// Our display name, else our user ID.
+pub async fn own_display_name(client: &Client) -> String {
+    client
+        .account()
+        .get_display_name()
+        .await
+        .ok()
+        .flatten()
+        .or_else(|| client.user_id().map(|id| id.to_string()))
+        .unwrap_or_default()
+}

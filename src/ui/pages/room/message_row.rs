@@ -7,15 +7,15 @@ use crate::utils::avatars::AvatarSource;
 use crate::ui::components::HoverableExt;
 #[cfg(not(target_os = "android"))]
 use crate::ui::components::use_fading;
+use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk_ui::timeline::{
     EventSendState, MembershipChange, TimelineDetails, TimelineItem, TimelineItemContent,
     VirtualTimelineItem,
 };
-use matrix_sdk::ruma::events::room::message::MessageType;
 use tokio::sync::mpsc::UnboundedSender;
 
+use super::MsgAction;
 use super::ui_ctx::{RoomUiCtx, use_room_ui_ctx};
-use super::{MsgAction, Reaction, ReactionSender};
 use crate::logging::RenderTimer;
 use crate::ui::components::{Avatar, UserPopupInfo};
 use crate::utils::{format_timestamp, id_color, use_app_colors};
@@ -219,31 +219,7 @@ impl Component for MessageRow {
         let fully_read = !read_receipts.is_empty();
         let send_state = event.send_state().cloned();
 
-        let reactions: Vec<Reaction> = msg_like
-            .reactions
-            .iter()
-            .map(|(key, senders)| {
-                let count = senders.len();
-                let reacted_by_me = my_user_id
-                    .as_deref()
-                    .map(|me| senders.iter().any(|(uid, _)| uid.as_str() == me))
-                    .unwrap_or(false);
-                let sender_list = senders
-                    .iter()
-                    .map(|(uid, info)| ReactionSender {
-                        display: uid.localpart().to_string(),
-                        user_id: uid.to_string(),
-                        timestamp: format_timestamp(info.timestamp),
-                    })
-                    .collect();
-                Reaction {
-                    key: key.clone(),
-                    count,
-                    reacted_by_me,
-                    senders: sender_list,
-                }
-            })
-            .collect();
+        let reactions = super::reactions(&msg_like.reactions, my_user_id.as_deref());
 
         let reply_to: Option<(String, String)> = if let Some(reply) = &msg_like.in_reply_to {
             if let TimelineDetails::Ready(embedded) = &reply.event {
@@ -283,46 +259,60 @@ impl Component for MessageRow {
             c.surface_container
         };
 
-        // ── Reply quote ───────────────────────────────────────────────────
-        let reply_el =
-            if let Some((reply_sender, reply_body)) = &reply_to {
-                rect()
-                    .vertical()
-                    .padding(Gaps::new(0., 0., 6., 0.))
-                    .child(
-                        rect()
-                            .vertical()
-                            .padding(Gaps::new(4., 8., 4., 8.))
-                            .corner_radius(8.)
-                            .background(if is_me {
-                                c.reply_me_bg
-                            } else {
-                                c.reply_other_bg
-                            })
-                            .spacing(2.)
-                            .child(
-                                label()
-                                    .text(reply_sender.clone())
-                                    .font_size(11.)
-                                    .font_weight(FontWeight::BOLD)
-                                    .color(if is_me {
-                                        c.reply_me_sender
-                                    } else {
-                                        c.reply_other_sender
-                                    }),
-                            )
-                            .child(label().text(reply_body.clone()).font_size(12.).color(
-                                if is_me {
-                                    c.reply_me_text
-                                } else {
-                                    c.reply_other_text
-                                },
-                            )),
-                    )
-                    .into_element()
+        // ── Reply quote: accent bar, sender, two lines of the message ──────
+        let reply_el = if let Some((reply_sender, reply_body)) = &reply_to {
+            let (bg, accent, text) = if is_me {
+                (c.reply_me_bg, c.reply_me_sender, c.reply_me_text)
             } else {
-                rect().into_element()
+                (c.reply_other_bg, c.reply_other_sender, c.reply_other_text)
             };
+            rect()
+                .width(Size::fill())
+                .padding(Gaps::new(0., 0., 4., 0.))
+                .child(
+                    rect()
+                        .vertical()
+                        .width(Size::fill())
+                        .padding(Gaps::new(6., 10., 6., 10.))
+                        .corner_radius(10.)
+                        .overflow(Overflow::Clip)
+                        .background(bg)
+                        .border(
+                            Border::new()
+                                .fill(accent)
+                                .width(BorderWidth {
+                                    top: 0.,
+                                    right: 0.,
+                                    bottom: 0.,
+                                    left: 3.,
+                                })
+                                .alignment(BorderAlignment::Inner),
+                        )
+                        .spacing(2.)
+                        .child(
+                            label()
+                                .width(Size::fill())
+                                .text(reply_sender.clone())
+                                .max_lines(1)
+                                .text_overflow(TextOverflow::Ellipsis)
+                                .font_size(12.)
+                                .font_weight(FontWeight::BOLD)
+                                .color(accent),
+                        )
+                        .child(
+                            label()
+                                .width(Size::fill())
+                                .text(reply_body.clone())
+                                .max_lines(2)
+                                .text_overflow(TextOverflow::Ellipsis)
+                                .font_size(13.)
+                                .color(text),
+                        ),
+                )
+                .into_element()
+        } else {
+            rect().into_element()
+        };
 
         // ── Content ───────────────────────────────────────────────────────
         let Some(content_el) = super::message_content::message_content(
@@ -346,6 +336,16 @@ impl Component for MessageRow {
         let show_meta = group.last || pending_or_failed;
         // Images fill their bubble edge to edge; the text around them keeps padding.
         let edge_to_edge = matches!(message.msgtype(), MessageType::Image(_));
+        // Nothing but the image: no bubble around it, the time over its corner.
+        let shows_name = !is_me && !is_dm && group.first;
+        let media_only = match message.msgtype() {
+            MessageType::Image(img) => {
+                crate::utils::timeline_media::caption(&img.body).is_none()
+                    && reply_to.is_none()
+                    && !shows_name
+            }
+            _ => false,
+        };
         let padded = move |el: Rect| {
             if edge_to_edge {
                 el.padding(Gaps::new(6., 12., 0., 12.))
@@ -353,8 +353,16 @@ impl Component for MessageRow {
                 el
             }
         };
-        let top_inner = if group.first { BUBBLE_RADIUS } else { JOINED_RADIUS };
-        let bottom_inner = if group.last { BUBBLE_RADIUS } else { JOINED_RADIUS };
+        let top_inner = if group.first {
+            BUBBLE_RADIUS
+        } else {
+            JOINED_RADIUS
+        };
+        let bottom_inner = if group.last {
+            BUBBLE_RADIUS
+        } else {
+            JOINED_RADIUS
+        };
         // The corners on the sender's side are smaller where bubbles join.
         let radius = if is_me {
             CornerRadius::new(BUBBLE_RADIUS, top_inner, bottom_inner, BUBBLE_RADIUS)
@@ -377,9 +385,23 @@ impl Component for MessageRow {
                 Gaps::new(8., 12., 8., 12.)
             })
             .corner_radius(radius)
-            .background(bubble_bg)
+            .maybe(!media_only, |b| b.background(bubble_bg))
             .maybe(edge_to_edge, |b| b.overflow(Overflow::Clip))
             .spacing(2.);
+        let bubble_inner = if media_only {
+            bubble_inner.padding(Gaps::new_all(0.))
+        } else {
+            bubble_inner
+        };
+        // The time over an image's bottom right corner, on a dark pill.
+        let over_image = |meta: Rect| {
+            rect()
+                .position(Position::new_absolute().bottom(6.).right(6.))
+                .padding(Gaps::new(2., 8., 2., 8.))
+                .corner_radius(10.)
+                .background((0u8, 0u8, 0u8, 140u8))
+                .child(meta)
+        };
 
         let bubble_inner = if !is_me {
             bubble_inner
@@ -397,14 +419,18 @@ impl Component for MessageRow {
                 .child(reply_el)
                 .child(content_el)
                 .maybe_child(show_meta.then(|| {
-                    padded(
-                        rect().child(
-                            label()
-                                .text(timestamp.clone())
-                                .font_size(11.)
-                                .color(c.on_surface_faint),
-                        ),
-                    )
+                    let color = if media_only {
+                        (255, 255, 255)
+                    } else {
+                        c.on_surface_faint
+                    };
+                    let meta =
+                        rect().child(label().text(timestamp.clone()).font_size(11.).color(color));
+                    if media_only {
+                        over_image(meta)
+                    } else {
+                        padded(meta)
+                    }
                 }))
         } else {
             let (receipt_icon, receipt_color) = match &send_state {
@@ -426,12 +452,24 @@ impl Component for MessageRow {
                 .child(reply_el)
                 .child(content_el)
                 .maybe_child(show_meta.then(|| {
-                    padded(
+                    let time_color = if media_only {
+                        (255, 255, 255)
+                    } else {
+                        c.timestamp_me
+                    };
+                    let place = move |meta: Rect| {
+                        if media_only {
+                            over_image(meta)
+                        } else {
+                            padded(meta)
+                        }
+                    };
+                    place(
                         rect()
                             .horizontal()
                             .cross_align(Alignment::Center)
                             .spacing(4.)
-                            .child(label().text(timestamp).font_size(11.).color(c.timestamp_me))
+                            .child(label().text(timestamp).font_size(11.).color(time_color))
                             .child(
                                 SvgViewer::new(receipt_icon)
                                     .color(receipt_color)
@@ -497,7 +535,11 @@ impl Component for MessageRow {
                                 .font_size(13.)
                                 .color(pill_text_color),
                         )
-                        .hoverable(Size::auto(), Size::px(REACTION_HEIGHT), REACTION_HEIGHT / 2.),
+                        .hoverable(
+                            Size::auto(),
+                            Size::px(REACTION_HEIGHT),
+                            REACTION_HEIGHT / 2.,
+                        ),
                 );
             }
             // Overlaps the bubble's bottom edge, drawn over it. Negative
@@ -518,8 +560,16 @@ impl Component for MessageRow {
             .on_secondary_down(move |_| {
                 *action_popup.write() = Some(item_for_popup.clone());
             })
-            .main_align(if is_me { Alignment::End } else { Alignment::Start })
-            .cross_align(if is_me { Alignment::End } else { Alignment::Start })
+            .main_align(if is_me {
+                Alignment::End
+            } else {
+                Alignment::Start
+            })
+            .cross_align(if is_me {
+                Alignment::End
+            } else {
+                Alignment::Start
+            })
             .child(bubble_inner)
             .maybe_child((!reactions.is_empty()).then_some(reactions_section));
 

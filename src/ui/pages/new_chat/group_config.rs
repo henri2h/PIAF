@@ -1,12 +1,6 @@
 use freya::prelude::*;
 
-use std::sync::Arc;
-
-use crate::{
-    Route,
-    ui::components::{TopAppBar, TopAppBarTitle},
-    utils::use_app_colors,
-};
+use crate::{Route, ui::components::TopAppBar, utils::use_app_colors};
 
 use super::draft::GROUP_DRAFT;
 
@@ -60,11 +54,7 @@ impl Component for NewGroupConfig {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Group settings".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Group settings"))
             // Participants recap
             .child(
                 rect()

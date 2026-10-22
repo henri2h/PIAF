@@ -1,7 +1,7 @@
 pub mod attachments;
 pub mod ime;
-pub mod share;
 mod jni_push;
+pub mod share;
 
 use std::sync::OnceLock;
 
@@ -31,6 +31,9 @@ pub fn runtime() -> &'static tokio::runtime::Runtime {
 
 #[unsafe(no_mangle)]
 fn android_main(droid_app: AndroidApp) {
+    // Panics in logcat come with a backtrace (nothing else sets the env here).
+    // SAFETY: first thing in the process' main, before any other thread starts.
+    unsafe { std::env::set_var("RUST_BACKTRACE", "1") };
     crate::logging::init();
 
     let data_path = droid_app
@@ -38,6 +41,7 @@ fn android_main(droid_app: AndroidApp) {
         .expect("No internal data path on Android");
 
     cache_jni_globals(&droid_app);
+    init_tls_verifier(&droid_app);
 
     // Kept entered for the app lifetime: freya calls `tokio::spawn` internally.
     let _rt_guard = runtime().enter();
@@ -67,6 +71,25 @@ fn android_main(droid_app: AndroidApp) {
         launch_config.with_plugin(MetricsPlugin::default().with_visible_performance(true));
 
     launch(launch_config)
+}
+
+/// HTTPS (reqwest, rustls-platform-verifier) checks certificates against
+/// Android's trust store through JNI: without this every request panics.
+fn init_tls_verifier(droid_app: &AndroidApp) {
+    // SAFETY: the VM and activity pointers come from the running app.
+    let vm = unsafe { jni22::JavaVM::from_raw(droid_app.vm_as_ptr() as *mut jni22::sys::JavaVM) };
+    let result = vm.attach_current_thread(|env| -> Result<(), jni22::errors::Error> {
+        let activity = unsafe {
+            jni22::objects::JObject::from_raw(
+                env,
+                droid_app.activity_as_ptr() as jni22::sys::jobject,
+            )
+        };
+        rustls_platform_verifier::android::init_with_env(env, activity)
+    });
+    if let Err(e) = result {
+        tracing::error!("TLS verifier init failed: {e}");
+    }
 }
 
 /// Caches JavaVM, app context and class loader so background threads can call

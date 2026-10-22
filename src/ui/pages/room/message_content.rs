@@ -9,8 +9,23 @@ use crate::utils::timeline_media::caption;
 
 use super::message_row::PressGuard;
 
-const MEDIA_W: f32 = 200.;
-const MEDIA_H: f32 = 150.;
+const MEDIA_W: f32 = 240.;
+const MEDIA_H: f32 = 180.;
+/// Height range of an image in the timeline (very tall or wide ones are cropped).
+const MEDIA_MIN_H: f32 = 120.;
+const MEDIA_MAX_H: f32 = 320.;
+
+/// Frame of an image in the timeline: full width, height from its aspect
+/// ratio (when known), within [`MEDIA_MIN_H`]..[`MEDIA_MAX_H`].
+pub(super) fn media_size(width: Option<u64>, height: Option<u64>) -> (f32, f32) {
+    match (width, height) {
+        (Some(w), Some(h)) if w > 0 && h > 0 => (
+            MEDIA_W,
+            (MEDIA_W * h as f32 / w as f32).clamp(MEDIA_MIN_H, MEDIA_MAX_H),
+        ),
+        _ => (MEDIA_W, MEDIA_H),
+    }
+}
 
 /// Body of a message bubble; `None` for message types not shown.
 pub(super) fn message_content(
@@ -34,27 +49,35 @@ pub(super) fn message_content(
             .into_element(),
         MessageType::Image(img) => {
             let open_key = key.clone();
+            let (w, h) = media_size(
+                img.info.as_ref().and_then(|i| i.width).map(u64::from),
+                img.info.as_ref().and_then(|i| i.height).map(u64::from),
+            );
             rect()
                 .vertical()
                 .spacing(6.)
                 .child(
-                    media_frame(MediaThumbnail {
-                        item_key: key,
-                        blurhash: img.info.as_ref().and_then(|i| i.blurhash.clone()),
-                        thumbnail_source: img
-                            .info
-                            .as_ref()
-                            .and_then(|i| i.thumbnail_source.clone())
-                            .map(ViewerSource::Remote),
-                        fallback_source: Some(ViewerSource::Remote(img.source.clone())),
-                        thumb_size: Some((400, 300)),
-                    })
+                    media_frame(
+                        w,
+                        h,
+                        MediaThumbnail {
+                            item_key: key,
+                            blurhash: img.info.as_ref().and_then(|i| i.blurhash.clone()),
+                            thumbnail_source: img
+                                .info
+                                .as_ref()
+                                .and_then(|i| i.thumbnail_source.clone())
+                                .map(ViewerSource::Remote),
+                            fallback_source: Some(ViewerSource::Remote(img.source.clone())),
+                            thumb_size: Some((400, 300)),
+                        },
+                    )
                     .on_press(move |_| {
                         if guard.allows() {
                             image_viewer.set(Some(open_key.clone()));
                         }
                     })
-                    .hoverable(Size::px(MEDIA_W), Size::px(MEDIA_H), 8.),
+                    .hoverable(Size::px(w), Size::px(h), 0.),
                 )
                 // The image fills the bubble edge to edge; its caption keeps the padding.
                 .maybe_child(caption(&img.body).map(|cap| {
@@ -94,13 +117,17 @@ pub(super) fn message_content(
                 .vertical()
                 .spacing(4.)
                 .maybe_child(thumbnail.map(|thumbnail| {
-                    media_frame(MediaThumbnail {
-                        item_key: key,
-                        blurhash: None,
-                        thumbnail_source: Some(ViewerSource::Remote(thumbnail)),
-                        fallback_source: None,
-                        thumb_size: Some((400, 300)),
-                    })
+                    media_frame(
+                        MEDIA_W,
+                        MEDIA_H,
+                        MediaThumbnail {
+                            item_key: key,
+                            blurhash: None,
+                            thumbnail_source: Some(ViewerSource::Remote(thumbnail)),
+                            fallback_source: None,
+                            thumb_size: Some((400, 300)),
+                        },
+                    )
                     .child(
                         rect()
                             .position(Position::new_absolute().top(0.).left(0.))
@@ -133,12 +160,11 @@ pub(super) fn message_content(
     })
 }
 
-/// Rounded, clipped box an image or video thumbnail fills.
-fn media_frame(thumbnail: MediaThumbnail) -> Rect {
+/// Clipped box an image or video thumbnail fills; the bubble rounds it.
+fn media_frame(width: f32, height: f32, thumbnail: MediaThumbnail) -> Rect {
     rect()
-        .width(Size::px(MEDIA_W))
-        .height(Size::px(MEDIA_H))
-        .corner_radius(4.)
+        .width(Size::px(width))
+        .height(Size::px(height))
         .overflow(Overflow::Clip)
         .child(thumbnail)
 }
@@ -179,4 +205,19 @@ fn file_attachment(
                 ),
         )
         .hoverable(Size::auto(), Size::auto(), 0.)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::media_size;
+
+    #[test]
+    fn image_frames_follow_the_aspect_ratio_within_limits() {
+        assert_eq!(media_size(Some(1600), Some(900)), (240., 135.));
+        assert_eq!(media_size(Some(1000), Some(1000)), (240., 240.));
+        // Very tall or very wide: clamped (the image is cropped).
+        assert_eq!(media_size(Some(500), Some(3000)), (240., 320.));
+        assert_eq!(media_size(Some(3000), Some(300)), (240., 120.));
+        assert_eq!(media_size(None, Some(10)), (240., 180.));
+    }
 }

@@ -117,7 +117,11 @@ impl AppColors {
             primary: rgb(c.primary),
             on_primary: rgb(c.text_inverse),
             primary_container: rgb(c.focus),
-            on_primary_container: if is_dark { (190, 225, 255) } else { (0, 60, 110) },
+            on_primary_container: if is_dark {
+                (190, 225, 255)
+            } else {
+                (0, 60, 110)
+            },
             surface: rgb(c.background),
             surface_container: rgb(c.surface_primary),
             surface_container_high: rgb(c.surface_secondary),

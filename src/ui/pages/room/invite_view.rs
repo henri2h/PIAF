@@ -4,6 +4,7 @@ use freya::prelude::*;
 use crate::utils::avatars::AvatarSource;
 use freya_material_design::prelude::ButtonRippleExt;
 
+use super::invite_mutual_rooms::InviteMutualRooms;
 use super::room_app_bar::room_app_bar;
 use crate::app::navigation::close_room;
 use crate::ui::components::Avatar;
@@ -115,6 +116,14 @@ impl Component for InviteView {
                 format!("{who} invited you to join")
             }
         });
+        let mutual = info
+            .read()
+            .as_ref()
+            .filter(|i| i.is_direct)
+            .map(|i| InviteMutualRooms {
+                room_id: self.room_id.clone(),
+                user_id: i.inviter_id.clone(),
+            });
         let busy_now = *busy.read();
         let (accept_id, decline_id) = (self.room_id.clone(), self.room_id.clone());
 
@@ -183,7 +192,8 @@ impl Component for InviteView {
                                         busy_now,
                                         move || respond(decline_id.clone(), false),
                                         move || respond(accept_id.clone(), true),
-                                    )),
+                                    ))
+                                    .maybe_child(mutual),
                             ),
                     ),
             )

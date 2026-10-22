@@ -1,20 +1,18 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
-
 
 use crate::{
     Route,
-    ui::components::{M3ListItem, PersonRow, TopAppBar, TopAppBarTitle, search_input},
+    ui::components::{M3ListItem, PersonRow, SearchBox, TopAppBar},
     utils::use_app_colors,
 };
 
 pub mod draft;
 mod group_config;
 mod group_invite;
+mod pending_chat;
 mod pending_dm;
 mod pending_group;
-mod use_user_search;
+pub(crate) mod use_user_search;
 
 pub use group_config::NewGroupConfig;
 pub use group_invite::NewGroup;
@@ -54,11 +52,7 @@ impl Component for NewChat {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("New Chat".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("New Chat"))
             // "Create a group" list item
             .child(M3ListItem {
                 icon: freya_icons::lucide::users(),
@@ -93,7 +87,11 @@ impl Component for NewChat {
                 rect()
                     .width(Size::fill())
                     .padding(Gaps::new(4., 16., 8., 16.))
-                    .child(search_input(search, "Search by user ID or name…", c).auto_focus(true)),
+                    .child(SearchBox {
+                        value: search,
+                        placeholder: "Search by user ID or name…",
+                        auto_focus: true,
+                    }),
             )
             // Results / spinner / suggestions
             .child(if is_searching {

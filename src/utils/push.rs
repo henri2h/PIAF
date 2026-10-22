@@ -15,6 +15,7 @@ pub static ANDROID_APP_CONTEXT: OnceLock<jni::objects::GlobalRef> = OnceLock::ne
 #[cfg(target_os = "android")]
 pub static APP_CLASS_LOADER: OnceLock<jni::objects::GlobalRef> = OnceLock::new();
 
+use matrix_sdk::ruma::exports::serde_json;
 use matrix_sdk::{
     Client,
     ruma::{
@@ -27,7 +28,6 @@ use matrix_sdk::{
         push::{HttpPusherData, PushFormat},
     },
 };
-use matrix_sdk::ruma::exports::serde_json;
 use tokio::fs;
 
 const APP_ID: &str = "app.piaf.android";
@@ -113,7 +113,8 @@ pub async fn register_pusher(client: &Client, endpoint: &str) {
         profile_tag: client.device_id().map(|d| d.to_string()),
     };
 
-    match client.pusher().set(pusher.into()).await {
+    // `append: false` (the spec default): replaces a pusher with the same push key.
+    match client.pusher().set(pusher.into(), false).await {
         Ok(_) => tracing::info!("UP pusher registered successfully"),
         Err(e) => tracing::warn!("failed to register UP pusher: {e}"),
     }
@@ -323,7 +324,7 @@ async fn already_read(
     };
     for receipt_type in [ReceiptType::Read, ReceiptType::ReadPrivate] {
         let receipt = room
-            .load_user_receipt(receipt_type, ReceiptThread::Unthreaded, user_id)
+            .load_user_receipt(receipt_type, &ReceiptThread::Unthreaded, user_id)
             .await
             .ok()
             .flatten();
@@ -340,7 +341,10 @@ async fn already_read(
 pub async fn send_text(client: &Client, room_id: &str, body: &str) -> bool {
     use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
 
-    let Some(room) = RoomId::parse(room_id).ok().and_then(|id| client.get_room(&id)) else {
+    let Some(room) = RoomId::parse(room_id)
+        .ok()
+        .and_then(|id| client.get_room(&id))
+    else {
         return false;
     };
     match room.send(RoomMessageEventContent::text_plain(body)).await {
@@ -357,7 +361,9 @@ pub async fn mark_read(client: &Client, room_id: &str, event_id: &str) -> bool {
     use matrix_sdk::room::Receipts;
 
     let (Some(room), Ok(event_id)) = (
-        RoomId::parse(room_id).ok().and_then(|id| client.get_room(&id)),
+        RoomId::parse(room_id)
+            .ok()
+            .and_then(|id| client.get_room(&id)),
         EventId::parse(event_id),
     ) else {
         return false;
@@ -434,7 +440,7 @@ pub async fn get_read_rooms(client: &Client, entries: Vec<(String, u64)>) -> Vec
         };
 
         let receipt = room
-            .load_user_receipt(ReceiptType::Read, ReceiptThread::Unthreaded, &user_id)
+            .load_user_receipt(ReceiptType::Read, &ReceiptThread::Unthreaded, &user_id)
             .await
             .ok()
             .flatten();
@@ -491,90 +497,72 @@ pub(crate) fn find_app_class<'a>(
 ///   3. JNI call → Kotlin `cancelNotificationsForRooms` (NotificationManager + SharedPrefs cleanup)
 #[cfg(target_os = "android")]
 pub async fn cancel_read_notifications_after_sync(client: &Client) {
+    cancel_read_notifications(client).await;
+}
 
-    let vm = match JAVA_VM.get() {
-        Some(v) => v,
-        None => return,
-    };
-    let app_ctx = match ANDROID_APP_CONTEXT.get() {
-        Some(c) => c,
-        None => return,
-    };
+#[cfg(target_os = "android")]
+async fn cancel_read_notifications(client: &Client) -> Option<()> {
+    // Step 1: ask Kotlin for the notified rooms: [{roomId, ts}].
+    let notified_json: String = with_push_receiver(|env, cls, ctx| {
+        let obj = env
+            .call_static_method(
+                cls,
+                "getNotifiedRoomsJson",
+                "(Landroid/content/Context;)Ljava/lang/String;",
+                &[ctx.into()],
+            )
+            .and_then(|v| v.l())
+            .ok()
+            .filter(|obj| !obj.is_null())?;
+        env.get_string(&jni::objects::JString::from(obj))
+            .ok()
+            .map(String::from)
+    })?;
 
-    // Step 1: ask Kotlin for the current notified-room list (JSON array of room_id strings).
-    let notified_json: String = {
-        let mut env = match vm.attach_current_thread() {
-            Ok(e) => e,
-            Err(_) => return,
-        };
-        let cls = match find_app_class(&mut env, "dev/piaf/app/PushReceiver") {
-            Some(c) => c,
-            None => return,
-        };
-        let ctx = app_ctx.as_obj();
-        let result = env.call_static_method(
-            &cls,
-            "getNotifiedRoomsJson",
-            "(Landroid/content/Context;)Ljava/lang/String;",
-            &[(&ctx).into()],
-        );
-        match result.and_then(|v| v.l()) {
-            Ok(obj) if !obj.is_null() => match env.get_string(&jni::objects::JString::from(obj)) {
-                Ok(s) => String::from(s),
-                Err(_) => return,
-            },
-            _ => return,
-        }
-    };
-
-    // Step 2: parse [{roomId, ts}] and check — pure Rust async, no JNI.
-    let entries: Vec<(String, u64)> = {
-        let arr: Vec<serde_json::Value> = match serde_json::from_str(&notified_json) {
-            Ok(v) => v,
-            Err(_) => return,
-        };
-        arr.into_iter()
-            .filter_map(|v| {
-                let room_id = v.get("roomId")?.as_str()?.to_string();
-                let ts = v.get("ts")?.as_u64().unwrap_or(0);
-                Some((room_id, ts))
-            })
-            .collect()
-    };
+    // Step 2: which of them were read since — pure Rust, no JNI.
+    let arr: Vec<serde_json::Value> = serde_json::from_str(&notified_json).ok()?;
+    let entries: Vec<(String, u64)> = arr
+        .into_iter()
+        .filter_map(|v| {
+            let room_id = v.get("roomId")?.as_str()?.to_string();
+            let ts = v.get("ts")?.as_u64().unwrap_or(0);
+            Some((room_id, ts))
+        })
+        .collect();
     if entries.is_empty() {
-        return;
+        return None;
     }
-
     let read_rooms = get_read_rooms(client, entries).await;
     if read_rooms.is_empty() {
-        return;
+        return None;
     }
+    let read_json = serde_json::to_string(&read_rooms).ok()?;
 
-    let read_json = match serde_json::to_string(&read_rooms) {
-        Ok(s) => s,
-        Err(_) => return,
-    };
+    // Step 3: Kotlin cancels their notifications and cleans up SharedPrefs.
+    with_push_receiver(|env, cls, ctx| {
+        let jstr = env.new_string(&read_json).ok()?;
+        env.call_static_method(
+            cls,
+            "cancelNotificationsForRooms",
+            "(Landroid/content/Context;Ljava/lang/String;)V",
+            &[ctx.into(), (&jstr).into()],
+        )
+        .ok()
+        .map(|_| ())
+    })
+}
 
-    // Step 3: tell Kotlin to cancel the notifications and clean up SharedPrefs.
-    let mut env = match vm.attach_current_thread() {
-        Ok(e) => e,
-        Err(_) => return,
-    };
-    let cls = match find_app_class(&mut env, "dev/piaf/app/PushReceiver") {
-        Some(c) => c,
-        None => return,
-    };
-    let ctx = app_ctx.as_obj();
-    let jstr: jni::objects::JString<'_> = match env.new_string(&read_json) {
-        Ok(s) => s,
-        Err(_) => return,
-    };
-    let _ = env.call_static_method(
-        &cls,
-        "cancelNotificationsForRooms",
-        "(Landroid/content/Context;Ljava/lang/String;)V",
-        &[(&ctx).into(), (&jstr).into()],
-    );
+/// Runs `f` on this thread attached to the JVM, with Kotlin's `PushReceiver`
+/// class and the app context.
+#[cfg(target_os = "android")]
+fn with_push_receiver<T>(
+    f: impl FnOnce(&mut jni::JNIEnv, &jni::objects::JClass, &jni::objects::JObject) -> Option<T>,
+) -> Option<T> {
+    let vm = JAVA_VM.get()?;
+    let ctx = ANDROID_APP_CONTEXT.get()?;
+    let mut env = vm.attach_current_thread().ok()?;
+    let cls = find_app_class(&mut env, "dev/piaf/app/PushReceiver")?;
+    f(&mut env, &cls, ctx.as_obj())
 }
 
 pub struct PusherInfo {

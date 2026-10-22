@@ -72,6 +72,16 @@ tasks.named("preBuild") {
     dependsOn("buildRustLibrary")
 }
 
+// rustls-platform-verifier's Kotlin component must be the version of the
+// `rustls-platform-verifier-android` crate in Cargo.lock.
+val rustlsPlatformVerifierVersion: String = run {
+    val lines = rootProject.file("../Cargo.lock").readLines()
+    val start = lines.indexOfFirst { it.trim() == "name = \"rustls-platform-verifier-android\"" }
+    require(start >= 0) { "rustls-platform-verifier-android not found in Cargo.lock" }
+    lines.drop(start + 1).first { it.trim().startsWith("version = ") }
+        .substringAfter('"').substringBefore('"')
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -82,4 +92,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.androidx.startup.runtime)
     implementation(libs.unifiedpush.connector)
+    implementation("org.rustls:rustls-platform-verifier:$rustlsPlatformVerifierVersion")
 }

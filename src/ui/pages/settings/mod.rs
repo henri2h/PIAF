@@ -3,7 +3,7 @@ use std::sync::Arc;
 use freya::prelude::*;
 
 use crate::Route;
-use crate::ui::components::{M3ListItem, TopAppBar, TopAppBarTitle, confirm_dialog};
+use crate::ui::components::{M3ListItem, TopAppBar, confirm_dialog};
 use crate::utils::const_values::AppColors;
 use crate::utils::use_app_colors;
 
@@ -37,11 +37,7 @@ impl Component for Settings {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Settings".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Settings"))
             .child(
                 ScrollView::new()
                     .width(Size::fill())

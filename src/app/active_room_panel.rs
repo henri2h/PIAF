@@ -4,7 +4,8 @@ use freya_router::prelude::use_route;
 use super::Route;
 use super::state::ACTIVE_ROOM_RX;
 use crate::ui::pages::{
-    room::RoomPage, room_members::RoomMembers, room_search::RoomSearch, room_settings::RoomSettings,
+    room::RoomPage, room_invite::RoomInvite, room_members::RoomMembers, room_search::RoomSearch,
+    room_settings::RoomSettings,
 };
 use crate::utils::{use_app_colors, use_watch};
 
@@ -32,6 +33,13 @@ impl Component for ActiveRoomPanel {
                     .key(format!("members-{room_id}"))
                     .expanded()
                     .child(RoomMembers { room_id })
+                    .into_element();
+            }
+            Route::RoomInvite { room_id } => {
+                return rect()
+                    .key(format!("invite-{room_id}"))
+                    .expanded()
+                    .child(RoomInvite { room_id })
                     .into_element();
             }
             Route::RoomSearch { room_id } => {

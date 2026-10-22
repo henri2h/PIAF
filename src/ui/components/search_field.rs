@@ -7,9 +7,11 @@ use freya::text_edit::*;
 use freya_components::cursor_blink::use_cursor_blink;
 
 use crate::ui::components::IconButton;
+use crate::utils::const_values::AppColors;
 use crate::utils::haptics::{self, Haptic};
 use crate::utils::ime::{self, ImeEvent, ImeKind};
 use crate::utils::ime_edit::{Composing, apply_ime_event, finish_composition};
+use crate::utils::insets::status_bar_inset;
 use crate::utils::use_app_colors;
 
 /// The search page's query field: no box, it's the app bar's own text. On
@@ -23,6 +25,9 @@ pub struct SearchField {
     pub on_submit: EventHandler<String>,
     /// Hides the keyboard when set (results scrolled); reset by the field.
     pub dismiss: State<bool>,
+    /// Focused on mount (keyboard up).
+    pub auto_focus: bool,
+    pub font_size: f32,
 }
 
 impl Component for SearchField {
@@ -41,10 +46,13 @@ impl Component for SearchField {
         let touch = use_touch_edit();
         let editor_state = *editable.editor();
 
-        // Starts on the kept query, cursor at the end, and focused (keyboard up).
+        // Starts on the kept query, cursor at the end.
+        let auto_focus = self.auto_focus;
         use_hook(move || {
             set_text(editor_state, value.peek().clone());
-            a11y_id.request_focus();
+            if auto_focus {
+                a11y_id.request_focus();
+            }
         });
 
         let is_focused = focus().is_focused();
@@ -205,7 +213,7 @@ impl Component for SearchField {
                             .cursor_color(cursor_color)
                             .width(Size::fill())
                             .max_lines(1)
-                            .font_size(18.)
+                            .font_size(self.font_size)
                             .color(c.on_surface)
                             .span(text),
                     )
@@ -214,7 +222,7 @@ impl Component for SearchField {
                             .position(Position::new_absolute().top(0.).left(0.))
                             .text(self.placeholder)
                             .max_lines(1)
-                            .font_size(18.)
+                            .font_size(self.font_size)
                             .color(c.on_surface_faint)
                     })),
             );
@@ -259,6 +267,43 @@ impl Component for SearchField {
     }
 }
 
+/// A search page's bar (under the status bar): back, `field`, a divider.
+pub fn search_app_bar(field: SearchField, c: AppColors) -> Rect {
+    rect()
+        .vertical()
+        .width(Size::fill())
+        .child(
+            rect()
+                .width(Size::fill())
+                .height(Size::px(status_bar_inset())),
+        )
+        .child(
+            rect()
+                .horizontal()
+                .width(Size::fill())
+                .height(Size::px(64.))
+                .content(Content::Flex)
+                .cross_align(Alignment::Center)
+                .padding(Gaps::new(0., 8., 0., 4.))
+                .spacing(4.)
+                .child(
+                    IconButton::new(
+                        freya_icons::lucide::arrow_left(),
+                        c.on_surface_variant,
+                        |_| crate::app::navigation::go_back_or_home(),
+                    )
+                    .size(48., 22.),
+                )
+                .child(field),
+        )
+        .child(
+            rect()
+                .width(Size::fill())
+                .height(Size::px(1.))
+                .background(c.outline_variant_light),
+        )
+}
+
 fn set_text(mut editor: State<RopeEditor>, text: String) {
     let end = text.encode_utf16().count();
     *editor.write() = RopeEditor::new(
@@ -298,6 +343,8 @@ mod tests {
                     SUBMITTED.with(|s| *s.borrow_mut() = Some(q))
                 }),
                 dismiss,
+                auto_focus: true,
+                font_size: 18.,
             })
     }
 

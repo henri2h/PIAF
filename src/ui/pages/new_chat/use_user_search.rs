@@ -11,7 +11,7 @@ const DEBOUNCE: Duration = Duration::from_millis(400);
 const LIMIT: u64 = 10;
 
 #[derive(Clone, Copy, PartialEq)]
-pub(super) struct UserSearch {
+pub(crate) struct UserSearch {
     /// Directory matches for the current query.
     pub results: State<Vec<UserInfo>>,
     pub searching: State<bool>,
@@ -48,7 +48,7 @@ impl UserSearch {
 
 /// Debounced user-directory search on `query`, plus DM suggestions. A newer
 /// query discards the results of older ones.
-pub(super) fn use_user_search(query: State<String>) -> UserSearch {
+pub(crate) fn use_user_search(query: State<String>) -> UserSearch {
     let search = UserSearch {
         results: use_state(Vec::new),
         searching: use_state(|| false),

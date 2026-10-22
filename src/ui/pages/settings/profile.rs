@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
 
 use crate::utils::avatars::AvatarSource;
 
 use crate::ui::components::Avatar;
-use crate::ui::components::{TopAppBar, TopAppBarTitle};
+use crate::ui::components::TopAppBar;
 use crate::utils::matrix::CLIENT;
 use crate::utils::{on_tokio, use_app_colors};
 
@@ -34,14 +32,7 @@ impl Component for SettingsProfile {
                     return;
                 };
                 let rx = crate::utils::on_tokio::<(String, Option<Vec<u8>>), _>(async move {
-                    let name = client
-                        .account()
-                        .get_display_name()
-                        .await
-                        .ok()
-                        .flatten()
-                        .or_else(|| client.user_id().map(|id| id.to_string()))
-                        .unwrap_or_default();
+                    let name = crate::utils::matrix::own_display_name(&client).await;
                     let av = crate::utils::avatars::own(&client).await;
                     (name, av)
                 });
@@ -67,11 +58,7 @@ impl Component for SettingsProfile {
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Profile".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Profile"))
             .child(
                 ScrollView::new()
                     .width(Size::fill())

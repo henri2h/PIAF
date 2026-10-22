@@ -21,6 +21,17 @@ const OPTIONS: [(Option<Mode>, &str, &str); 4] = [
     (Some(Mode::Mute), "Mute", "No notifications"),
 ];
 
+/// The mode's icon (sheet options and the settings row).
+pub(super) fn notif_icon(mode: Option<Mode>) -> bytes::Bytes {
+    use freya_icons::lucide;
+    match mode {
+        None => lucide::bell_dot(),
+        Some(Mode::AllMessages) => lucide::bell_ring(),
+        Some(Mode::MentionsAndKeywordsOnly) => lucide::at_sign(),
+        Some(Mode::Mute) => lucide::bell_off(),
+    }
+}
+
 pub(super) fn notif_label(mode: Option<Mode>) -> &'static str {
     OPTIONS
         .iter()
@@ -73,13 +84,23 @@ pub(super) fn notif_sheet(
                 .width(Size::fill())
                 .content(Content::Flex)
                 .padding(Gaps::new(12., 24., 12., 24.))
-                .spacing(12.)
                 .cross_align(Alignment::Center)
+                .spacing(16.)
                 .on_press(move |_| {
                     open.set(false);
                     mode.set(option);
                     save_notif_mode(room_id.clone(), option);
                 })
+                .child(
+                    SvgViewer::new(notif_icon(option))
+                        .color(if selected {
+                            c.primary
+                        } else {
+                            c.on_surface_variant
+                        })
+                        .width(Size::px(22.))
+                        .height(Size::px(22.)),
+                )
                 .child(
                     rect()
                         .vertical()

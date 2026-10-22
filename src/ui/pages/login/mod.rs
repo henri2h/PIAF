@@ -5,9 +5,7 @@ use std::time::Duration;
 
 use freya::prelude::*;
 
-use crate::ui::components::{
-    AUTH_SHORT_MAX_HEIGHT, AUTH_WIDE_MIN_WIDTH, IconButton, brand_hero, brand_logo,
-};
+use crate::ui::components::{IconButton, brand_hero, brand_logo, use_auth_size};
 
 use freya_icons::lucide;
 use freya_material_design::prelude::ButtonRippleExt;
@@ -48,7 +46,7 @@ pub struct LoginPage {}
 impl Component for LoginPage {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
-        let mut size = use_state(|| (0.0f32, 0.0f32));
+        let size = use_auth_size();
         let login = use_state(String::new);
         let password = use_state(String::new);
         let mut show_password = use_state(|| false);
@@ -254,9 +252,7 @@ impl Component for LoginPage {
                     ),
             );
 
-        let (width, height) = *size.read();
-        let is_wide = width >= AUTH_WIDE_MIN_WIDTH;
-        let is_short = height > 0. && height < AUTH_SHORT_MAX_HEIGHT;
+        let (is_wide, is_short) = (size.is_wide(), size.is_short());
         let body = if is_wide {
             rect()
                 .horizontal()
@@ -322,16 +318,7 @@ impl Component for LoginPage {
                 .into_element()
         };
 
-        rect()
-            .expanded()
-            .background(c.surface)
-            .on_sized(move |e: Event<SizedEventData>| {
-                let area = (e.area.width(), e.area.height());
-                if *size.peek() != area {
-                    size.set(area);
-                }
-            })
-            .child(body)
+        size.page(body, c)
     }
 }
 

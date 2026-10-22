@@ -172,9 +172,8 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
     let source = read_string(&mut env, &room_id)
         .zip(read_string(&mut env, &sender_id))
         .map(|(room_id, sender_id)| AvatarSource::member(room_id, sender_id));
-    let bytes = source.and_then(|source| {
-        with_client(|_| async move { avatars::fetch(&source).await }).flatten()
-    });
+    let bytes = source
+        .and_then(|source| with_client(|_| async move { avatars::fetch(&source).await }).flatten());
     to_jbytes(&mut env, bytes)
 }
 
@@ -214,10 +213,11 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
             Some((room_id, ts))
         })
         .collect();
-    let read_rooms = with_client(|client| async move {
-        crate::utils::push::get_read_rooms(&client, entries).await
-    })
-    .unwrap_or_default();
+    let read_rooms =
+        with_client(
+            |client| async move { crate::utils::push::get_read_rooms(&client, entries).await },
+        )
+        .unwrap_or_default();
     let json = serde_json::to_string(&read_rooms).unwrap_or_else(|_| "[]".to_string());
     to_jstring(&mut env, Some(json))
 }
@@ -246,9 +246,9 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
     else {
         return 0;
     };
-    with_client(|client| async move {
-        crate::utils::push::send_text(&client, &room_id, &body).await
-    })
+    with_client(
+        |client| async move { crate::utils::push::send_text(&client, &room_id, &body).await },
+    )
     .unwrap_or(false) as jboolean
 }
 

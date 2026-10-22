@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use freya::prelude::*;
 
 use crate::utils::avatars::AvatarSource;
@@ -8,17 +6,18 @@ use crate::ui::components::HoverableExt;
 use freya_router::prelude::RouterContext;
 
 use crate::Route;
-use crate::ui::components::{Avatar, TopAppBar, TopAppBarTitle, UserPopupInfo, UserPopupOverlay};
+use crate::ui::components::{Avatar, TopAppBar, UserPopupInfo, UserPopupOverlay};
 use crate::utils::use_app_colors;
 
 mod notif_mode_selector;
 use crate::ui::components::M3ListItem;
 use crate::ui::components::confirm_dialog;
 use crate::ui::pages::room_members::member_row;
+use crate::utils::bridges::{self, BridgeInfo};
 use crate::utils::extract_urls;
 use crate::utils::members::{self, MemberItem};
 use matrix_sdk::notification_settings::RoomNotificationMode;
-use notif_mode_selector::{load_notif_mode, notif_label, notif_sheet};
+use notif_mode_selector::{load_notif_mode, notif_icon, notif_label, notif_sheet};
 
 const MEMBER_PREVIEW_COUNT: usize = 5;
 
@@ -44,6 +43,8 @@ impl Component for RoomSettings {
         let user_popup: State<Option<UserPopupInfo>> = use_state(|| None);
         let leaving: State<bool> = use_state(|| false);
         let mut copied: State<bool> = use_state(|| false);
+        let mut bridge: State<Option<BridgeInfo>> = use_state(|| None);
+        let mut can_invite: State<bool> = use_state(|| false);
 
         use_hook(|| {
             let room_id = room_id.clone();
@@ -56,13 +57,8 @@ impl Component for RoomSettings {
         use_hook(|| {
             let room_id = room_id.clone();
             spawn(async move {
-                let rx = crate::utils::on_tokio::<
-                    (String, u64, Vec<MemberItem>, Option<String>, Option<String>),
-                    _,
-                >(async move {
-                    let Some(room) = crate::utils::matrix::get_room(&room_id) else {
-                        return (String::new(), 0, vec![], None, None);
-                    };
+                let rx = crate::utils::on_tokio(async move {
+                    let room = crate::utils::matrix::get_room(&room_id)?;
                     let name = room
                         .display_name()
                         .await
@@ -72,15 +68,30 @@ impl Component for RoomSettings {
                     let topic = room.topic();
                     let version = room.version().map(|v| v.as_str().to_string());
                     let member_list = members::joined(&room).await;
-
-                    (name, count, member_list, topic, version)
+                    let bridge = bridges::bridge_info(&room).await;
+                    let me = crate::utils::matrix::my_user_id()
+                        .and_then(|id| matrix_sdk::ruma::UserId::parse(id).ok());
+                    let can_invite = match me {
+                        Some(me) => room
+                            .get_member_no_sync(&me)
+                            .await
+                            .ok()
+                            .flatten()
+                            .is_some_and(|m| m.can_invite()),
+                        None => false,
+                    };
+                    Some((name, count, member_list, topic, version, bridge, can_invite))
                 });
-                if let Some((name, count, member_list, topic, version)) = rx.await {
+                if let Some(Some((name, count, member_list, topic, version, info, invite))) =
+                    rx.await
+                {
                     *room_name.write() = name;
                     *member_count.write() = count;
                     *members.write() = member_list;
                     *room_topic.write() = topic;
                     *room_version.write() = version;
+                    bridge.set(info);
+                    can_invite.set(invite);
                 }
             });
         });
@@ -99,20 +110,24 @@ impl Component for RoomSettings {
         let room_id_copy = room_id.clone();
         let room_id_leave = room_id.clone();
 
-        let preview_members: Vec<&MemberItem> =
-            member_list.iter().take(MEMBER_PREVIEW_COUNT).collect();
-        let remaining = member_list.len().saturating_sub(MEMBER_PREVIEW_COUNT);
+        let bridge_info = bridge.read().clone();
+        let may_invite = *can_invite.read();
+        let room_id_invite = room_id.clone();
+        // A bridged room's members are mostly puppets: the bridge row says
+        // who is there; the full list stays one tap away.
+        let preview_members: Vec<&MemberItem> = if bridge_info.is_some() {
+            vec![]
+        } else {
+            member_list.iter().take(MEMBER_PREVIEW_COUNT).collect()
+        };
+        let all_shown = bridge_info.is_none() && member_list.len() <= MEMBER_PREVIEW_COUNT;
 
         rect()
             .expanded()
             .vertical()
             .content(Content::Flex)
             .background(c.surface)
-            .child(TopAppBar {
-                title: TopAppBarTitle::Text("Room info".to_string()),
-                on_back: Some(Arc::new(crate::app::navigation::go_back_or_home)),
-                actions: vec![],
-            })
+            .child(TopAppBar::new("Room info"))
             .child(
                 ScrollView::new()
                     .width(Size::fill())
@@ -194,34 +209,26 @@ impl Component for RoomSettings {
                                         rect().into_element()
                                     }),
                             )
-                            // ── Room ID list item ─────────────────────────────
-                            .child(M3ListItem {
-                                icon: freya_icons::lucide::hash(),
-                                item_label: "Room ID".to_string(),
-                                sublabel: Some(room_id.clone()),
-                                icon_color: c.on_surface_variant,
-                                destructive: false,
-                                on_press: EventHandler::new(move |_| {
-                                    use freya::prelude::Clipboard;
-                                    let _ = Clipboard::set(room_id_copy.clone());
-                                    *copied.write() = true;
-                                    spawn(async move {
-                                        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-                                        *copied.write() = false;
-                                    });
-                                }),
-                            })
-                            .child(divider(c))
-                            // ── Room version list item ────────────────────────
-                            .child(M3ListItem {
-                                icon: freya_icons::lucide::info(),
-                                item_label: "Room version".to_string(),
-                                sublabel: version,
-                                icon_color: c.on_surface_variant,
-                                destructive: false,
-                                on_press: EventHandler::new(|_| {}),
-                            })
-                            .child(divider(c))
+                            // ── Bridge ────────────────────────────────────────
+                            .maybe_child(bridge_info.clone().map(|info| {
+                                let detail = match (&info.channel, &info.bot) {
+                                    (Some(ch), Some(bot)) => Some(format!("{ch} · via {bot}")),
+                                    (Some(ch), None) => Some(ch.clone()),
+                                    (None, Some(bot)) => Some(format!("via {bot}")),
+                                    (None, None) => None,
+                                };
+                                rect()
+                                    .width(Size::fill())
+                                    .child(M3ListItem {
+                                        icon: freya_icons::lucide::cable(),
+                                        item_label: format!("Bridged to {}", info.network),
+                                        sublabel: detail,
+                                        icon_color: c.primary,
+                                        destructive: false,
+                                        on_press: EventHandler::new(|_| {}),
+                                    })
+                                    .child(divider(c))
+                            }))
                             // ── Media ─────────────────────────────────────────
                             .child(M3ListItem {
                                 icon: freya_icons::lucide::image(),
@@ -238,7 +245,7 @@ impl Component for RoomSettings {
                             .child(divider(c))
                             // ── Notifications ─────────────────────────────────
                             .child(M3ListItem {
-                                icon: freya_icons::lucide::bell(),
+                                icon: notif_icon(current_notif),
                                 item_label: "Notifications".to_string(),
                                 sublabel: Some(notif_label(current_notif).to_string()),
                                 icon_color: c.on_surface_variant,
@@ -254,7 +261,7 @@ impl Component for RoomSettings {
                                     .padding(Gaps::new(16., 16., 4., 16.))
                                     .child(
                                         label()
-                                            .text("Members")
+                                            .text(format!("Members · {count}"))
                                             .font_size(12.)
                                             .font_weight(FontWeight::MEDIUM)
                                             .color(c.primary),
@@ -268,13 +275,22 @@ impl Component for RoomSettings {
                                     .child(member_row(m, &room_id_avatar, user_popup, c))
                                     .into_element()
                             }))
-                            .child(M3ListItem {
+                            .maybe_child(may_invite.then(|| M3ListItem {
+                                icon: freya_icons::lucide::user_plus(),
+                                item_label: "Add people".to_string(),
+                                sublabel: None,
+                                icon_color: c.primary,
+                                destructive: false,
+                                on_press: EventHandler::new(move |_| {
+                                    crate::app::navigation::push(Route::RoomInvite {
+                                        room_id: room_id_invite.clone(),
+                                    });
+                                }),
+                            }))
+                            // Only when the list above doesn't show everyone.
+                            .maybe_child((!all_shown).then(|| M3ListItem {
                                 icon: freya_icons::lucide::users(),
-                                item_label: if remaining > 0 {
-                                    format!("See all {count} members")
-                                } else {
-                                    "See all members".to_string()
-                                },
+                                item_label: format!("See all {count} members"),
                                 sublabel: None,
                                 icon_color: c.on_surface_variant,
                                 destructive: false,
@@ -283,7 +299,7 @@ impl Component for RoomSettings {
                                         room_id: room_id_members.clone(),
                                     });
                                 }),
-                            })
+                            }))
                             .child(divider(c))
                             // ── Leave room ────────────────────────────────────
                             .child(M3ListItem {
@@ -302,6 +318,34 @@ impl Component for RoomSettings {
                                     }
                                 }),
                             })
+                            .child(divider(c))
+                            // ── Advanced: last, rarely needed ────────────────
+                            .child(section_label("Advanced", c))
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::hash(),
+                                item_label: "Room ID".to_string(),
+                                sublabel: Some(room_id.clone()),
+                                icon_color: c.on_surface_variant,
+                                destructive: false,
+                                on_press: EventHandler::new(move |_| {
+                                    use freya::prelude::Clipboard;
+                                    let _ = Clipboard::set(room_id_copy.clone());
+                                    *copied.write() = true;
+                                    spawn(async move {
+                                        timer(std::time::Duration::from_secs(2)).await;
+                                        *copied.write() = false;
+                                    });
+                                }),
+                            })
+                            .child(divider(c))
+                            .child(M3ListItem {
+                                icon: freya_icons::lucide::info(),
+                                item_label: "Room version".to_string(),
+                                sublabel: version,
+                                icon_color: c.on_surface_variant,
+                                destructive: false,
+                                on_press: EventHandler::new(|_| {}),
+                            })
                             .child(rect().width(Size::fill()).height(Size::px(16.))),
                     ),
             )
@@ -316,6 +360,20 @@ impl Component for RoomSettings {
             )
             .child(UserPopupOverlay { open: user_popup })
     }
+}
+
+fn section_label(text: &str, c: crate::utils::const_values::AppColors) -> Element {
+    rect()
+        .width(Size::fill())
+        .padding(Gaps::new(16., 16., 4., 16.))
+        .child(
+            label()
+                .text(text.to_string())
+                .font_size(12.)
+                .font_weight(FontWeight::MEDIUM)
+                .color(c.primary),
+        )
+        .into_element()
 }
 
 fn divider(c: crate::utils::const_values::AppColors) -> Element {

@@ -18,7 +18,11 @@ pub fn share_file(name: &str, mime: &str, bytes: &[u8]) {
             &class,
             "share",
             "(Ljava/lang/String;Ljava/lang/String;[B)V",
-            &[JValue::Object(&name), JValue::Object(&mime), JValue::Object(&bytes)],
+            &[
+                JValue::Object(&name),
+                JValue::Object(&mime),
+                JValue::Object(&bytes),
+            ],
         )?;
         Ok(())
     })();

@@ -58,5 +58,5 @@ async fn do_fetch_room_previews(room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {
         return;
     };
     let refs: Vec<&matrix_sdk::ruma::RoomId> = room_ids.iter().map(|id| id.as_ref()).collect();
-    service.subscribe_to_rooms(&refs).await;
+    service.set_room_subscriptions(&refs).await;
 }

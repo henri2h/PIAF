@@ -3,10 +3,46 @@ use freya::prelude::*;
 use crate::utils::const_values::AppColors;
 
 /// Welcome and login pages: two panes (brand | content) from this width.
-pub const AUTH_WIDE_MIN_WIDTH: f32 = 720.;
+const AUTH_WIDE_MIN_WIDTH: f32 = 720.;
 /// Below this height they shrink the logo and drop the tagline.
-pub const AUTH_SHORT_MAX_HEIGHT: f32 = 560.;
+const AUTH_SHORT_MAX_HEIGHT: f32 = 560.;
 pub const TAGLINE: &str = "Chat on Matrix, the open network.";
+
+/// A welcome / login page's measured size (a hook: [`use_auth_size`]).
+#[derive(Clone, Copy)]
+pub struct AuthSize(State<(f32, f32)>);
+
+pub fn use_auth_size() -> AuthSize {
+    AuthSize(use_state(|| (0., 0.)))
+}
+
+impl AuthSize {
+    /// Two panes: the brand beside the content.
+    pub fn is_wide(&self) -> bool {
+        self.0.read().0 >= AUTH_WIDE_MIN_WIDTH
+    }
+
+    /// A smaller logo, no tagline.
+    pub fn is_short(&self) -> bool {
+        let height = self.0.read().1;
+        height > 0. && height < AUTH_SHORT_MAX_HEIGHT
+    }
+
+    /// The page around `body`, measuring itself.
+    pub fn page(self, body: impl IntoElement, c: AppColors) -> Rect {
+        let mut size = self.0;
+        rect()
+            .expanded()
+            .background(c.surface)
+            .on_sized(move |e: Event<SizedEventData>| {
+                let area = (e.area.width(), e.area.height());
+                if *size.peek() != area {
+                    size.set(area);
+                }
+            })
+            .child(body)
+    }
+}
 
 static LOGO: &[u8] = include_bytes!("../../../assets/piaf_logo.png");
 
