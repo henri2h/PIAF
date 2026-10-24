@@ -1,0 +1,25 @@
+build:
+  ./gradlew assembleDebug
+  cd .. && cargo sweep --maxsize 30GB .
+
+# Cargo never deletes stale build files (old configurations, old toolchains):
+# drops those of toolchains no longer installed, then the oldest past 30 GB.
+# Needs `cargo install cargo-sweep`.
+sweep:
+  cd .. && cargo sweep --installed . && cargo sweep --maxsize 30GB .
+
+install:
+  adb install app/build/outputs/apk/debug/app-debug.apk
+
+release:
+  ./gradlew assembleRelease
+
+install-release:
+  adb install app/build/outputs/apk/release/app-release.apk
+
+logcat:
+  adb shell run-as dev.piaf.app logcat
+
+# Fast Rust type-check for Android (same env as the gradle build).
+check:
+  cd .. && ANDROID_HOME=${ANDROID_HOME:-$HOME/Android/Sdk} ANDROID_JAR=${ANDROID_HOME:-$HOME/Android/Sdk}/platforms/android-36/android.jar cargo ndk -t arm64-v8a --platform 31 check --lib

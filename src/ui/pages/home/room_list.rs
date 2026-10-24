@@ -1,0 +1,384 @@
+use std::cell::RefCell;
+use std::collections::HashSet;
+use std::rc::Rc;
+use std::sync::Arc;
+
+use freya::prelude::*;
+
+use super::invites_row::InvitesRow;
+use super::room_list_item::{ROOM_ROW_HEIGHT, RoomListItem};
+use super::room_list_model::{ListRow, Mailbox, RoomFilter, list_rows, visible_rooms};
+use super::room_menu::{RoomSheet, room_sheet};
+use crate::app::keys::{Area, KeyCommand, KeyNav, use_key_commands};
+use crate::app::navigation::navigate_to_room;
+use crate::logging::RenderTimer;
+use crate::ui::components::{empty_state, loading_state};
+use crate::utils::const_values::AppColors;
+use crate::utils::room_actions::{RoomAction, run};
+use crate::utils::room_list;
+use crate::utils::room_list::RoomSummary;
+use crate::utils::{use_app_colors, use_watch, use_watch_tick};
+use crate::{ROOM_MAILBOX_RX, WIDE_MODE};
+
+/// The filter bar overlaid on the list, which slides out as it scrolls.
+#[derive(Clone, Copy, PartialEq)]
+pub struct FilterBarScroll {
+    /// Pixels of the bar slid out of view.
+    pub hidden: State<f32>,
+    /// Whether the bar is mostly in view.
+    pub visible: State<bool>,
+    /// Whether the list is scrolled away from the top (the bars above tint).
+    pub scrolled: State<bool>,
+    /// The bar's height (it grows with the sub-space chips).
+    pub height: f32,
+}
+
+/// Height of a section header row ("Favourites", "Low priority").
+const SECTION_HEADER_HEIGHT: f32 = 36.;
+
+fn row_height(row: &ListRow) -> f32 {
+    match row {
+        ListRow::Header(_) => SECTION_HEADER_HEIGHT,
+        _ => ROOM_ROW_HEIGHT,
+    }
+}
+
+/// The rooms the keyboard moves through, in display order, with the top of
+/// each one's row in the list (headers and the invites row shift them).
+#[derive(Default)]
+struct Shown {
+    rooms: Vec<RoomSummary>,
+    tops: Vec<f32>,
+}
+
+/// Shared with the rows: the list's scroll (a resting finger is no long
+/// press while it drags) and the Android room actions sheet.
+#[derive(Clone, Copy)]
+pub(super) struct RoomListCtx {
+    #[cfg_attr(not(target_os = "android"), allow(dead_code))]
+    pub scroll: ScrollController,
+    pub sheet: State<Option<RoomSheet>>,
+}
+
+/// Filtered room list with loading / empty states. Reads the list published
+/// by `utils::room_list`; builds nothing itself.
+#[derive(PartialEq)]
+pub struct RoomList {
+    pub mailbox: Mailbox,
+    pub filter: RoomFilter,
+    /// `None` for lists shown without the filter bar.
+    pub filter_bar: Option<FilterBarScroll>,
+    /// Only these rooms (a space's), or all.
+    pub scope: Option<Arc<HashSet<String>>>,
+}
+
+impl Component for RoomList {
+    fn render(&self) -> impl IntoElement {
+        let _timer = RenderTimer::new("RoomList");
+        let c = use_app_colors();
+        let snapshot = use_watch(room_list::receiver());
+        let mailbox_tick = use_watch_tick(ROOM_MAILBOX_RX.get().expect("not initialized"));
+
+        let scroll = use_scroll_controller(ScrollConfig::default);
+        let sheet = use_state(|| None::<RoomSheet>);
+        use_provide_context(|| RoomListCtx { scroll, sheet });
+        let mut viewport_height = use_state(|| 0.0f32);
+        // Latest visible rooms, for the key handler (its closure outlives renders).
+        let shown: Rc<RefCell<Rc<Shown>>> = use_hook(Default::default);
+        let invites_expanded = use_state(|| false);
+        let bar_height = self.filter_bar.map_or(0., |bar| bar.height);
+        use_list_keys(shown.clone(), scroll, viewport_height, bar_height);
+        use_chips_follow_scroll(scroll, self.filter_bar);
+
+        let snapshot = snapshot.read().clone();
+        let filtered_rooms = Rc::new({
+            let mailbox = ROOM_MAILBOX_RX.get().expect("not initialized").borrow();
+            visible_rooms(
+                &snapshot.rooms,
+                self.mailbox,
+                &self.filter,
+                &mailbox,
+                self.scope.as_deref(),
+            )
+        });
+        let rows = Rc::new(list_rows(&filtered_rooms, *invites_expanded.read()));
+        *shown.borrow_mut() = Rc::new(shown_rooms(&filtered_rooms, &rows));
+        let rooms_len = filtered_rooms.len();
+        if rooms_len > 0 {
+            static FIRST: std::sync::Once = std::sync::Once::new();
+            FIRST.call_once(|| crate::logging::boot("room list shown"));
+        }
+        let initial_loading = snapshot.version == 0;
+
+        // Below the filter bar, which overlays the top of the list.
+        let below_bar = |content: Element| {
+            rect()
+                .expanded()
+                .padding(Gaps::new(bar_height, 0., 0., 0.))
+                .child(content)
+                .into_element()
+        };
+        if initial_loading && rooms_len == 0 {
+            return below_bar(loading_state(Some("Loading conversations…"), c).into_element());
+        }
+        if rooms_len == 0 {
+            return below_bar(no_rooms(
+                c,
+                self.mailbox,
+                &self.filter,
+                self.scope.is_some(),
+            ));
+        }
+
+        // The builder closure captures `filtered_rooms` and `rows`, which these change.
+        let list_key = (
+            snapshot.version,
+            *mailbox_tick.read(),
+            *invites_expanded.read(),
+            self.scope.as_ref().map(|s| Arc::as_ptr(s) as usize),
+        );
+        let rows_len = rows.len();
+        let sizes = rows.clone();
+        rect()
+            .expanded()
+            .child(
+                VirtualScrollView::new_with_data(list_key, move |item, _| {
+                    let Some(row) = rows.get(item.index) else {
+                        return rect().into_element();
+                    };
+                    match row {
+                        // Keyed by room: unkeyed, rows are matched by position, so every
+                        // scroll step hands each row a new room and all of them re-render.
+                        ListRow::Room(i) => {
+                            let summary = &filtered_rooms[*i];
+                            rect()
+                                .key(&summary.room_id)
+                                .width(Size::fill())
+                                .child(RoomListItem {
+                                    summary: summary.clone(),
+                                })
+                                .into_element()
+                        }
+                        ListRow::Invites { count, .. } => rect()
+                            .key("invites")
+                            .width(Size::fill())
+                            .child(InvitesRow {
+                                count: *count,
+                                names: filtered_rooms
+                                    .iter()
+                                    .filter(|r| r.is_invite)
+                                    .take(3)
+                                    .map(|r| r.name.clone())
+                                    .collect(),
+                                expanded: invites_expanded,
+                            })
+                            .into_element(),
+                        ListRow::Header(section) => rect()
+                            .key(section.label())
+                            .width(Size::fill())
+                            .height(Size::px(SECTION_HEADER_HEIGHT))
+                            .main_align(Alignment::End)
+                            .padding(Gaps::new(0., 20., 6., 20.))
+                            .child(
+                                label()
+                                    .text(section.label())
+                                    .font_size(12.)
+                                    .font_weight(FontWeight::MEDIUM)
+                                    .color(c.primary),
+                            )
+                            .into_element(),
+                    }
+                })
+                .length(rows_len)
+                .item_size(ItemSize::Dynamic(Callback::new(move |i: usize| {
+                    sizes.get(i).map_or(ROOM_ROW_HEIGHT, row_height)
+                })))
+                .leading_space(bar_height)
+                .height(Size::fill())
+                .scroll_controller(scroll)
+                .on_sized(move |e: Event<SizedEventData>| {
+                    viewport_height.set_if_modified(e.area.height());
+                })
+                .into_element(),
+            )
+            .maybe_child(room_sheet(sheet, c))
+            .into_element()
+    }
+}
+
+/// Slides the filter bar out as the list scrolls down and back in as soon as
+/// it scrolls up ("quick return"), pixel for pixel, never further than the
+/// list has scrolled, so it is fully in place at the top. Follows the animated
+/// position, so flings move it smoothly too, without re-rendering the list.
+fn use_chips_follow_scroll(scroll: ScrollController, filter_bar: Option<FilterBarScroll>) {
+    let last_y = use_hook(|| Rc::new(std::cell::Cell::new(0f32)));
+    use_side_effect(move || {
+        let (x, y): (i32, i32) = scroll.into();
+        let y = scroll
+            .animated_position(freya::torin::geometry::Point2D::new(x as f32, y as f32))
+            .y
+            .min(0.);
+        // Offsets are negative: scrolling down makes `y` smaller.
+        let delta = y - last_y.replace(y);
+        let Some(FilterBarScroll {
+            mut hidden,
+            visible: mut chips_visible,
+            mut scrolled,
+            height,
+        }) = filter_bar
+        else {
+            return;
+        };
+        let is_scrolled = y < -1.;
+        if *scrolled.peek() != is_scrolled {
+            scrolled.set(is_scrolled);
+        }
+        if WIDE_MODE.load(std::sync::atomic::Ordering::Relaxed) {
+            return;
+        }
+        let next = (*hidden.peek() - delta).clamp(0., height).min(-y);
+        if next != *hidden.peek() {
+            hidden.set(next);
+        }
+        let visible = next < height / 2.;
+        if visible != *chips_visible.peek() {
+            chips_visible.set(visible);
+        }
+    });
+}
+
+/// j/k, gg/G, J/K, Enter and the room actions, while the list has keyboard focus.
+/// The rooms the keyboard can select, with their rows' tops.
+fn shown_rooms(rooms: &[RoomSummary], rows: &[ListRow]) -> Shown {
+    let mut shown = Shown::default();
+    let mut top = 0.;
+    for row in rows {
+        if let ListRow::Room(i) = row {
+            shown.rooms.push(rooms[*i].clone());
+            shown.tops.push(top);
+        }
+        top += row_height(row);
+    }
+    shown
+}
+
+fn use_list_keys(
+    shown: Rc<RefCell<Rc<Shown>>>,
+    scroll: ScrollController,
+    viewport_height: State<f32>,
+    bar_height: f32,
+) {
+    use_key_commands(move |nav, command| {
+        if *nav.area.peek() == Area::List {
+            let shown = shown.borrow().clone();
+            list_command(
+                command,
+                &shown,
+                nav,
+                scroll,
+                *viewport_height.peek(),
+                bar_height,
+            );
+        }
+    });
+}
+
+fn list_command(
+    command: KeyCommand,
+    shown: &Shown,
+    nav: KeyNav,
+    mut scroll: ScrollController,
+    viewport_height: f32,
+    bar_height: f32,
+) {
+    let rooms = &shown.rooms;
+    let Some(last) = rooms.len().checked_sub(1) else {
+        return;
+    };
+    let current = {
+        let selected = nav.selected.peek();
+        selected
+            .as_deref()
+            .and_then(|id| rooms.iter().position(|r| r.room_id == id))
+    };
+    let is_unread = |i: &usize| rooms[*i].is_unread();
+    let target = match command {
+        KeyCommand::Down => Some(current.map_or(0, |i| (i + 1).min(last))),
+        KeyCommand::Up => Some(current.map_or(0, |i| i.saturating_sub(1))),
+        KeyCommand::Top => Some(0),
+        KeyCommand::Bottom => Some(last),
+        KeyCommand::NextUnread => (current.map_or(0, |i| i + 1)..=last).find(is_unread),
+        KeyCommand::PrevUnread => (0..current.unwrap_or(0)).rev().find(is_unread),
+        _ => None,
+    };
+    if let Some(index) = target {
+        let mut selected = nav.selected;
+        selected.set(Some(rooms[index].room_id.clone()));
+        scroll_into_view(&mut scroll, shown.tops[index], viewport_height, bar_height);
+        return;
+    }
+    let Some(room) = current.map(|i| &rooms[i]) else {
+        return;
+    };
+    let id = room.room_id.clone();
+    match command {
+        KeyCommand::Open => {
+            // Invites have no composer: the request would linger and steal
+            // focus on a later open.
+            if !room.is_invite {
+                let mut focus_composer = nav.focus_composer;
+                focus_composer.set(true);
+            }
+            navigate_to_room(id);
+        }
+        KeyCommand::ToggleFavourite => run(id, RoomAction::Favourite(!room.is_favourite)),
+        KeyCommand::ToggleRead if room.is_unread() => run(id, RoomAction::MarkRead),
+        KeyCommand::ToggleRead => run(id, RoomAction::MarkUnread),
+        KeyCommand::Archive => {
+            tokio::spawn(async move { crate::utils::room_mailbox::archive_room(&id).await });
+        }
+        _ => {}
+    }
+}
+
+/// Scrolls just enough for the room row at `row_top` to be fully visible.
+fn scroll_into_view(
+    scroll: &mut ScrollController,
+    row_top: f32,
+    viewport_height: f32,
+    bar_height: f32,
+) {
+    let top = bar_height + row_top;
+    let bottom = top + ROOM_ROW_HEIGHT;
+    let (_, y) = Into::<(i32, i32)>::into(*scroll);
+    let view_top = -y as f32;
+    if top < view_top {
+        scroll.scroll_to_y(-(top as i32));
+    } else if bottom > view_top + viewport_height {
+        scroll.scroll_to_y(-((bottom - viewport_height) as i32));
+    }
+}
+
+fn no_rooms(c: AppColors, mailbox: Mailbox, filter: &RoomFilter, in_space: bool) -> Element {
+    let (title, subtitle) = match (mailbox, filter) {
+        (Mailbox::Inbox, RoomFilter::All) if in_space => {
+            ("No rooms in this space", "Rooms you join in it appear here")
+        }
+        (Mailbox::Recontact, RoomFilter::All) => {
+            ("Nothing to recontact", "Mark a room to recontact it later")
+        }
+        (Mailbox::Archived, RoomFilter::All) => (
+            "Nothing archived",
+            "Archive a room once you're done with it",
+        ),
+        (Mailbox::Inbox, _) => (filter.empty_title(), filter.empty_subtitle()),
+        _ => ("No matching rooms", "Try another filter"),
+    };
+    empty_state(
+        freya_icons::lucide::message_circle(),
+        title,
+        Some(subtitle),
+        c,
+    )
+    .into()
+}
