@@ -11,6 +11,7 @@ pub mod insets;
 pub mod matrix;
 pub mod media;
 pub mod members;
+pub mod mentions;
 #[cfg(not(target_os = "android"))]
 pub mod notifications;
 #[cfg(target_os = "android")]

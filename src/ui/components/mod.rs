@@ -18,6 +18,7 @@ mod picked_users;
 mod search_box;
 mod search_field;
 mod search_input;
+mod snackbar;
 #[cfg(any(target_os = "android", test))]
 mod swipe;
 mod user_popup;
@@ -42,6 +43,7 @@ pub use picked_users::picked_users;
 pub use search_box::SearchBox;
 pub use search_field::{SearchField, search_app_bar};
 pub use search_input::search_input;
+pub use snackbar::Snackbar;
 #[cfg(any(target_os = "android", test))]
 pub use swipe::{Swipe, SwipeBounds, use_swipe};
 pub use user_popup::{UserPopupInfo, UserPopupOverlay};

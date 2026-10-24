@@ -1,10 +1,15 @@
+use std::cell::Cell;
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
+use std::time::Duration;
 
 use freya::prelude::*;
-use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
+use matrix_sdk_ui::timeline::{MsgLikeKind, TimelineItem, TimelineItemContent};
 
 use super::focus::{event_offset, row_key, watch_focus_events};
+use super::jump_to_latest::{JumpToLatest, distance_to_end};
 use super::message_row::{GroupPosition, MessageRow};
 use super::room_start_banner::RoomStartBanner;
 use super::use_room_timeline::RoomTimeline;
@@ -15,6 +20,12 @@ use crate::utils::{format_date_key, format_date_label, use_app_colors};
 
 /// Load older messages once scrolled within this distance of the top.
 const LOAD_MORE_THRESHOLD_PX: i32 = 400;
+/// Within this distance of the end, the latest message counts as seen.
+const AT_END_PX: f32 = 32.;
+/// A message scrolled to (search, reply) is highlighted this long.
+const FLASH: Duration = Duration::from_millis(1500);
+/// Space kept above a message scrolled to.
+const FOCUS_MARGIN: f32 = 80.;
 
 /// Scrollable message list. Anchored to the bottom: backfilled history lands
 /// above without moving what's on screen, and short rooms rest on the composer.
@@ -33,7 +44,7 @@ impl Component for TimelineView {
         let c = use_app_colors();
         let tl = self.timeline.clone();
         let st = tl.state;
-        let mut scroll_controller = self.scroll_controller;
+        let scroll_controller = self.scroll_controller;
 
         let mut content_height = use_state(|| 0.0f32);
         let mut viewport_height = use_state(|| 0.0f32);
@@ -43,16 +54,42 @@ impl Component for TimelineView {
             viewport_height,
             super::ui_ctx::use_room_ui_ctx().compose_focus,
         );
-        let mut heights: State<HashMap<String, f32>> = use_state(HashMap::new);
+        let heights: State<HashMap<String, f32>> = use_state(HashMap::new);
+        // Row briefly highlighted after scrolling to it.
+        let flash: State<Option<String>> = use_state(|| None);
 
-        use_hook(|| {
-            watch_focus_events(self.room_id.clone(), move |eid| {
-                let offset = event_offset(&st.messages.peek(), &heights.peek(), &eid);
-                if let Some(y) = offset {
-                    scroll_controller.scroll_to_y(y as i32);
+        // A message to show (a tapped reply, a search result in this room):
+        // scrolled to now, or once history loaded up to it.
+        {
+            let tl = tl.clone();
+            use_hook(|| {
+                watch_focus_events(self.room_id.clone(), move |eid| {
+                    let mut pending_focus = st.pending_focus;
+                    pending_focus.set(Some(eid));
+                    scroll_to_pending_focus(&tl, heights, flash, scroll_controller);
+                });
+            });
+        }
+
+        // At the latest message, on screen: read receipt (not for a timeline
+        // around a searched event, which isn't the room's end).
+        {
+            let tl = tl.clone();
+            let marked = use_hook(|| Rc::new(Cell::new(0usize)));
+            use_side_effect(move || {
+                let len = st.messages.read().len();
+                let distance = distance_to_end(
+                    scroll_controller,
+                    *content_height.read(),
+                    *viewport_height.read(),
+                );
+                let visible = crate::APP_FOCUSED.load(Ordering::Relaxed);
+                if tl.live && visible && len > 0 && distance < AT_END_PX && marked.get() != len {
+                    marked.set(len);
+                    tl.handle.mark_read();
                 }
             });
-        });
+        }
 
         // Driven by scroll position so wheel, touch, scrollbar and keys all paginate.
         {
@@ -86,6 +123,7 @@ impl Component for TimelineView {
         };
         let auto_fill_on_content = auto_fill.clone();
 
+        let flashed = flash.read().clone();
         let msgs = st.messages.read().clone();
         let room_name = st.room_name.read().clone();
         let is_dm = *st.is_dm.read();
@@ -120,9 +158,12 @@ impl Component for TimelineView {
                 .zip(groups)
                 .map(|((item, date_label), group)| {
                     let key = row_key(&item);
+                    let highlighted = flashed.as_ref() == Some(&key);
+                    let mut heights = heights;
                     rect()
                         .key(key.clone())
                         .width(Size::fill())
+                        .maybe(highlighted, |r| r.background(c.primary_container))
                         .on_sized(move |e: Event<SizedEventData>| {
                             let h = e.area.height();
                             if heights.peek().get(&key) != Some(&h) {
@@ -141,13 +182,14 @@ impl Component for TimelineView {
                         .into_element()
                 });
 
+        let tl_focus = tl.clone();
         let content = rect()
             .vertical()
             .width(Size::fill())
             .padding(Gaps::new(4., 0., 4., 0.))
             .child(header)
             .on_sized(move |e: Event<SizedEventData>| {
-                scroll_to_pending_focus(st, heights, scroll_controller);
+                scroll_to_pending_focus(&tl_focus, heights, flash, scroll_controller);
                 let new_h = e.inner_sizes.height;
                 // Any change, not just growth: a prepend can shrink the first row.
                 if (new_h - *content_height.peek()).abs() > 0.5 {
@@ -173,6 +215,13 @@ impl Component for TimelineView {
                     .height(Size::fill())
                     .child(content),
             )
+            .child(JumpToLatest {
+                scroll: scroll_controller,
+                content_height,
+                viewport_height,
+                messages: st.messages,
+                my_user_id: my_user_id(),
+            })
             .into_element()
     }
 }
@@ -212,28 +261,40 @@ fn use_room_keys(
             KeyCommand::Top => {
                 scroll.scroll_to_y(0);
             }
-            KeyCommand::Bottom => {
-                scroll.scroll_to_y(-(max as i32));
-            }
+            KeyCommand::Bottom => scroll.scroll_to(ScrollPosition::End, Direction::Vertical),
             KeyCommand::FocusComposer => *compose_focus.write() += 1,
             _ => {}
         }
     });
 }
 
-/// One-shot scroll to the focus event, after the first layout measured the rows.
+/// Scrolls to the pending focus event once its row is measured, and
+/// highlights it; loads older pages until it is found or the room starts.
 fn scroll_to_pending_focus(
-    st: super::use_room_timeline::TimelineState,
+    tl: &RoomTimeline,
     heights: State<HashMap<String, f32>>,
+    mut flash: State<Option<String>>,
     mut scroll_controller: ScrollController,
 ) {
+    let st = tl.state;
     let mut pending_focus = st.pending_focus;
     let Some(eid) = pending_focus.peek().clone() else {
         return;
     };
-    pending_focus.set(None);
-    if let Some(y) = event_offset(&st.messages.peek(), &heights.peek(), &eid) {
-        scroll_controller.scroll_to_y(y as i32);
+    match event_offset(&st.messages.peek(), &heights.peek(), &eid) {
+        Some(y) => {
+            pending_focus.set(None);
+            scroll_controller.scroll_to_y(-((y - FOCUS_MARGIN).max(0.) as i32));
+            flash.set(Some(eid.clone()));
+            spawn(async move {
+                timer(FLASH).await;
+                if flash.peek().as_ref() == Some(&eid) {
+                    flash.set(None);
+                }
+            });
+        }
+        None if *st.at_start.peek() => pending_focus.set(None),
+        None => tl.request_page(),
     }
 }
 
@@ -258,7 +319,13 @@ fn group_key(item: &TimelineItem) -> Option<(String, u64)> {
     let TimelineItemContent::MsgLike(msg_like) = event.content() else {
         return None;
     };
-    msg_like.as_message()?;
+    // The kinds shown as bubbles.
+    if !matches!(
+        msg_like.kind,
+        MsgLikeKind::Message(_) | MsgLikeKind::Redacted | MsgLikeKind::UnableToDecrypt(_)
+    ) {
+        return None;
+    }
     Some((event.sender().to_string(), event.timestamp().0.into()))
 }
 

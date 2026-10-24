@@ -5,7 +5,7 @@ use std::future::Future;
 
 use jni::{
     JNIEnv,
-    objects::{JClass, JString},
+    objects::{JClass, JObject, JString},
     sys::{jboolean, jbyteArray, jstring},
 };
 use matrix_sdk::Client;
@@ -54,12 +54,19 @@ fn base_dir() -> Option<std::path::PathBuf> {
 /// Spins up a Tokio runtime (if not already running) and restores the Matrix
 /// client from the persisted session so all enrichment JNI functions work,
 /// including decryption of E2E events. A no-op when already initialised.
+/// `context` sets up the TLS verifier, which `android_main` doesn't when the
+/// process was started for a push.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_nativeInitForPush(
     mut env: JNIEnv,
     _class: JClass,
+    context: JObject,
     data_dir: JString,
 ) -> jboolean {
+    let Ok(vm) = env.get_java_vm() else {
+        return 0;
+    };
+    super::init_tls_verifier_raw(vm.get_java_vm_pointer().cast(), context.as_raw().cast());
     if crate::utils::matrix::CLIENT.get().is_some() {
         return 1;
     }
@@ -147,7 +154,9 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
     to_jstring(&mut env, json.map(|json| json.to_string()))
 }
 
-/// Avatar of a room as the notification shows it: for a DM, the other user.
+/// A group's own avatar (the notification's picture, else a letter avatar):
+/// not `AvatarSource::Room`, whose fallback to a member's picture would show
+/// a random person as the conversation.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_nativeFetchRoomAvatarBytes(
     mut env: JNIEnv,
@@ -155,8 +164,11 @@ pub unsafe extern "C" fn Java_dev_piaf_app_PushReceiver_00024NativeBridge_native
     room_id: JString,
 ) -> jbyteArray {
     let bytes = read_string(&mut env, &room_id).and_then(|room_id| {
-        let source = AvatarSource::Room(room_id);
-        with_client(|_| async move { avatars::fetch(&source).await }).flatten()
+        with_client(|_| async move {
+            let room = crate::utils::matrix::get_room(&room_id)?;
+            avatars::of_room(&room).await
+        })
+        .flatten()
     });
     to_jbytes(&mut env, bytes)
 }

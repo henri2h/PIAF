@@ -79,7 +79,7 @@ object RoomNotifications {
     fun reply(context: Context, roomId: String, text: String) {
         val bridge = PushReceiver.NativeBridge
         val sent = bridge.tryLoad() &&
-            bridge.nativeInitForPush(context.filesDir.absolutePath) &&
+            bridge.nativeInitForPush(context.applicationContext, context.filesDir.absolutePath) &&
             bridge.nativeSendReply(roomId, text)
         val body = if (sent) text else "⚠ Not sent: $text"
         if (sent) MessageStore.addMessage(context, roomId, StoredMessage(ME, "Me", text, System.currentTimeMillis()))
@@ -105,7 +105,7 @@ object RoomNotifications {
         val eventId = NotifiedRooms.lastEvent(context, roomId) ?: return cancel(context, roomId)
         val bridge = PushReceiver.NativeBridge
         val read = bridge.tryLoad() &&
-            bridge.nativeInitForPush(context.filesDir.absolutePath) &&
+            bridge.nativeInitForPush(context.applicationContext, context.filesDir.absolutePath) &&
             bridge.nativeMarkRead(roomId, eventId)
         if (read) cancel(context, roomId) else Log.w(TAG, "markRead failed for $roomId")
     }
@@ -174,7 +174,7 @@ object RoomNotifications {
     /** `null` when the Rust side couldn't load the event (the HTTP fallback is tried next). */
     private fun fetchViaRust(context: Context, roomId: String, eventId: String): Fetch? {
         val bridge = PushReceiver.NativeBridge
-        if (!bridge.nativeInitForPush(context.filesDir.absolutePath)) return null
+        if (!bridge.nativeInitForPush(context.applicationContext, context.filesDir.absolutePath)) return null
         val payload = bridge.nativeFetchNotificationPayload(roomId, eventId)?.let {
             try { JSONObject(it) } catch (_: JSONException) { null }
         } ?: return null
@@ -279,8 +279,11 @@ object RoomNotifications {
     /** `eventId`: the last notified event, for "Mark as read" (no actions without it). */
     private fun builder(context: Context, roomId: String, eventId: String?): NotificationCompat.Builder {
         val id = notificationId(roomId)
+        // SINGLE_TOP: a running activity gets the tap in onNewIntent. Without it
+        // CLEAR_TOP finishes and recreates it, and its onDestroy kills the process.
         val open = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra(MainActivity.EXTRA_ROOM_ID, roomId)
         }
         val dismissed = Intent(context, NotificationDismissedReceiver::class.java)

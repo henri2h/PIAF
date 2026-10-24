@@ -192,11 +192,12 @@ impl RowInteraction {
                     .background(c.primary)
                     .center()
                     .maybe_child(reveal_recontact.then(|| {
-                        SvgViewer::new(freya_icons::lucide::user_check())
-                            .width(Size::px(icon_size))
-                            .height(Size::px(icon_size))
-                            .color(c.on_primary)
-                            .into_element()
+                        swipe_action(
+                            freya_icons::lucide::user_check(),
+                            "Recontact",
+                            icon_size,
+                            c.on_primary,
+                        )
                     })),
             )
             .child(
@@ -206,11 +207,12 @@ impl RowInteraction {
                     .background(c.surface_container_high)
                     .center()
                     .maybe_child(reveal_archive.then(|| {
-                        SvgViewer::new(freya_icons::lucide::archive())
-                            .width(Size::px(icon_size))
-                            .height(Size::px(icon_size))
-                            .color(c.on_surface)
-                            .into_element()
+                        swipe_action(
+                            freya_icons::lucide::archive(),
+                            "Archive",
+                            icon_size,
+                            c.on_surface,
+                        )
                     })),
             );
 
@@ -244,11 +246,12 @@ impl RowInteraction {
         outer
             .on_touch_start(move |e: Event<TouchEventData>| {
                 *state.press_consumed.write_unchecked() = false;
-                swipe.start(e.global_location);
+                swipe.start(e.global_location, state.touch_generation());
                 state.start_press(on_menu.clone());
             })
-            .on_touch_move(move |e: Event<TouchEventData>| {
-                if swipe.moved(e.global_location, SWIPE) {
+            // Global: the finger drifting onto the next row must keep moving this one.
+            .on_global_pointer_move(move |e: Event<PointerEventData>| {
+                if swipe.moved(e.global_location(), SWIPE, state.touch_generation()) {
                     state.cancel_press();
                 }
             })
@@ -316,4 +319,25 @@ impl RowInteraction {
                     })),
             )
     }
+}
+
+/// A swipe panel's icon with its action's name below.
+fn swipe_action(icon: Bytes, name: &'static str, icon_size: f32, color: (u8, u8, u8)) -> Element {
+    rect()
+        .cross_align(Alignment::Center)
+        .spacing(4.)
+        .child(
+            SvgViewer::new(icon)
+                .width(Size::px(icon_size))
+                .height(Size::px(icon_size))
+                .color(color),
+        )
+        .child(
+            label()
+                .text(name)
+                .font_size(12.)
+                .font_weight(FontWeight::MEDIUM)
+                .color(color),
+        )
+        .into_element()
 }

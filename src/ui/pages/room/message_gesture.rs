@@ -120,7 +120,7 @@ impl MessageGesture {
 
         outer
             .on_touch_start(move |e: Event<TouchEventData>| {
-                swipe.start(e.global_location);
+                swipe.start(e.global_location, Some(scroll.touch_generation()));
                 long_pressed.set(false);
                 swiped.set(false);
                 let next_gen = *press_gen.peek() + 1;
@@ -137,8 +137,9 @@ impl MessageGesture {
                     }
                 });
             })
-            .on_touch_move(move |e: Event<TouchEventData>| {
-                if swipe.moved(e.global_location, bounds) {
+            // Global: a swipe drifting off this message must keep following the finger.
+            .on_global_pointer_move(move |e: Event<PointerEventData>| {
+                if swipe.moved(e.global_location(), bounds, Some(scroll.touch_generation())) {
                     this.cancel_press();
                 }
             })

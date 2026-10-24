@@ -39,6 +39,14 @@ pub(super) fn watch_focus_events(room_id: String, mut on_focus: impl FnMut(Strin
     );
 }
 
+/// Scrolls the open room `room_id` to `event_id` (loading history until it is found).
+pub(super) fn focus_event(room_id: &str, event_id: &str) {
+    let _ = FOCUS_EVENT_TX
+        .get()
+        .expect("not initialized")
+        .send(Some((room_id.to_string(), event_id.to_string())));
+}
+
 /// Row key: event id, or the stable `unique_id` for virtual items (date dividers, read markers).
 pub(super) fn row_key(item: &TimelineItem) -> String {
     item.as_event()

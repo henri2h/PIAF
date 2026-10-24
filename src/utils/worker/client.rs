@@ -54,9 +54,5 @@ impl MatrixClientWorker {
 // ---------------------------------------------------------------------------
 
 async fn do_fetch_room_previews(room_ids: Vec<matrix_sdk::ruma::OwnedRoomId>) {
-    let Some(service) = crate::utils::sync::room_list_service() else {
-        return;
-    };
-    let refs: Vec<&matrix_sdk::ruma::RoomId> = room_ids.iter().map(|id| id.as_ref()).collect();
-    service.set_room_subscriptions(&refs).await;
+    crate::utils::sync::subscribe_previews(room_ids);
 }

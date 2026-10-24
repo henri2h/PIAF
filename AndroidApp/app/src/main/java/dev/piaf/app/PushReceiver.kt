@@ -33,9 +33,13 @@ class PushReceiver : PushService() {
             return
         }
         Log.d(TAG, "onMessage: roomId=${push.roomId} eventId=${push.eventId} isClear=${push.isClear}")
-        when {
-            push.isClear -> RoomNotifications.cancel(this, push.roomId)
-            push.eventId != null -> RoomNotifications.show(this, push.roomId, push.eventId)
+        // Called on the main thread, which the app needs to start (a tapped
+        // notification): the fetches (network) run in order on their own thread.
+        pushes.execute {
+            when {
+                push.isClear -> RoomNotifications.cancel(this, push.roomId)
+                push.eventId != null -> RoomNotifications.show(this, push.roomId, push.eventId)
+            }
         }
     }
 
@@ -103,7 +107,7 @@ class PushReceiver : PushService() {
         }
 
         /** Spin up the Rust SDK in the push context (app killed). No-op if already running. */
-        external fun nativeInitForPush(dataDir: String): Boolean
+        external fun nativeInitForPush(context: Context, dataDir: String): Boolean
         external fun nativeEndpointChanged(endpoint: String)
         external fun nativeEndpointCleared()
         external fun nativeFetchNotificationPayload(roomId: String, eventId: String): String?
@@ -124,6 +128,7 @@ class PushReceiver : PushService() {
     companion object {
         const val CHANNEL_ID = "piaf_messages"
         private const val TAG = "PiafPush"
+        private val pushes = java.util.concurrent.Executors.newSingleThreadExecutor()
         private const val ENDPOINT_FILE = "push_endpoint"
         private const val GATEWAY_FILE = "push_gateway"
         private const val DEFAULT_GATEWAY =

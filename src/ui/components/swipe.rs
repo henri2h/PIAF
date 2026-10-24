@@ -26,11 +26,17 @@ pub struct SwipeBounds {
 }
 
 /// Horizontal swipe on a touch row: follows the finger, ticks when it passes
-/// the commit point, and springs back on release. Wire `start` / `moved` /
-/// `end` / `cancel` to the row's touch events and draw it at `offset()`.
+/// the commit point, and springs back on release. Wire `start` / `end` /
+/// `cancel` to the row's touch events, `moved` to its global pointer moves
+/// (touch moves stop once the finger drifts off the row), and draw it at
+/// `offset()`.
 #[derive(Clone, Copy, PartialEq)]
 pub struct Swipe {
     start: State<Option<(f64, f64)>>,
+    /// The scroll view's `touch_generation` at `start`. Once it changes the
+    /// list owns the touch and its release never reaches the row: `start` is
+    /// stale, and moves of a later touch must not swipe this row.
+    generation: State<Option<u64>>,
     swiping: State<bool>,
     /// Finger offset while swiping.
     offset: State<f32>,
@@ -54,6 +60,7 @@ pub fn use_swipe() -> Swipe {
     let snap_offset = snap.get().value();
     Swipe {
         start: use_state(|| None),
+        generation: use_state(|| None),
         swiping: use_state(|| false),
         offset: use_state(|| 0.),
         release,
@@ -81,17 +88,29 @@ impl Swipe {
         self.start.peek().is_some()
     }
 
-    pub fn start(&self, location: CursorPoint) {
-        let mut start = self.start;
+    /// `generation`: the scroll view's `touch_generation`, if in one.
+    pub fn start(&self, location: CursorPoint, generation: Option<u64>) {
+        let (mut start, mut touch) = (self.start, self.generation);
         start.set(Some((location.x, location.y)));
+        touch.set(generation);
     }
 
-    /// Feeds a touch move. Returns whether the touch moved at all, so callers
+    /// Feeds a pointer move. Returns whether the touch moved at all, so callers
     /// can cancel a pending long press.
-    pub fn moved(&self, location: CursorPoint, bounds: SwipeBounds) -> bool {
+    pub fn moved(
+        &self,
+        location: CursorPoint,
+        bounds: SwipeBounds,
+        generation: Option<u64>,
+    ) -> bool {
         let Some((sx, sy)) = *self.start.peek() else {
             return false;
         };
+        // The list never claims a touch already swiping, so this is a stale one.
+        if !*self.swiping.peek() && *self.generation.peek() != generation {
+            self.reset();
+            return false;
+        }
         let (dx, dy) = (location.x - sx, location.y - sy);
         let (mut swiping, mut offset, mut armed) = (self.swiping, self.offset, self.armed);
 
@@ -135,8 +154,9 @@ impl Swipe {
 
     /// Springs back from wherever the row is.
     fn reset(&self) {
-        let (mut start, mut swiping, mut offset, mut release, mut armed) = (
+        let (mut start, mut generation, mut swiping, mut offset, mut release, mut armed) = (
             self.start,
+            self.generation,
             self.swiping,
             self.offset,
             self.release,
@@ -150,6 +170,7 @@ impl Swipe {
         offset.set(0.);
         armed.set(false);
         start.set(None);
+        generation.set(None);
     }
 }
 
@@ -179,9 +200,9 @@ mod tests {
         rect()
             .width(Size::px(300.))
             .height(Size::px(60.))
-            .on_touch_start(move |e: Event<TouchEventData>| swipe.start(e.global_location))
-            .on_touch_move(move |e: Event<TouchEventData>| {
-                swipe.moved(e.global_location, BOUNDS);
+            .on_touch_start(move |e: Event<TouchEventData>| swipe.start(e.global_location, None))
+            .on_global_pointer_move(move |e: Event<PointerEventData>| {
+                swipe.moved(e.global_location(), BOUNDS, None);
             })
             .on_touch_end(move |_: Event<TouchEventData>| {
                 COMMITTED.with(|c| c.set(swipe.end(BOUNDS)))
@@ -205,6 +226,24 @@ mod tests {
         test.release_touch((230., 50.));
         test.sync_and_update();
         assert_eq!(COMMITTED.with(Cell::get), Some(120.));
+    }
+
+    /// A swipe drifting off the row keeps following the finger, both ways.
+    #[test]
+    fn swipe_follows_the_finger_off_the_row() {
+        let mut test = launch_test(app);
+        test.sync_and_update();
+        test.press_touch((100., 30.));
+        test.move_touch((140., 35.));
+        test.move_touch((180., 120.));
+        test.sync_and_update();
+        assert_eq!(OFFSET.with(Cell::get), 40.);
+        test.move_touch((60., 150.));
+        test.sync_and_update();
+        assert_eq!(OFFSET.with(Cell::get), -80.);
+        test.release_touch((60., 150.));
+        test.sync_and_update();
+        assert_eq!(COMMITTED.with(Cell::get), None);
     }
 
     /// A drag leaning vertical is the list's scroll, not a swipe.

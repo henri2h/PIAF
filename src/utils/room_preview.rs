@@ -8,6 +8,8 @@ use matrix_sdk::ruma::events::{
 use matrix_sdk::ruma::exports::serde_json;
 use matrix_sdk::ruma::serde::Raw;
 
+use crate::utils::timeline_media::forward_split;
+
 /// Display name of a timeline event's sender, else their user ID.
 pub fn sender_name(event: &matrix_sdk_ui::timeline::EventTimelineItem) -> String {
     match event.sender_profile() {
@@ -27,8 +29,7 @@ pub fn reply_preview(msgtype: &MessageType) -> String {
 /// Preview text for a message, or `None` for types we don't render.
 pub fn message_body(msgtype: &MessageType) -> Option<String> {
     Some(match msgtype {
-        MessageType::Text(t) => t.body.clone(),
-        MessageType::Notice(n) => n.body.clone(),
+        MessageType::Text(_) | MessageType::Notice(_) => forward_split(msgtype).1.to_string(),
         MessageType::Emote(e) => format!("* {}", e.body),
         MessageType::Image(_) => "📷 Image".to_string(),
         MessageType::File(_) => "📎 File".to_string(),

@@ -2,7 +2,7 @@
 //! connection for the room list (account data, receipts, typing) plus the
 //! encryption sync (to-device, e2ee). Replaces the classic `/sync` loop.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, LazyLock, Mutex, OnceLock};
 use std::time::Duration;
@@ -45,6 +45,88 @@ pub async fn init(client: &Client) -> anyhow::Result<()> {
 
 pub fn room_list_service() -> Option<Arc<RoomListService>> {
     SYNC_SERVICE.get().map(|s| s.room_list_service())
+}
+
+/// Rooms with a sliding-sync subscription: the ones on screen (counted, a
+/// room can be open twice: list + panel) and the latest preview fetch.
+/// Without one, an open room only gets the room list's single event per
+/// update: two messages between syncs make the response `limited`, and the
+/// event cache then unloads everything but the newest messages.
+#[derive(Default)]
+struct Subscriptions {
+    open: HashMap<OwnedRoomId, usize>,
+    previews: Vec<OwnedRoomId>,
+}
+
+impl Subscriptions {
+    /// Every subscribed room, once.
+    fn rooms(&self) -> Vec<OwnedRoomId> {
+        let mut ids: Vec<OwnedRoomId> = self.open.keys().cloned().collect();
+        ids.extend(
+            self.previews
+                .iter()
+                .filter(|id| !self.open.contains_key(*id))
+                .cloned(),
+        );
+        ids
+    }
+}
+
+static SUBSCRIPTIONS: LazyLock<Mutex<Subscriptions>> = LazyLock::new(Default::default);
+
+/// Keeps the room subscribed while alive.
+pub struct RoomSubscription(OwnedRoomId);
+
+impl Drop for RoomSubscription {
+    fn drop(&mut self) {
+        let mut subs = SUBSCRIPTIONS.lock().unwrap();
+        if let Some(count) = subs.open.get_mut(&self.0) {
+            *count -= 1;
+            if *count == 0 {
+                subs.open.remove(&self.0);
+            }
+        }
+        drop(subs);
+        apply_subscriptions();
+    }
+}
+
+/// Subscribes to `room_id` (20 events per update) until the guard is dropped.
+pub fn subscribe_room(room_id: &str) -> Option<RoomSubscription> {
+    let room_id = OwnedRoomId::try_from(room_id).ok()?;
+    *SUBSCRIPTIONS
+        .lock()
+        .unwrap()
+        .open
+        .entry(room_id.clone())
+        .or_default() += 1;
+    apply_subscriptions();
+    Some(RoomSubscription(room_id))
+}
+
+/// Subscribes to `room_ids` for their previews, replacing the previous ones.
+pub fn subscribe_previews(room_ids: Vec<OwnedRoomId>) {
+    SUBSCRIPTIONS.lock().unwrap().previews = room_ids;
+    apply_subscriptions();
+}
+
+fn apply_subscriptions() {
+    // Applied one at a time, each reading the set when its turn comes: the
+    // last one sent is the latest set.
+    static APPLYING: LazyLock<tokio::sync::Mutex<()>> = LazyLock::new(Default::default);
+    // A guard dropped while the app shuts down has no runtime left.
+    let Ok(runtime) = tokio::runtime::Handle::try_current() else {
+        return;
+    };
+    runtime.spawn(async {
+        let _turn = APPLYING.lock().await;
+        let Some(service) = room_list_service() else {
+            return;
+        };
+        let room_ids = SUBSCRIPTIONS.lock().unwrap().rooms();
+        let refs: Vec<&matrix_sdk::ruma::RoomId> = room_ids.iter().map(|id| id.as_ref()).collect();
+        service.set_room_subscriptions(&refs).await;
+    });
 }
 
 /// Starts syncing and the watchers that feed the UI. Call once.
@@ -170,5 +252,25 @@ async fn register_pusher() {
         .map(|p| p.to_path_buf());
     if let (Some(base), Some(client)) = (base, crate::utils::matrix::CLIENT.get()) {
         crate::utils::push::register_pusher_if_stored(client, &base).await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn subscriptions_cover_open_rooms_and_previews_once() {
+        let (a, b) = (
+            OwnedRoomId::try_from("!a:x").unwrap(),
+            OwnedRoomId::try_from("!b:x").unwrap(),
+        );
+        let subs = Subscriptions {
+            open: HashMap::from([(a.clone(), 2)]),
+            previews: vec![a.clone(), b.clone()],
+        };
+        let mut rooms = subs.rooms();
+        rooms.sort();
+        assert_eq!(rooms, [a, b]);
     }
 }

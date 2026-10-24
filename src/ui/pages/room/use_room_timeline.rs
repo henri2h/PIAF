@@ -17,14 +17,18 @@ pub(super) struct TimelineState {
     /// Keep paginating while content is shorter than the viewport.
     pub auto_fill: State<bool>,
     pub typing_users: State<Vec<String>>,
-    /// Event to scroll to once rows are measured.
+    /// Event to scroll to once rows are measured (history loads until it is found).
     pub pending_focus: State<Option<String>>,
+    /// The last action that failed, for the snackbar.
+    pub error: State<Option<String>>,
 }
 
 #[derive(Clone, PartialEq)]
 pub(super) struct RoomTimeline {
     pub handle: TimelineHandle,
     pub state: TimelineState,
+    /// The room's latest messages (not a timeline around a searched event).
+    pub live: bool,
 }
 
 impl RoomTimeline {
@@ -39,6 +43,7 @@ impl RoomTimeline {
 }
 
 pub(super) fn use_room_timeline(room_id: &str, focus_event_id: Option<String>) -> RoomTimeline {
+    let live = focus_event_id.is_none();
     let state = TimelineState {
         messages: use_state(Vec::new),
         room_name: use_state(|| room_id.to_string()),
@@ -49,6 +54,7 @@ pub(super) fn use_room_timeline(room_id: &str, focus_event_id: Option<String>) -
         auto_fill: use_state(|| false),
         typing_users: use_state(Vec::new),
         pending_focus: use_state(|| None),
+        error: use_state(|| None),
     };
 
     // The receive loop must not hold the handle: dropping it is what stops the task.
@@ -58,7 +64,11 @@ pub(super) fn use_room_timeline(room_id: &str, focus_event_id: Option<String>) -
         handle
     });
 
-    RoomTimeline { handle, state }
+    RoomTimeline {
+        handle,
+        state,
+        live,
+    }
 }
 
 /// Smol side: mirrors timeline task output into the states.
@@ -84,16 +94,25 @@ async fn receive(mut st: TimelineState, mut events: TimelineEvents, focus: Optio
             }
             update = events.updates.recv() => {
                 let Some(msgs) = update else { break; };
-                let unchanged_len = msgs.len() == st.messages.peek().len();
+                let (old_len, new_len) = (st.messages.peek().len(), msgs.len());
                 st.messages.set(msgs);
                 st.paginating.set(false);
-                if unchanged_len {
+                if new_len < old_len {
+                    // A gappy sync makes the SDK unload all but the newest
+                    // messages: load history again until the screen is full.
+                    st.at_start.set(false);
+                    st.auto_fill.set(true);
+                } else if new_len == old_len {
                     st.auto_fill.set(false);
                 }
             }
             typing = events.typing.recv() => {
                 let Some(users) = typing else { break; };
                 st.typing_users.set(users);
+            }
+            error = events.errors.recv() => {
+                let Some(error) = error else { break; };
+                st.error.set(Some(error.to_string()));
             }
         }
     }

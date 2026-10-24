@@ -36,6 +36,8 @@ matrix-sdk = { version = "0.19.1", default-features = false, features = [
   "automatic-room-key-forwarding",
   "bundled-sqlite",
   "experimental-search",
+  # Sent messages: markdown rendered to `formatted_body`.
+  "markdown",
 ] }
 matrix-sdk-ui = { version = "0.19.1", default-features = false, features = [] }
 tokio = { version = "1.15.3", features = ["macros", "rt-multi-thread"] }

@@ -76,16 +76,18 @@ fn android_main(droid_app: AndroidApp) {
 /// HTTPS (reqwest, rustls-platform-verifier) checks certificates against
 /// Android's trust store through JNI: without this every request panics.
 fn init_tls_verifier(droid_app: &AndroidApp) {
-    // SAFETY: the VM and activity pointers come from the running app.
-    let vm = unsafe { jni22::JavaVM::from_raw(droid_app.vm_as_ptr() as *mut jni22::sys::JavaVM) };
+    init_tls_verifier_raw(droid_app.vm_as_ptr(), droid_app.activity_as_ptr());
+}
+
+/// `init_tls_verifier` from raw JNI pointers: also run by the push path, where
+/// no activity (nor `android_main`) exists. A no-op once initialised.
+pub(crate) fn init_tls_verifier_raw(vm: *mut std::ffi::c_void, context: *mut std::ffi::c_void) {
+    // SAFETY: the VM and context pointers come from the running app.
+    let vm = unsafe { jni22::JavaVM::from_raw(vm as *mut jni22::sys::JavaVM) };
     let result = vm.attach_current_thread(|env| -> Result<(), jni22::errors::Error> {
-        let activity = unsafe {
-            jni22::objects::JObject::from_raw(
-                env,
-                droid_app.activity_as_ptr() as jni22::sys::jobject,
-            )
-        };
-        rustls_platform_verifier::android::init_with_env(env, activity)
+        let context =
+            unsafe { jni22::objects::JObject::from_raw(env, context as jni22::sys::jobject) };
+        rustls_platform_verifier::android::init_with_env(env, context)
     });
     if let Err(e) = result {
         tracing::error!("TLS verifier init failed: {e}");
