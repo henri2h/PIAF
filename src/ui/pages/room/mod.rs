@@ -91,6 +91,24 @@ pub struct RoomPage {
 
 impl Component for RoomPage {
     fn render(&self) -> impl IntoElement {
+        // Keyed: a room → room navigation reuses the page, and its hooks
+        // (timeline, subscription, invite state) would keep the previous room.
+        rect()
+            .key(&self.room_id)
+            .expanded()
+            .child(RoomScreen {
+                room_id: self.room_id.clone(),
+            })
+    }
+}
+
+#[derive(PartialEq)]
+struct RoomScreen {
+    room_id: String,
+}
+
+impl Component for RoomScreen {
+    fn render(&self) -> impl IntoElement {
         // Sync ticks catch invites accepted or declined on another device.
         let _sync = use_watch_tick(crate::SYNC_RX.get().expect("not initialized"));
         let joined = use_state(|| false);
@@ -147,7 +165,7 @@ impl Component for RoomView {
         // The viewer covers the room instead of replacing it: the composer
         // (and its unsaved text) stays mounted underneath.
         let viewer = ui.image_viewer.read().is_some().then(|| {
-            let handle = timeline.handle.clone();
+            let handle = timeline.clone();
             rect()
                 .position(Position::new_absolute().top(0.).left(0.))
                 .layer(VIEWER_LAYER)
@@ -157,7 +175,8 @@ impl Component for RoomView {
                 .child(MediaViewer {
                     items: media_items(&timeline.state.messages.read()),
                     selected_key: ui.image_viewer,
-                    on_load_more: Some(std::rc::Rc::new(move || handle.paginate())),
+                    // Through `request_page`: skips while a page runs or at the start.
+                    on_load_more: Some(std::rc::Rc::new(move || handle.request_page())),
                     on_show_in_chat: None,
                 })
         });

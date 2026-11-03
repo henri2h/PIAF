@@ -17,6 +17,9 @@ use super::outgoing::Draft;
 use crate::utils::matrix::get_room;
 
 const PAGE_SIZE: u16 = 20;
+/// The first page: a screen's worth in one round trip (the cache usually
+/// holds a couple of events and a gap, so every page is a network request).
+const FIRST_PAGE_SIZE: u16 = 40;
 const FOCUS_CONTEXT_EVENTS: u16 = 50;
 
 #[derive(Debug)]
@@ -145,6 +148,8 @@ pub(super) fn spawn_timeline(
 }
 
 async fn run(room_id: String, focus_event_id: Option<String>, mut io: TaskIo) {
+    use crate::logging::PERF;
+    let started = std::time::Instant::now();
     let Some(room) = get_room(&room_id) else {
         return;
     };
@@ -154,6 +159,7 @@ async fn run(room_id: String, focus_event_id: Option<String>, mut io: TaskIo) {
         .map(|n| n.to_string())
         .unwrap_or_else(|_| room_id.clone());
     let dm = room.is_dm();
+    tracing::debug!(target: PERF, ms = started.elapsed().as_millis() as u64, "timeline: room name");
 
     let mut builder = room
         .timeline_builder()
@@ -172,24 +178,37 @@ async fn run(room_id: String, focus_event_id: Option<String>, mut io: TaskIo) {
         let _ = io.init.send((name, dm, vec![]));
         return;
     };
+    tracing::debug!(target: PERF, ms = started.elapsed().as_millis() as u64, "timeline: built");
     let timeline = Arc::new(timeline);
     let (items, mut stream) = timeline.subscribe().await;
+    tracing::debug!(target: PERF, ms = started.elapsed().as_millis() as u64, items = items.len(), "timeline: first items");
     let (_typing_guard, mut typing_broadcast) = room.subscribe_to_typing_notifications();
 
     let mut tl_items: Vec<Arc<TimelineItem>> = items.iter().cloned().collect();
     let mut replies = ReplyDetails::default();
     replies.fetch_missing(&timeline, &tl_items);
     let _ = io.init.send((name, dm, tl_items.clone()));
+    tracing::debug!(target: PERF, ms = started.elapsed().as_millis() as u64, "timeline: init sent");
 
+    let mut first_page = true;
     loop {
         tokio::select! {
             biased;
             page = io.pages.recv() => {
                 if page.is_none() { break; }
+                // Beside the loop: a page is a network round trip, and the
+                // timeline's diffs (the page's events) must reach the UI
+                // meanwhile, not after the next page.
                 // Always answer: a page can add no visible items (no diff), and
                 // the UI would otherwise wait with its spinner forever.
-                let hit_start = timeline.paginate_backwards(PAGE_SIZE).await.unwrap_or(false);
-                let _ = io.page_done.send(hit_start);
+                let size = if std::mem::take(&mut first_page) { FIRST_PAGE_SIZE } else { PAGE_SIZE };
+                let (timeline, page_done) = (timeline.clone(), io.page_done.clone());
+                tokio::spawn(async move {
+                    let page_started = std::time::Instant::now();
+                    let hit_start = timeline.paginate_backwards(size).await.unwrap_or(false);
+                    tracing::debug!(target: PERF, ms = page_started.elapsed().as_millis() as u64, since_open_ms = started.elapsed().as_millis() as u64, hit_start, "timeline: page");
+                    let _ = page_done.send(hit_start);
+                });
             }
             action = io.actions.recv() => {
                 let Some(action) = action else { break; };

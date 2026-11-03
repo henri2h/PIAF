@@ -6,6 +6,7 @@ pub mod clipboard;
 pub mod const_values;
 pub mod drafts;
 pub mod haptics;
+pub mod history_prefetch;
 pub mod ime;
 pub mod ime_edit;
 pub mod insets;

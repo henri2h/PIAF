@@ -47,8 +47,16 @@ fn row_height(row: &ListRow) -> f32 {
 /// each one's row in the list (headers and the invites row shift them).
 #[derive(Default)]
 struct Shown {
-    rooms: Vec<RoomSummary>,
+    rooms: Rc<Vec<RoomSummary>>,
+    /// Indices into `rooms`, in display order.
+    order: Vec<usize>,
     tops: Vec<f32>,
+}
+
+impl Shown {
+    fn room(&self, i: usize) -> &RoomSummary {
+        &self.rooms[self.order[i]]
+    }
 }
 
 /// Shared with the rows: the list's scroll (a resting finger is no long
@@ -249,12 +257,15 @@ fn use_chips_follow_scroll(scroll: ScrollController, filter_bar: Option<FilterBa
 
 /// j/k, gg/G, J/K, Enter and the room actions, while the list has keyboard focus.
 /// The rooms the keyboard can select, with their rows' tops.
-fn shown_rooms(rooms: &[RoomSummary], rows: &[ListRow]) -> Shown {
-    let mut shown = Shown::default();
+fn shown_rooms(rooms: &Rc<Vec<RoomSummary>>, rows: &[ListRow]) -> Shown {
+    let mut shown = Shown {
+        rooms: rooms.clone(),
+        ..Default::default()
+    };
     let mut top = 0.;
     for row in rows {
         if let ListRow::Room(i) = row {
-            shown.rooms.push(rooms[*i].clone());
+            shown.order.push(*i);
             shown.tops.push(top);
         }
         top += row_height(row);
@@ -291,17 +302,16 @@ fn list_command(
     viewport_height: f32,
     bar_height: f32,
 ) {
-    let rooms = &shown.rooms;
-    let Some(last) = rooms.len().checked_sub(1) else {
+    let Some(last) = shown.order.len().checked_sub(1) else {
         return;
     };
     let current = {
         let selected = nav.selected.peek();
         selected
             .as_deref()
-            .and_then(|id| rooms.iter().position(|r| r.room_id == id))
+            .and_then(|id| (0..=last).position(|i| shown.room(i).room_id == id))
     };
-    let is_unread = |i: &usize| rooms[*i].is_unread();
+    let is_unread = |i: &usize| shown.room(*i).is_unread();
     let target = match command {
         KeyCommand::Down => Some(current.map_or(0, |i| (i + 1).min(last))),
         KeyCommand::Up => Some(current.map_or(0, |i| i.saturating_sub(1))),
@@ -313,11 +323,11 @@ fn list_command(
     };
     if let Some(index) = target {
         let mut selected = nav.selected;
-        selected.set(Some(rooms[index].room_id.clone()));
+        selected.set(Some(shown.room(index).room_id.clone()));
         scroll_into_view(&mut scroll, shown.tops[index], viewport_height, bar_height);
         return;
     }
-    let Some(room) = current.map(|i| &rooms[i]) else {
+    let Some(room) = current.map(|i| shown.room(i)) else {
         return;
     };
     let id = room.room_id.clone();

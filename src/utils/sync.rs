@@ -104,10 +104,31 @@ pub fn subscribe_room(room_id: &str) -> Option<RoomSubscription> {
     Some(RoomSubscription(room_id))
 }
 
-/// Subscribes to `room_ids` for their previews, replacing the previous ones.
+/// Preview subscriptions kept: about a screen of rows.
+const MAX_PREVIEWS: usize = 20;
+
+/// Subscribes to `room_ids` for their previews, on top of the latest
+/// [`MAX_PREVIEWS`] ones: each row asks for its own room, so replacing the
+/// set would only keep the last row's.
 pub fn subscribe_previews(room_ids: Vec<OwnedRoomId>) {
-    SUBSCRIPTIONS.lock().unwrap().previews = room_ids;
-    apply_subscriptions();
+    let changed = add_previews(&mut SUBSCRIPTIONS.lock().unwrap().previews, room_ids);
+    if changed {
+        apply_subscriptions();
+    }
+}
+
+/// Appends the new ids, dropping the oldest past [`MAX_PREVIEWS`].
+fn add_previews(previews: &mut Vec<OwnedRoomId>, room_ids: Vec<OwnedRoomId>) -> bool {
+    let before = previews.len();
+    for id in room_ids {
+        if !previews.contains(&id) {
+            previews.push(id);
+        }
+    }
+    let added = previews.len() != before;
+    let excess = previews.len().saturating_sub(MAX_PREVIEWS);
+    previews.drain(..excess);
+    added
 }
 
 fn apply_subscriptions() {
@@ -140,6 +161,7 @@ pub fn start(client: Client) {
     crate::utils::spaces::start(client.clone());
     tokio::spawn(watch_room_updates(client));
     tokio::spawn(async move { service.start().await });
+    crate::utils::history_prefetch::start();
 }
 
 pub async fn stop() {
@@ -270,5 +292,17 @@ mod tests {
         let mut rooms = subs.rooms();
         rooms.sort();
         assert_eq!(rooms, [a, b]);
+    }
+
+    #[test]
+    fn previews_add_up_and_keep_the_latest() {
+        let id = |i: usize| OwnedRoomId::try_from(format!("!{i}:x")).unwrap();
+        let mut previews = Vec::new();
+        for i in 0..MAX_PREVIEWS + 5 {
+            assert!(add_previews(&mut previews, vec![id(i)]));
+        }
+        assert!(!add_previews(&mut previews, vec![id(MAX_PREVIEWS + 4)]));
+        assert_eq!(previews.len(), MAX_PREVIEWS);
+        assert_eq!(previews[0], id(5));
     }
 }

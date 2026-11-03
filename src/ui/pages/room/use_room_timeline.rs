@@ -94,16 +94,16 @@ async fn receive(mut st: TimelineState, mut events: TimelineEvents, focus: Optio
             }
             update = events.updates.recv() => {
                 let Some(msgs) = update else { break; };
-                let (old_len, new_len) = (st.messages.peek().len(), msgs.len());
+                let shrunk = msgs.len() < st.messages.peek().len();
                 st.messages.set(msgs);
-                st.paginating.set(false);
-                if new_len < old_len {
+                // `paginating` ends with the page's own message, not with an
+                // update (a sync's can arrive while the page is in flight).
+                // Same-length updates (receipts, reactions) don't stop the fill.
+                if shrunk {
                     // A gappy sync makes the SDK unload all but the newest
                     // messages: load history again until the screen is full.
                     st.at_start.set(false);
                     st.auto_fill.set(true);
-                } else if new_len == old_len {
-                    st.auto_fill.set(false);
                 }
             }
             typing = events.typing.recv() => {

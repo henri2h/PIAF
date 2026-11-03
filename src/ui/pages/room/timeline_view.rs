@@ -1,7 +1,6 @@
 use std::cell::Cell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 
@@ -146,8 +145,12 @@ impl Component for TimelineView {
 
         let my_uid = my_user_id();
         let action_tx = tl.handle.actions();
-        let date_labels: Vec<Option<String>> =
-            (0..msgs.len()).map(|i| date_label_for(&msgs, i)).collect();
+        let date_labels = day_labels(
+            &msgs
+                .iter()
+                .map(|item| item.as_event().map(|e| format_date_key(e.timestamp())))
+                .collect::<Vec<_>>(),
+        );
         let groups = group_positions(
             &msgs.iter().map(|item| group_key(item)).collect::<Vec<_>>(),
             &date_labels.iter().map(Option::is_some).collect::<Vec<_>>(),
@@ -298,15 +301,17 @@ fn scroll_to_pending_focus(
     }
 }
 
-/// Date divider label when `items[idx]` starts a new day.
-fn date_label_for(items: &[Arc<TimelineItem>], idx: usize) -> Option<String> {
-    let curr = items[idx]
-        .as_event()
-        .map(|e| format_date_key(e.timestamp()))?;
-    let prev = idx
-        .checked_sub(1)
-        .and_then(|i| items[i].as_event().map(|e| format_date_key(e.timestamp())));
-    (prev.as_deref() != Some(curr.as_str())).then(|| format_date_label(&curr))
+/// Date divider label for each item starting a new day, from each item's day
+/// key (`None`: a virtual item; the item after it gets a label).
+fn day_labels(keys: &[Option<String>]) -> Vec<Option<String>> {
+    keys.iter()
+        .enumerate()
+        .map(|(i, curr)| {
+            let curr = curr.as_deref()?;
+            let prev = i.checked_sub(1).and_then(|p| keys[p].as_deref());
+            (prev != Some(curr)).then(|| format_date_label(curr))
+        })
+        .collect()
 }
 
 /// Messages this close in time from one sender join a group.
@@ -384,6 +389,20 @@ mod tests {
             positions(&keys),
             [(true, true), (true, true), (true, true), (true, true)]
         );
+    }
+
+    #[test]
+    fn day_labels_mark_the_first_item_of_each_day() {
+        let key = |k: &str| Some(k.to_string());
+        let keys = [
+            key("2026-11-01"),
+            key("2026-11-01"),
+            None,
+            key("2026-11-01"),
+            key("2026-11-02"),
+        ];
+        let labelled: Vec<bool> = day_labels(&keys).iter().map(Option::is_some).collect();
+        assert_eq!(labelled, [true, false, false, true, true]);
     }
 
     #[test]
