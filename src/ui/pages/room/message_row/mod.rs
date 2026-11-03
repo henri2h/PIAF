@@ -241,7 +241,18 @@ impl MessageRow {
                     message,
                     ContentCtx {
                         room_id: &self.room_id,
-                        event_id: event_id.clone(),
+                        item_key: event_id
+                            .clone()
+                            .or_else(|| event.transaction_id().map(|id| id.to_string()))
+                            .unwrap_or_default(),
+                        uploading: match event.send_state() {
+                            Some(EventSendState::NotSentYet { progress }) => {
+                                Some(progress.as_ref().map(|p| {
+                                    p.progress.current as f32 / p.progress.total.max(1) as f32
+                                }))
+                            }
+                            _ => None,
+                        },
                         sender_name: &sender_name,
                         is_me,
                         image_viewer: ui.image_viewer,

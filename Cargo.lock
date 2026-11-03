@@ -2588,6 +2588,8 @@ version = "0.5.0-rc.9"
 dependencies = [
  "freya-components",
  "freya-core",
+ "freya-engine",
+ "freya-router",
  "pulldown-cmark",
  "torin",
 ]
@@ -5606,9 +5608,11 @@ dependencies = [
  "png",
  "rand 0.10.3",
  "rand_distr",
+ "reqwest",
  "rfd 0.15.4",
  "ruma",
  "rusqlite",
+ "rustls",
  "rustls-platform-verifier",
  "serde",
  "serde_json",

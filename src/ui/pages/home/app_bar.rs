@@ -8,13 +8,14 @@ use crate::ui::components::IconButton;
 use crate::utils::avatars::AvatarSource;
 use freya_query::prelude::*;
 
+use super::account_switcher::AccountSwitcher;
 use crate::app::keys::{KeyCommand, use_key_commands};
 use crate::ui::components::{Avatar, HoverableExt, search_input, use_color_transition};
 use crate::utils::queries::FetchUserDisplayName;
 use crate::utils::use_app_colors;
 use crate::{Route, WIDE_MODE};
 
-/// Home top bar: avatar → settings, title or inline search (wide mode),
+/// Home top bar: avatar → accounts and settings, title or inline search (wide mode),
 /// search toggle + reactions + new-chat actions (narrow mode). On narrow
 /// screens, toggling search also opens a search row below the bar.
 pub struct HomeAppBar {
@@ -44,6 +45,8 @@ impl Component for HomeAppBar {
             use_query(Query::new((), FetchUserDisplayName).stale_time(Duration::from_secs(3600)));
         let my_name = name_query.read().state().ok().cloned().unwrap_or_default();
 
+        let mut switcher_open = use_state(|| false);
+
         let background = use_color_transition(
             if *self.tinted.read() {
                 c.surface_container
@@ -70,20 +73,18 @@ impl Component for HomeAppBar {
                     .content(Content::Flex)
                     .cross_align(Alignment::Center)
                     .padding(Gaps::new(0., 8., 0., 8.))
-                    // Avatar — taps to Settings
+                    // Avatar: accounts, settings
                     .child(
                         rect()
                             .width(Size::px(48.))
                             .height(Size::px(48.))
                             .corner_radius(24.)
                             .center()
-                            .on_press(move |_| {
-                                crate::app::navigation::push(Route::Settings);
-                            })
+                            .on_press(move |_| switcher_open.set(true))
                             .child(Avatar {
                                 size: 36.,
                                 source: Some(AvatarSource::Me),
-                                name: my_name,
+                                name: my_name.clone(),
                                 color: c.primary,
                             })
                             .hoverable(Size::px(48.), Size::px(48.), 24.),
@@ -165,6 +166,10 @@ impl Component for HomeAppBar {
                         .into_element()
                     })),
             )
+            .child(AccountSwitcher {
+                open: switcher_open,
+                my_name,
+            })
             // Narrow: search row below the bar, shown while toggled open.
             .maybe_child(if !is_wide && is_search_open {
                 Some(

@@ -6,28 +6,51 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.unifiedpush.android.connector.FailedReason
+import org.unifiedpush.android.connector.INSTANCE_DEFAULT
 import org.unifiedpush.android.connector.PushService
 import org.unifiedpush.android.connector.data.PushEndpoint
 import org.unifiedpush.android.connector.data.PushMessage
 import java.io.File
 
-/** UnifiedPush entry point: endpoint changes and incoming pushes. */
+/**
+ * UnifiedPush entry point: endpoint changes and incoming pushes. Each account
+ * has its own instance (its id, see `Accounts`).
+ */
 class PushReceiver : PushService() {
 
     override fun onNewEndpoint(endpoint: PushEndpoint, instance: String) {
+        // The instance shared before accounts: replaced by the accounts' own.
+        if (instance !in Accounts.ids(this)) return
         val url = endpoint.url
-        File(filesDir, ENDPOINT_FILE).writeText(url)
-        File(filesDir, GATEWAY_FILE).writeText(resolveGateway(url))
-        if (NativeBridge.tryLoad()) NativeBridge.nativeEndpointChanged(url)
+        // Network (gateway check, pusher registration): off the main thread.
+        pushes.execute {
+            val dir = Accounts.dir(this, instance).apply { mkdirs() }
+            File(dir, ENDPOINT_FILE).writeText(url)
+            File(dir, GATEWAY_FILE).writeText(resolveGateway(url))
+            if (initNative(this)) NativeBridge.nativeEndpointChanged(instance, url)
+        }
     }
 
     override fun onUnregistered(instance: String) {
-        File(filesDir, ENDPOINT_FILE).delete()
-        File(filesDir, GATEWAY_FILE).delete()
-        if (NativeBridge.tryLoad()) NativeBridge.nativeEndpointCleared()
+        if (instance == INSTANCE_DEFAULT) {
+            // Before accounts, the endpoint was app-wide.
+            File(filesDir, ENDPOINT_FILE).delete()
+            File(filesDir, GATEWAY_FILE).delete()
+            return
+        }
+        pushes.execute {
+            if (initNative(this)) NativeBridge.nativeEndpointCleared(instance)
+            val dir = Accounts.dir(this, instance)
+            File(dir, ENDPOINT_FILE).delete()
+            File(dir, GATEWAY_FILE).delete()
+        }
     }
 
     override fun onMessage(message: PushMessage, instance: String) {
+        val account = Accounts.resolve(this, instance) ?: run {
+            Log.d(TAG, "onMessage: no account for this push, ignoring")
+            return
+        }
         val push = parsePush(message.content) ?: run {
             Log.d(TAG, "onMessage: no room_id, ignoring")
             return
@@ -37,8 +60,8 @@ class PushReceiver : PushService() {
         // notification): the fetches (network) run in order on their own thread.
         pushes.execute {
             when {
-                push.isClear -> RoomNotifications.cancel(this, push.roomId)
-                push.eventId != null -> RoomNotifications.show(this, push.roomId, push.eventId)
+                push.isClear -> RoomNotifications.cancel(this, account, push.roomId)
+                push.eventId != null -> RoomNotifications.show(this, account, push.roomId, push.eventId)
             }
         }
     }
@@ -106,21 +129,26 @@ class PushReceiver : PushService() {
             return loaded
         }
 
-        /** Spin up the Rust SDK in the push context (app killed). No-op if already running. */
+        /**
+         * Spin up the Rust SDK in the push context (app killed). No-op if already
+         * running. False when no account is signed in. `account` arguments below
+         * are account ids (see `Accounts`); all but `nativeOpenRoom` need this first.
+         */
         external fun nativeInitForPush(context: Context, dataDir: String): Boolean
-        external fun nativeEndpointChanged(endpoint: String)
-        external fun nativeEndpointCleared()
-        external fun nativeFetchNotificationPayload(roomId: String, eventId: String): String?
-        external fun nativeFetchRoomAvatarBytes(roomId: String): ByteArray?
-        external fun nativeFetchSenderAvatarBytes(roomId: String, senderId: String): ByteArray?
-        external fun nativeFetchEventImageBytes(roomId: String, eventId: String): ByteArray?
+        external fun nativeEndpointChanged(account: String, endpoint: String)
+        external fun nativeEndpointCleared(account: String)
+        external fun nativeFetchNotificationPayload(account: String, roomId: String, eventId: String): String?
+        external fun nativeFetchRoomAvatarBytes(account: String, roomId: String): ByteArray?
+        external fun nativeFetchSenderAvatarBytes(account: String, roomId: String, senderId: String): ByteArray?
+        external fun nativeFetchEventImageBytes(account: String, roomId: String, eventId: String): ByteArray?
+        /** `[{account, roomId, ts}]` → the rooms read since, `[{account, roomId}]`. */
         external fun nativeGetReadRooms(roomIdsJson: String): String
-        /** A notification was tapped: open its room. */
-        external fun nativeOpenRoom(roomId: String)
-        /** Notification "Reply". Needs `nativeInitForPush`. */
-        external fun nativeSendReply(roomId: String, body: String): Boolean
-        /** Notification "Mark as read". Needs `nativeInitForPush`. */
-        external fun nativeMarkRead(roomId: String, eventId: String): Boolean
+        /** A notification was tapped: open its room (switching to its account). */
+        external fun nativeOpenRoom(account: String, roomId: String)
+        /** Notification "Reply". */
+        external fun nativeSendReply(account: String, roomId: String, body: String): Boolean
+        /** Notification "Mark as read". */
+        external fun nativeMarkRead(account: String, roomId: String, eventId: String): Boolean
         /** System bar and keyboard insets, in dp (`MainActivity`). */
         external fun nativeSetInsets(top: Float, bottom: Float, ime: Float)
     }
@@ -134,27 +162,41 @@ class PushReceiver : PushService() {
         private const val DEFAULT_GATEWAY =
             "https://matrix.gateway.unifiedpush.org/_matrix/push/v1/notify"
 
-        /** `[{roomId, ts}]` of the rooms with a notification shown. Called from Rust. */
+        /** Loads the library and the Rust SDK; false if there is no account to use. */
+        fun initNative(context: Context): Boolean =
+            NativeBridge.tryLoad() &&
+                NativeBridge.nativeInitForPush(context.applicationContext, context.filesDir.absolutePath)
+
+        /** `[{account, roomId, ts}]` of the rooms with a notification shown. Called from Rust. */
         @JvmStatic
         fun getNotifiedRoomsJson(context: Context): String =
             NotifiedRooms.toJson(context)
 
-        /** Cancel the notifications of a JSON array of room IDs. Called from Rust after each sync. */
+        /** Cancel the notifications of a JSON array of room IDs of `account`. Called from Rust after each sync. */
         @JvmStatic
-        fun cancelNotificationsForRooms(context: Context, roomIdsJson: String) {
+        fun cancelNotificationsForRooms(context: Context, account: String, roomIdsJson: String) {
             val rooms = try {
                 val arr = JSONArray(roomIdsJson)
                 (0 until arr.length()).map { arr.getString(it) }
             } catch (_: JSONException) { return }
-            rooms.forEach { RoomNotifications.cancel(context, it) }
+            rooms.forEach { RoomNotifications.cancel(context, account, it) }
         }
+
+        /** Registers the accounts' push instances. Called from Rust once syncing (a new account). */
+        @JvmStatic
+        fun registerAccounts(context: Context) = Accounts.registerPush(context)
 
         /** Cancel the notifications of rooms read since they were shown (on any device). */
         fun cancelReadNotifications(context: Context) {
             if (!NativeBridge.tryLoad()) return
             if (NotifiedRooms.all(context).isEmpty()) return
-            val readJson = NativeBridge.nativeGetReadRooms(NotifiedRooms.toJson(context))
-            cancelNotificationsForRooms(context, readJson)
+            val read = try {
+                JSONArray(NativeBridge.nativeGetReadRooms(NotifiedRooms.toJson(context)))
+            } catch (_: JSONException) { return }
+            for (i in 0 until read.length()) {
+                val room = read.optJSONObject(i) ?: continue
+                RoomNotifications.cancel(context, room.optString("account"), room.optString("roomId"))
+            }
         }
     }
 }

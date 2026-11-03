@@ -21,6 +21,11 @@ class MainActivity : NativeActivity() {
 
     companion object {
         const val EXTRA_ROOM_ID = "room_id"
+        const val EXTRA_ACCOUNT = "account"
+
+        /** The account of a notification's intent; the active one for those posted before accounts. */
+        fun accountOf(context: android.content.Context, intent: Intent): String? =
+            intent.getStringExtra(EXTRA_ACCOUNT) ?: Accounts.active(context)
     }
 
     private fun findNativeSurfaceView(view: View): View? {
@@ -54,7 +59,7 @@ class MainActivity : NativeActivity() {
         RoomNotifications.ensureChannel(this)
         requestNotificationPermission()
         UnifiedPush.tryUseCurrentOrDefaultDistributor(this) { success ->
-            if (success) UnifiedPush.register(this)
+            if (success) Accounts.registerPush(this)
         }
 
         dismissNotificationForIntent(intent)
@@ -101,10 +106,11 @@ class MainActivity : NativeActivity() {
     /** Launched by tapping a notification: open its room and clear the notification. */
     private fun dismissNotificationForIntent(intent: Intent) {
         val roomId = intent.getStringExtra(EXTRA_ROOM_ID) ?: return
+        val account = accountOf(this, intent) ?: return
         // Handle a tap once: the activity can be recreated with the same intent.
         intent.removeExtra(EXTRA_ROOM_ID)
-        RoomNotifications.cancel(this, roomId)
-        if (PushReceiver.NativeBridge.tryLoad()) PushReceiver.NativeBridge.nativeOpenRoom(roomId)
+        RoomNotifications.cancel(this, account, roomId)
+        if (PushReceiver.NativeBridge.tryLoad()) PushReceiver.NativeBridge.nativeOpenRoom(account, roomId)
     }
 
     // Still called: the manifest opts out of predictive back
@@ -118,10 +124,13 @@ class MainActivity : NativeActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         // winit allows one event loop per process: the next launch must be a
-        // fresh process, or it fails to start (RecreationAttempt).
+        // fresh process, or it fails to start (RecreationAttempt). Before
+        // `super`: NativeActivity's onDestroy waits for `android_main` to
+        // return, which winit never does, so the main thread hung there and a
+        // relaunch reused the frozen process (the app never started).
         if (isFinishing) android.os.Process.killProcess(android.os.Process.myPid())
+        super.onDestroy()
     }
 
     private fun requestNotificationPermission() {

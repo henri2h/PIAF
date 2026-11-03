@@ -18,8 +18,14 @@ use tokio::fs;
 use crate::REQUESTER;
 
 pub static CLIENT: OnceLock<Client> = OnceLock::new();
-pub static SESSION_FILE: OnceLock<PathBuf> = OnceLock::new();
 pub static DATA_DIR: OnceLock<PathBuf> = OnceLock::new();
+/// The active account (see `accounts`): its id and directory.
+pub static ACCOUNT: OnceLock<(String, PathBuf)> = OnceLock::new();
+
+/// The active account's directory: drafts, recent searches.
+pub fn account_dir() -> Option<&'static Path> {
+    ACCOUNT.get().map(|(_, dir)| dir.as_path())
+}
 
 /// Looks up a room on the global client.
 pub fn get_room(room_id: &str) -> Option<Room> {
@@ -35,8 +41,8 @@ pub fn is_unknown_token(error: &matrix_sdk::Error) -> bool {
     )
 }
 
-/// Stops using a revoked session: flags it, sets the session file aside so the
-/// next launch goes to login, and wakes the UI. Idempotent.
+/// Stops using a revoked session: flags it (the account then shows as signed
+/// out, and isn't opened at the next start), and wakes the UI. Idempotent.
 pub async fn on_session_expired() {
     if crate::SESSION_EXPIRED.swap(true, Ordering::Relaxed) {
         return;
@@ -44,17 +50,16 @@ pub async fn on_session_expired() {
     tracing::warn!("access token revoked, session expired");
     crate::utils::sync::stop().await;
     crate::utils::spaces::stop();
-    if let Some(file) = SESSION_FILE.get() {
-        if let Err(e) = fs::rename(file, file.with_extension("expired")).await {
-            tracing::warn!("could not set expired session file aside: {e}");
-        }
+    if let Some((id, _)) = ACCOUNT.get() {
+        crate::utils::accounts::mark_expired(id);
     }
     let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
 }
 
-/// Signs this device out: stops sync, revokes the token (best effort: offline
-/// still signs out locally), then deletes the session, its stores and drafts.
-/// Downloads and preferences stay. The caller restarts the app.
+/// Signs the active account out: stops sync, revokes the token (best effort:
+/// offline still signs out locally), then deletes its session, stores and
+/// drafts. Downloads and preferences stay. The caller restarts the app, which
+/// opens the next account, if any.
 pub async fn logout() {
     crate::utils::sync::stop().await;
     if let Some(client) = CLIENT.get() {
@@ -62,25 +67,64 @@ pub async fn logout() {
             tracing::warn!("logout request failed, signing out locally: {e}");
         }
     }
-    let Some(session_file) = SESSION_FILE.get() else {
-        return;
-    };
-    let db_path = fs::read_to_string(session_file)
-        .await
-        .ok()
-        .and_then(|s| serde_json::from_str::<FullSession>(&s).ok())
-        .map(|s| s.client_session.db_path);
-    if let Err(e) = fs::remove_file(session_file).await {
-        tracing::warn!("could not delete session file: {e}");
+    if let Some((id, _)) = ACCOUNT.get() {
+        crate::utils::accounts::remove(id).await;
     }
-    if let Some(db_path) = db_path {
-        if let Err(e) = fs::remove_dir_all(&db_path).await {
-            tracing::warn!("could not delete stores: {e}");
+    tracing::info!("signed out");
+}
+
+/// Signs out an account that isn't the active one, from its saved session.
+pub async fn logout_inactive(id: &str) {
+    let session_file =
+        crate::utils::accounts::dir(id).map(|d| d.join(crate::utils::accounts::SESSION_FILE));
+    if let Some(file) = session_file.filter(|f| f.exists()) {
+        match restore_session(&file).await {
+            Ok(client) => {
+                if let Err(e) = client.logout().await {
+                    tracing::warn!("logout request failed, signing out locally: {e}");
+                }
+            }
+            Err(e) => tracing::warn!("could not open the account to sign out: {e:#}"),
         }
     }
-    crate::utils::drafts::delete_file().await;
-    crate::utils::recent_searches::clear();
-    tracing::info!("signed out");
+    crate::utils::accounts::remove(id).await;
+}
+
+/// The client of account `id`: the running one for the active account, else
+/// one restored from its session and kept for the next pushes (Android
+/// notifications of the accounts not on screen). It doesn't sync.
+pub async fn account_client(id: &str) -> Option<Client> {
+    if ACCOUNT.get().is_some_and(|(active, _)| active == id) {
+        return CLIENT.get().cloned();
+    }
+    static OTHERS: tokio::sync::Mutex<Vec<(String, Client)>> =
+        tokio::sync::Mutex::const_new(Vec::new());
+    let mut others = OTHERS.lock().await;
+    if let Some((_, client)) = others.iter().find(|(other, _)| other == id) {
+        return Some(client.clone());
+    }
+    let file = crate::utils::accounts::dir(id)?.join(crate::utils::accounts::SESSION_FILE);
+    if !file.exists() {
+        return None;
+    }
+    match restore_session(&file).await {
+        Ok(client) => {
+            others.push((id.to_string(), client.clone()));
+            Some(client)
+        }
+        Err(e) => {
+            tracing::warn!("could not open a background account: {e:#}");
+            None
+        }
+    }
+}
+
+/// The stores' directory recorded in a session file.
+pub async fn session_db_path(session_file: &Path) -> Option<PathBuf> {
+    let json = fs::read_to_string(session_file).await.ok()?;
+    serde_json::from_str::<FullSession>(&json)
+        .ok()
+        .map(|s| s.client_session.db_path)
 }
 
 /// Catches token revocation on any request, not just sync.
@@ -144,48 +188,51 @@ struct FullSession {
 
 pub async fn restore_matrix_client(base_dir: PathBuf) -> anyhow::Result<bool> {
     let data_dir = base_dir.join("persist_session");
-    let session_file = data_dir.join("session");
 
     // OnceLock sets are idempotent: if push context already set them, the existing
     // values (identical paths) are reused and the error is silently ignored.
     let _ = DATA_DIR.set(data_dir.clone());
-    let _ = SESSION_FILE.set(session_file.clone());
 
-    if session_file.exists() {
-        // If the push context already restored the client, reuse it and only
-        // re-read the sync token so the main sync loop can resume where it left off.
-        // Serialized: the push context and the app can restore at the same
-        // time in one process, and two store key migrations must never race.
-        static RESTORE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
-        let guard = RESTORE.lock().await;
-        let client = if let Some(existing) = CLIENT.get() {
-            existing.clone()
-        } else {
-            let c = restore_session(&session_file).await?;
-            let _ = CLIENT.set(c.clone());
-            tracing::debug!("restore_matrix_client: CLIENT set");
-            c
+    // Serialized: the push context and the app can restore at the same time in
+    // one process; the account migration and two store key migrations must
+    // never race.
+    static RESTORE: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+    let guard = RESTORE.lock().await;
+    let client = if let Some(existing) = CLIENT.get() {
+        // The push context already restored it.
+        existing.clone()
+    } else {
+        crate::utils::accounts::init(&data_dir);
+        let Some(account) = crate::utils::accounts::startup_account() else {
+            return Ok(false);
         };
-        drop(guard);
+        let Some(dir) = crate::utils::accounts::dir(&account.id) else {
+            return Ok(false);
+        };
+        let session_file = dir.join(crate::utils::accounts::SESSION_FILE);
+        let _ = ACCOUNT.set((account.id, dir));
+        let c = restore_session(&session_file).await?;
+        let _ = CLIENT.set(c.clone());
+        tracing::debug!("restore_matrix_client: CLIENT set");
+        c
+    };
+    drop(guard);
 
-        // Signal immediately so the UI can navigate to the room list and show
-        // cached rooms from the local store without waiting for the network.
-        tracing::debug!("restore_matrix_client: sending initial SYNC_TX signal");
-        let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
+    // Signal immediately so the UI can navigate to the room list and show
+    // cached rooms from the local store without waiting for the network.
+    tracing::debug!("restore_matrix_client: sending initial SYNC_TX signal");
+    let _ = crate::SYNC_TX.get().map(|tx| tx.send(()));
 
-        // Start sync only when the main app worker is available.
-        // In the push context REQUESTER is not set, so this is skipped.
-        tracing::debug!(
-            "restore_matrix_client: calling activate_client (REQUESTER present={})",
-            REQUESTER.get().is_some()
-        );
-        activate_client(&client).await;
-        tracing::debug!("restore_matrix_client: activate_client returned");
+    // Start sync only when the main app worker is available.
+    // In the push context REQUESTER is not set, so this is skipped.
+    tracing::debug!(
+        "restore_matrix_client: calling activate_client (REQUESTER present={})",
+        REQUESTER.get().is_some()
+    );
+    activate_client(&client).await;
+    tracing::debug!("restore_matrix_client: activate_client returned");
 
-        return Ok(true);
-    }
-
-    Ok(false)
+    Ok(true)
 }
 
 /// Restore a previous session.
@@ -273,23 +320,82 @@ async fn activate_client(client: &Client) {
         crate::logging::boot("sync started");
         // Show cached rooms right away, before the first sync update.
         crate::utils::room_list::refresh("startup");
+        tokio::spawn(save_account_profile(client.clone()));
     }
 }
 
-pub async fn login_matrix(username: String, password: String) -> anyhow::Result<()> {
-    let session_file = SESSION_FILE.get().unwrap();
-    let data_dir = DATA_DIR.get().unwrap();
+/// What a sign-in did.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum LoginOutcome {
+    /// The first account: its client runs now.
+    Active,
+    /// Another account, saved as the active one: the app must restart to open it.
+    Added,
+}
 
+pub async fn login_matrix(username: String, password: String) -> anyhow::Result<LoginOutcome> {
     let account = UserId::parse(username.as_str())?;
+    let known = crate::utils::accounts::registry()
+        .accounts
+        .into_iter()
+        .find(|a| a.user_id == account.as_str());
+    if known.is_some_and(|a| !a.expired) {
+        anyhow::bail!("You're already signed in to this account.");
+    }
 
-    let (client, client_session) = new_client(&data_dir, account.server_name()).await?;
+    let (new_account, account_dir) = crate::utils::accounts::prepare(account.as_str())?;
+    let result = sign_in(&account_dir, &account, &username, &password).await;
+    let client = match result {
+        Ok(client) => client,
+        Err(e) => {
+            crate::utils::accounts::discard(&new_account).await;
+            return Err(e);
+        }
+    };
+    let id = new_account.id.clone();
+    crate::utils::accounts::commit(new_account).await;
+
+    // Another account is running: it opens at the next start.
+    if CLIENT.get().is_some() {
+        return Ok(LoginOutcome::Added);
+    }
+    let _ = ACCOUNT.set((id, account_dir));
+    CLIENT.set(client).expect("Client already set");
+    activate_client(CLIENT.get().unwrap()).await;
+    Ok(LoginOutcome::Active)
+}
+
+/// Caches our name and avatar for the account switcher (the other accounts'
+/// clients don't run).
+async fn save_account_profile(client: Client) {
+    use crate::utils::avatars::{AvatarSource, fetch};
+    let Some((id, _)) = ACCOUNT.get() else {
+        return;
+    };
+    let Ok(name) = client.account().get_display_name().await else {
+        return;
+    };
+    // Updates the URI cached for `avatars::own`.
+    let _ = client.account().get_avatar_url().await;
+    let avatar = fetch(&AvatarSource::Me).await;
+    crate::utils::accounts::save_profile(id, name, avatar);
+}
+
+/// Signs in with a new client whose session and stores go in `account_dir`.
+async fn sign_in(
+    account_dir: &Path,
+    account: &UserId,
+    username: &str,
+    password: &str,
+) -> anyhow::Result<Client> {
+    let (client, client_session) = new_client(account_dir, account.server_name()).await?;
 
     let matrix_auth = client.matrix_auth();
 
     tracing::info!("Logging in");
 
     match matrix_auth
-        .login_username(&username, &password)
+        .login_username(username, password)
         .initial_device_display_name("persist-session client")
         .await
     {
@@ -300,20 +406,17 @@ pub async fn login_matrix(username: String, password: String) -> anyhow::Result<
             let user_session = matrix_auth
                 .session()
                 .expect("A logged-in client should have a session");
-            let serialized_session = serde_json::to_string(&FullSession {
-                client_session,
-                user_session,
-            })?;
-            fs::write(session_file, serialized_session).await?;
-
-            tracing::debug!("session persisted in {}", session_file.to_string_lossy());
-
-            // Saving client
-            CLIENT.set(client).expect("Client already set");
-
-            activate_client(CLIENT.get().unwrap()).await;
-
-            Ok(())
+            let session_file = account_dir.join(crate::utils::accounts::SESSION_FILE);
+            write_session(
+                &session_file,
+                &FullSession {
+                    client_session,
+                    user_session,
+                },
+            )
+            .await?;
+            tracing::debug!("session persisted");
+            Ok(client)
         }
         Err(error) => {
             tracing::warn!("login failed: {error}");
@@ -450,7 +553,7 @@ fn get_client_builder(
         Client::builder().homeserver_url(homeserver)
     };
     // Build the client with the previous settings from the session.
-    builder
+    with_http_client(builder)
         .sqlite_store_with_config_and_cache_path(store_config, None::<PathBuf>)
         .with_encryption_settings(EncryptionSettings {
             auto_enable_cross_signing: true,
@@ -458,6 +561,16 @@ fn get_client_builder(
             auto_enable_backups: true,
         })
         .with_enable_share_history_on_invite(true)
+}
+
+/// Android: see [`crate::android::tls`]. Falls back to matrix-sdk's own client.
+fn with_http_client(builder: ClientBuilder) -> ClientBuilder {
+    #[cfg(target_os = "android")]
+    match crate::android::tls::http_client() {
+        Ok(client) => return builder.http_client(client),
+        Err(e) => tracing::warn!("custom HTTP client failed, using the default: {e:#}"),
+    }
+    builder
 }
 
 /// Build a new client.
@@ -601,7 +714,7 @@ mod tests {
 /// Whether `server` (a server name, or a URL) leads to a Matrix homeserver:
 /// the discovery a login does, without logging in.
 pub async fn homeserver_exists(server: &str) -> bool {
-    let build = Client::builder()
+    let build = with_http_client(Client::builder())
         .server_name_or_homeserver_url(server)
         .build();
     matches!(

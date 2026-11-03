@@ -156,6 +156,10 @@ impl Component for SearchField {
             }
         };
         let on_pointer_down = move |e: Event<PointerEventData>| {
+            // Already focused: the keyboard may have been hidden by Android.
+            if focus.peek().is_focused() {
+                ime::reshow();
+            }
             a11y_id.request_focus();
             editable.process_event(EditableEvent::Down {
                 location: e.element_location(),
@@ -172,6 +176,8 @@ impl Component for SearchField {
             .a11y_id(a11y_id)
             .a11y_focusable(true)
             .a11y_role(AccessibilityRole::SearchInput)
+            // Shown through the IME bridge (Android).
+            .a11y_app_keyboard()
             .on_key_down(on_key_down)
             .on_key_up(move |e: Event<KeyboardEventData>| {
                 editable.process_event(EditableEvent::KeyUp { key: &e.key });

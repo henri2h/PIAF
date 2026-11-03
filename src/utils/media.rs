@@ -103,13 +103,24 @@ pub fn share_image(stem: &str, bytes: Vec<u8>) {
     let _ = (stem, bytes);
 }
 
-/// Sends `bytes` to the room as a file message. Run on tokio.
+/// Queues `bytes` to be sent to the room as a file message: the timeline
+/// shows it at once (local echo, with upload progress) and the send queue
+/// uploads it in the background. Run on tokio.
 pub async fn send_attachment(room_id: &str, file_name: &str, mime: &mime::Mime, bytes: Vec<u8>) {
     use matrix_sdk::attachment::AttachmentConfig;
-    if let Some(room) = crate::utils::matrix::get_room(room_id) {
-        let _ = room
-            .send_attachment(file_name, mime, bytes, AttachmentConfig::default())
-            .await;
+    let Some(room) = crate::utils::matrix::get_room(room_id) else {
+        tracing::warn!("attachment not sent: room not found");
+        return;
+    };
+    let size = bytes.len();
+    room.client().send_queue().enable_upload_progress(true);
+    match room
+        .send_queue()
+        .send_attachment(file_name, mime.clone(), bytes, AttachmentConfig::default())
+        .await
+    {
+        Ok(_) => tracing::info!(%mime, size, "attachment queued"),
+        Err(e) => tracing::warn!(%mime, size, "attachment not queued: {e}"),
     }
 }
 

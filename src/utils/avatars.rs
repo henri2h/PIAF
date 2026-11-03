@@ -73,13 +73,16 @@ pub async fn members_with_avatar(room: &Room, max: usize) -> Vec<MemberWithAvata
         .collect()
 }
 
-/// The logged-in user's avatar, thumbnailed.
+/// The logged-in user's avatar, thumbnailed. Its URI comes from the store when
+/// known (refreshed at each start, see `matrix::save_account_profile`): asking
+/// the server first made every launch wait for the network.
 pub async fn own(client: &Client) -> Option<Vec<u8>> {
     let account = client.account();
-    match account.get_avatar(thumbnail()).await {
-        Ok(Some(bytes)) => Some(bytes),
-        _ => account.get_avatar(MediaFormat::File).await.ok().flatten(),
-    }
+    let uri = match account.get_cached_avatar_url().await.ok().flatten() {
+        Some(uri) => uri,
+        None => account.get_avatar_url().await.ok().flatten()?,
+    };
+    by_mxc(client, uri).await
 }
 
 /// What an avatar shows. Each source has one fetch path and one cache entry,
@@ -131,6 +134,12 @@ impl AvatarSource {
 /// failed to load (logged under `piaf::avatar`).
 pub async fn fetch(source: &AvatarSource) -> Option<Vec<u8>> {
     let client = crate::utils::matrix::CLIENT.get().cloned()?;
+    fetch_with(&client, source).await
+}
+
+/// [`fetch`] with another account's client (Android push).
+pub async fn fetch_with(client: &Client, source: &AvatarSource) -> Option<Vec<u8>> {
+    let client = client.clone();
     let bytes = match source {
         AvatarSource::Room(room_id) => room_avatar(&client, room_id).await,
         AvatarSource::Member { room_id, user_id } => member_avatar(&client, room_id, user_id).await,
@@ -149,7 +158,7 @@ pub async fn fetch(source: &AvatarSource) -> Option<Vec<u8>> {
 async fn room_avatar(client: &Client, room_id: &str) -> Option<Vec<u8>> {
     use matrix_sdk::ruma::events::direct::DirectEventContent;
 
-    let room = crate::utils::matrix::get_room(room_id)?;
+    let room = client.get_room(&matrix_sdk::ruma::RoomId::parse(room_id).ok()?)?;
     // A DM shows the other user. `m.direct` is authoritative even for bridged
     // DMs, where the room may have a third member (the bridge bot).
     let direct = client
@@ -194,7 +203,10 @@ async fn room_avatar(client: &Client, room_id: &str) -> Option<Vec<u8>> {
 /// not in the store: those fall back to their global profile.
 async fn member_avatar(client: &Client, room_id: &str, user_id: &str) -> Option<Vec<u8>> {
     let user = matrix_sdk::ruma::UserId::parse(user_id).ok()?;
-    let member_uri = match crate::utils::matrix::get_room(room_id) {
+    let room = matrix_sdk::ruma::RoomId::parse(room_id)
+        .ok()
+        .and_then(|id| client.get_room(&id));
+    let member_uri = match room {
         Some(room) => room
             .get_member_no_sync(&user)
             .await

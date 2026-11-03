@@ -1,3 +1,4 @@
+mod account_switcher;
 mod app_bar;
 mod collapsing_filter_bar;
 mod filter_bar;
@@ -206,8 +207,8 @@ fn new_chat_fab(c: AppColors, shown: f32) -> Element {
         .into_element()
 }
 
-/// Shown once the server revokes our token; sync has stopped. The session file
-/// is already set aside, so a restart lands on the login page.
+/// Shown once the server revokes our token; sync has stopped. Signing in
+/// again replaces the expired account.
 fn session_expired_banner(c: AppColors) -> Element {
     rect()
         .horizontal()
@@ -229,7 +230,7 @@ fn session_expired_banner(c: AppColors) -> Element {
                 .padding(Gaps::new(8., 14., 8., 14.))
                 .corner_radius(16.)
                 .background(c.on_primary)
-                .on_press(|_| crate::app::restart::restart())
+                .on_press(|_| crate::app::navigation::push(crate::Route::LoginPage))
                 .child(
                     label()
                         .text("Sign in again")

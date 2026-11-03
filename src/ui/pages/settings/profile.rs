@@ -260,5 +260,7 @@ async fn pick_and_upload_avatar() -> anyhow::Result<Option<Vec<u8>>> {
         .account()
         .upload_avatar(&image.mime, image.bytes.clone())
         .await?;
+    // Updates the URI cached for `avatars::own`.
+    let _ = client.account().get_avatar_url().await;
     Ok(Some(image.bytes))
 }

@@ -65,6 +65,9 @@ impl Component for Layout {
                 if e.key != Key::Named(NamedKey::BrowserBack) {
                     return;
                 }
+                if crate::app::navigation::handle_back() {
+                    return;
+                }
                 let router = RouterContext::get();
                 if router.can_go_back() {
                     router.go_back();

@@ -1,6 +1,8 @@
 package dev.piaf.app
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -21,6 +23,9 @@ import java.lang.ref.WeakReference
 object AttachmentPicker {
     private const val TAG = "PiafAttach"
     private const val REQUEST = 4710
+    private const val PREFS = "attachments"
+    /** The camera's output file, kept across a process death. */
+    private const val PHOTO = "photo"
     /** Matrix servers rarely take more; reading it all into memory must stay sane. */
     private const val MAX_BYTES = 100L * 1024 * 1024
 
@@ -75,18 +80,26 @@ object AttachmentPicker {
         val dir = File(a.cacheDir, "camera").apply { mkdirs() }
         val file = File(dir, "photo-${System.currentTimeMillis()}.jpg")
         photo = file
+        // Android may kill the app while the camera is open.
+        a.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(PHOTO, file.path).apply()
         val uri = FileProvider.getUriForFile(a, "${a.packageName}.fileprovider", file)
-        return Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            .putExtra(MediaStore.EXTRA_OUTPUT, uri)
-            .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        return Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+            putExtra(MediaStore.EXTRA_OUTPUT, uri)
+            // Granted explicitly: the implicit grant through EXTRA_OUTPUT goes away in Android 18.
+            clipData = ClipData.newRawUri("", uri)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
     }
 
     /** From `MainActivity.onActivityResult`; `true` when it was ours. */
     fun onResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         if (requestCode != REQUEST) return false
         val a = activity.get()
-        val taken = photo
+        val prefs = a?.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val taken = photo ?: prefs?.getString(PHOTO, null)?.let(::File)?.takeIf { it.exists() }
         photo = null
+        prefs?.edit()?.remove(PHOTO)?.apply()
+        Log.i(TAG, "picker result $resultCode, photo: ${taken != null}, data: ${data?.data != null}")
         if (resultCode != Activity.RESULT_OK || a == null) {
             taken?.delete()
             nativeCancelled()
@@ -132,7 +145,10 @@ object AttachmentPicker {
     }
 
     private fun send(name: String, mime: String, bytes: ByteArray) {
-        if (bytes.size > MAX_BYTES) return nativeCancelled()
+        if (bytes.size > MAX_BYTES) {
+            Log.w(TAG, "picked file too large: ${bytes.size} bytes")
+            return nativeCancelled()
+        }
         nativePicked(name, mime, bytes)
     }
 

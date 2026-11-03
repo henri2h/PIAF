@@ -11,10 +11,7 @@ const MAX: usize = 8;
 static RECENT: Mutex<Option<Vec<String>>> = Mutex::new(None);
 
 fn file() -> Option<std::path::PathBuf> {
-    crate::utils::matrix::DATA_DIR
-        .get()
-        .and_then(|d| d.parent())
-        .map(|p| p.join("recent_searches.json"))
+    crate::utils::matrix::account_dir().map(|d| d.join("recent_searches.json"))
 }
 
 fn with<T>(f: impl FnOnce(&mut Vec<String>) -> T) -> T {

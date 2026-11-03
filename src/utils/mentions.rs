@@ -40,21 +40,48 @@ pub fn html_pills(html: &str) -> Vec<(String, String)> {
     pills
 }
 
-/// `body` cut into text and mentions: each pill's text (first occurrence,
-/// in order), then user IDs and `@room` written out.
+/// `body` cut into text and mentions: each pill (first occurrence, in
+/// order, see [`find_pill`]), then user IDs and `@room` written out.
 pub fn segments(body: &str, pills: &[(String, String)]) -> Vec<Segment> {
     let mut out = vec![];
     let mut rest = body;
     for (user_id, text) in pills {
-        let Some(at) = rest.find(text.as_str()) else {
+        let Some((at, len)) = find_pill(rest, user_id, text) else {
             continue;
         };
         push_plain(&mut out, &rest[..at]);
         out.push(Segment::User(user_id.clone()));
-        rest = &rest[at + text.len()..];
+        rest = &rest[at + len..];
     }
     push_plain(&mut out, rest);
     out
+}
+
+/// Where a pill is written in the plain body: its link text (with the `@`
+/// typed before it), else, for a bridged user, `@` and the number of its
+/// puppet's ID: WhatsApp keeps `@33612345678` in the body and only names
+/// the person in the HTML (`@whatsapp_33612345678:x`, `@whatsapp_lid-123:x`).
+fn find_pill(body: &str, user_id: &str, text: &str) -> Option<(usize, usize)> {
+    if let Some(at) = body.find(text) {
+        return Some(match body[..at].strip_suffix('@') {
+            Some(before) if !text.starts_with('@') => (before.len(), text.len() + 1),
+            _ => (at, text.len()),
+        });
+    }
+    let local = user_id.strip_prefix('@')?.split(':').next()?;
+    let digits = local.trim_start_matches(|c: char| !c.is_ascii_digit());
+    if digits.is_empty() || !digits.chars().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    ["@+", "@"].iter().find_map(|prefix| {
+        let written = format!("{prefix}{digits}");
+        let at = body.find(&written)?;
+        // Not the start of a longer number.
+        let after = body[at + written.len()..].chars().next();
+        after
+            .is_none_or(|c| !c.is_ascii_digit())
+            .then_some((at, written.len()))
+    })
 }
 
 /// Text with the user IDs and `@room` it spells out.
@@ -172,6 +199,32 @@ mod tests {
         assert_eq!(
             segments("Ann: look", &pills),
             vec![user("@ann:x.org"), text(": look")]
+        );
+    }
+
+    #[test]
+    fn whatsapp_pills_match_the_number_in_the_body() {
+        let html = r#"hi <a href="https://matrix.to/#/@whatsapp_33612345678:x.org">Ann</a>!"#;
+        let pills = html_pills(html);
+        assert_eq!(
+            segments("hi @33612345678!", &pills),
+            vec![text("hi "), user("@whatsapp_33612345678:x.org"), text("!")]
+        );
+        let lid = vec![("@whatsapp_lid-98765:x.org".to_string(), "Bob".to_string())];
+        assert_eq!(
+            segments("@98765 ok", &lid),
+            vec![user("@whatsapp_lid-98765:x.org"), text(" ok")]
+        );
+        // A longer number isn't this one.
+        assert_eq!(segments("@987650", &lid), vec![text("@987650")]);
+    }
+
+    #[test]
+    fn typed_at_sign_goes_with_the_pill() {
+        let pills = vec![("@ann:x.org".to_string(), "Ann".to_string())];
+        assert_eq!(
+            segments("@Ann hi", &pills),
+            vec![user("@ann:x.org"), text(" hi")]
         );
     }
 

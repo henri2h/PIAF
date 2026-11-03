@@ -8,6 +8,7 @@ import androidx.core.app.RemoteInput
 /** The "Reply" and "Mark as read" buttons of a room notification. */
 class NotificationActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val account = MainActivity.accountOf(context, intent) ?: return
         val roomId = intent.getStringExtra(MainActivity.EXTRA_ROOM_ID) ?: return
         val reply = RemoteInput.getResultsFromIntent(intent)
             ?.getCharSequence(RoomNotifications.KEY_REPLY)?.toString()?.trim()
@@ -16,8 +17,8 @@ class NotificationActionReceiver : BroadcastReceiver() {
         Thread {
             try {
                 when (intent.action) {
-                    ACTION_REPLY -> if (!reply.isNullOrEmpty()) RoomNotifications.reply(context, roomId, reply)
-                    ACTION_MARK_READ -> RoomNotifications.markRead(context, roomId)
+                    ACTION_REPLY -> if (!reply.isNullOrEmpty()) RoomNotifications.reply(context, account, roomId, reply)
+                    ACTION_MARK_READ -> RoomNotifications.markRead(context, account, roomId)
                 }
             } finally {
                 pending.finish()

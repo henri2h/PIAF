@@ -1,3 +1,4 @@
+pub mod accounts;
 pub mod avatars;
 pub mod bookmarks;
 pub mod bridges;
@@ -8,6 +9,7 @@ pub mod haptics;
 pub mod ime;
 pub mod ime_edit;
 pub mod insets;
+pub mod links;
 pub mod matrix;
 pub mod media;
 pub mod members;

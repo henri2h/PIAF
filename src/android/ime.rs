@@ -170,13 +170,22 @@ pub fn show(text: &str, cursor: usize, kind: ImeKind) -> u64 {
     owner
 }
 
-/// Hides the keyboard, unless another composer showed it since `owner`'s show.
+/// Lets go of the keyboard, unless another field showed it since `owner`'s
+/// show. Freya hides it once no text field is focused.
 pub fn hide(owner: u64) {
     if OWNER.load(Ordering::Relaxed) == owner {
         call_bridge("hide", BridgeArgs::None);
     }
 }
 
+/// The focused field was tapped: the keyboard comes back if Android hid it.
+pub fn reshow() {
+    call_bridge("reshow", BridgeArgs::None);
+}
+
+/// Events still queued were typed on the old text (the keyboard drops its
+/// own on the restart): dropped too.
 pub fn sync(text: &str, cursor: usize) {
+    drain();
     call_bridge("sync", BridgeArgs::Text(text, cursor));
 }

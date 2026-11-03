@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use freya::animation::*;
 use freya::prelude::*;
 
@@ -148,6 +150,29 @@ impl Swipe {
         (was_swiping && released.abs() > bounds.commit).then_some(released)
     }
 
+    /// Call when [`Self::moved`] starts a swipe. A touch that landed while
+    /// the scroll view was flinging has its lift swallowed (no `touchend` nor
+    /// global pointer up reach the row), but the lift still changes the
+    /// scroll's `touch_generation`: `finish` then ends the swipe.
+    pub fn watch_lost_lift(&self, scroll: ScrollController, finish: impl FnOnce() + 'static) {
+        let this = *self;
+        let generation = scroll.touch_generation();
+        // Bumped by every swipe's end: a later swipe isn't this one's.
+        let swipe_count = self.release.peek().0;
+        spawn(async move {
+            loop {
+                timer(Duration::from_millis(32)).await;
+                if !this.is_swiping() || this.release.peek().0 != swipe_count {
+                    return;
+                }
+                if scroll.touch_generation() != generation {
+                    finish();
+                    return;
+                }
+            }
+        });
+    }
+
     pub fn cancel(&self) {
         self.reset();
     }
@@ -177,6 +202,7 @@ impl Swipe {
 #[cfg(test)]
 mod tests {
     use std::cell::Cell;
+    use std::time::Duration;
 
     use freya::prelude::*;
     use freya_testing::prelude::launch_test;
@@ -244,6 +270,65 @@ mod tests {
         test.release_touch((60., 150.));
         test.sync_and_update();
         assert_eq!(COMMITTED.with(Cell::get), None);
+    }
+
+    /// A row in a scroll view, finishing its swipe like the message rows.
+    fn scrolled_app() -> impl IntoElement {
+        let swipe = use_swipe();
+        let scroll = use_scroll_controller(ScrollConfig::default);
+        OFFSET.with(|o| o.set(swipe.offset()));
+        let finish = move || COMMITTED.with(|c| c.set(swipe.end(BOUNDS)));
+        // Tall, so the touch lands on it wherever the fling left the list.
+        let row = rect()
+            .width(Size::px(300.))
+            .height(Size::px(4000.))
+            .offset_x(swipe.offset())
+            .on_touch_start(move |e: Event<TouchEventData>| {
+                swipe.start(e.global_location, Some(scroll.touch_generation()))
+            })
+            .on_global_pointer_move(move |e: Event<PointerEventData>| {
+                let was_swiping = swipe.is_swiping();
+                swipe.moved(e.global_location(), BOUNDS, Some(scroll.touch_generation()));
+                if !was_swiping && swipe.is_swiping() {
+                    swipe.watch_lost_lift(scroll, finish);
+                }
+            })
+            .on_touch_end(move |_: Event<TouchEventData>| finish())
+            .on_global_pointer_up(move |_: Event<PointerEventData>| {
+                if swipe.is_touching() {
+                    finish();
+                }
+            });
+        ScrollView::new_controlled(scroll)
+            .width(Size::px(300.))
+            .height(Size::px(400.))
+            .child(row)
+    }
+
+    /// A swipe started while the list still flings: the list swallows its
+    /// lift, and the row must not stay half swiped.
+    #[test]
+    fn swipe_during_a_fling_springs_back() {
+        let mut test = launch_test(scrolled_app);
+        test.sync_and_update();
+        // A quick upward flick sets the list flinging.
+        test.press_touch((150., 380.));
+        for y in [360., 320., 260., 200.] {
+            test.move_touch((150., y));
+        }
+        test.release_touch((150., 200.));
+        test.poll_n(Duration::from_millis(16), 2);
+        // Swipe the row while the list still moves.
+        test.press_touch((100., 30.));
+        test.move_touch((140., 32.));
+        test.move_touch((170., 33.));
+        test.sync_and_update();
+        assert!(OFFSET.with(Cell::get) > 20., "swiping");
+        COMMITTED.with(|c| c.set(Some(-1.)));
+        test.release_touch((170., 33.));
+        test.poll(Duration::from_millis(16), Duration::from_millis(700));
+        assert_eq!(COMMITTED.with(Cell::get), None, "ended, not committed");
+        assert!(OFFSET.with(Cell::get).abs() < 0.5, "back at rest");
     }
 
     /// A drag leaning vertical is the list's scroll, not a swipe.

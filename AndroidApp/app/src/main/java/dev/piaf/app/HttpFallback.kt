@@ -20,8 +20,8 @@ object HttpFallback {
     }
 
     /** `null` when the event couldn't be fetched. */
-    fun fetch(context: Context, roomId: String, eventId: String): Result? {
-        val session = readSession(context) ?: return null
+    fun fetch(context: Context, account: String, roomId: String, eventId: String): Result? {
+        val session = readSession(context, account) ?: return null
         val event = getJson(
             "${session.homeserver}/_matrix/client/v3/rooms/${enc(roomId)}/event/${enc(eventId)}",
             session.accessToken,
@@ -58,8 +58,8 @@ object HttpFallback {
 
     private data class Session(val homeserver: String, val accessToken: String)
 
-    private fun readSession(context: Context): Session? = try {
-        val file = File(context.filesDir, "persist_session/session")
+    private fun readSession(context: Context, account: String): Session? = try {
+        val file = File(Accounts.dir(context, account), "session")
         if (!file.exists()) null else {
             val json = JSONObject(file.readText())
             Session(

@@ -82,6 +82,10 @@ jni = { version = "0.21", default-features = false }
 # initialized from `android_main` with its JNI version (0.22).
 rustls-platform-verifier = "0.7"
 jni22 = { package = "jni", version = "0.22", default-features = false }
+# matrix-sdk's HTTP client, built with a verifier that tells tokio it blocks
+# (`android/tls.rs`). Same versions as matrix-sdk's.
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "http2"] }
+rustls = { version = "0.23", default-features = false, features = ["std", "aws_lc_rs"] }
 # Same major as Freya's: its clipboard takes a `copypasta::ClipboardProvider`.
 copypasta = "0.10"
 

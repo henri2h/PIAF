@@ -1,10 +1,12 @@
-//! A text message's body: markdown, kept line by line, with mention pills.
+//! A text message's body: markdown, kept line by line, with mention pills
+//! and its URLs as links.
 
 use freya::prelude::*;
 
 use crate::ui::components::{HoverableExt, UserPopupInfo};
 use crate::ui::pages::room::ui_ctx::use_room_ui_ctx;
 use crate::utils::avatars::AvatarSource;
+use crate::utils::links::{self, Piece};
 use crate::utils::matrix::my_user_id;
 use crate::utils::mentions::{self, Segment};
 use crate::utils::queries::use_member_name;
@@ -12,19 +14,21 @@ use crate::utils::use_app_colors;
 
 /// Text of a message: `formatted` is its HTML body, if any. A formatted
 /// message's `body` is its markdown source (what clients send); a plain one
-/// is escaped so `*` or `_` stay as typed.
+/// is escaped so `*` or `_` stay as typed. Bare URLs become links (underlined,
+/// in `link_color`).
 pub(super) fn text_body(
     room_id: &str,
     body: &str,
     formatted: Option<&str>,
     color: (u8, u8, u8),
+    link_color: (u8, u8, u8),
 ) -> Element {
     let pills = formatted.map(mentions::html_pills).unwrap_or_default();
     let markdown: String = mentions::segments(body, &pills)
         .into_iter()
         .map(|segment| match segment {
-            Segment::Text(text) if formatted.is_some() => text,
-            Segment::Text(text) => escape_markdown(&text),
+            Segment::Text(text) if formatted.is_some() => links::autolink_markdown(&text),
+            Segment::Text(text) => plain_markdown(&text),
             Segment::User(user_id) => format!("<mention user=\"{user_id}\"/>"),
             Segment::Room => "<mention room/>".to_string(),
         })
@@ -46,6 +50,7 @@ pub(super) fn text_body(
             };
             MarkdownViewer::new(block)
                 .color(color)
+                .color_link(link_color)
                 .inline_element(move |html: String| mention_pill(&room_id, &html))
                 .into_element()
         }))
@@ -157,6 +162,17 @@ fn blocks(markdown: &str) -> Vec<String> {
     blocks
 }
 
+/// Plain text as markdown: escaped, its URLs as autolinks.
+fn plain_markdown(text: &str) -> String {
+    links::pieces(text)
+        .into_iter()
+        .map(|piece| match piece {
+            Piece::Text(text) => escape_markdown(text),
+            Piece::Url(url) => format!("<{url}>"),
+        })
+        .collect()
+}
+
 /// Backslash-escapes what markdown would format in plain text.
 fn escape_markdown(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
@@ -195,6 +211,14 @@ mod tests {
     }
 
     #[test]
+    fn plain_urls_become_autolinks() {
+        assert_eq!(
+            plain_markdown("a_b https://x.org/a_b?c=1."),
+            r"a\_b <https://x.org/a_b?c=1>."
+        );
+    }
+
+    #[test]
     fn mention_tags() {
         let pill = mention_pill("!r:x", r#"<mention user="@a:x.org"/>"#).unwrap();
         assert_eq!(pill.user_id.as_deref(), Some("@a:x.org"));
@@ -228,6 +252,7 @@ mod render_tests {
                 "@room\nhi @ann:x.org, see *this*\n\nbye",
                 None,
                 (0, 0, 0),
+                (0, 0, 255),
             ))
         }
         // Member names are fetched on tokio.
@@ -248,5 +273,76 @@ mod render_tests {
         });
         // One per line ("@room", "hi …", "bye"); the blank line is a gap.
         assert_eq!(paragraphs.len(), 3, "{paragraphs:?}");
+    }
+
+    /// A message that is only a URL, in a bubble sized to its content: the
+    /// link keeps the text's width (as an inline element it got none and
+    /// wrapped after every character).
+    #[test]
+    fn url_alone_in_a_bubble_stays_on_one_line() {
+        fn app() -> impl IntoElement {
+            use_init_theme(light_theme);
+            let scroll = use_scroll_controller(ScrollConfig::default);
+            use_provide_room_ui_ctx(scroll);
+            rect().width(Size::px(600.)).child(
+                rect().max_width(Size::px(500.)).child(super::text_body(
+                    "!r:x.org",
+                    "https://example.org/page",
+                    None,
+                    (0, 0, 0),
+                    (0, 0, 255),
+                )),
+            )
+        }
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let _guard = runtime.enter();
+        let mut test = launch_test(app);
+        test.sync_and_update();
+        let sizes = test.find_many(|node, element| {
+            Paragraph::try_downcast(element).map(|_| node.layout().area.size)
+        });
+        assert!(!sizes.is_empty());
+        for size in sizes {
+            assert!(size.height < 40., "wrapped: {size:?}");
+            assert!(size.width > 100., "squeezed: {size:?}");
+        }
+
+        // The link's text opens it; the empty space after it doesn't.
+        test.click_cursor((450., 10.));
+        test.sync_and_update();
+        assert!(test.opened_urls().is_empty());
+        test.click_cursor((40., 10.));
+        test.sync_and_update();
+        assert_eq!(test.opened_urls(), vec!["https://example.org/page"]);
+    }
+
+    /// Link ranges count a mention pill (an inline element) as one character.
+    #[test]
+    fn link_after_a_mention_opens() {
+        fn app() -> impl IntoElement {
+            use_init_theme(light_theme);
+            let scroll = use_scroll_controller(ScrollConfig::default);
+            use_provide_room_ui_ctx(scroll);
+            rect().width(Size::px(600.)).child(super::text_body(
+                "!r:x.org",
+                "@ann:x.org see https://example.org/page",
+                None,
+                (0, 0, 0),
+                (0, 0, 255),
+            ))
+        }
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let _guard = runtime.enter();
+        let mut test = launch_test(app);
+        test.sync_and_update();
+        let line = test
+            .find(|node, element| {
+                Paragraph::try_downcast(element).map(|_| node.layout().area)
+            })
+            .unwrap();
+        // "see " is before the link, the link ends the line.
+        test.click_cursor((line.max_x() as f64 - 10., line.center().y as f64));
+        test.sync_and_update();
+        assert_eq!(test.opened_urls(), vec!["https://example.org/page"]);
     }
 }

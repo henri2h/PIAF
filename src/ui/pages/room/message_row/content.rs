@@ -31,7 +31,10 @@ pub(super) fn media_size(width: Option<u64>, height: Option<u64>) -> (f32, f32) 
 /// What a message bubble shows.
 pub(super) struct ContentCtx<'a> {
     pub room_id: &'a str,
-    pub event_id: Option<String>,
+    /// The event's ID, else its transaction's (local echo): caches its images.
+    pub item_key: String,
+    /// Not sent yet (local echo): `Some(fraction)` of its upload once known.
+    pub uploading: Option<Option<f32>>,
     pub sender_name: &'a str,
     pub is_me: bool,
     pub image_viewer: State<Option<String>>,
@@ -42,7 +45,8 @@ pub(super) struct ContentCtx<'a> {
 pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -> Option<Element> {
     let ContentCtx {
         room_id,
-        event_id,
+        item_key: key,
+        uploading,
         sender_name,
         is_me,
         mut image_viewer,
@@ -53,13 +57,14 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
     } else {
         c.bubble_other_text
     };
-    let key = event_id.unwrap_or_else(|| "media-unknown".to_string());
+    // On our own (primary) bubble the text colour, told apart by the underline.
+    let link_color = if is_me { text_color } else { c.primary };
     let msgtype = message.msgtype();
     // Without a bridge's forward notice: the row marks it.
     let body = forward_split(msgtype).1;
     let html = formatted_html(msgtype);
     Some(match msgtype {
-        MessageType::Text(_) => text_body(room_id, body, html, text_color),
+        MessageType::Text(_) => text_body(room_id, body, html, text_color, link_color),
         // Bots' messages: same text, a step quieter.
         MessageType::Notice(_) => text_body(
             room_id,
@@ -70,6 +75,7 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
             } else {
                 c.on_surface_variant
             },
+            link_color,
         ),
         // "/me waves": the sender's name, then the action.
         MessageType::Emote(_) => text_body(
@@ -77,6 +83,7 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
             &format!("* {sender_name} {body}"),
             None,
             text_color,
+            link_color,
         ),
         MessageType::Image(img) => {
             let open_key = key.clone();
@@ -103,6 +110,7 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                             thumb_size: Some((400, 300)),
                         },
                     )
+                    .maybe_child(uploading.map(|progress| upload_overlay(w, h, progress)))
                     .on_press(move |_| {
                         if guard.allows() {
                             image_viewer.set(Some(open_key.clone()));
@@ -172,6 +180,7 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                             thumb_size: Some((400, 300)),
                         },
                     )
+                    .maybe_child(uploading.map(|progress| upload_overlay(MEDIA_W, MEDIA_H, progress)))
                     .on_press(move |_| {
                         if guard.allows() {
                             media::download(&source);
@@ -232,6 +241,26 @@ fn media_frame(width: f32, height: f32, thumbnail: MediaThumbnail) -> Rect {
         .height(Size::px(height))
         .overflow(Overflow::Clip)
         .child(thumbnail)
+}
+
+/// Over an image or video being uploaded: dimmed, a spinner and the percentage.
+fn upload_overlay(width: f32, height: f32, progress: Option<f32>) -> Rect {
+    rect()
+        .position(Position::new_absolute().top(0.).left(0.))
+        // Above the image, which is nested deeper (layers add up).
+        .layer(100)
+        .width(Size::px(width))
+        .height(Size::px(height))
+        .center()
+        .spacing(6.)
+        .background((0, 0, 0, 0.35))
+        .child(CircularLoader::new().size(36.))
+        .maybe_child(progress.map(|p| {
+            label()
+                .text(format!("{}%", (p * 100.).round() as u32))
+                .font_size(12.)
+                .color((255u8, 255u8, 255u8))
+        }))
 }
 
 /// `body` with its caption under it.

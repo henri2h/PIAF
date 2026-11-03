@@ -14,8 +14,15 @@ use crate::utils::push::{JAVA_VM, find_app_class};
 static PENDING: Mutex<Option<oneshot::Sender<Option<PickedFile>>>> = Mutex::new(None);
 
 fn answer(file: Option<PickedFile>) {
-    if let Some(tx) = PENDING.lock().unwrap().take() {
-        let _ = tx.send(file);
+    match PENDING.lock().unwrap().take() {
+        Some(tx) => {
+            if tx.send(file).is_err() {
+                tracing::warn!("attachment picked, but nothing is waiting for it anymore");
+            }
+        }
+        // The app restarted while the picker was open: the room is unknown.
+        None if file.is_some() => tracing::warn!("attachment picked with no pick in progress"),
+        None => {}
     }
 }
 

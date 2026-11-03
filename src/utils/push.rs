@@ -35,19 +35,18 @@ const ENDPOINT_FILENAME: &str = "push_endpoint";
 const GATEWAY_FILENAME: &str = "push_gateway";
 const DEFAULT_GATEWAY: &str = "https://matrix.gateway.unifiedpush.org/_matrix/push/v1/notify";
 
-fn endpoint_file(base_dir: &Path) -> std::path::PathBuf {
-    base_dir.join(ENDPOINT_FILENAME)
+fn endpoint_file(dir: &Path) -> std::path::PathBuf {
+    dir.join(ENDPOINT_FILENAME)
 }
 
-fn gateway_file(base_dir: &Path) -> std::path::PathBuf {
-    base_dir.join(GATEWAY_FILENAME)
+fn gateway_file(dir: &Path) -> std::path::PathBuf {
+    dir.join(GATEWAY_FILENAME)
 }
 
-async fn resolve_gateway() -> String {
-    let Some(dir) = base_dir() else {
-        return DEFAULT_GATEWAY.to_string();
-    };
-    match fs::read_to_string(gateway_file(&dir)).await {
+/// The gateway saved in an account's directory (`PushReceiver` resolves it
+/// from the endpoint), else the default one.
+async fn resolve_gateway(dir: &Path) -> String {
+    match fs::read_to_string(gateway_file(dir)).await {
         Ok(gw) => {
             let gw = gw.trim().to_string();
             if gw.is_empty() {
@@ -61,11 +60,14 @@ async fn resolve_gateway() -> String {
 }
 
 pub async fn get_push_gateway() -> String {
-    resolve_gateway().await
+    match account_dir() {
+        Some(dir) => resolve_gateway(&dir).await,
+        None => DEFAULT_GATEWAY.to_string(),
+    }
 }
 
 pub async fn set_push_gateway(gateway: &str) {
-    let Some(dir) = base_dir() else { return };
+    let Some(dir) = account_dir() else { return };
     if gateway.trim().is_empty() {
         let _ = fs::remove_file(gateway_file(&dir)).await;
     } else {
@@ -74,27 +76,29 @@ pub async fn set_push_gateway(gateway: &str) {
 }
 
 /// Read the persisted UP endpoint (if any) and register it with the homeserver.
-pub async fn register_pusher_if_stored(client: &Client, base_dir: &Path) {
-    let file = endpoint_file(base_dir);
+pub async fn register_pusher_if_stored(client: &Client, dir: &Path) {
+    let file = endpoint_file(dir);
     match fs::read_to_string(&file).await {
         Ok(endpoint) => {
             let endpoint = endpoint.trim().to_string();
             if !endpoint.is_empty() {
                 // Never log the endpoint: anyone holding it can push to this device.
                 tracing::info!("Registering persisted UP pusher");
-                register_pusher(client, &endpoint).await;
+                register_pusher(client, dir, &endpoint).await;
             }
         }
         Err(_) => {} // no endpoint stored yet — nothing to do
     }
 }
 
-/// Register (or update) an HTTP pusher for the given UP endpoint URL.
+/// Register (or update) an HTTP pusher for the given UP endpoint URL. `dir`:
+/// the account's directory (its gateway).
 ///
 /// The pushkey is the UP endpoint URL itself so the push gateway can route
-/// the notification back to the correct UP subscriber.
-pub async fn register_pusher(client: &Client, endpoint: &str) {
-    let gw = resolve_gateway().await;
+/// the notification back to the correct UP subscriber. Each account has its
+/// own UnifiedPush instance, so its own endpoint.
+pub async fn register_pusher(client: &Client, dir: &Path, endpoint: &str) {
+    let gw = resolve_gateway(dir).await;
     tracing::info!("Registering UP pusher: gateway={gw}");
 
     let mut http_data = HttpPusherData::new(gw);
@@ -116,13 +120,37 @@ pub async fn register_pusher(client: &Client, endpoint: &str) {
     // `append: false` (the spec default): replaces a pusher with the same push key.
     match client.pusher().set(pusher.into(), false).await {
         Ok(_) => tracing::info!("UP pusher registered successfully"),
-        Err(e) => tracing::warn!("failed to register UP pusher: {e}"),
+        Err(e) => {
+            tracing::warn!("failed to register UP pusher: {e}");
+            return;
+        }
+    }
+    delete_stale_pushers(client, endpoint).await;
+}
+
+/// Deletes this device's other pushers: an endpoint replaced by a new one,
+/// or the single instance shared by all accounts before.
+async fn delete_stale_pushers(client: &Client, endpoint: &str) {
+    use matrix_sdk::ruma::api::client::push::get_pushers;
+    let Some(device_id) = client.device_id().map(|d| d.to_string()) else {
+        return;
+    };
+    let Ok(response) = client.send(get_pushers::v3::Request::new()).await else {
+        return;
+    };
+    for pusher in response.pushers {
+        let ours = pusher.ids.app_id == APP_ID
+            && pusher.profile_tag.as_deref() == Some(device_id.as_str())
+            && pusher.ids.pushkey != endpoint;
+        if ours && let Err(e) = client.pusher().delete(pusher.ids).await {
+            tracing::warn!("failed to delete a stale UP pusher: {e}");
+        }
     }
 }
 
 /// Unregister the HTTP pusher and delete the endpoint file.
-pub async fn unregister_pusher(client: &Client, base_dir: &Path) {
-    let endpoint = match fs::read_to_string(endpoint_file(base_dir)).await {
+pub async fn unregister_pusher(client: &Client, dir: &Path) {
+    let endpoint = match fs::read_to_string(endpoint_file(dir)).await {
         Ok(s) => s.trim().to_string(),
         Err(_) => return,
     };
@@ -135,30 +163,27 @@ pub async fn unregister_pusher(client: &Client, base_dir: &Path) {
         tracing::warn!("failed to delete UP pusher: {e}");
     }
 
-    let _ = fs::remove_file(endpoint_file(base_dir)).await;
+    let _ = fs::remove_file(endpoint_file(dir)).await;
 }
 
 /// Persist the endpoint URL to disk so it survives app restarts.
-pub async fn persist_endpoint(base_dir: &Path, endpoint: &str) {
-    let _ = fs::write(endpoint_file(base_dir), endpoint).await;
+pub async fn persist_endpoint(dir: &Path, endpoint: &str) {
+    let _ = fs::write(endpoint_file(dir), endpoint).await;
 }
 
 /// Delete the persisted endpoint file.
-pub async fn clear_endpoint(base_dir: &Path) {
-    let _ = fs::remove_file(endpoint_file(base_dir)).await;
+pub async fn clear_endpoint(dir: &Path) {
+    let _ = fs::remove_file(endpoint_file(dir)).await;
 }
 
-/// Return the base dir (parent of DATA_DIR's persist_session folder).
-fn base_dir() -> Option<std::path::PathBuf> {
-    crate::utils::matrix::DATA_DIR
-        .get()
-        .and_then(|d| d.parent())
-        .map(|p| p.to_path_buf())
+/// The active account's directory: its endpoint and gateway.
+fn account_dir() -> Option<std::path::PathBuf> {
+    crate::utils::matrix::account_dir().map(Path::to_path_buf)
 }
 
 /// Read the currently stored UP endpoint URL, if any.
 pub async fn get_current_endpoint() -> Option<String> {
-    let dir = base_dir()?;
+    let dir = account_dir()?;
     fs::read_to_string(endpoint_file(&dir))
         .await
         .ok()
@@ -179,7 +204,7 @@ pub async fn is_pusher_registered(client: &Client) -> bool {
 /// Re-register using the stored endpoint (convenience for UI actions).
 /// Returns `Ok(endpoint_url)` on success, `Err(message)` on failure.
 pub async fn reregister(client: &Client) -> Result<String, String> {
-    let Some(dir) = base_dir() else {
+    let Some(dir) = account_dir() else {
         return Err("Data directory not available".into());
     };
     let Some(endpoint) = fs::read_to_string(endpoint_file(&dir))
@@ -190,13 +215,13 @@ pub async fn reregister(client: &Client) -> Result<String, String> {
     else {
         return Err("No UP endpoint stored — open the app after installing a distributor".into());
     };
-    register_pusher(client, &endpoint).await;
+    register_pusher(client, &dir, &endpoint).await;
     Ok(endpoint)
 }
 
 /// Unregister using the globally known base dir (convenience for UI actions).
 pub async fn unregister(client: &Client) -> Result<(), String> {
-    let Some(dir) = base_dir() else {
+    let Some(dir) = account_dir() else {
         return Err("Data directory not available".into());
     };
     unregister_pusher(client, &dir).await;
@@ -268,6 +293,19 @@ pub async fn fetch_notification_payload(
         return NotifOutcome::Unavailable;
     };
 
+    // Still encrypted: the keys haven't arrived (an account in the background
+    // doesn't sync them). Better a generic line than no notification.
+    if let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomEncrypted(
+        SyncMessageLikeEvent::Original(encrypted),
+    )) = &event
+    {
+        if already_read(client, &room, &event_id, encrypted.origin_server_ts).await {
+            return NotifOutcome::Skip;
+        }
+        return NotifOutcome::Show(
+            payload(&room, &encrypted.sender, ENCRYPTED_BODY.to_string(), false).await,
+        );
+    }
     let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(
         SyncMessageLikeEvent::Original(msg),
     )) = event
@@ -286,27 +324,38 @@ pub async fn fetch_notification_payload(
         return NotifOutcome::Skip;
     }
 
+    let is_image = matches!(msg.content.msgtype, MessageType::Image(_));
+    NotifOutcome::Show(payload(&room, &msg.sender, body, is_image).await)
+}
+
+const ENCRYPTED_BODY: &str = "🔒 Encrypted message";
+
+async fn payload(
+    room: &matrix_sdk::Room,
+    sender: &matrix_sdk::ruma::UserId,
+    body: String,
+    is_image: bool,
+) -> NotifPayload {
     let room_name = room
         .display_name()
         .await
         .map(|n| n.to_string())
         .unwrap_or_else(|_| "PIAF".to_string());
     let sender_display_name = room
-        .get_member_no_sync(&msg.sender)
+        .get_member_no_sync(sender)
         .await
         .ok()
         .flatten()
         .and_then(|m| m.display_name().map(|s| s.to_string()))
-        .unwrap_or_else(|| msg.sender.localpart().to_string());
-
-    NotifOutcome::Show(NotifPayload {
+        .unwrap_or_else(|| sender.localpart().to_string());
+    NotifPayload {
         room_name,
         is_dm: room.is_direct().await.unwrap_or(false),
-        sender_id: msg.sender.to_string(),
+        sender_id: sender.to_string(),
         sender_display_name,
         body,
-        is_image: matches!(msg.content.msgtype, MessageType::Image(_)),
-    })
+        is_image,
+    }
 }
 
 /// Whether the user's read receipt (public or private) covers `event_id`: on
@@ -487,9 +536,9 @@ pub(crate) fn find_app_class<'a>(
     Some(jni::objects::JClass::from(cls_obj))
 }
 
-/// Called after every sync batch on Android: checks the notified-room list (stored in
-/// Kotlin SharedPreferences) and cancels any notifications for rooms whose unread count
-/// has dropped to zero — including rooms read on a different device.
+/// Called after every sync batch on Android: checks the active account's
+/// notified rooms (stored in Kotlin SharedPreferences) and cancels the
+/// notifications of rooms read since — including on a different device.
 ///
 /// Flow (no re-entrant block_on):
 ///   1. JNI call → Kotlin `getNotifiedRoomsJson` (reads SharedPrefs, no Rust call-back)
@@ -502,7 +551,8 @@ pub async fn cancel_read_notifications_after_sync(client: &Client) {
 
 #[cfg(target_os = "android")]
 async fn cancel_read_notifications(client: &Client) -> Option<()> {
-    // Step 1: ask Kotlin for the notified rooms: [{roomId, ts}].
+    let (account, _) = crate::utils::matrix::ACCOUNT.get()?;
+    // Step 1: ask Kotlin for the notified rooms: [{account, roomId, ts}].
     let notified_json: String = with_push_receiver(|env, cls, ctx| {
         let obj = env
             .call_static_method(
@@ -523,6 +573,7 @@ async fn cancel_read_notifications(client: &Client) -> Option<()> {
     let arr: Vec<serde_json::Value> = serde_json::from_str(&notified_json).ok()?;
     let entries: Vec<(String, u64)> = arr
         .into_iter()
+        .filter(|v| v.get("account").and_then(|a| a.as_str()) == Some(account.as_str()))
         .filter_map(|v| {
             let room_id = v.get("roomId")?.as_str()?.to_string();
             let ts = v.get("ts")?.as_u64().unwrap_or(0);
@@ -540,16 +591,33 @@ async fn cancel_read_notifications(client: &Client) -> Option<()> {
 
     // Step 3: Kotlin cancels their notifications and cleans up SharedPrefs.
     with_push_receiver(|env, cls, ctx| {
+        let account = env.new_string(account).ok()?;
         let jstr = env.new_string(&read_json).ok()?;
         env.call_static_method(
             cls,
             "cancelNotificationsForRooms",
-            "(Landroid/content/Context;Ljava/lang/String;)V",
-            &[ctx.into(), (&jstr).into()],
+            "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V",
+            &[ctx.into(), (&account).into(), (&jstr).into()],
         )
         .ok()
         .map(|_| ())
     })
+}
+
+/// Registers each account's UnifiedPush instance (Kotlin `Accounts`): a new
+/// account gets its endpoint without waiting for the next launch.
+#[cfg(target_os = "android")]
+pub fn register_accounts_push() {
+    with_push_receiver(|env, cls, ctx| {
+        env.call_static_method(
+            cls,
+            "registerAccounts",
+            "(Landroid/content/Context;)V",
+            &[ctx.into()],
+        )
+        .ok()
+        .map(|_| ())
+    });
 }
 
 /// Runs `f` on this thread attached to the JVM, with Kotlin's `PushReceiver`

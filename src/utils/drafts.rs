@@ -13,10 +13,7 @@ static WRITE_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 const PREVIEW_CHARS: usize = 80;
 
 fn file() -> Option<std::path::PathBuf> {
-    crate::utils::matrix::DATA_DIR
-        .get()
-        .and_then(|d| d.parent())
-        .map(|p| p.join("drafts.json"))
+    crate::utils::matrix::account_dir().map(|d| d.join("drafts.json"))
 }
 
 /// Loads drafts from disk. Call once the data dir is known.
@@ -78,15 +75,6 @@ async fn persist() {
     let json = serde_json::to_string(&*DRAFTS.lock().unwrap());
     if let Ok(json) = json {
         let _ = tokio::fs::write(path, json).await;
-    }
-}
-
-/// Forgets all drafts (sign out).
-pub async fn delete_file() {
-    let _guard = WRITE_LOCK.lock().await;
-    DRAFTS.lock().unwrap().clear();
-    if let Some(path) = file() {
-        let _ = tokio::fs::remove_file(path).await;
     }
 }
 

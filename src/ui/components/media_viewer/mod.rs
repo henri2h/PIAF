@@ -177,6 +177,16 @@ impl Component for MediaViewer {
         let mut want_next: State<bool> = use_state(|| false);
         let items_len = items.len();
         let mut known_count: State<usize> = use_state(move || items_len);
+        // The back gesture closes the viewer, not the page under it.
+        crate::app::navigation::use_back_handler(move || {
+            if selected_key.peek().is_none() {
+                return false;
+            }
+            let (mut selected_key, mut want_next) = (selected_key, want_next);
+            selected_key.set(None);
+            want_next.set(false);
+            true
+        });
 
         let prev_count = *known_count.read();
         let cur_count = items.len();
@@ -349,9 +359,11 @@ impl Component for MediaViewer {
                 .into_element()
         };
         let shrink = g.scale * (1. - 0.15 * dismiss);
-        let pane = |x: f32, child: Element| {
+        // Moved by its position, not `offset_*` (that moves the children, and
+        // the scale would then pivot on the unmoved centre).
+        let pane = |x: f32, y: f32, child: Element| {
             rect()
-                .position(Position::new_absolute().top(0.).left(x))
+                .position(Position::new_absolute().top(y).left(x))
                 .width(Size::px(width))
                 .height(Size::px(height))
                 .child(child)
@@ -359,15 +371,13 @@ impl Component for MediaViewer {
         let strip = rect()
             .expanded()
             .overflow(Overflow::Clip)
-            .maybe_child(has_prev.then(|| pane(g.dx - width, placeholder(&items[idx - 1]))))
+            .maybe_child(has_prev.then(|| pane(g.dx - width, 0., placeholder(&items[idx - 1]))))
             .child(
-                pane(g.dx, current)
+                pane(g.dx + g.offset.x, g.offset.y + g.dy, current)
                     .key(item.key.clone())
-                    .offset_x(g.offset.x)
-                    .offset_y(g.offset.y + g.dy)
                     .scale((shrink, shrink)),
             )
-            .maybe_child(has_next.then(|| pane(g.dx + width, placeholder(&items[idx + 1]))));
+            .maybe_child(has_next.then(|| pane(g.dx + width, 0., placeholder(&items[idx + 1]))));
 
         // ── Controls over the image ──────────────────────────────────────────
         const WHITE: (u8, u8, u8) = (255, 255, 255);
@@ -712,6 +722,19 @@ mod tests {
         let _guard = runtime.enter();
         drag(&mut test, (200., 300.), (205., 560.));
         assert_eq!(selected(), None);
+    }
+
+    #[test]
+    fn back_closes_the_viewer_first() {
+        let (runtime, mut test) = runner();
+        let _guard = runtime.enter();
+        assert!(crate::app::navigation::handle_back());
+        test.sync_and_update();
+        assert_eq!(selected(), None);
+        assert!(
+            !crate::app::navigation::handle_back(),
+            "closed: back is the page's again"
+        );
     }
 
     #[test]

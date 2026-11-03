@@ -242,6 +242,17 @@ impl RowInteraction {
             }
         };
         let commit_fallback = commit.clone();
+        // The finger lifted without this row's `touchend`.
+        let finish = move || {
+            if swipe.is_swiping() || *state.long_pressed.peek() {
+                *state.press_consumed.write_unchecked() = true;
+            }
+            state.cancel_press();
+            if let Some(released) = swipe.end(SWIPE) {
+                commit_fallback(released);
+            }
+        };
+        let finish_lost = finish.clone();
 
         outer
             .on_touch_start(move |e: Event<TouchEventData>| {
@@ -251,8 +262,15 @@ impl RowInteraction {
             })
             // Global: the finger drifting onto the next row must keep moving this one.
             .on_global_pointer_move(move |e: Event<PointerEventData>| {
+                let was_swiping = swipe.is_swiping();
                 if swipe.moved(e.global_location(), SWIPE, state.touch_generation()) {
                     state.cancel_press();
+                }
+                if !was_swiping
+                    && swipe.is_swiping()
+                    && let Some(scroll) = state.scroll
+                {
+                    swipe.watch_lost_lift(scroll, finish_lost.clone());
                 }
             })
             .on_touch_end(move |e: Event<TouchEventData>| {
@@ -274,15 +292,8 @@ impl RowInteraction {
             // The list cancels `touchend` for rows once it claims the drag, and
             // the finger may lift off another row: finish here too.
             .on_global_pointer_up(move |_: Event<PointerEventData>| {
-                if !swipe.is_touching() {
-                    return;
-                }
-                if swipe.is_swiping() || *state.long_pressed.peek() {
-                    *state.press_consumed.write_unchecked() = true;
-                }
-                state.cancel_press();
-                if let Some(released) = swipe.end(SWIPE) {
-                    commit_fallback(released);
+                if swipe.is_touching() {
+                    finish();
                 }
             })
             .on_touch_cancel(move |_: Event<TouchEventData>| {
@@ -294,8 +305,13 @@ impl RowInteraction {
                     .width(Size::fill())
                     .height(Size::fill())
                     .overflow(Overflow::Clip)
-                    // Hidden at rest: fully covered by the row.
-                    .maybe_child((reveal_recontact || reveal_archive).then(|| action_panels))
+                    // Hidden at rest: fully covered by the row. An empty rect
+                    // keeps the row's index, or revealing remounts it.
+                    .child(if reveal_recontact || reveal_archive {
+                        action_panels.into_element()
+                    } else {
+                        rect().into_element()
+                    })
                     .child(shifted)
                     .maybe_child((self.flash_opacity > 0.01).then(|| {
                         let recontact = self.commit_flash.peek().1;

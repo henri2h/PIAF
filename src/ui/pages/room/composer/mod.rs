@@ -81,7 +81,7 @@ impl Component for ComposeBar {
         // People picked from the `@` suggestions; members loaded on the first `@`.
         let mut mentions: State<Vec<Mention>> = use_state(Vec::new);
         let mut members: State<Option<Vec<MemberItem>>> = use_state(|| None);
-        // Pasted image waiting to be sent; a send in progress.
+        // Pasted image (PNG, JPEG…) waiting to be sent; a send in progress.
         let mut paste_pending: State<Option<Vec<u8>>> = use_state(|| None);
         let sending: State<bool> = use_state(|| false);
         // Android: the attach sheet (gallery, camera, file).
@@ -247,6 +247,7 @@ impl Component for ComposeBar {
         let preedit_send = preedit.clone();
         let room_id_send = room_id.clone();
         let draft_gen_send = draft_gen.clone();
+        let mut timeline_scroll = ui.scroll;
         let do_send = move || {
             finish_composition(&preedit_send);
             let text = editable
@@ -286,14 +287,16 @@ impl Component for ComposeBar {
                 if !matches!(action, MsgAction::Edit { .. }) {
                     draft_gen_send.fetch_add(1, Ordering::Relaxed);
                     drafts::clear(&room_id_send);
+                    // The local echo lands at the end: show it.
+                    timeline_scroll.scroll_to(ScrollPosition::End, Direction::Vertical);
                 }
                 let _ = action_tx.send(action);
                 set_text(editable, String::new(), 0);
                 mentions.set(vec![]);
             }
-            if let Some(png) = paste {
+            if let Some(image) = paste {
                 paste_pending.set(None);
-                send_pasted(room_id_send.clone(), png, sending);
+                send_pasted(room_id_send.clone(), image, sending);
             }
         };
 
@@ -339,6 +342,16 @@ impl Component for ComposeBar {
                 send_on_enter();
                 return;
             }
+            // Ctrl+V: an image on the clipboard (or a copied image file) is
+            // staged for sending, instead of pasting its text (a path, a URL).
+            #[cfg(not(target_os = "android"))]
+            if e.modifiers.ctrl()
+                && matches!(&e.key, Key::Character(c) if c.eq_ignore_ascii_case("v"))
+                && let Some(image) = crate::utils::clipboard::read_image()
+            {
+                paste_pending.set(Some(image));
+                return;
+            }
             let mut editable = editable;
             editable.process_event(EditableEvent::KeyDown {
                 key: &e.key,
@@ -346,14 +359,6 @@ impl Component for ComposeBar {
                 editor_line: None,
                 holder: None,
             });
-            // Ctrl+V: an image on the clipboard is staged for sending.
-            #[cfg(not(target_os = "android"))]
-            if e.key == Key::Character("v".into())
-                && e.modifiers.ctrl()
-                && let Some(png) = crate::utils::clipboard::read_image()
-            {
-                paste_pending.set(Some(png));
-            }
         };
         let on_key_up = move |e: Event<KeyboardEventData>| {
             let mut editable = editable;
@@ -380,7 +385,7 @@ impl Component for ComposeBar {
                 a11y_id.request_unfocus();
                 attach_sheet_open.set(true);
             } else {
-                send_picked(room_id_attach.clone(), AttachSource::File, sending);
+                send_picked(room_id_attach.clone(), AttachSource::File);
             }
         };
 
@@ -457,10 +462,19 @@ impl Component for ComposeBar {
             .a11y_id(a11y_id)
             .a11y_focusable(true)
             .a11y_role(AccessibilityRole::TextInput)
+            // Shown by `use_composer_ime` (Android).
+            .a11y_app_keyboard()
             .on_key_down(on_key_down)
             .on_key_up(on_key_up)
             .on_global_pointer_up(on_global_pointer_up)
-            .on_pointer_down(move |_| a11y_id.request_focus())
+            .on_pointer_down(move |_| {
+                // Already focused: no focus change shows the keyboard, but
+                // Android may have hidden it (back gesture).
+                if focus.peek().is_focused() {
+                    crate::utils::ime::reshow();
+                }
+                a11y_id.request_focus();
+            })
             .on_touch_start(move |e: Event<TouchEventData>| {
                 touch.touch_start(e.global_location, editable, || {
                     haptics::play(Haptic::HeavyClick)
@@ -509,7 +523,7 @@ impl Component for ComposeBar {
             .background(c.surface)
             .maybe_child(
                 attach_sheet_open()
-                    .then(|| attach_sheet(room_id.clone(), attach_sheet_open, sending, c)),
+                    .then(|| attach_sheet(room_id.clone(), attach_sheet_open, c)),
             )
             .maybe_child(attachment_banner(
                 &room_id,

@@ -147,6 +147,9 @@ impl Component for Layout {
             })
             .on_global_key_down(move |e: Event<KeyboardEventData>| {
                 if e.key == Key::Named(NamedKey::BrowserBack) {
+                    if crate::app::navigation::handle_back() {
+                        return;
+                    }
                     let router = RouterContext::get();
                     if router.can_go_back() {
                         router.go_back();

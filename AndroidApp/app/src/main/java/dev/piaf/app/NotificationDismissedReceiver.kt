@@ -10,7 +10,8 @@ import android.content.Intent
  */
 class NotificationDismissedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val account = MainActivity.accountOf(context, intent) ?: return
         val roomId = intent.getStringExtra(MainActivity.EXTRA_ROOM_ID) ?: return
-        RoomNotifications.forget(context, roomId)
+        RoomNotifications.forget(context, account, roomId)
     }
 }

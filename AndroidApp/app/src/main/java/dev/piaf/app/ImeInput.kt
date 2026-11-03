@@ -216,9 +216,22 @@ object ImeBridge {
         imm.showSoftInput(v, 0)
     }
 
+    /**
+     * The focused field was tapped: shows the keyboard again if Android hid it
+     * (back gesture, the keyboard's own hide key) while the field kept focus.
+     */
     @JvmStatic
-    fun hide() = post { v, imm ->
-        imm.hideSoftInputFromWindow(v.windowToken, 0)
+    fun reshow() = post { v, imm ->
+        if (v.hasFocus()) imm.showSoftInput(v, 0)
+    }
+
+    /**
+     * The field lost focus. Freya hides the keyboard once no text field is
+     * focused: hiding it here too would race the show of a Freya `Input`
+     * focused next.
+     */
+    @JvmStatic
+    fun hide() = post { v, _ ->
         // Not focusable first: a plain clearFocus would hand focus straight back.
         v.setEditable(false)
         v.clearFocus()

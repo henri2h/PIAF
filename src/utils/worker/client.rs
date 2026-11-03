@@ -5,7 +5,11 @@ use tokio::sync::mpsc::{UnboundedReceiver, unbounded_channel};
 pub struct MatrixClientWorker {}
 
 pub enum WorkerTask {
-    Login(String, String, oneshot::Sender<anyhow::Result<()>>),
+    Login(
+        String,
+        String,
+        oneshot::Sender<anyhow::Result<crate::utils::matrix::LoginOutcome>>,
+    ),
     FetchRoomPreviews(Vec<matrix_sdk::ruma::OwnedRoomId>),
 }
 

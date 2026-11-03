@@ -13,6 +13,7 @@ use freya_router::prelude::RouterContext;
 
 use crate::utils::const_values::AppColors;
 use crate::utils::insets::status_bar_inset;
+use crate::utils::matrix::{CLIENT, LoginOutcome};
 use crate::utils::use_app_colors;
 use crate::{REQUESTER, Route};
 use field::{field, icon};
@@ -94,6 +95,8 @@ impl Component for LoginPage {
         });
 
         let is_logging_in = *logging_in.read();
+        // Signed in already: this adds an account.
+        let adding = CLIENT.get().is_some();
         let user_id = normalize_user_id(&login.read());
 
         let mut submit = move || {
@@ -121,9 +124,11 @@ impl Component for LoginPage {
                     .await;
                 logging_in.set(false);
                 match result {
-                    Ok(()) => {
+                    Ok(LoginOutcome::Active) => {
                         let _ = RouterContext::get().replace(Route::HomePage);
                     }
+                    // The new account's client opens in a new process.
+                    Ok(LoginOutcome::Added) => crate::app::restart::restart(),
                     Err(e) => error.set(Some(e.to_string())),
                 }
             });
@@ -176,7 +181,7 @@ impl Component for LoginPage {
                     .spacing(6.)
                     .child(
                         label()
-                            .text("Sign in")
+                            .text(if adding { "Add account" } else { "Sign in" })
                             .font_size(28.)
                             .font_weight(FontWeight::BOLD)
                             .color(c.on_surface),

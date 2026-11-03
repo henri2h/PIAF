@@ -114,9 +114,17 @@ impl MessageGesture {
                 )
         });
 
-        let reply = on_reply.clone();
-        let reply_fallback = on_reply;
         let this = self;
+        // The finger lifted with the row still swiping.
+        let finish = move || {
+            this.cancel_press();
+            if this.end_swipe(bounds)
+                && let Some(reply) = &on_reply
+            {
+                reply();
+            }
+        };
+        let (finish_on_end, finish_on_up) = (finish.clone(), finish.clone());
 
         outer
             .on_touch_start(move |e: Event<TouchEventData>| {
@@ -139,34 +147,27 @@ impl MessageGesture {
             })
             // Global: a swipe drifting off this message must keep following the finger.
             .on_global_pointer_move(move |e: Event<PointerEventData>| {
+                let was_swiping = swipe.is_swiping();
                 if swipe.moved(e.global_location(), bounds, Some(scroll.touch_generation())) {
                     this.cancel_press();
                 }
+                if !was_swiping && swipe.is_swiping() {
+                    swipe.watch_lost_lift(scroll, finish.clone());
+                }
             })
             .on_touch_end(move |e: Event<TouchEventData>| {
-                this.cancel_press();
                 // A swipe's or long press's lift must not press the bubble
                 // (open an image, …).
                 if swipe.is_swiping() || *long_pressed.peek() {
                     e.prevent_default();
                 }
-                if this.end_swipe(bounds)
-                    && let Some(reply) = &reply
-                {
-                    reply();
-                }
+                finish_on_end();
             })
             // The timeline cancels `touchend` once it claims the drag, and the
             // finger may lift off this row: finish here too.
             .on_global_pointer_up(move |_: Event<PointerEventData>| {
-                if !swipe.is_touching() {
-                    return;
-                }
-                this.cancel_press();
-                if this.end_swipe(bounds)
-                    && let Some(reply) = &reply_fallback
-                {
-                    reply();
+                if swipe.is_touching() {
+                    finish_on_up();
                 }
             })
             .on_touch_cancel(move |_: Event<TouchEventData>| {
@@ -177,8 +178,10 @@ impl MessageGesture {
                 rect()
                     .width(Size::fill())
                     .overflow(Overflow::Clip)
-                    .maybe_child(reply_icon)
-                    .child(row.offset_x(offset)),
+                    // After the row: inserted before, it would shift the row's
+                    // index and remount it (images blink) at each swipe.
+                    .child(row.offset_x(offset))
+                    .maybe_child(reply_icon),
             )
     }
 }

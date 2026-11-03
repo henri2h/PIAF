@@ -2,6 +2,7 @@ pub mod attachments;
 pub mod ime;
 mod jni_push;
 pub mod share;
+pub mod tls;
 
 use std::sync::OnceLock;
 
@@ -45,6 +46,12 @@ fn android_main(droid_app: AndroidApp) {
 
     // Kept entered for the app lifetime: freya calls `tokio::spawn` internally.
     let _rt_guard = runtime().enter();
+    // A tapped notification of another account restarted into it.
+    if let Some(room_id) =
+        crate::utils::accounts::take_open_room(&data_path.join("persist_session"))
+    {
+        crate::app::navigation::request_open_room(None, room_id);
+    }
     crate::app::state::init(data_path);
 
     let event_loop = match EventLoop::<NativeEvent>::with_user_event()
@@ -73,8 +80,9 @@ fn android_main(droid_app: AndroidApp) {
     launch(launch_config)
 }
 
-/// HTTPS (reqwest, rustls-platform-verifier) checks certificates against
-/// Android's trust store through JNI: without this every request panics.
+/// HTTPS checks certificates through JNI ([`tls`]; rustls-platform-verifier
+/// for matrix-sdk's own client, the fallback): without this every request
+/// panics.
 fn init_tls_verifier(droid_app: &AndroidApp) {
     init_tls_verifier_raw(droid_app.vm_as_ptr(), droid_app.activity_as_ptr());
 }
@@ -82,6 +90,7 @@ fn init_tls_verifier(droid_app: &AndroidApp) {
 /// `init_tls_verifier` from raw JNI pointers: also run by the push path, where
 /// no activity (nor `android_main`) exists. A no-op once initialised.
 pub(crate) fn init_tls_verifier_raw(vm: *mut std::ffi::c_void, context: *mut std::ffi::c_void) {
+    tls::init(vm, context);
     // SAFETY: the VM and context pointers come from the running app.
     let vm = unsafe { jni22::JavaVM::from_raw(vm as *mut jni22::sys::JavaVM) };
     let result = vm.attach_current_thread(|env| -> Result<(), jni22::errors::Error> {

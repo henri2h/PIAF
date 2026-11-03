@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Replaces rustls-platform-verifier's (cleartext to CA revocation list hosts,
+     not needed: no online revocation checks, see SECURITY.md). User CAs stay
+     trusted, as with that verifier: self-hosted servers with a private CA. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -8,25 +8,26 @@ use crate::utils::const_values::AppColors;
 use crate::utils::media::{self, AttachSource};
 use crate::utils::on_tokio;
 
-/// Picks a file from `source` and sends it to `room_id`, `sending` meanwhile.
-pub(super) fn send_picked(room_id: String, source: AttachSource, mut sending: State<bool>) {
-    spawn(async move {
-        let picked = on_tokio(media::pick_attachment(source)).await.flatten();
-        let Some(file) = picked else { return };
-        sending.set(true);
-        on_tokio(async move {
-            media::send_attachment(&room_id, &file.file_name, &file.mime, file.bytes).await
-        })
-        .await;
-        sending.set(false);
+/// Picks a file from `source` and sends it to `room_id`. All on tokio: the
+/// picker (camera…) can outlive the sheet or the room page that opened it.
+/// The timeline shows the upload (local echo).
+pub(super) fn send_picked(room_id: String, source: AttachSource) {
+    tokio::spawn(async move {
+        let Some(file) = media::pick_attachment(source).await else {
+            tracing::info!(?source, "attachment: nothing picked");
+            return;
+        };
+        tracing::info!(?source, size = file.bytes.len(), "attachment picked");
+        media::send_attachment(&room_id, &file.file_name, &file.mime, file.bytes).await;
     });
 }
 
-/// Sends a pasted PNG, `sending` meanwhile.
-pub(super) fn send_pasted(room_id: String, png: Vec<u8>, mut sending: State<bool>) {
+/// Sends a pasted image, `sending` meanwhile.
+pub(super) fn send_pasted(room_id: String, image: Vec<u8>, mut sending: State<bool>) {
     sending.set(true);
     let done = on_tokio(async move {
-        media::send_attachment(&room_id, "paste.png", &mime::IMAGE_PNG, png).await;
+        let (mime, ext) = media::sniff_image_mime(&image);
+        media::send_attachment(&room_id, &format!("paste.{ext}"), &mime, image).await;
     });
     spawn(async move {
         done.await;
@@ -35,12 +36,7 @@ pub(super) fn send_pasted(room_id: String, png: Vec<u8>, mut sending: State<bool
 }
 
 /// Android: Photos & videos / Camera / File.
-pub(super) fn attach_sheet(
-    room_id: String,
-    mut open: State<bool>,
-    sending: State<bool>,
-    c: AppColors,
-) -> Element {
+pub(super) fn attach_sheet(room_id: String, mut open: State<bool>, c: AppColors) -> Element {
     let option = |icon: Bytes, text: &'static str, source: AttachSource| {
         let room_id = room_id.clone();
         ListItem::new(text)
@@ -60,7 +56,7 @@ pub(super) fn attach_sheet(
             )
             .on_press(move |_| {
                 open.set(false);
-                send_picked(room_id.clone(), source, sending);
+                send_picked(room_id.clone(), source);
             })
     };
     bottom_sheet(c, move || open.set(false))
@@ -112,6 +108,13 @@ pub(super) fn attachment_banner(
         );
     }
     let png = pending.read().clone()?;
+    // Per image: the viewer caches by key, a second paste must not show the first.
+    let key = {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        png.hash(&mut hasher);
+        format!("paste-{room_id}-{:x}", hasher.finish())
+    };
     Some(
         row()
             .child(
@@ -121,7 +124,7 @@ pub(super) fn attachment_banner(
                     .corner_radius(4.)
                     .overflow(Overflow::Clip)
                     .child(
-                        ImageViewer::new((format!("paste-{room_id}"), bytes::Bytes::from(png)))
+                        ImageViewer::new((key, bytes::Bytes::from(png)))
                             .width(Size::fill())
                             .height(Size::fill())
                             .aspect_ratio(AspectRatio::Max)

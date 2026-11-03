@@ -45,6 +45,13 @@ pub(super) enum MsgAction {
     Typing(bool),
 }
 
+impl MsgAction {
+    /// Server round trips; sends, edits and reactions show a local echo first.
+    fn waits_on_server(&self) -> bool {
+        matches!(self, Self::Delete { .. } | Self::MarkRead | Self::Typing(_))
+    }
+}
+
 /// First snapshot: `(room name, is_dm, items)`.
 pub(super) type TimelineInit = (String, bool, Vec<Arc<TimelineItem>>);
 
@@ -186,7 +193,16 @@ async fn run(room_id: String, focus_event_id: Option<String>, mut io: TaskIo) {
             }
             action = io.actions.recv() => {
                 let Some(action) = action else { break; };
-                if let Err(message) = run_action(&timeline, &room, action).await {
+                if action.waits_on_server() {
+                    // Beside the loop: a send's local echo must not queue behind
+                    // a round trip.
+                    let (timeline, room, errors) = (timeline.clone(), room.clone(), io.errors.clone());
+                    tokio::spawn(async move {
+                        if let Err(message) = run_action(&timeline, &room, action).await {
+                            let _ = errors.send(message);
+                        }
+                    });
+                } else if let Err(message) = run_action(&timeline, &room, action).await {
                     let _ = io.errors.send(message);
                 }
             }
@@ -281,11 +297,11 @@ async fn run_action(
                 .map_err(|_| "Couldn't delete the message")?;
         }
         MsgAction::Send { draft } => {
-            let _ = room.typing_notice(false).await;
             timeline
                 .send(draft.content().with_relation(None).into())
                 .await
                 .map_err(|_| "Couldn't send the message")?;
+            stop_typing(room);
             notify_sync();
         }
         MsgAction::Edit {
@@ -307,12 +323,12 @@ async fn run_action(
             reply_event_id,
             draft,
         } => {
-            let _ = room.typing_notice(false).await;
             let eid = event_id(&reply_event_id).ok_or("Couldn't send the reply")?;
             timeline
                 .send_reply(draft.content(), eid)
                 .await
                 .map_err(|_| "Couldn't send the reply")?;
+            stop_typing(room);
             notify_sync();
         }
         MsgAction::MarkRead => {
@@ -330,6 +346,14 @@ async fn run_action(
         }
     }
     Ok(())
+}
+
+/// "Typing…" off for the others, without holding up the send.
+fn stop_typing(room: &matrix_sdk::Room) {
+    let room = room.clone();
+    tokio::spawn(async move {
+        let _ = room.typing_notice(false).await;
+    });
 }
 
 fn notify_sync() {

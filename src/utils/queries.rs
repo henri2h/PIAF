@@ -155,7 +155,12 @@ impl QueryCapability for FetchMediaThumbnail {
             UInt::new(width as u64).unwrap_or(UInt::MAX),
             UInt::new(height as u64).unwrap_or(UInt::MAX),
         );
-        fetch_media(source, MediaFormat::Thumbnail(settings)).await
+        // No thumbnail (a server without them, or the local echo of an
+        // upload, only cached whole): the file itself.
+        match fetch_media(source.clone(), MediaFormat::Thumbnail(settings)).await {
+            Ok(bytes) => Ok(bytes),
+            Err(()) => fetch_media(source, MediaFormat::File).await,
+        }
     }
 }
 

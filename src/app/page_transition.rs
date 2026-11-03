@@ -19,6 +19,10 @@ enum Direction {
     Back,
     /// Same depth (tab switch, room → room): fades only.
     Across,
+    /// Leaving the welcome page (the redirect once the session is restored at
+    /// startup): shown at once. A fading page draws each element into its own
+    /// layer, which cost ~200ms of GPU allocations on the first frames.
+    None,
 }
 
 /// Bottom navigation tabs: siblings, so switching between them only fades.
@@ -35,6 +39,9 @@ fn depth(path: &str) -> usize {
 }
 
 fn direction(from: &str, to: &str) -> Direction {
+    if from == "/welcome" {
+        return Direction::None;
+    }
     match depth(to).cmp(&depth(from)) {
         std::cmp::Ordering::Greater => Direction::Forward,
         std::cmp::Ordering::Less => Direction::Back,
@@ -68,14 +75,15 @@ impl Component for PageTransition {
             let from = match dir {
                 Direction::Forward => SLIDE,
                 Direction::Back => -SLIDE,
-                Direction::Across => 0.,
+                Direction::Across | Direction::None => 0.,
             };
+            let from_opacity = if *dir == Direction::None { 1. } else { 0. };
             (
                 AnimNum::new(from, 0.)
                     .time(DURATION_MS)
                     .ease(Ease::Out)
                     .function(Function::Cubic),
-                AnimNum::new(0., 1.)
+                AnimNum::new(from_opacity, 1.)
                     .time(DURATION_MS * 3 / 4)
                     .ease(Ease::Out)
                     .function(Function::Quad),
@@ -108,5 +116,6 @@ mod tests {
         assert!(direction("/more", "/archived") == Direction::Forward);
         assert!(direction("/settings", "/settings/profile") == Direction::Forward);
         assert!(direction("/room/!a:x", "/room/!b:x") == Direction::Across);
+        assert!(direction("/welcome", "/") == Direction::None);
     }
 }

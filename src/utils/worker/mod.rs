@@ -1,3 +1,4 @@
+use crate::utils::matrix::LoginOutcome;
 use crate::utils::worker::client::WorkerTask;
 use futures::channel::oneshot;
 use tokio::sync::mpsc::UnboundedSender;
@@ -10,7 +11,7 @@ pub struct Requester {
 }
 
 impl Requester {
-    pub async fn login(&self, username: String, password: String) -> anyhow::Result<()> {
+    pub async fn login(&self, username: String, password: String) -> anyhow::Result<LoginOutcome> {
         let (tx, rx) = oneshot::channel();
         self.tx
             .send(WorkerTask::Login(username, password, tx))

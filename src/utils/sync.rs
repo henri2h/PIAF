@@ -246,12 +246,10 @@ async fn watch_room_info(client: Client) {
 
 #[cfg(target_os = "android")]
 async fn register_pusher() {
-    let base = crate::utils::matrix::DATA_DIR
-        .get()
-        .and_then(|d| d.parent())
-        .map(|p| p.to_path_buf());
-    if let (Some(base), Some(client)) = (base, crate::utils::matrix::CLIENT.get()) {
-        crate::utils::push::register_pusher_if_stored(client, &base).await;
+    crate::utils::push::register_accounts_push();
+    let dir = crate::utils::matrix::account_dir();
+    if let (Some(dir), Some(client)) = (dir, crate::utils::matrix::CLIENT.get()) {
+        crate::utils::push::register_pusher_if_stored(client, dir).await;
     }
 }
 

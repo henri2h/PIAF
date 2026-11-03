@@ -15,7 +15,7 @@ pub enum ImeEvent {
     Commit(String),
     /// The word being composed (shown in place, replaced by the next one); empty clears it.
     Preedit(String),
-    /// Delete around the cursor, in characters.
+    /// Delete around the cursor, in UTF-16 units.
     Delete { before: usize, after: usize },
     /// Text already typed becomes the composition (UTF-16 range).
     ComposingRegion { start: usize, end: usize },
@@ -40,7 +40,7 @@ impl ImeEvent {
 }
 
 #[cfg(target_os = "android")]
-pub use crate::android::ime::{drain, events, hide, show, sync};
+pub use crate::android::ime::{drain, events, hide, reshow, show, sync};
 
 #[cfg(not(target_os = "android"))]
 mod desktop {
@@ -56,6 +56,7 @@ mod desktop {
         0
     }
     pub fn hide(_owner: u64) {}
+    pub fn reshow() {}
     pub fn sync(_text: &str, _cursor: usize) {}
 }
 #[cfg(not(target_os = "android"))]

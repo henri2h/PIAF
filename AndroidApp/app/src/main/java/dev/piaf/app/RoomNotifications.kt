@@ -28,46 +28,53 @@ import org.json.JSONObject
 import java.io.File
 import kotlin.math.roundToInt
 
-/** One notification per room: a conversation of the messages pushed since it was last read or dismissed. */
+/**
+ * One notification per room of an account: a conversation of the messages
+ * pushed since it was last read or dismissed. Rooms are keyed by account too
+ * (`key`): two signed-in accounts can share a room.
+ */
 object RoomNotifications {
     private const val TAG = "PiafPush"
     const val KEY_REPLY = "reply"
     /** `StoredMessage.senderId` of the user's own replies. */
     private const val ME = "me"
 
-    private fun notificationId(roomId: String) = roomId.hashCode()
+    /** A room of an account: notification tag, shortcut id, stored history. */
+    fun key(account: String, roomId: String) = "$account|$roomId"
+
+    private fun notificationId(account: String, roomId: String) = key(account, roomId).hashCode()
 
     /** Shows (or extends) the room's notification with the pushed event. */
-    fun show(context: Context, roomId: String, eventId: String) {
+    fun show(context: Context, account: String, roomId: String, eventId: String) {
         // The same event can be pushed again (gateway retries, several
         // pushers): never show it twice, nor bring back one that was dismissed.
-        if (!SeenEvents.markSeen(context, eventId)) {
+        if (!SeenEvents.markSeen(context, key(account, eventId))) {
             Log.d(TAG, "show: $eventId already handled")
             return
         }
         ensureChannel(context)
         val nm = context.getSystemService(NotificationManager::class.java)
-        val id = notificationId(roomId)
+        val id = notificationId(account, roomId)
 
         // Only the real content is posted: no "Loading…" placeholder first.
-        val notification = when (val result = fetch(context, roomId, eventId)) {
+        val notification = when (val result = fetch(context, account, roomId, eventId)) {
             is Fetch.Show -> {
                 val content = result.content
                 val body = if (content.imageUri != null) "" else content.body
                 MessageStore.addMessage(
-                    context, roomId,
+                    context, key(account, roomId),
                     StoredMessage(content.senderId, content.senderName, body, System.currentTimeMillis())
                 )
-                conversation(context, roomId, eventId, content)
+                conversation(context, account, roomId, eventId, content)
             }
             Fetch.Skip -> return
             // Keep the conversation already shown rather than replace it.
             Fetch.Unavailable ->
                 if (nm.activeNotifications.any { it.id == id }) return
-                else builder(context, roomId, eventId).setContentTitle("New message").build()
+                else builder(context, account, roomId, eventId).setContentTitle("New message").build()
         }
         nm.notify(id, notification)
-        NotifiedRooms.add(context, roomId, eventId)
+        NotifiedRooms.add(context, account, roomId, eventId)
         scheduleReadCheck(context)
     }
 
@@ -76,50 +83,48 @@ object RoomNotifications {
      * conversation (a reply action must update its notification, or Android
      * keeps showing a spinner). Runs off the main thread.
      */
-    fun reply(context: Context, roomId: String, text: String) {
-        val bridge = PushReceiver.NativeBridge
-        val sent = bridge.tryLoad() &&
-            bridge.nativeInitForPush(context.applicationContext, context.filesDir.absolutePath) &&
-            bridge.nativeSendReply(roomId, text)
+    fun reply(context: Context, account: String, roomId: String, text: String) {
+        val sent = PushReceiver.initNative(context) &&
+            PushReceiver.NativeBridge.nativeSendReply(account, roomId, text)
         val body = if (sent) text else "⚠ Not sent: $text"
-        if (sent) MessageStore.addMessage(context, roomId, StoredMessage(ME, "Me", text, System.currentTimeMillis()))
+        val key = key(account, roomId)
+        if (sent) MessageStore.addMessage(context, key, StoredMessage(ME, "Me", text, System.currentTimeMillis()))
 
         val nm = context.getSystemService(NotificationManager::class.java)
-        val active = nm.activeNotifications.firstOrNull { it.id == notificationId(roomId) }?.notification
+        val id = notificationId(account, roomId)
+        val active = nm.activeNotifications.firstOrNull { it.id == id }?.notification
         if (active == null) return
         val style = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(active)
             ?: NotificationCompat.MessagingStyle(Person.Builder().setName("Me").build())
         style.addMessage(NotificationCompat.MessagingStyle.Message(body, System.currentTimeMillis(), null as Person?))
-        val updated = builder(context, roomId, NotifiedRooms.lastEvent(context, roomId))
+        val updated = builder(context, account, roomId, NotifiedRooms.lastEvent(context, account, roomId))
             .setStyle(style)
             .setLargeIcon(active.getLargeIcon()?.loadDrawable(context)?.let { drawableToBitmap(it) })
-            .setShortcutId(roomId)
-            .setLocusId(LocusIdCompat(roomId))
+            .setShortcutId(key)
+            .setLocusId(LocusIdCompat(key))
             .setSilent(true)
             .build()
-        nm.notify(notificationId(roomId), updated)
+        nm.notify(id, updated)
     }
 
     /** "Mark as read" action: read receipt on the last notified event, then clear. Runs off the main thread. */
-    fun markRead(context: Context, roomId: String) {
-        val eventId = NotifiedRooms.lastEvent(context, roomId) ?: return cancel(context, roomId)
-        val bridge = PushReceiver.NativeBridge
-        val read = bridge.tryLoad() &&
-            bridge.nativeInitForPush(context.applicationContext, context.filesDir.absolutePath) &&
-            bridge.nativeMarkRead(roomId, eventId)
-        if (read) cancel(context, roomId) else Log.w(TAG, "markRead failed for $roomId")
+    fun markRead(context: Context, account: String, roomId: String) {
+        val eventId = NotifiedRooms.lastEvent(context, account, roomId) ?: return cancel(context, account, roomId)
+        val read = PushReceiver.initNative(context) &&
+            PushReceiver.NativeBridge.nativeMarkRead(account, roomId, eventId)
+        if (read) cancel(context, account, roomId) else Log.w(TAG, "markRead failed for $roomId")
     }
 
     /** Removes the room's notification and forgets its messages (it was read). */
-    fun cancel(context: Context, roomId: String) {
-        context.getSystemService(NotificationManager::class.java).cancel(notificationId(roomId))
-        forget(context, roomId)
+    fun cancel(context: Context, account: String, roomId: String) {
+        context.getSystemService(NotificationManager::class.java).cancel(notificationId(account, roomId))
+        forget(context, account, roomId)
     }
 
     /** Forgets the room's messages, so the next notification starts fresh. */
-    fun forget(context: Context, roomId: String) {
-        NotifiedRooms.remove(context, roomId)
-        MessageStore.clearMessages(context, roomId)
+    fun forget(context: Context, account: String, roomId: String) {
+        NotifiedRooms.remove(context, account, roomId)
+        MessageStore.clearMessages(context, key(account, roomId))
     }
 
     fun ensureChannel(context: Context) {
@@ -155,10 +160,10 @@ object RoomNotifications {
         object Unavailable : Fetch()
     }
 
-    private fun fetch(context: Context, roomId: String, eventId: String): Fetch {
-        val viaRust = if (PushReceiver.NativeBridge.tryLoad()) fetchViaRust(context, roomId, eventId) else null
+    private fun fetch(context: Context, account: String, roomId: String, eventId: String): Fetch {
+        val viaRust = if (PushReceiver.NativeBridge.tryLoad()) fetchViaRust(context, account, roomId, eventId) else null
         if (viaRust != null) return viaRust
-        return when (val http = HttpFallback.fetch(context, roomId, eventId)) {
+        return when (val http = HttpFallback.fetch(context, account, roomId, eventId)) {
             is HttpFallback.Result.Show -> Fetch.Show(
                 Content(
                     roomName = "PIAF", isDm = false, roomColor = DEFAULT_COLOR,
@@ -172,10 +177,10 @@ object RoomNotifications {
     }
 
     /** `null` when the Rust side couldn't load the event (the HTTP fallback is tried next). */
-    private fun fetchViaRust(context: Context, roomId: String, eventId: String): Fetch? {
+    private fun fetchViaRust(context: Context, account: String, roomId: String, eventId: String): Fetch? {
         val bridge = PushReceiver.NativeBridge
-        if (!bridge.nativeInitForPush(context.applicationContext, context.filesDir.absolutePath)) return null
-        val payload = bridge.nativeFetchNotificationPayload(roomId, eventId)?.let {
+        if (!PushReceiver.initNative(context)) return null
+        val payload = bridge.nativeFetchNotificationPayload(account, roomId, eventId)?.let {
             try { JSONObject(it) } catch (_: JSONException) { null }
         } ?: return null
         if (payload.optBoolean("skip")) return Fetch.Skip
@@ -194,11 +199,11 @@ object RoomNotifications {
                 senderColor = parseColor(payload.optString("senderColor")),
                 body = payload.optString("body").ifBlank { "New message" },
                 // A DM's room avatar is the other user: no need to fetch it twice.
-                roomAvatar = if (isDm) null else decode(bridge.nativeFetchRoomAvatarBytes(roomId)),
+                roomAvatar = if (isDm) null else decode(bridge.nativeFetchRoomAvatarBytes(account, roomId)),
                 senderAvatar = if (senderId.isBlank()) null
-                               else decode(bridge.nativeFetchSenderAvatarBytes(roomId, senderId)),
-                imageUri = if (isImage) bridge.nativeFetchEventImageBytes(roomId, eventId)
-                    ?.let { saveImage(context, it, roomId) } else null,
+                               else decode(bridge.nativeFetchSenderAvatarBytes(account, roomId, senderId)),
+                imageUri = if (isImage) bridge.nativeFetchEventImageBytes(account, roomId, eventId)
+                    ?.let { saveImage(context, it, key(account, roomId)) } else null,
             )
         )
     }
@@ -208,6 +213,7 @@ object RoomNotifications {
     /** The room's conversation, from its stored messages. */
     private fun conversation(
         context: Context,
+        account: String,
         roomId: String,
         eventId: String,
         content: Content,
@@ -222,7 +228,8 @@ object RoomNotifications {
         style.isGroupConversation = !content.isDm
         if (!content.isDm) style.conversationTitle = content.roomName
 
-        val history = MessageStore.getMessages(context, roomId)
+        val key = key(account, roomId)
+        val history = MessageStore.getMessages(context, key)
         for (msg in history) {
             val isSender = if (msg.senderId.isNotBlank()) msg.senderId == content.senderId
                            else msg.sender == content.senderName
@@ -243,29 +250,33 @@ object RoomNotifications {
                         else content.roomAvatar ?: letterAvatar(context, content.roomName, content.roomColor)
 
         val title = if (content.isDm) content.senderName else content.roomName
-        pushShortcut(context, roomId, title, largeIcon, if (content.isDm) sender else null)
+        pushShortcut(context, account, roomId, title, largeIcon, if (content.isDm) sender else null)
 
-        return builder(context, roomId, eventId)
+        return builder(context, account, roomId, eventId)
             .setStyle(style)
             .setLargeIcon(largeIcon)
             // A long-lived shortcut makes it a conversation: Conversations
             // section, priority settings, bubbles.
-            .setShortcutId(roomId)
-            .setLocusId(LocusIdCompat(roomId))
+            .setShortcutId(key)
+            .setLocusId(LocusIdCompat(key))
             .build()
     }
 
     /** The room as a conversation shortcut (launcher long-press, share sheet, notification conversations). */
-    private fun pushShortcut(context: Context, roomId: String, title: String, icon: Bitmap, person: Person?) {
+    private fun pushShortcut(
+        context: Context, account: String, roomId: String, title: String, icon: Bitmap, person: Person?,
+    ) {
+        val key = key(account, roomId)
         val open = Intent(context, MainActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
+            .putExtra(MainActivity.EXTRA_ACCOUNT, account)
             .putExtra(MainActivity.EXTRA_ROOM_ID, roomId)
-        val shortcut = ShortcutInfoCompat.Builder(context, roomId)
+        val shortcut = ShortcutInfoCompat.Builder(context, key)
             .setShortLabel(title)
             .setLongLived(true)
             .setIcon(IconCompat.createWithBitmap(icon))
             .setIntent(open)
-            .setLocusId(LocusIdCompat(roomId))
+            .setLocusId(LocusIdCompat(key))
             .setCategories(setOf(android.content.pm.ShortcutInfo.SHORTCUT_CATEGORY_CONVERSATION))
             .apply { if (person != null) setPerson(person) }
             .build()
@@ -277,16 +288,20 @@ object RoomNotifications {
     }
 
     /** `eventId`: the last notified event, for "Mark as read" (no actions without it). */
-    private fun builder(context: Context, roomId: String, eventId: String?): NotificationCompat.Builder {
-        val id = notificationId(roomId)
+    private fun builder(
+        context: Context, account: String, roomId: String, eventId: String?,
+    ): NotificationCompat.Builder {
+        val id = notificationId(account, roomId)
         // SINGLE_TOP: a running activity gets the tap in onNewIntent. Without it
         // CLEAR_TOP finishes and recreates it, and its onDestroy kills the process.
         val open = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or
                 Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(MainActivity.EXTRA_ACCOUNT, account)
             putExtra(MainActivity.EXTRA_ROOM_ID, roomId)
         }
         val dismissed = Intent(context, NotificationDismissedReceiver::class.java)
+            .putExtra(MainActivity.EXTRA_ACCOUNT, account)
             .putExtra(MainActivity.EXTRA_ROOM_ID, roomId)
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         return NotificationCompat.Builder(context, PushReceiver.CHANNEL_ID)
@@ -296,14 +311,15 @@ object RoomNotifications {
             .setContentIntent(PendingIntent.getActivity(context, id, open, flags))
             .setDeleteIntent(PendingIntent.getBroadcast(context, id, dismissed, flags))
             .setAutoCancel(true)
-            .apply { if (eventId != null) addActions(context, this, roomId) }
+            .apply { if (eventId != null) addActions(context, this, account, roomId) }
     }
 
-    private fun addActions(context: Context, builder: NotificationCompat.Builder, roomId: String) {
-        val id = notificationId(roomId)
+    private fun addActions(context: Context, builder: NotificationCompat.Builder, account: String, roomId: String) {
+        val id = notificationId(account, roomId)
         val actionIntent = { action: String ->
             Intent(context, NotificationActionReceiver::class.java)
                 .setAction(action)
+                .putExtra(MainActivity.EXTRA_ACCOUNT, account)
                 .putExtra(MainActivity.EXTRA_ROOM_ID, roomId)
         }
         // A RemoteInput fills in the intent: it must be mutable.
@@ -387,10 +403,10 @@ object RoomNotifications {
         return bitmap
     }
 
-    /** Saves an image to the cache, as a URI the notification can show. */
-    private fun saveImage(context: Context, bytes: ByteArray, roomId: String): Uri? = try {
+    /** Saves an image to the cache, as a URI the notification can show. `key`: the room's. */
+    private fun saveImage(context: Context, bytes: ByteArray, key: String): Uri? = try {
         val dir = File(context.cacheDir, "notification_images").apply { mkdirs() }
-        val file = File(dir, "${roomId.hashCode()}.jpg").apply { writeBytes(bytes) }
+        val file = File(dir, "${key.hashCode()}.jpg").apply { writeBytes(bytes) }
         FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
     } catch (_: Exception) {
         null
@@ -403,7 +419,7 @@ object SeenEvents {
     private const val KEY = "events"
     private const val MAX = 200
 
-    /** Records `eventId`; false if it was already there. */
+    /** Records `eventId` (with its account: `RoomNotifications.key`); false if it was already there. */
     @Synchronized
     fun markSeen(context: Context, eventId: String): Boolean {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -418,7 +434,7 @@ object SeenEvents {
     }
 }
 
-/** Rooms with a notification shown, and when (for the read checks). */
+/** Rooms with a notification shown, and when (for the read checks). Keyed by `RoomNotifications.key`. */
 object NotifiedRooms {
     private const val PREFS = "piaf_notified_rooms"
     private const val KEY_ROOMS = "rooms"
@@ -428,30 +444,34 @@ object NotifiedRooms {
     fun all(context: Context): Set<String> = prefs(context).getStringSet(KEY_ROOMS, emptySet())!!.toSet()
 
     /** `eventId`: the latest notified event (what "Mark as read" reads up to). */
-    fun add(context: Context, roomId: String, eventId: String) {
+    fun add(context: Context, account: String, roomId: String, eventId: String) {
+        val key = RoomNotifications.key(account, roomId)
         prefs(context).edit()
-            .putStringSet(KEY_ROOMS, all(context) + roomId)
-            .putLong("ts_$roomId", System.currentTimeMillis())
-            .putString("event_$roomId", eventId)
+            .putStringSet(KEY_ROOMS, all(context) + key)
+            .putLong("ts_$key", System.currentTimeMillis())
+            .putString("event_$key", eventId)
             .apply()
     }
 
-    fun remove(context: Context, roomId: String) {
+    fun remove(context: Context, account: String, roomId: String) {
+        val key = RoomNotifications.key(account, roomId)
         prefs(context).edit()
-            .putStringSet(KEY_ROOMS, all(context) - roomId)
-            .remove("ts_$roomId")
-            .remove("event_$roomId")
+            .putStringSet(KEY_ROOMS, all(context) - key)
+            .remove("ts_$key")
+            .remove("event_$key")
             .apply()
     }
 
-    fun lastEvent(context: Context, roomId: String): String? =
-        prefs(context).getString("event_$roomId", null)
+    fun lastEvent(context: Context, account: String, roomId: String): String? =
+        prefs(context).getString("event_${RoomNotifications.key(account, roomId)}", null)
 
-    /** `[{roomId, ts}]`, ts: when the notification was shown (ms). */
+    /** `[{account, roomId, ts}]`, ts: when the notification was shown (ms). */
     fun toJson(context: Context): String {
         val prefs = prefs(context)
-        return JSONArray(all(context).map { roomId ->
-            JSONObject().put("roomId", roomId).put("ts", prefs.getLong("ts_$roomId", 0L))
+        return JSONArray(all(context).mapNotNull { key ->
+            // Shown before accounts: no account in the key, nothing to check.
+            val (account, roomId) = key.split('|', limit = 2).takeIf { it.size == 2 } ?: return@mapNotNull null
+            JSONObject().put("account", account).put("roomId", roomId).put("ts", prefs.getLong("ts_$key", 0L))
         }).toString()
     }
 }
@@ -460,25 +480,26 @@ object NotifiedRooms {
 
 data class StoredMessage(val senderId: String, val sender: String, val body: String, val timestamp: Long)
 
+/** Keyed by `RoomNotifications.key`. */
 object MessageStore {
     private const val PREFS = "piaf_room_messages"
     private const val MAX_MESSAGES = 10
 
-    fun addMessage(context: Context, roomId: String, msg: StoredMessage) {
+    fun addMessage(context: Context, key: String, msg: StoredMessage) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val messages = (load(prefs, roomId) + msg).takeLast(MAX_MESSAGES)
-        prefs.edit().putString(roomId, encode(messages)).apply()
+        val messages = (load(prefs, key) + msg).takeLast(MAX_MESSAGES)
+        prefs.edit().putString(key, encode(messages)).apply()
     }
 
-    fun getMessages(context: Context, roomId: String): List<StoredMessage> =
-        load(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE), roomId)
+    fun getMessages(context: Context, key: String): List<StoredMessage> =
+        load(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE), key)
 
-    fun clearMessages(context: Context, roomId: String) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(roomId).apply()
+    fun clearMessages(context: Context, key: String) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(key).apply()
     }
 
-    private fun load(prefs: android.content.SharedPreferences, roomId: String): List<StoredMessage> {
-        val json = prefs.getString(roomId, null) ?: return emptyList()
+    private fun load(prefs: android.content.SharedPreferences, key: String): List<StoredMessage> {
+        val json = prefs.getString(key, null) ?: return emptyList()
         return try {
             val arr = JSONArray(json)
             (0 until arr.length()).mapNotNull { i ->
