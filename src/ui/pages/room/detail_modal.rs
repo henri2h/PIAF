@@ -5,7 +5,7 @@ use freya::prelude::*;
 use crate::utils::avatars::AvatarSource;
 use matrix_sdk_ui::timeline::{TimelineItem, TimelineItemContent};
 
-use crate::ui::components::{Avatar, bottom_sheet};
+use crate::ui::components::{Avatar, Chip, bottom_sheet};
 use crate::utils::queries::use_member_name;
 use crate::utils::{format_timestamp, id_color, use_app_colors};
 
@@ -25,70 +25,60 @@ impl PartialEq for DetailModalOverlay {
 impl Component for DetailModalOverlay {
     fn render(&self) -> impl IntoElement {
         let c = use_app_colors();
+        let show_source = use_state(|| false);
         let modal_item = self.modal.read().clone();
         let room_id = self.room_id.clone();
         let mut modal = self.modal;
 
+        let Some(item) = modal_item else {
+            return if cfg!(target_os = "android") {
+                rect().into_element()
+            } else {
+                Popup::new()
+                    .on_close_request(move |_| modal.set(None))
+                    .into_element()
+            };
+        };
+        let body = rect()
+            .vertical()
+            .width(Size::fill())
+            .padding(Gaps::new(4., 16., 12., 4.))
+            .spacing(20.)
+            .child(info_section(&item, c))
+            .child(seen_by_section(&item, &room_id, c))
+            .child(reactions_section(&item, &room_id, c))
+            .child(source_section(&item, show_source, c));
+
         // Android: a bottom sheet, the mobile way to show details.
         if cfg!(target_os = "android") {
-            let Some(item) = modal_item else {
-                return rect().into_element();
-            };
             return bottom_sheet(c, move || modal.set(None))
                 .title("Message details")
                 .child(
                     ScrollView::new()
                         .width(Size::fill())
-                        .max_height(Size::window_percent(60.))
+                        .max_height(Size::window_percent(65.))
                         .height(Size::auto())
-                        .child(
-                            rect()
-                                .vertical()
-                                .width(Size::fill())
-                                .padding(Gaps::new(0., 24., 0., 24.))
-                                .spacing(16.)
-                                .child(seen_by_section(&item, &room_id, c))
-                                .child(reactions_section(&item, &room_id, c)),
-                        ),
+                        .child(body.padding(Gaps::new(0., 24., 16., 24.))),
                 )
                 .into_element();
         }
 
-        let mut popup = Popup::new().on_close_request(move |_| *modal.write() = None);
-
-        if let Some(item) = modal_item {
-            popup = popup
-                // ── Header ────────────────────────────────────────────────────
-                .child(
-                    rect()
-                        .horizontal()
-                        .width(Size::fill())
-                        .cross_align(Alignment::Center)
-                        .child(
-                            label()
-                                .text("Message details")
-                                .font_size(16.)
-                                .font_weight(FontWeight::BOLD)
-                                .color(c.on_surface),
-                        ),
-                )
-                // ── Scrollable content ────────────────────────────────────────
-                .child(
-                    ScrollView::new()
-                        .width(Size::fill())
-                        .height(Size::px(400.))
-                        .child(
-                            rect()
-                                .vertical()
-                                .width(Size::fill())
-                                .spacing(16.)
-                                .child(seen_by_section(&item, &room_id, c))
-                                .child(reactions_section(&item, &room_id, c)),
-                        ),
-                );
-        }
-
-        popup.into_element()
+        Popup::new()
+            .on_close_request(move |_| modal.set(None))
+            .child(
+                label()
+                    .text("Message details")
+                    .font_size(18.)
+                    .font_weight(FontWeight::BOLD)
+                    .color(c.on_surface),
+            )
+            .child(
+                ScrollView::new()
+                    .width(Size::fill())
+                    .height(Size::px(440.))
+                    .child(body),
+            )
+            .into_element()
     }
 }
 
@@ -99,6 +89,124 @@ fn section_title(text: &str, c: crate::utils::const_values::AppColors) -> Elemen
         .font_weight(FontWeight::BOLD)
         .color(c.primary)
         .into()
+}
+
+/// Who sent it, when, and the IDs.
+fn info_section(item: &Arc<TimelineItem>, c: crate::utils::const_values::AppColors) -> Element {
+    let Some(event) = item.as_event() else {
+        return rect().into();
+    };
+    let mut rows = vec![
+        ("Sent", format_timestamp(event.timestamp())),
+        (
+            "From",
+            format!(
+                "{} ({})",
+                crate::utils::room_preview::sender_name(event),
+                event.sender()
+            ),
+        ),
+    ];
+    if let Some(id) = event.event_id() {
+        rows.push(("Event ID", id.to_string()));
+    }
+    let mut col = rect()
+        .vertical()
+        .width(Size::fill())
+        .spacing(8.)
+        .child(section_title("Message", c));
+    for (name, value) in rows {
+        col = col.child(
+            rect()
+                .vertical()
+                .width(Size::fill())
+                .child(
+                    label()
+                        .text(name)
+                        .font_size(11.)
+                        .color(c.on_surface_muted),
+                )
+                .child(
+                    label()
+                        .width(Size::fill())
+                        .text(breakable(&value))
+                        .font_size(13.)
+                        .color(c.on_surface),
+                ),
+        );
+    }
+    col.into()
+}
+
+/// `text` with line-break chances after URL and ID punctuation: a long
+/// token otherwise runs out of the box. For display only.
+fn breakable(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() * 2);
+    for ch in text.chars() {
+        out.push(ch);
+        if "/&?=_-.:,$!".contains(ch) {
+            out.push('\u{200B}');
+        }
+    }
+    out
+}
+
+/// The event's JSON as received: hidden until asked, then pretty-printed
+/// with a button to copy it.
+fn source_section(
+    item: &Arc<TimelineItem>,
+    mut show: State<bool>,
+    c: crate::utils::const_values::AppColors,
+) -> Element {
+    use matrix_sdk::ruma::exports::serde_json::{Value, from_str, to_string_pretty};
+    let Some(raw) = item.as_event().and_then(|e| e.original_json()) else {
+        return rect().into();
+    };
+    let open = *show.read();
+    let mut header = rect()
+        .horizontal()
+        .width(Size::fill())
+        .cross_align(Alignment::Center)
+        .spacing(8.)
+        .child(section_title("Source", c))
+        .child(
+            Chip::new(if open { "Hide" } else { "Show" }, false, move |_| {
+                show.toggle()
+            })
+            .height(26.),
+        );
+    let mut col = rect().vertical().width(Size::fill()).spacing(8.);
+    if open {
+        let raw = raw.json().get();
+        let source = from_str::<Value>(raw)
+            .and_then(|v| to_string_pretty(&v))
+            .unwrap_or_else(|_| raw.to_string());
+        let to_copy = source.clone();
+        header = header.child(
+            Chip::new("Copy", false, move |_| {
+                let _ = Clipboard::set(to_copy.clone());
+            })
+            .icon(freya_icons::lucide::copy())
+            .height(26.),
+        );
+        col = col.child(header).child(
+            rect()
+                .width(Size::fill())
+                .padding(Gaps::new(8., 10., 8., 10.))
+                .corner_radius(8.)
+                .background(c.surface_container)
+                .child(
+                    label()
+                        .width(Size::fill())
+                        .text(breakable(&source))
+                        .font_size(11.)
+                        .color(c.on_surface_variant),
+                ),
+        );
+    } else {
+        col = col.child(header);
+    }
+    col.into()
 }
 
 fn seen_by_section(

@@ -63,6 +63,10 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
     // Without a bridge's forward notice: the row marks it.
     let body = forward_split(msgtype).1;
     let html = formatted_html(msgtype);
+    // A media caption is text like any other: markdown, links, mentions.
+    let cap_view = |cap: Option<String>| -> Option<Element> {
+        cap.map(|cap| text_body(room_id, &cap, html, text_color, link_color))
+    };
     Some(match msgtype {
         MessageType::Text(_) => text_body(room_id, body, html, text_color, link_color),
         // Bots' messages: same text, a step quieter.
@@ -119,10 +123,8 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                     .hoverable(Size::px(w), Size::px(h), 0.),
                 )
                 // The image fills the bubble edge to edge; its caption keeps the padding.
-                .maybe_child(caption(body, img.filename.as_deref()).map(|cap| {
-                    rect()
-                        .padding(Gaps::new(0., 12., 0., 12.))
-                        .child(label().text(cap).color(text_color))
+                .maybe_child(cap_view(caption(body, img.filename.as_deref())).map(|cap| {
+                    rect().padding(Gaps::new(0., 12., 0., 12.)).child(cap)
                 }))
                 .into_element()
         }
@@ -139,8 +141,7 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                 guard,
                 c,
             ),
-            caption(body, f.filename.as_deref()),
-            text_color,
+            cap_view(caption(body, f.filename.as_deref())),
         ),
         MessageType::Audio(a) => with_caption(
             file_attachment(
@@ -155,8 +156,7 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                 guard,
                 c,
             ),
-            caption(body, a.filename.as_deref()),
-            text_color,
+            cap_view(caption(body, a.filename.as_deref())),
         ),
         MessageType::Video(v) => {
             let duration = v
@@ -190,7 +190,8 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                         rect()
                             .position(Position::new_absolute().top(0.).left(0.))
                             .layer(1)
-                            .expanded()
+                            .width(Size::percent(100.))
+                            .height(Size::percent(100.))
                             .center()
                             .child(
                                 rect()
@@ -228,7 +229,7 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                     c,
                 ),
             };
-            with_caption(video, caption(body, v.filename.as_deref()), text_color)
+            with_caption(video, cap_view(caption(body, v.filename.as_deref())))
         }
         _ => return None,
     })
@@ -264,14 +265,14 @@ fn upload_overlay(width: f32, height: f32, progress: Option<f32>) -> Rect {
 }
 
 /// `body` with its caption under it.
-fn with_caption(body: Element, caption: Option<String>, color: (u8, u8, u8)) -> Element {
+fn with_caption(body: Element, caption: Option<Element>) -> Element {
     match caption {
         None => body,
         Some(caption) => rect()
             .vertical()
             .spacing(6.)
             .child(body)
-            .child(label().text(caption).color(color))
+            .child(caption)
             .into_element(),
     }
 }

@@ -129,6 +129,11 @@ impl Quote {
             .horizontal()
             .width(Size::flex(1.))
             .content(Content::Flex)
+            .main_align(if is_me {
+                Alignment::End
+            } else {
+                Alignment::Start
+            })
             .cross_align(Alignment::Center)
             .spacing(6.)
             .maybe_child(sender)
@@ -139,8 +144,10 @@ impl Quote {
                     .height(Size::px(12.))
             }))
             .child(
+                // As wide as its text (the line hugs the connector), up to
+                // most of the line, then ellipsized.
                 label()
-                    .width(Size::flex(1.))
+                    .max_width(Size::percent(65.))
                     .text(excerpt)
                     .max_lines(1)
                     .text_overflow(TextOverflow::Ellipsis)

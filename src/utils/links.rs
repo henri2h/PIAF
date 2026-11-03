@@ -42,9 +42,11 @@ pub fn pieces(text: &str) -> Vec<Piece<'_>> {
 
 /// Length of the URL `s` starts with; 0 when there is nothing after the scheme.
 fn url_len(s: &str) -> usize {
+    // `](` closes a markdown link's label: `[https://a](https://b)`.
     let end = s
         .find(|c: char| c.is_whitespace() || "<>\"`".contains(c))
-        .unwrap_or(s.len());
+        .unwrap_or(s.len())
+        .min(s.find("](").unwrap_or(s.len()));
     let mut url = &s[..end];
     loop {
         let trimmed = url.trim_end_matches(['.', ',', ';', ':', '!', '?', '\'', '*', '_', '~']);
@@ -82,7 +84,9 @@ pub fn autolink_markdown(markdown: &str) -> String {
                 Piece::Url(url) => {
                     let before = &line[..written];
                     let in_code = before.matches('`').count() % 2 == 1;
-                    let in_link = before.ends_with("](") || before.ends_with('<');
+                    let label_of_link =
+                        before.ends_with('[') && line[written + url.len()..].starts_with("](");
+                    let in_link = before.ends_with("](") || before.ends_with('<') || label_of_link;
                     if in_code || in_link {
                         out.push_str(url);
                     } else {
@@ -114,6 +118,12 @@ mod tests {
                 Piece::Text(_) => None,
             })
             .collect()
+    }
+
+    #[test]
+    fn markdown_link_with_url_label_stays() {
+        let md = "[https://a.b/](https://a.b/?x=1&y=2)";
+        assert_eq!(autolink_markdown(md), md);
     }
 
     #[test]
