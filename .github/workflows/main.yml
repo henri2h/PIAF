@@ -1,38 +1,46 @@
-name: Flutter
+name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: ["main"]
   pull_request:
-    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  build-linux:
+    name: Build (Linux)
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Flutter SDK
-        uses: flutter-actions/setup-flutter@v2
-        with:
-          channel: stable
-          cache: true
-    
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      #- name: Analyze project source
-      #  run: dart analyze
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxdo-dev
 
-      #- name: Run tests
-      #  run: flutter test
- 
-      - name: Build android
-        run: flutter build apk
+      - name: Build
+        run: cargo build
 
-      - name: Upload build result
-        uses: actions/upload-artifact@v4
-        with:
-          name: app.apk
-          path: build/app/outputs/apk/release/app-release.apk
+  test-linux:
+    name: Test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxdo-dev
+
+      - name: Test
+        run: cargo test --workspace

@@ -1,5 +1,7 @@
 # PIAF
 
+Rewrite of the app in rust, see the main branch for the flutter version.
+
 **A privacy focused social media based on MATRIX**
 
 <div>
@@ -12,46 +14,43 @@
 
 ![](https://img.shields.io/badge/License-AGPLv3-success)
 
-
 <a href='https://flathub.org/apps/details/fr.henri2h.minestrix'><img width='240' alt='Get it on Flathub' src='https://flathub.org/assets/badges/flathub-badge-i-en.png'/></a>
-
 
 ## 🤔 Why
 
 The goal of PIAF is to create an alternative social media focused on privacy. We believe that privacy is a fundamental right and that when you share something, no third party should be able to see your posts or edit them.
 That's why PIAF supports E2EE (not by default yet) to protect your posts and is decentralized to be able to choose where your data is stored.
 
-
 We chose MATRIX because it's the best protocol for supporting decentralized, E2EE communication and because it's Open Source !!
 
 ## ✨ Features
 
-* Simplicity
-* Privacy : E2EE using [Olm](https://gitlab.matrix.org/matrix-org/olm)
-* No analytics
-* Post and see what your friends are saying
-* Create groups
-* Find your friends
-* Chat : supports chats
-* Not for profit
+- Simplicity
+- Privacy : E2EE using [Olm](https://gitlab.matrix.org/matrix-org/olm)
+- No analytics
+- Post and see what your friends are saying
+- Create groups
+- Find your friends
+- Chat : supports chats
+- Not for profit
 
 ## 🚀 Goals
 
-* [ ] E2EE
-* [ ] Filter and sort your feed as you want
-* [ ] P2P
+- [ ] E2EE
+- [ ] Filter and sort your feed as you want
+- [ ] P2P
 
 ## 😀🏆 Contributing
 
 ### Be a game changer, help us spread the world
 
-* Try and tell us what you think
-* Spread the world 🎉
+- Try and tell us what you think
+- Spread the world 🎉
 
 ### Want to go further, help us build the future
 
-* Code
-* Translate (will come later)
+- Code
+- Translate (will come later)
 
 ### Before publish a commit
 
@@ -71,7 +70,7 @@ Make sure to run
 - [x] Send/Display images
 - [ ] Adding and removing friends (partial)
 - [x] Implement sorting algorithm by date
-	- [x] By date
+  - [x] By date
 - [x] E2EE: Device verification
 
 ### V2.0 : Planned
@@ -108,12 +107,12 @@ We use the fameldy library for that [https://gitlab.com/famedly/libraries/dart-o
 
 ### Requirements
 
-* libsqlite3
+- libsqlite3
 
 From https://pub.dev/packages/flutter_secure_storage :
 
-* libsecret
-* libjsoncpp
+- libsecret
+- libjsoncpp
 
 ```bash
 sudo apt install libolm3 libsecret-1-dev libjsoncpp-dev libwebkit2gtk-4.1-dev libmpv-dev libssl-dev libsqlite3-0 libsqlite3-dev webkit2gtk-4.1
