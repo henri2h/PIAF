@@ -104,7 +104,13 @@ impl Component for MessageRow {
             gesture,
         };
 
-        let date = self.date_label.clone().map(|d| date_separator(d, c));
+        // Optional children before the bubble are keyed: unkeyed ones pair by
+        // position, so one appearing (a page loaded above moves the divider)
+        // would remount the bubble and its images would blink.
+        let date = self
+            .date_label
+            .clone()
+            .map(|d| rect().key("date").width(Size::fill()).child(date_separator(d, c)));
         if let Some(VirtualTimelineItem::ReadMarker) = self.item.as_virtual() {
             return read_marker(c);
         }
@@ -140,7 +146,7 @@ impl Component for MessageRow {
                 let row = {
                     let hover_bar = hover_bar_opacity.and_then(|opacity| {
                         let bar = self.hover_bar(event, message.as_ref()?, ui, c);
-                        Some(rect().opacity(opacity).child(bar))
+                        Some(rect().key("hover-bar").opacity(opacity).child(bar))
                     });
                     let is_me = self.is_me(event);
                     let (row, bubble_col) = row;
@@ -367,7 +373,7 @@ impl MessageRow {
             .spacing(2.)
             .maybe_child(shows_name.then(|| {
                 padded(
-                    rect().child(
+                    rect().key("name").child(
                         label()
                             .text(sender_name.clone())
                             .font_size(12.)
