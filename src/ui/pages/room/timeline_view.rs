@@ -1,6 +1,7 @@
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 
@@ -10,12 +11,13 @@ use matrix_sdk_ui::timeline::{MsgLikeKind, TimelineItem, TimelineItemContent};
 use super::focus::{event_offset, row_key, watch_focus_events};
 use super::jump_to_latest::{JumpToLatest, distance_to_end};
 use super::message_row::{GroupPosition, MessageRow};
-use super::room_start_banner::RoomStartBanner;
+use super::timeline_header::TimelineHeader;
+use super::timeline_row::TimelineRow;
 use super::use_room_timeline::RoomTimeline;
 use crate::app::keys::{Area, KeyCommand, use_key_commands};
 use crate::logging::RenderTimer;
 use crate::utils::matrix::my_user_id;
-use crate::utils::{format_date_key, format_date_label, use_app_colors};
+use crate::utils::{format_date_key, format_date_label};
 
 /// Load older messages once scrolled within this distance of the top.
 const LOAD_MORE_THRESHOLD_PX: i32 = 400;
@@ -40,7 +42,6 @@ pub(super) struct TimelineView {
 impl Component for TimelineView {
     fn render(&self) -> impl IntoElement {
         let _timer = RenderTimer::new("TimelineView");
-        let c = use_app_colors();
         let tl = self.timeline.clone();
         let st = tl.state;
         let scroll_controller = self.scroll_controller;
@@ -56,6 +57,7 @@ impl Component for TimelineView {
         let heights: State<HashMap<String, f32>> = use_state(HashMap::new);
         // Row briefly highlighted after scrolling to it.
         let flash: State<Option<String>> = use_state(|| None);
+        let memo = use_hook(|| Rc::new(RefCell::new(ArcMemo::default())));
 
         // A message to show (a tapped reply, a search result in this room):
         // scrolled to now, or once history loaded up to it.
@@ -101,6 +103,21 @@ impl Component for TimelineView {
             });
         }
 
+        // A page that adds nothing visible changes neither the content nor the
+        // viewport: the fill continues when the page ends.
+        {
+            let tl = tl.clone();
+            use_side_effect(move || {
+                if *st.paginating.read() {
+                    return;
+                }
+                let (vp, content) = (*viewport_height.peek(), *content_height.peek());
+                if *st.auto_fill.peek() && vp > 0.0 && content > 0.0 && content < vp {
+                    tl.request_page();
+                }
+            });
+        }
+
         if *st.loading.read() {
             return rect()
                 .width(Size::fill())
@@ -124,56 +141,28 @@ impl Component for TimelineView {
 
         let flashed = flash.read().clone();
         let msgs = st.messages.read().clone();
-        let room_name = st.room_name.read().clone();
         let is_dm = *st.is_dm.read();
-
-        let header = if *st.at_start.read() {
-            RoomStartBanner {
-                room_id: self.room_id.clone(),
-                room_name,
-                c,
-            }
-            .into_element()
-        } else {
-            rect()
-                .center()
-                .width(Size::fill())
-                .padding(Gaps::new_all(8.))
-                .maybe_child(st.paginating.read().then(CircularLoader::new))
-                .into_element()
-        };
-
         let my_uid = my_user_id();
         let action_tx = tl.handle.actions();
-        let date_labels = day_labels(
-            &msgs
-                .iter()
-                .map(|item| item.as_event().map(|e| format_date_key(e.timestamp())))
-                .collect::<Vec<_>>(),
-        );
+        let infos = memo.borrow_mut().map(&msgs, row_info);
+        let date_labels = day_labels(&infos.iter().map(|i| i.day.clone()).collect::<Vec<_>>());
         let groups = group_positions(
-            &msgs.iter().map(|item| group_key(item)).collect::<Vec<_>>(),
+            &infos.iter().map(|i| i.group.clone()).collect::<Vec<_>>(),
             &date_labels.iter().map(Option::is_some).collect::<Vec<_>>(),
         );
-        let rows =
-            msgs.into_iter()
-                .zip(date_labels)
-                .zip(groups)
-                .map(|((item, date_label), group)| {
-                    let key = row_key(&item);
-                    let highlighted = flashed.as_ref() == Some(&key);
-                    let mut heights = heights;
-                    rect()
-                        .key(key.clone())
-                        .width(Size::fill())
-                        .maybe(highlighted, |r| r.background(c.primary_container))
-                        .on_sized(move |e: Event<SizedEventData>| {
-                            let h = e.area.height();
-                            if heights.peek().get(&key) != Some(&h) {
-                                heights.write().insert(key.clone(), h);
-                            }
-                        })
-                        .child(MessageRow {
+        let rows = msgs
+            .into_iter()
+            .zip(infos)
+            .zip(date_labels.into_iter().zip(groups))
+            .map(|((item, info), (date_label, group))| {
+                rect()
+                    .key(info.key.clone())
+                    .width(Size::fill())
+                    .child(TimelineRow {
+                        highlighted: flashed.as_ref() == Some(&info.key),
+                        row_key: info.key,
+                        heights,
+                        row: MessageRow {
                             room_id: self.room_id.clone(),
                             item,
                             date_label,
@@ -181,16 +170,20 @@ impl Component for TimelineView {
                             my_user_id: my_uid.clone(),
                             action_tx: action_tx.clone(),
                             is_dm,
-                        })
-                        .into_element()
-                });
+                        },
+                    })
+                    .into_element()
+            });
 
         let tl_focus = tl.clone();
         let content = rect()
             .vertical()
             .width(Size::fill())
             .padding(Gaps::new(4., 0., 4., 0.))
-            .child(header)
+            .child(TimelineHeader {
+                room_id: self.room_id.clone(),
+                state: st,
+            })
             .on_sized(move |e: Event<SizedEventData>| {
                 scroll_to_pending_focus(&tl_focus, heights, flash, scroll_controller);
                 let new_h = e.inner_sizes.height;
@@ -314,6 +307,54 @@ fn day_labels(keys: &[Option<String>]) -> Vec<Option<String>> {
         .collect()
 }
 
+/// What a row needs from its item besides the item itself.
+#[derive(Clone)]
+struct RowInfo {
+    key: String,
+    day: Option<String>,
+    group: Option<(String, u64)>,
+}
+
+fn row_info(item: &TimelineItem) -> RowInfo {
+    RowInfo {
+        key: row_key(item),
+        day: item.as_event().map(|e| format_date_key(e.timestamp())),
+        group: group_key(item),
+    }
+}
+
+/// Values derived from items in the last render, reused while an item keeps
+/// its `Arc` (the SDK gives a new one only to items that changed).
+struct ArcMemo<T, V>(HashMap<*const T, (Arc<T>, V)>);
+
+impl<T, V> Default for ArcMemo<T, V> {
+    fn default() -> Self {
+        Self(HashMap::new())
+    }
+}
+
+impl<T, V: Clone> ArcMemo<T, V> {
+    /// `derive` of each item, computed only for items not seen last time.
+    /// Holding the `Arc`s keeps their addresses from being reused.
+    fn map(&mut self, items: &[Arc<T>], derive: impl Fn(&T) -> V) -> Vec<V> {
+        let mut next: HashMap<*const T, (Arc<T>, V)> = HashMap::with_capacity(items.len());
+        let values = items
+            .iter()
+            .map(|item| {
+                let ptr = Arc::as_ptr(item);
+                let value = match next.get(&ptr).or(self.0.get(&ptr)) {
+                    Some((_, v)) => v.clone(),
+                    None => derive(item),
+                };
+                next.insert(ptr, (item.clone(), value.clone()));
+                value
+            })
+            .collect();
+        self.0 = next;
+        values
+    }
+}
+
 /// Messages this close in time from one sender join a group.
 const GROUP_GAP_MS: u64 = 5 * 60 * 1000;
 
@@ -403,6 +444,30 @@ mod tests {
         ];
         let labelled: Vec<bool> = day_labels(&keys).iter().map(Option::is_some).collect();
         assert_eq!(labelled, [true, false, false, true, true]);
+    }
+
+    #[test]
+    fn arc_memo_derives_only_for_new_arcs() {
+        use std::cell::Cell;
+        let calls = Cell::new(0);
+        let derive = |v: &i32| {
+            calls.set(calls.get() + 1);
+            *v * 2
+        };
+        let mut memo = ArcMemo::default();
+        let mut items: Vec<Arc<i32>> = (1..=3).map(Arc::new).collect();
+        assert_eq!(memo.map(&items, derive), [2, 4, 6]);
+        assert_eq!(calls.get(), 3);
+        // Prepend one new item, keep the others: one derive.
+        items.insert(0, Arc::new(10));
+        assert_eq!(memo.map(&items, derive), [20, 2, 4, 6]);
+        assert_eq!(calls.get(), 4);
+        // Replace one item (changed): one derive; dropped items are forgotten.
+        items[2] = Arc::new(7);
+        items.pop();
+        assert_eq!(memo.map(&items, derive), [20, 2, 14]);
+        assert_eq!(calls.get(), 5);
+        assert_eq!(memo.0.len(), 3);
     }
 
     #[test]

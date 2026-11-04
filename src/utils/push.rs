@@ -553,20 +553,23 @@ pub async fn cancel_read_notifications_after_sync(client: &Client) {
 async fn cancel_read_notifications(client: &Client) -> Option<()> {
     let (account, _) = crate::utils::matrix::ACCOUNT.get()?;
     // Step 1: ask Kotlin for the notified rooms: [{account, roomId, ts}].
-    let notified_json: String = with_push_receiver(|env, cls, ctx| {
-        let obj = env
-            .call_static_method(
-                cls,
-                "getNotifiedRoomsJson",
-                "(Landroid/content/Context;)Ljava/lang/String;",
-                &[ctx.into()],
-            )
-            .and_then(|v| v.l())
-            .ok()
-            .filter(|obj| !obj.is_null())?;
-        env.get_string(&jni::objects::JString::from(obj))
-            .ok()
-            .map(String::from)
+    // JNI blocks: off the async worker, which would stall every task queued on it.
+    let notified_json: String = tokio::task::block_in_place(|| {
+        with_push_receiver(|env, cls, ctx| {
+            let obj = env
+                .call_static_method(
+                    cls,
+                    "getNotifiedRoomsJson",
+                    "(Landroid/content/Context;)Ljava/lang/String;",
+                    &[ctx.into()],
+                )
+                .and_then(|v| v.l())
+                .ok()
+                .filter(|obj| !obj.is_null())?;
+            env.get_string(&jni::objects::JString::from(obj))
+                .ok()
+                .map(String::from)
+        })
     })?;
 
     // Step 2: which of them were read since — pure Rust, no JNI.
@@ -590,17 +593,19 @@ async fn cancel_read_notifications(client: &Client) -> Option<()> {
     let read_json = serde_json::to_string(&read_rooms).ok()?;
 
     // Step 3: Kotlin cancels their notifications and cleans up SharedPrefs.
-    with_push_receiver(|env, cls, ctx| {
-        let account = env.new_string(account).ok()?;
-        let jstr = env.new_string(&read_json).ok()?;
-        env.call_static_method(
-            cls,
-            "cancelNotificationsForRooms",
-            "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V",
-            &[ctx.into(), (&account).into(), (&jstr).into()],
-        )
-        .ok()
-        .map(|_| ())
+    tokio::task::block_in_place(|| {
+        with_push_receiver(|env, cls, ctx| {
+            let account = env.new_string(account).ok()?;
+            let jstr = env.new_string(&read_json).ok()?;
+            env.call_static_method(
+                cls,
+                "cancelNotificationsForRooms",
+                "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V",
+                &[ctx.into(), (&account).into(), (&jstr).into()],
+            )
+            .ok()
+            .map(|_| ())
+        })
     })
 }
 

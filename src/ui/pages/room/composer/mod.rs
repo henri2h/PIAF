@@ -522,8 +522,7 @@ impl Component for ComposeBar {
             .width(Size::fill())
             .background(c.surface)
             .maybe_child(
-                attach_sheet_open()
-                    .then(|| attach_sheet(room_id.clone(), attach_sheet_open, c)),
+                attach_sheet_open().then(|| attach_sheet(room_id.clone(), attach_sheet_open, c)),
             )
             .maybe_child(attachment_banner(
                 &room_id,

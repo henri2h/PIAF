@@ -24,7 +24,11 @@ const ROOM_TIMEOUT: Duration = Duration::from_secs(15);
 pub fn start() {
     tokio::spawn(async {
         let mut list = room_list::receiver().clone();
-        if list.wait_for(|snapshot| snapshot.version > 0).await.is_err() {
+        if list
+            .wait_for(|snapshot| snapshot.version > 0)
+            .await
+            .is_err()
+        {
             return;
         }
         tokio::time::sleep(START_DELAY).await;
@@ -46,11 +50,9 @@ pub fn start() {
             let Ok((cache, _guard)) = room.event_cache().await else {
                 continue;
             };
-            let _ = tokio::time::timeout(
-                ROOM_TIMEOUT,
-                cache.pagination().run_backwards_until(EVENTS),
-            )
-            .await;
+            let _ =
+                tokio::time::timeout(ROOM_TIMEOUT, cache.pagination().run_backwards_until(EVENTS))
+                    .await;
         }
         tracing::debug!(target: PERF, ms = started.elapsed().as_millis() as u64, "history prefetch done");
     });

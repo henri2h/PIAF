@@ -15,6 +15,8 @@ mod message_row;
 mod outgoing;
 mod room_app_bar;
 mod room_start_banner;
+mod timeline_header;
+mod timeline_row;
 mod timeline_task;
 mod timeline_view;
 mod typing_indicator;
@@ -93,12 +95,9 @@ impl Component for RoomPage {
     fn render(&self) -> impl IntoElement {
         // Keyed: a room → room navigation reuses the page, and its hooks
         // (timeline, subscription, invite state) would keep the previous room.
-        rect()
-            .key(&self.room_id)
-            .expanded()
-            .child(RoomScreen {
-                room_id: self.room_id.clone(),
-            })
+        rect().key(&self.room_id).expanded().child(RoomScreen {
+            room_id: self.room_id.clone(),
+        })
     }
 }
 

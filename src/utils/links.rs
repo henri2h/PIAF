@@ -165,6 +165,9 @@ mod tests {
             autolink_markdown("```\nhttps://x.org\n```\nhttps://y.org"),
             "```\nhttps://x.org\n```\n<https://y.org>"
         );
-        assert_eq!(autolink_markdown("**https://x.org**"), "**<https://x.org>**");
+        assert_eq!(
+            autolink_markdown("**https://x.org**"),
+            "**<https://x.org>**"
+        );
     }
 }

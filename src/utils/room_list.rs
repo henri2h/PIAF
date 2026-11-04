@@ -2,7 +2,7 @@
 //! only when something visible changed. `RoomSummary`'s `PartialEq` is the
 //! single definition of "visible": it drives both publishing and row memoization.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, LazyLock, Mutex};
 
 use matrix_sdk::latest_events::LatestEventValue;
@@ -12,6 +12,7 @@ use tokio::sync::watch;
 
 use crate::logging::PERF;
 use crate::utils::matrix::{CLIENT, latest_event_ts};
+use crate::utils::room_preview::{SenderPrefix, last_message};
 
 /// Per-room data the list needs, read once per sync. `room` is carried for the
 /// row's lazy preview and is ignored by `PartialEq`, which drives row memoization.
@@ -38,7 +39,53 @@ pub struct RoomSummary {
     pub draft: Option<String>,
     /// No latest event cached yet; the row requests one.
     pub needs_preview: bool,
+    /// The room has its own (non-empty) avatar.
+    pub has_avatar: bool,
+    /// Heroes for the avatar; only read for tracked rooms (rows on screen),
+    /// `None` until then.
+    pub heroes: Option<Heroes>,
+    /// Latest message text and sender; only built for tracked rooms.
+    pub preview: Option<(String, SenderPrefix)>,
     sort_key: SortKey,
+}
+
+/// What a room without a picture needs to draw its avatar from its heroes.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Heroes {
+    /// Heroes the room has, with or without a picture.
+    pub total: usize,
+    /// The first two with a picture.
+    pub with_avatar: Vec<HeroAvatar>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct HeroAvatar {
+    pub user_id: String,
+    pub name: String,
+    pub mxc: String,
+}
+
+fn heroes_of(room: &Room) -> Heroes {
+    let info = room.clone_info();
+    let heroes = info.heroes();
+    let with_avatar = heroes
+        .iter()
+        .filter_map(|h| {
+            Some(HeroAvatar {
+                user_id: h.user_id.to_string(),
+                name: h
+                    .display_name
+                    .clone()
+                    .unwrap_or_else(|| h.user_id.localpart().to_string()),
+                mxc: h.avatar_url.as_ref()?.to_string(),
+            })
+        })
+        .take(2)
+        .collect();
+    Heroes {
+        total: heroes.len(),
+        with_avatar,
+    }
 }
 
 impl PartialEq for RoomSummary {
@@ -58,6 +105,9 @@ impl PartialEq for RoomSummary {
             && self.send_failed == other.send_failed
             && self.draft == other.draft
             && self.needs_preview == other.needs_preview
+            && self.has_avatar == other.has_avatar
+            && self.heroes == other.heroes
+            && self.preview == other.preview
     }
 }
 
@@ -66,6 +116,17 @@ impl RoomSummary {
         let latest = room.latest_event();
         let latest_ts = latest.timestamp().map(|ts| ts.get().into());
         let is_invite = room.state() == RoomState::Invited;
+        let is_dm = is_invite
+            .then(|| invite_is_direct(room.room_id()))
+            .flatten()
+            .unwrap_or_else(|| room.is_dm());
+        // An empty URL (avatar removed) counts as none.
+        let has_avatar = room.avatar_url().is_some_and(|u| u.is_valid());
+        let tracked = crate::utils::sync::is_tracked(room.room_id().as_str());
+        let heroes = (tracked && !is_dm && !has_avatar).then(|| heroes_of(&room));
+        let preview = tracked
+            .then(|| last_message(&room, crate::utils::matrix::my_user_id().as_deref()))
+            .flatten();
         Self {
             room_id: room.room_id().to_string(),
             name: room
@@ -78,10 +139,7 @@ impl RoomSummary {
             mentions: room.num_unread_mentions(),
             marked_unread: room.is_marked_unread(),
             // `is_dm` is unreliable for invites; use the resolved invite flag.
-            is_dm: is_invite
-                .then(|| invite_is_direct(room.room_id()))
-                .flatten()
-                .unwrap_or_else(|| room.is_dm()),
+            is_dm,
             is_muted: room.cached_user_defined_notification_mode()
                 == Some(RoomNotificationMode::Mute),
             is_favourite: room.is_favourite(),
@@ -90,6 +148,9 @@ impl RoomSummary {
             send_failed: matches!(latest, LatestEventValue::LocalCannotBeSent(_)),
             draft: crate::utils::drafts::preview(room.room_id().as_str()),
             needs_preview: latest.is_none(),
+            has_avatar,
+            heroes,
+            preview,
             sort_key: sort_key(latest_ts, room.recency_stamp().map(u64::from)),
             room,
         }
@@ -150,24 +211,36 @@ fn listed_rooms(client: &matrix_sdk::Client) -> Vec<Room> {
 
 /// Sections (invites, favourites, rooms, low priority), each newest first.
 /// Pending local changes are applied on top of the room state.
-fn build() -> Vec<RoomSummary> {
+///
+/// `cache` holds the summaries of the last build (before pending changes):
+/// with `dirty` set, only those rooms (and rooms not cached yet) are rebuilt.
+fn build(
+    cache: &mut HashMap<String, RoomSummary>,
+    dirty: Option<&HashSet<String>>,
+) -> Vec<RoomSummary> {
     let Some(client) = CLIENT.get() else {
         return vec![];
     };
     let pending = PENDING.lock().unwrap().clone();
-    let mut rooms: Vec<RoomSummary> = listed_rooms(client)
-        .into_iter()
-        .map(RoomSummary::new)
-        .filter_map(|mut s| {
-            if let Some(p) = pending.get(&s.room_id) {
-                if p.left {
-                    return None;
-                }
-                p.apply(&mut s);
+    let mut fresh = HashMap::with_capacity(cache.len());
+    let mut rooms: Vec<RoomSummary> = Vec::with_capacity(cache.len());
+    for room in listed_rooms(client) {
+        let id = room.room_id().as_str();
+        let base = match (dirty, cache.remove(id)) {
+            (Some(dirty), Some(cached)) if !dirty.contains(id) => cached,
+            _ => RoomSummary::new(room),
+        };
+        let mut s = base.clone();
+        fresh.insert(base.room_id.clone(), base);
+        if let Some(p) = pending.get(&s.room_id) {
+            if p.left {
+                continue;
             }
-            Some(s)
-        })
-        .collect();
+            p.apply(&mut s);
+        }
+        rooms.push(s);
+    }
+    *cache = fresh;
     sort_summaries(&mut rooms);
     rooms
 }
@@ -257,31 +330,54 @@ pub fn receiver() -> &'static watch::Receiver<RoomListSnapshot> {
 /// per room (several ms on large accounts), and room info updates arrive one
 /// per room, so a burst of hundreds becomes one rebuild.
 pub fn refresh(source: &'static str) {
-    let _ = REFRESHER.send(source);
+    let _ = REFRESHER.send((source, None));
+}
+
+/// Like [`refresh`], when only this room's summary can have changed. Requests
+/// for single rooms rebuild just those; any full request in the batch wins.
+pub fn refresh_room(source: &'static str, room_id: &str) {
+    let _ = REFRESHER.send((source, Some(room_id.to_string())));
 }
 
 const COALESCE: std::time::Duration = std::time::Duration::from_millis(16);
 
-static REFRESHER: LazyLock<tokio::sync::mpsc::UnboundedSender<&'static str>> =
-    LazyLock::new(|| {
-        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
-        tokio::spawn(async move {
-            while let Some(source) = rx.recv().await {
-                tokio::time::sleep(COALESCE).await;
-                let mut requests = 1;
-                while rx.try_recv().is_ok() {
-                    requests += 1;
-                }
-                rebuild(source, requests);
+type Request = (&'static str, Option<String>);
+
+static REFRESHER: LazyLock<tokio::sync::mpsc::UnboundedSender<Request>> = LazyLock::new(|| {
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Request>();
+    tokio::spawn(async move {
+        let mut cache = HashMap::new();
+        let mut first_build = true;
+        while let Some(first) = rx.recv().await {
+            tokio::time::sleep(COALESCE).await;
+            let mut batch = vec![first];
+            while let Ok(request) = rx.try_recv() {
+                batch.push(request);
             }
-        });
-        tx
+            let source = batch[0].0;
+            let requests = batch.len();
+            let dirty = dirty_rooms(&batch).filter(|_| !first_build);
+            first_build = false;
+            rebuild(source, requests, &mut cache, dirty.as_ref());
+        }
     });
+    tx
+});
+
+/// The rooms to rebuild, or `None` for all (some request named no room).
+fn dirty_rooms(batch: &[Request]) -> Option<HashSet<String>> {
+    batch.iter().map(|(_, room)| room.clone()).collect()
+}
 
 /// Builds the list and publishes it if anything visible changed.
-fn rebuild(source: &'static str, requests: usize) {
+fn rebuild(
+    source: &'static str,
+    requests: usize,
+    cache: &mut HashMap<String, RoomSummary>,
+    dirty: Option<&HashSet<String>>,
+) {
     let start = std::time::Instant::now();
-    let rooms = build();
+    let rooms = build(cache, dirty);
     let count = rooms.len();
     let invites = rooms.iter().filter(|r| r.is_invite).count();
     // Rows near the top are what's on screen: previews still missing there.
@@ -307,6 +403,7 @@ fn rebuild(source: &'static str, requests: usize) {
         target: PERF,
         source,
         requests,
+        partial = dirty.map(|d| d.len()),
         changed,
         rooms = count,
         invites,
@@ -337,10 +434,19 @@ pub async fn resolve_invite_dm_flags(client: &Client) {
             resolved.push((room.room_id().to_string(), is_direct));
         }
     }
+    // Joined or declined invites drop out.
+    let invited: std::collections::HashSet<String> = client
+        .invited_rooms()
+        .iter()
+        .map(|room| room.room_id().to_string())
+        .collect();
+    let mut known = INVITE_IS_DIRECT.lock().unwrap();
+    known.retain(|id, _| invited.contains(id));
     if resolved.is_empty() {
         return;
     }
-    INVITE_IS_DIRECT.lock().unwrap().extend(resolved);
+    known.extend(resolved);
+    drop(known);
     refresh("invite_dm");
 }
 
@@ -577,6 +683,14 @@ mod tests {
         resolve_invite_dm_flags(&client).await;
         assert_eq!(invite_is_direct(room_id!("!dm:x")), Some(true));
         assert_eq!(invite_is_direct(room_id!("!group:x")), Some(false));
+    }
+
+    #[test]
+    fn one_full_request_makes_the_batch_full() {
+        let room = |id: &str| ("room_info", Some(id.to_string()));
+        let set = dirty_rooms(&[room("!a:x"), room("!b:x"), room("!a:x")]).unwrap();
+        assert_eq!(set.len(), 2);
+        assert!(dirty_rooms(&[room("!a:x"), ("sync", None)]).is_none());
     }
 
     #[test]

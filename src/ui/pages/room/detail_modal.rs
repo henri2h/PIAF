@@ -120,12 +120,7 @@ fn info_section(item: &Arc<TimelineItem>, c: crate::utils::const_values::AppColo
             rect()
                 .vertical()
                 .width(Size::fill())
-                .child(
-                    label()
-                        .text(name)
-                        .font_size(11.)
-                        .color(c.on_surface_muted),
-                )
+                .child(label().text(name).font_size(11.).color(c.on_surface_muted))
                 .child(
                     label()
                         .width(Size::fill())

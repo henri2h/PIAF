@@ -36,8 +36,11 @@ impl RoomTimeline {
     pub fn request_page(&self) {
         let mut paginating = self.state.paginating;
         if !*paginating.peek() && !*self.state.at_start.peek() {
-            paginating.set(true);
-            self.handle.paginate();
+            // Only a page that was asked for is waited for: after the task
+            // ended (room missing, build failed) nothing would end it.
+            if self.handle.paginate() {
+                paginating.set(true);
+            }
         }
     }
 }
@@ -116,4 +119,6 @@ async fn receive(mut st: TimelineState, mut events: TimelineEvents, focus: Optio
             }
         }
     }
+    // The task ended: no page is coming.
+    st.paginating.set(false);
 }

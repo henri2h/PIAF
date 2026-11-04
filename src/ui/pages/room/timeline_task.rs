@@ -72,9 +72,10 @@ impl PartialEq for TimelineHandle {
 }
 
 impl TimelineHandle {
-    /// Loads one more page of history.
-    pub fn paginate(&self) {
-        let _ = self.page_tx.send(());
+    /// Loads one more page of history; `false` when the task has ended (no
+    /// answer will come).
+    pub fn paginate(&self) -> bool {
+        self.page_tx.send(()).is_ok()
     }
 
     pub fn actions(&self) -> Arc<UnboundedSender<MsgAction>> {

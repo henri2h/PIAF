@@ -284,15 +284,15 @@ mod render_tests {
             use_init_theme(light_theme);
             let scroll = use_scroll_controller(ScrollConfig::default);
             use_provide_room_ui_ctx(scroll);
-            rect().width(Size::px(600.)).child(
-                rect().max_width(Size::px(500.)).child(super::text_body(
+            rect()
+                .width(Size::px(600.))
+                .child(rect().max_width(Size::px(500.)).child(super::text_body(
                     "!r:x.org",
                     "https://example.org/page",
                     None,
                     (0, 0, 0),
                     (0, 0, 255),
-                )),
-            )
+                )))
         }
         let runtime = tokio::runtime::Runtime::new().unwrap();
         let _guard = runtime.enter();
@@ -336,9 +336,7 @@ mod render_tests {
         let mut test = launch_test(app);
         test.sync_and_update();
         let line = test
-            .find(|node, element| {
-                Paragraph::try_downcast(element).map(|_| node.layout().area)
-            })
+            .find(|node, element| Paragraph::try_downcast(element).map(|_| node.layout().area))
             .unwrap();
         // "see " is before the link, the link ends the line.
         test.click_cursor((line.max_x() as f64 - 10., line.center().y as f64));

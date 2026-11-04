@@ -13,7 +13,7 @@ use matrix_sdk_ui::RoomListService;
 use matrix_sdk_ui::sync_service::{State, SyncService};
 use tokio::sync::broadcast::error::RecvError;
 
-use crate::utils::room_list::{refresh, resolve_invite_dm_flags};
+use crate::utils::room_list::{refresh, refresh_room, resolve_invite_dm_flags};
 
 static SYNC_SERVICE: OnceLock<Arc<SyncService>> = OnceLock::new();
 
@@ -159,6 +159,10 @@ pub fn start(client: Client) {
     tokio::spawn(watch_state(service.clone()));
     tokio::spawn(watch_room_info(client.clone()));
     crate::utils::spaces::start(client.clone());
+    // Mutes are push rules: global, not in any room's update.
+    client.add_event_handler(
+        |_: matrix_sdk::ruma::events::push_rules::PushRulesEvent| async { refresh("push_rules") },
+    );
     tokio::spawn(watch_room_updates(client));
     tokio::spawn(async move { service.start().await });
     crate::utils::history_prefetch::start();
@@ -207,15 +211,23 @@ async fn watch_state(service: Arc<SyncService>) {
     }
 }
 
+static TRACKED: LazyLock<Mutex<HashSet<String>>> = LazyLock::new(Default::default);
+
+/// Whether the room's row asked for its latest event (see `track_latest_event`).
+pub fn is_tracked(room_id: &str) -> bool {
+    TRACKED.lock().unwrap().contains(room_id)
+}
+
 /// Latest events are computed lazily, only for registered rooms; without this
 /// a room's preview stays empty until a timeline for it is opened. Called by
 /// room rows as they're shown, so large accounts only pay for visible rooms.
 /// New values arrive as `LATEST_EVENT` notable updates (see `watch_room_info`).
 pub fn track_latest_event(room_id: &str) {
-    static TRACKED: LazyLock<Mutex<HashSet<String>>> = LazyLock::new(Default::default);
     if !TRACKED.lock().unwrap().insert(room_id.to_string()) {
         return;
     }
+    // The summary now carries the preview and avatar heroes.
+    crate::utils::room_list::refresh_room("track", room_id);
     let Ok(room_id) = OwnedRoomId::try_from(room_id) else {
         return;
     };
@@ -236,9 +248,18 @@ async fn watch_room_updates(client: Client) {
     resolve_invite_dm_flags(&client).await;
     loop {
         match updates.recv().await {
-            Ok(_) | Err(RecvError::Lagged(_)) => {
+            update @ (Ok(_) | Err(RecvError::Lagged(_))) => {
                 resolve_invite_dm_flags(&client).await;
-                refresh("sync");
+                // Only the rooms in the update can have changed (their room info
+                // updates come too, `m.direct` included); a missed one, all.
+                match update {
+                    Ok(update) => {
+                        for room_id in update.iter_all_room_ids() {
+                            refresh_room("sync", room_id.as_str());
+                        }
+                    }
+                    Err(_) => refresh("sync"),
+                }
                 #[cfg(target_os = "android")]
                 {
                     let client = client.clone();
@@ -258,12 +279,21 @@ async fn watch_room_info(client: Client) {
     let mut updates = client.room_info_notable_update_receiver();
     loop {
         match updates.recv().await {
-            Ok(_) | Err(RecvError::Lagged(_)) => {
-                refresh("room_info");
-            }
+            Ok(update) if !affects_list(update.reasons.bits()) => {}
+            Ok(update) => refresh_room("room_info", update.room_id.as_str()),
+            Err(RecvError::Lagged(_)) => refresh("room_info"),
             Err(RecvError::Closed) => break,
         }
     }
+}
+
+/// `RoomInfoNotableUpdateReasons::ACTIVE_SERVICE_MEMBERS` (the type isn't re-exported).
+const SERVICE_MEMBERS_BIT: u16 = 0b0100_0000;
+
+/// Whether a room info change (reason bits) can alter a visible list field.
+/// Service members only matter to calls and bridges, not to the list.
+fn affects_list(reasons: u16) -> bool {
+    reasons & !SERVICE_MEMBERS_BIT != 0
 }
 
 #[cfg(target_os = "android")]
@@ -292,6 +322,13 @@ mod tests {
         let mut rooms = subs.rooms();
         rooms.sort();
         assert_eq!(rooms, [a, b]);
+    }
+
+    #[test]
+    fn service_member_updates_do_not_touch_the_list() {
+        assert!(!affects_list(SERVICE_MEMBERS_BIT));
+        assert!(affects_list(SERVICE_MEMBERS_BIT | 0b10));
+        assert!(affects_list(0b1000_0000));
     }
 
     #[test]

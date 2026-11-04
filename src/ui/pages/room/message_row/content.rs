@@ -123,9 +123,10 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                     .hoverable(Size::px(w), Size::px(h), 0.),
                 )
                 // The image fills the bubble edge to edge; its caption keeps the padding.
-                .maybe_child(cap_view(caption(body, img.filename.as_deref())).map(|cap| {
-                    rect().padding(Gaps::new(0., 12., 0., 12.)).child(cap)
-                }))
+                .maybe_child(
+                    cap_view(caption(body, img.filename.as_deref()))
+                        .map(|cap| rect().padding(Gaps::new(0., 12., 0., 12.)).child(cap)),
+                )
                 .into_element()
         }
         MessageType::File(f) => with_caption(
@@ -180,7 +181,9 @@ pub(super) fn message_content(message: &Message, cx: ContentCtx, c: AppColors) -
                             thumb_size: Some((400, 300)),
                         },
                     )
-                    .maybe_child(uploading.map(|progress| upload_overlay(MEDIA_W, MEDIA_H, progress)))
+                    .maybe_child(
+                        uploading.map(|progress| upload_overlay(MEDIA_W, MEDIA_H, progress)),
+                    )
                     .on_press(move |_| {
                         if guard.allows() {
                             media::download(&source);

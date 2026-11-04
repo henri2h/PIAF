@@ -66,6 +66,7 @@ impl PressGuard {
     }
 }
 
+#[derive(Clone)]
 pub struct MessageRow {
     pub room_id: String,
     pub item: Arc<TimelineItem>,

@@ -5,7 +5,6 @@ use crate::utils::id_color;
 use freya::prelude::*;
 
 use crate::utils::avatars::AvatarSource;
-use matrix_sdk::RoomHero;
 use matrix_sdk::ruma::MilliSecondsSinceUnixEpoch;
 
 use super::members_avatar::MembersAvatar;
@@ -18,9 +17,9 @@ use crate::logging::RenderTimer;
 use crate::ui::components::{Avatar, StackedAvatar};
 use crate::ui::pages::home::ActiveRoomCtx;
 use crate::utils::const_values::AppColors;
-use crate::utils::matrix::my_user_id;
+use crate::utils::room_list::HeroAvatar;
 pub use crate::utils::room_list::RoomSummary;
-use crate::utils::room_preview::{SenderPrefix, last_message, preview_text};
+use crate::utils::room_preview::{SenderPrefix, preview_text};
 use crate::utils::{
     format_full_timestamp, format_timestamp, queries::use_member_name, use_app_colors,
 };
@@ -60,7 +59,9 @@ impl Component for RoomListItem {
             }
         });
 
-        let (body, prefix) = last_message(&s.room, my_user_id().as_deref())
+        let (body, prefix) = s
+            .preview
+            .clone()
             .unwrap_or((String::new(), SenderPrefix::None));
         let sender_id = match &prefix {
             SenderPrefix::Other(uid) | SenderPrefix::Inviter(uid) => uid.as_str(),
@@ -191,36 +192,29 @@ fn room_avatar(s: &RoomSummary, bg: (u8, u8, u8)) -> Element {
         name: s.name.clone(),
         color: id_color(&s.room_id),
     };
-    // An empty URL (avatar removed) counts as none.
-    if s.is_dm || s.room.avatar_url().is_some_and(|u| u.is_valid()) {
+    let Some(heroes) = s.heroes.as_ref().filter(|_| !s.is_dm && !s.has_avatar) else {
         return room_avatar.into();
-    }
-    // The stored heroes (`Room::heroes` is async: it also loads their profiles).
-    let heroes = s.room.clone_info().heroes().to_vec();
-    let with_avatar: Vec<(&RoomHero, AvatarSource)> = heroes
-        .iter()
-        .filter_map(|h| Some((h, AvatarSource::Mxc(h.avatar_url.as_ref()?.to_string()))))
-        .collect();
-    match &with_avatar[..] {
-        [(h1, source1), (h2, source2), ..] => StackedAvatar {
+    };
+    let hero_avatar = |h: &HeroAvatar| Avatar {
+        size: 48.,
+        source: Some(AvatarSource::Mxc(h.mxc.clone())),
+        name: h.name.clone(),
+        color: id_color(&h.user_id),
+    };
+    match &heroes.with_avatar[..] {
+        [h1, h2, ..] => StackedAvatar {
             size: 48.,
-            name1: hero_name(h1),
-            color1: id_color(h1.user_id.as_str()),
-            source1: Some(source1.clone()),
-            name2: hero_name(h2),
-            color2: id_color(h2.user_id.as_str()),
-            source2: Some(source2.clone()),
+            name1: h1.name.clone(),
+            color1: id_color(&h1.user_id),
+            source1: Some(AvatarSource::Mxc(h1.mxc.clone())),
+            name2: h2.name.clone(),
+            color2: id_color(&h2.user_id),
+            source2: Some(AvatarSource::Mxc(h2.mxc.clone())),
             border_color: bg,
         }
         .into(),
-        [(h, source)] => Avatar {
-            size: 48.,
-            source: Some(source.clone()),
-            name: hero_name(h),
-            color: id_color(h.user_id.as_str()),
-        }
-        .into(),
-        [] if heroes.is_empty() => MembersAvatar {
+        [h] => hero_avatar(h).into(),
+        [] if heroes.total == 0 => MembersAvatar {
             room_id: s.room_id.clone(),
             name: s.name.clone(),
             size: 48.,
@@ -353,10 +347,4 @@ fn unread_badge(s: &RoomSummary, c: AppColors) -> Element {
     } else {
         dot.into()
     }
-}
-
-fn hero_name(hero: &RoomHero) -> String {
-    hero.display_name
-        .clone()
-        .unwrap_or_else(|| hero.user_id.localpart().to_string())
 }
